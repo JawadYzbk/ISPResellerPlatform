@@ -22,7 +22,10 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $tenant = Tenant::updateOrCreate(['slug' => 'northline'], ['name' => 'Northline Broadband', 'base_currency' => 'USD', 'collection_currency' => 'USD', 'timezone' => 'Asia/Beirut', 'locale' => 'en']);
-        User::updateOrCreate(['email' => 'admin@example.com'], ['tenant_id' => $tenant->id, 'name' => 'Maya Haddad', 'password' => Hash::make('password'), 'role' => 'tenant_owner', 'locale' => 'en', 'email_verified_at' => now()]);
+        $admin = User::updateOrCreate(['email' => 'admin@example.com'], ['tenant_id' => $tenant->id, 'name' => 'Maya Haddad', 'password' => Hash::make('password'), 'role' => 'tenant_owner', 'locale' => 'en', 'email_verified_at' => now()]);
+
+        $this->call(CapabilitySeeder::class);
+        app(Tenancy::class)->run($tenant, fn (): mixed => $admin->assignRole('tenant_owner'));
 
         app(Tenancy::class)->run($tenant, function (): void {
             $zones = collect([
