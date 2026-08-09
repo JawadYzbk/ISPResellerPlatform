@@ -5,6 +5,7 @@ namespace App\Actions;
 use App\Contracts\Action;
 use App\Domain\Communications\TemplateRenderer;
 use App\Enums\MessageStatus;
+use App\Jobs\DeliverMessage;
 use App\Models\Customer;
 use App\Models\Message;
 use App\Models\MessageTemplate;
@@ -23,7 +24,7 @@ final readonly class QueueMessage implements Action
         }
 
         return DB::transaction(function () use ($template, $recipient, $channel, $locale, $idempotencyKey, $variables, $customer): Message {
-            return Message::create([
+            $message = Message::create([
                 'customer_id' => $customer?->id,
                 'channel' => $channel,
                 'recipient' => $recipient,
@@ -34,6 +35,9 @@ final readonly class QueueMessage implements Action
                 'status' => MessageStatus::Queued,
                 'idempotency_key' => $idempotencyKey,
             ]);
+            DeliverMessage::dispatch($message->id)->afterCommit();
+
+            return $message;
         });
     }
 }
