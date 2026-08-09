@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\CaptureRequestContext;
+use App\Http\Middleware\EnsureApiIdempotency;
 use App\Http\Middleware\EnsureRecentAuthentication;
 use App\Http\Middleware\EnsureTwoFactorVerified;
 use App\Http\Middleware\HandleInertiaRequests;
@@ -35,6 +36,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'tenant' => IdentifyTenant::class,
             '2fa' => EnsureTwoFactorVerified::class,
             'recent-auth' => EnsureRecentAuthentication::class,
+            'idempotency' => EnsureApiIdempotency::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
