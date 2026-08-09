@@ -29,7 +29,6 @@ final class LoginController extends Controller
         }
 
         $request->session()->regenerate();
-        $request->user()->forceFill(['last_authenticated_at' => now()])->save();
 
         return redirect()->intended(route('dashboard'))->with('success', 'Welcome back.');
     }

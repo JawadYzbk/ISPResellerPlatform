@@ -1,5 +1,7 @@
 <?php
 
+use App\Logging\RedactSensitiveContext;
+use Monolog\Formatter\JsonFormatter;
 use Monolog\Handler\NullHandler;
 use Monolog\Handler\StreamHandler;
 use Monolog\Handler\SyslogUdpHandler;
@@ -60,15 +62,19 @@ return [
 
         'single' => [
             'driver' => 'single',
+            'tap' => [RedactSensitiveContext::class],
             'path' => storage_path('logs/laravel.log'),
             'level' => env('LOG_LEVEL', 'debug'),
+            'formatter' => JsonFormatter::class,
             'replace_placeholders' => true,
         ],
 
         'daily' => [
             'driver' => 'daily',
+            'tap' => [RedactSensitiveContext::class],
             'path' => storage_path('logs/laravel.log'),
             'level' => env('LOG_LEVEL', 'debug'),
+            'formatter' => JsonFormatter::class,
             'days' => env('LOG_DAILY_DAYS', 14),
             'replace_placeholders' => true,
         ],
@@ -96,12 +102,13 @@ return [
 
         'stderr' => [
             'driver' => 'monolog',
+            'tap' => [RedactSensitiveContext::class],
             'level' => env('LOG_LEVEL', 'debug'),
             'handler' => StreamHandler::class,
             'handler_with' => [
                 'stream' => 'php://stderr',
             ],
-            'formatter' => env('LOG_STDERR_FORMATTER'),
+            'formatter' => env('LOG_STDERR_FORMATTER', JsonFormatter::class),
             'processors' => [PsrLogMessageProcessor::class],
         ],
 

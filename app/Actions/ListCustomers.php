@@ -2,10 +2,11 @@
 
 namespace App\Actions;
 
+use App\Contracts\Action;
 use App\Models\Customer;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
-final readonly class ListCustomers
+final readonly class ListCustomers implements Action
 {
     /** @return LengthAwarePaginator<int, Customer> */
     public function handle(?string $search, ?string $status, int $perPage = 20): LengthAwarePaginator

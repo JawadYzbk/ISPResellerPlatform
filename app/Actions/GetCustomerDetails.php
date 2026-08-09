@@ -2,9 +2,10 @@
 
 namespace App\Actions;
 
+use App\Contracts\Action;
 use App\Models\Customer;
 
-final readonly class GetCustomerDetails
+final readonly class GetCustomerDetails implements Action
 {
     public function handle(Customer $customer): Customer
     {

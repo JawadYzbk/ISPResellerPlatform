@@ -2,11 +2,12 @@
 
 namespace App\Actions;
 
+use App\Contracts\Action;
 use App\Enums\ServiceStatus;
 use App\Models\Customer;
 use App\Models\Service;
 
-final readonly class GetDashboardMetrics
+final readonly class GetDashboardMetrics implements Action
 {
     /** @return array<string, int> */
     public function handle(): array
