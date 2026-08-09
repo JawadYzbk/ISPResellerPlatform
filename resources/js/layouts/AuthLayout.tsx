@@ -2,5 +2,34 @@ import { Activity } from 'lucide-react';
 import type { PropsWithChildren } from 'react';
 
 export default function AuthLayout({ children }: PropsWithChildren) {
-    return <div className="grid min-h-screen bg-canvas lg:grid-cols-[1.1fr_0.9fr]"><div className="relative hidden overflow-hidden bg-brand p-12 text-white lg:flex lg:flex-col lg:justify-between"><div className="absolute -end-24 -top-24 size-96 rounded-full border-[42px] border-white/5" /><div className="absolute -bottom-40 -start-20 size-[30rem] rounded-full border-[60px] border-white/5" /><div className="relative flex items-center gap-3"><div className="grid size-10 place-items-center rounded-xl bg-white/15"><Activity size={21} /></div><span className="font-display text-lg font-bold">ISP Manager</span></div><div className="relative max-w-lg"><p className="mb-6 text-sm font-semibold uppercase tracking-[0.2em] text-white/60">The operations spine for local ISPs</p><h1 className="font-display text-5xl font-semibold leading-[1.08] tracking-tight">Know what’s happening. Keep customers connected.</h1><p className="mt-6 max-w-md text-base leading-7 text-white/70">One desk for subscribers, cash collection, field work and the network actions that keep your business moving.</p></div><p className="relative text-sm text-white/50">Built for operators who do more with less.</p></div><div className="flex items-center justify-center px-5 py-12 sm:px-10"><div className="w-full max-w-sm">{children}</div></div></div>;
+    return (
+        <div className="grid min-h-screen bg-canvas lg:grid-cols-[1.1fr_0.9fr]">
+            <div className="relative hidden overflow-hidden bg-brand p-12 text-white lg:flex lg:flex-col lg:justify-between">
+                <div className="absolute -end-24 -top-24 size-96 rounded-full border-[42px] border-white/5" />
+                <div className="absolute -bottom-40 -start-20 size-[30rem] rounded-full border-[60px] border-white/5" />
+                <div className="relative flex items-center gap-3">
+                    <div className="grid size-10 place-items-center rounded-xl bg-white/15">
+                        <Activity size={21} />
+                    </div>
+                    <span className="font-display text-lg font-bold">ISP Manager</span>
+                </div>
+                <div className="relative max-w-lg">
+                    <p className="mb-6 text-sm font-semibold uppercase tracking-[0.2em] text-white/60">
+                        The operations spine for local ISPs
+                    </p>
+                    <h1 className="font-display text-5xl font-semibold leading-[1.08] tracking-tight">
+                        Know what’s happening. Keep customers connected.
+                    </h1>
+                    <p className="mt-6 max-w-md text-base leading-7 text-white/70">
+                        One desk for subscribers, cash collection, field work and the network actions that keep your
+                        business moving.
+                    </p>
+                </div>
+                <p className="relative text-sm text-white/50">Built for operators who do more with less.</p>
+            </div>
+            <div className="flex items-center justify-center px-5 py-12 sm:px-10">
+                <div className="w-full max-w-sm">{children}</div>
+            </div>
+        </div>
+    );
 }

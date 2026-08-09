@@ -1,4 +1,15 @@
-type Status = 'active' | 'inactive' | 'archived' | 'pending' | 'suspended' | 'terminated' | 'in_sync' | 'unknown' | 'drifted' | 'failed' | 'pending_sync';
+type Status =
+    | 'active'
+    | 'inactive'
+    | 'archived'
+    | 'pending'
+    | 'suspended'
+    | 'terminated'
+    | 'in_sync'
+    | 'unknown'
+    | 'drifted'
+    | 'failed'
+    | 'pending_sync';
 
 const styles: Record<Status, string> = {
     active: 'bg-emerald-50 text-emerald-700 ring-emerald-600/20',
@@ -15,7 +26,13 @@ const styles: Record<Status, string> = {
 };
 
 export function StatusBadge({ status }: { status: Status }) {
-    return <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold capitalize ring-1 ring-inset ${styles[status]}`}>{status.replace('_', ' ')}</span>;
+    return (
+        <span
+            className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold capitalize ring-1 ring-inset ${styles[status]}`}
+        >
+            {status.replace('_', ' ')}
+        </span>
+    );
 }
 
 export default StatusBadge;
