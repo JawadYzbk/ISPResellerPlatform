@@ -3,10 +3,12 @@
 use App\Http\Controllers\Api\ApiTokenController;
 use App\Http\Controllers\Api\CustomerApiController;
 use App\Http\Controllers\Api\PaymentApiController;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function (): void {
+    Route::get('/health', fn (): JsonResponse => response()->json(['status' => 'ok']))->name('api.health');
     Route::post('/tokens', [ApiTokenController::class, 'store'])->middleware('throttle:login')->name('api.tokens.store');
 
     Route::middleware(['auth:sanctum', 'tenant'])->group(function (): void {

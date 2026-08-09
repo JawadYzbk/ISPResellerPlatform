@@ -2,7 +2,7 @@ openapi: 3.1.0
 info:
   title: ISP Manager API
   version: 1.0.0
-  description: Versioned mobile and portal contract. The first implementation slice is web-only; routes are added as vertical tickets land.
+  description: Versioned mobile and portal contract for tenant-scoped customer reads and idempotent collection writes.
 servers:
   - url: /api/v1
 security:
@@ -25,13 +25,60 @@ paths:
         - in: query
           name: filter[status]
           schema: { type: string, enum: [active, inactive, archived] }
+        - in: query
+          name: sort
+          schema: { type: string, enum: [created_at, -created_at, code, -code], default: -created_at }
+        - in: query
+          name: cursor
+          schema: { type: string }
       responses:
         '200': { description: Paginated customer list }
         '401': { description: Unauthenticated }
         '403': { description: Forbidden }
+  /customers/{public_id}:
+    get:
+      summary: Read one tenant customer
+      parameters:
+        - in: path
+          name: public_id
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: Customer resource }
+        '401': { description: Unauthenticated }
+        '404': { description: Customer not found }
+  /payments:
+    post:
+      summary: Record a customer payment
+      parameters:
+        - in: header
+          name: X-Idempotency-Key
+          required: true
+          schema: { type: string, maxLength: 120 }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentRequest'
+      responses:
+        '201': { description: Payment recorded }
+        '400': { description: Missing or invalid idempotency key }
+        '409': { description: Idempotency key reused for a different request }
+        '422': { description: Validation failed }
 components:
   securitySchemes:
     bearerAuth:
       type: http
       scheme: bearer
       bearerFormat: Sanctum
+  schemas:
+    PaymentRequest:
+      type: object
+      required: [customer_id, amount, currency, method]
+      properties:
+        customer_id: { type: string, description: Customer public ULID }
+        invoice_id: { type: string, nullable: true, description: Invoice public ULID }
+        amount: { type: integer, minimum: 1, description: Amount in minor currency units }
+        currency: { type: string, minLength: 3, maxLength: 3 }
+        method: { type: string, maxLength: 40 }
