@@ -3,13 +3,16 @@
 namespace App\Models;
 
 use App\Models\Concerns\BelongsToTenant;
+use Database\Factories\ZoneFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Zone extends Model
 {
-    use BelongsToTenant;
+    /** @use HasFactory<ZoneFactory> */
+    use BelongsToTenant, HasFactory;
 
     protected $fillable = ['tenant_id', 'parent_id', 'name', 'code'];
 

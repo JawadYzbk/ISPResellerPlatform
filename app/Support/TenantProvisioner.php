@@ -1,0 +1,43 @@
+<?php
+
+namespace App\Support;
+
+use App\Models\Branch;
+use App\Models\Currency;
+use App\Models\DocumentSequence;
+use App\Models\Tenant;
+use App\Models\Zone;
+
+final class TenantProvisioner
+{
+    public function provision(Tenant $tenant): void
+    {
+        app(Tenancy::class)->run($tenant, function () use ($tenant): void {
+            $branch = Branch::firstOrCreate(
+                ['code' => 'HQ'],
+                ['name' => 'Main Office', 'is_default' => true],
+            );
+            $zone = Zone::firstOrCreate(
+                ['code' => 'DEFAULT'],
+                ['name' => 'Default Zone'],
+            );
+
+            foreach (['invoice', 'receipt', 'payment', 'ticket'] as $key) {
+                DocumentSequence::firstOrCreate([
+                    'branch_id' => $branch->id,
+                    'key' => $key,
+                    'period' => now($tenant->timezone)->format('Y'),
+                ]);
+            }
+
+            Currency::firstOrCreate(
+                ['code' => $tenant->base_currency],
+                ['name' => $tenant->base_currency, 'decimal_digits' => 2, 'is_base' => true, 'is_active' => true],
+            );
+            Currency::firstOrCreate(
+                ['code' => $tenant->collection_currency],
+                ['name' => $tenant->collection_currency, 'decimal_digits' => 2, 'is_collection' => true, 'is_active' => true],
+            );
+        });
+    }
+}

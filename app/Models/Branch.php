@@ -3,12 +3,15 @@
 namespace App\Models;
 
 use App\Models\Concerns\BelongsToTenant;
+use Database\Factories\BranchFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Branch extends Model
 {
-    use BelongsToTenant;
+    /** @use HasFactory<BranchFactory> */
+    use BelongsToTenant, HasFactory;
 
     protected $fillable = ['tenant_id', 'name', 'code', 'address', 'phone', 'is_default'];
 

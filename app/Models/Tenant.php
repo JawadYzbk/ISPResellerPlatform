@@ -2,12 +2,19 @@
 
 namespace App\Models;
 
+use App\Data\TenantSettings;
+use App\Support\TenantProvisioner;
+use Database\Factories\TenantFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
 class Tenant extends Model
 {
+    /** @use HasFactory<TenantFactory> */
+    use HasFactory;
+
     protected $fillable = ['name', 'slug', 'status', 'base_currency', 'collection_currency', 'timezone', 'locale', 'settings'];
 
     protected function casts(): array
@@ -19,8 +26,22 @@ class Tenant extends Model
     {
         static::creating(function (self $tenant): void {
             $tenant->public_id ??= (string) Str::ulid();
-            $tenant->settings ??= [];
+            $tenant->settings ??= (new TenantSettings(
+                locale: $tenant->locale ?: 'en',
+                timezone: $tenant->timezone ?: 'UTC',
+                baseCurrency: $tenant->base_currency ?: 'USD',
+                collectionCurrency: $tenant->collection_currency ?: 'USD',
+                rtl: in_array($tenant->locale ?: 'en', ['ar', 'fa', 'he', 'ur'], true),
+            ))->toArray();
         });
+        static::created(function (self $tenant): void {
+            app(TenantProvisioner::class)->provision($tenant);
+        });
+    }
+
+    public function settingsData(): TenantSettings
+    {
+        return TenantSettings::fromTenant($this);
     }
 
     public function users(): HasMany

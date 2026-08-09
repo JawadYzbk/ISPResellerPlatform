@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use App\Models\Concerns\BelongsToTenant;
+use Database\Factories\PlanFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -10,7 +12,8 @@ use Illuminate\Support\Str;
 
 class Plan extends Model
 {
-    use BelongsToTenant;
+    /** @use HasFactory<PlanFactory> */
+    use BelongsToTenant, HasFactory;
 
     protected $fillable = ['tenant_id', 'name', 'slug', 'download_kbps', 'upload_kbps', 'duration_days', 'amount_minor', 'currency', 'status', 'metadata'];
 
