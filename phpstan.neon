@@ -1,0 +1,12 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+
+parameters:
+    # Level 5 keeps Eloquent relation templates actionable without requiring
+    # framework-internal declaring-model annotations on every relation.
+    level: 5
+    paths:
+        - app
+        - database
+    tmpDir: storage/framework/phpstan
+    treatPhpDocTypesAsCertain: false

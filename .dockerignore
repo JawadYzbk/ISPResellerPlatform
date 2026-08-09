@@ -1,0 +1,8 @@
+.env
+.git
+.github
+node_modules
+public/build
+storage/logs
+vendor
+platform-scaffold
