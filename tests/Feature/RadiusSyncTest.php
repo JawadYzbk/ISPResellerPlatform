@@ -1,6 +1,8 @@
 <?php
 
 use App\Domain\Radius\RadiusSyncService;
+use App\Domain\Services\ServiceStateMachine;
+use App\Enums\ProvisioningMode;
 use App\Enums\ServiceStatus;
 use App\Models\RadiusGroupReply;
 use App\Models\RadiusUserGroup;
@@ -25,4 +27,14 @@ it('writes deterministic FreeRADIUS rows from a service plan and status', functi
     app(RadiusSyncService::class)->sync($service->refresh());
 
     expect(RadiusUserGroup::firstOrFail()->groupname)->toBe('suspended');
+});
+
+it('synchronizes radius state when a radius service transitions', function (): void {
+    $tenant = Tenant::create(['name' => 'Southline', 'slug' => 'southline', 'base_currency' => 'USD', 'collection_currency' => 'USD']);
+    app(Tenancy::class)->set($tenant);
+    $service = Service::factory()->create(['provisioning_mode' => ProvisioningMode::Radius, 'status' => ServiceStatus::Pending]);
+
+    app(ServiceStateMachine::class)->transition($service, ServiceStatus::Active);
+
+    expect(RadiusUserGroup::firstOrFail()->groupname)->toBe('plan-'.$service->plan_id);
 });

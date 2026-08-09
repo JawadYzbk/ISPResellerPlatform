@@ -2,7 +2,9 @@
 
 namespace App\Domain\Services;
 
+use App\Domain\Radius\RadiusSyncService;
 use App\Enums\NetworkState;
+use App\Enums\ProvisioningMode;
 use App\Enums\ServiceStatus;
 use App\Models\Service;
 use App\Models\ServiceEvent;
@@ -52,6 +54,10 @@ final class ServiceStateMachine
                 'to_status' => $target->value,
                 'metadata' => $metadata,
             ]);
+
+            if ($locked->provisioning_mode === ProvisioningMode::Radius) {
+                app(RadiusSyncService::class)->sync($locked);
+            }
 
             return $locked->refresh();
         });
