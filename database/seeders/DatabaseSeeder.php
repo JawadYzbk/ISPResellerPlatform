@@ -9,6 +9,7 @@ use App\Enums\ServiceStatus;
 use App\Models\Branch;
 use App\Models\Customer;
 use App\Models\Plan;
+use App\Models\PlanPrice;
 use App\Models\Service;
 use App\Models\Tenant;
 use App\Models\User;
@@ -46,6 +47,10 @@ class DatabaseSeeder extends Seeder
                 ['name' => 'Starter 10', 'slug' => 'starter-10', 'download_kbps' => 10_000, 'upload_kbps' => 2_000, 'duration_days' => 30, 'amount_minor' => 1800, 'currency' => 'USD'],
             ])->mapWithKeys(function (array $data): array {
                 $plan = Plan::updateOrCreate(['slug' => $data['slug']], $data);
+                PlanPrice::firstOrCreate(
+                    ['plan_id' => $plan->id, 'currency' => $data['currency'], 'effective_from' => now()->startOfDay()],
+                    ['amount_minor' => $data['amount_minor']],
+                );
 
                 return [$data['slug'] => $plan];
             });
@@ -54,9 +59,9 @@ class DatabaseSeeder extends Seeder
                 ['first_name' => 'Rami', 'last_name' => 'Saad', 'phone' => '+961 70 123 456', 'email' => 'rami@example.test', 'zone' => 'CENTRAL', 'plan' => 'home-50', 'status' => CustomerStatus::Active, 'service_status' => ServiceStatus::Active, 'expires' => now()->addDays(18)],
                 ['first_name' => 'Lina', 'last_name' => 'Khoury', 'phone' => '+961 71 234 567', 'email' => 'lina@example.test', 'zone' => 'HILL', 'plan' => 'business-100', 'status' => CustomerStatus::Active, 'service_status' => ServiceStatus::Active, 'expires' => now()->addDays(4)],
                 ['first_name' => 'Omar', 'last_name' => 'Nasser', 'phone' => '+961 76 345 678', 'email' => null, 'zone' => 'COAST', 'plan' => 'starter-10', 'status' => CustomerStatus::Active, 'service_status' => ServiceStatus::Suspended, 'expires' => now()->subDays(3)],
-                ['first_name' => 'Nour', 'last_name' => 'Mansour', 'phone' => '+961 78 456 789', 'email' => 'nour@example.test', 'zone' => 'CENTRAL', 'plan' => 'home-25', 'status' => CustomerStatus::Active, 'service_status' => ServiceStatus::Pending, 'expires' => now()->addDays(1)],
-                ['first_name' => 'Tarek', 'last_name' => 'Fadel', 'phone' => '+961 79 567 890', 'email' => null, 'zone' => 'HILL', 'plan' => 'home-50', 'status' => CustomerStatus::Active, 'service_status' => ServiceStatus::Active, 'expires' => now()->addDays(22)],
-                ['first_name' => 'Sara', 'last_name' => 'Haddad', 'phone' => '+961 81 678 901', 'email' => 'sara@example.test', 'zone' => 'COAST', 'plan' => 'home-25', 'status' => CustomerStatus::Active, 'service_status' => ServiceStatus::Active, 'expires' => now()->addDays(9)],
+                ['first_name' => 'Nour', 'last_name' => 'Mansour', 'phone' => '+961 70 456 789', 'email' => 'nour@example.test', 'zone' => 'CENTRAL', 'plan' => 'home-25', 'status' => CustomerStatus::Active, 'service_status' => ServiceStatus::Pending, 'expires' => now()->addDays(1)],
+                ['first_name' => 'Tarek', 'last_name' => 'Fadel', 'phone' => '+961 70 567 890', 'email' => null, 'zone' => 'HILL', 'plan' => 'home-50', 'status' => CustomerStatus::Active, 'service_status' => ServiceStatus::Active, 'expires' => now()->addDays(22)],
+                ['first_name' => 'Sara', 'last_name' => 'Haddad', 'phone' => '+961 71 678 901', 'email' => 'sara@example.test', 'zone' => 'COAST', 'plan' => 'home-25', 'status' => CustomerStatus::Active, 'service_status' => ServiceStatus::Active, 'expires' => now()->addDays(9)],
             ];
 
             foreach ($customers as $index => $data) {

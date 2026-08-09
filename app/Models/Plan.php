@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 
 class Plan extends Model
@@ -38,5 +39,21 @@ class Plan extends Model
     public function services(): HasMany
     {
         return $this->hasMany(Service::class);
+    }
+
+    public function prices(): HasMany
+    {
+        return $this->hasMany(PlanPrice::class);
+    }
+
+    public function priceAt(?Carbon $at = null): ?PlanPrice
+    {
+        $at ??= now();
+
+        return $this->prices()
+            ->where('effective_from', '<=', $at)
+            ->where(fn ($query) => $query->whereNull('effective_to')->orWhere('effective_to', '>', $at))
+            ->latest('effective_from')
+            ->first();
     }
 }
