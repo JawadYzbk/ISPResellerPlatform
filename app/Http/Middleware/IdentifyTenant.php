@@ -2,6 +2,8 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Tenant;
+use App\Models\User;
 use App\Support\Tenancy;
 use Closure;
 use Illuminate\Http\Request;
@@ -11,9 +13,11 @@ final class IdentifyTenant
 {
     public function handle(Request $request, Closure $next): Response
     {
-        $tenant = $request->user()?->tenant;
+        $user = $request->user();
+        abort_unless($user instanceof User, 401);
+        $tenant = $user->tenant;
 
-        abort_unless($tenant, 403, 'A tenant membership is required.');
+        abort_unless($tenant instanceof Tenant, 403, 'A tenant membership is required.');
 
         $tenancy = app(Tenancy::class);
         $tenancy->set($tenant);

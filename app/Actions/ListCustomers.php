@@ -7,6 +7,7 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 final readonly class ListCustomers
 {
+    /** @return LengthAwarePaginator<int, Customer> */
     public function handle(?string $search, ?string $status, int $perPage = 20): LengthAwarePaginator
     {
         return Customer::query()

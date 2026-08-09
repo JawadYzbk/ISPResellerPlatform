@@ -2,6 +2,8 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Tenant;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -12,8 +14,15 @@ final class HandleInertiaRequests extends Middleware
     public function share(Request $request): array
     {
         $user = $request->user();
+        $user = $user instanceof User ? $user : null;
         $tenant = $user?->tenant;
-        $locale = $user?->locale ?? $tenant?->locale ?? 'en';
+        $tenant = $tenant instanceof Tenant ? $tenant : null;
+        $locale = 'en';
+        if ($user !== null && $user->locale !== null) {
+            $locale = $user->locale;
+        } elseif ($tenant !== null) {
+            $locale = $tenant->locale;
+        }
 
         return [
             ...parent::share($request),

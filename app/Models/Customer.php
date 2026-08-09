@@ -4,7 +4,7 @@ namespace App\Models;
 
 use App\Enums\CustomerStatus;
 use App\Models\Concerns\BelongsToTenant;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -13,7 +13,7 @@ use Illuminate\Support\Str;
 
 class Customer extends Model
 {
-    use BelongsToTenant, HasFactory, SoftDeletes;
+    use BelongsToTenant, SoftDeletes;
 
     protected $fillable = ['tenant_id', 'zone_id', 'code', 'first_name', 'last_name', 'phone', 'phone_normalized', 'email', 'address', 'latitude', 'longitude', 'status', 'balance_amount', 'balance_currency', 'notes'];
 
@@ -51,7 +51,8 @@ class Customer extends Model
         return trim($this->first_name.' '.$this->last_name);
     }
 
-    public function scopeSearch($query, ?string $search)
+    /** @param Builder<Customer> $query */
+    public function scopeSearch(Builder $query, ?string $search): Builder
     {
         if (blank($search)) {
             return $query;

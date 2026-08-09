@@ -3,13 +3,12 @@
 namespace App\Models;
 
 use App\Models\Concerns\BelongsToTenant;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ServiceEvent extends Model
 {
-    use BelongsToTenant, HasFactory;
+    use BelongsToTenant;
 
     protected $fillable = ['tenant_id', 'service_id', 'actor_id', 'event_type', 'from_status', 'to_status', 'metadata'];
 

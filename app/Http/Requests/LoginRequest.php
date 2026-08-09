@@ -11,6 +11,7 @@ final class LoginRequest extends FormRequest
         return true;
     }
 
+    /** @return array<string, array<int, string>> */
     public function rules(): array
     {
         return ['email' => ['required', 'email'], 'password' => ['required', 'string'], 'remember' => ['sometimes', 'boolean']];
