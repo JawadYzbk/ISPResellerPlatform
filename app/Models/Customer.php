@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\CustomerStatus;
 use App\Models\Concerns\Auditable;
 use App\Models\Concerns\BelongsToTenant;
+use App\Support\PhoneNormalizer;
 use Database\Factories\CustomerFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -32,6 +33,11 @@ class Customer extends Model
     {
         static::creating(function (self $customer): void {
             $customer->public_id ??= (string) Str::ulid();
+        });
+        static::saving(function (self $customer): void {
+            if ($customer->isDirty('phone') && filled($customer->phone)) {
+                $customer->phone_normalized = app(PhoneNormalizer::class)->normalize($customer->phone);
+            }
         });
     }
 

@@ -21,8 +21,7 @@ function customerForTenant(Tenant $tenant, string $code): Customer
         'code' => $code,
         'first_name' => 'Test',
         'last_name' => 'Customer',
-        'phone' => '+961 70 '.$code,
-        'phone_normalized' => '96170'.$code,
+        'phone' => '+961 70 123 '.substr($code, -3),
         'status' => CustomerStatus::Active,
         'balance_currency' => 'USD',
     ]));
