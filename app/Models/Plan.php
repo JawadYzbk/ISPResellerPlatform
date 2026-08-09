@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\Auditable;
 use App\Models\Concerns\BelongsToTenant;
 use Database\Factories\PlanFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -13,7 +14,7 @@ use Illuminate\Support\Str;
 class Plan extends Model
 {
     /** @use HasFactory<PlanFactory> */
-    use BelongsToTenant, HasFactory;
+    use Auditable, BelongsToTenant, HasFactory;
 
     protected $fillable = ['tenant_id', 'name', 'slug', 'download_kbps', 'upload_kbps', 'duration_days', 'amount_minor', 'currency', 'status', 'metadata'];
 

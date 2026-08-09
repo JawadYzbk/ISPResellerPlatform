@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\NetworkState;
 use App\Enums\ProvisioningMode;
 use App\Enums\ServiceStatus;
+use App\Models\Concerns\Auditable;
 use App\Models\Concerns\BelongsToTenant;
 use Database\Factories\ServiceFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -17,7 +18,7 @@ use Illuminate\Support\Str;
 class Service extends Model
 {
     /** @use HasFactory<ServiceFactory> */
-    use BelongsToTenant, HasFactory, SoftDeletes;
+    use Auditable, BelongsToTenant, HasFactory, SoftDeletes;
 
     protected $fillable = ['tenant_id', 'customer_id', 'plan_id', 'username', 'password_encrypted', 'status', 'provisioning_mode', 'network_state', 'desired_state_version', 'activated_at', 'expires_at', 'suspension_reason'];
 
