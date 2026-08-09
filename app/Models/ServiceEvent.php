@@ -10,8 +10,21 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class ServiceEvent extends Model
 {
     use BelongsToTenant, HasFactory;
+
     protected $fillable = ['tenant_id', 'service_id', 'actor_id', 'event_type', 'from_status', 'to_status', 'metadata'];
-    protected function casts(): array { return ['metadata' => 'array']; }
-    public function service(): BelongsTo { return $this->belongsTo(Service::class); }
-    public function actor(): BelongsTo { return $this->belongsTo(User::class, 'actor_id'); }
+
+    protected function casts(): array
+    {
+        return ['metadata' => 'array'];
+    }
+
+    public function service(): BelongsTo
+    {
+        return $this->belongsTo(Service::class);
+    }
+
+    public function actor(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'actor_id');
+    }
 }

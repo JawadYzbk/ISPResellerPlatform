@@ -12,6 +12,14 @@ class Branch extends Model
     use BelongsToTenant, HasFactory;
 
     protected $fillable = ['tenant_id', 'name', 'code', 'address', 'phone', 'is_default'];
-    protected function casts(): array { return ['is_default' => 'boolean']; }
-    public function tenant(): BelongsTo { return $this->belongsTo(Tenant::class); }
+
+    protected function casts(): array
+    {
+        return ['is_default' => 'boolean'];
+    }
+
+    public function tenant(): BelongsTo
+    {
+        return $this->belongsTo(Tenant::class);
+    }
 }

@@ -3,8 +3,8 @@
 namespace App\Models\Concerns;
 
 use App\Models\Tenant;
-use App\Support\TenantScope;
 use App\Support\Tenancy;
+use App\Support\TenantScope;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use LogicException;
 
@@ -12,7 +12,7 @@ trait BelongsToTenant
 {
     protected static function bootBelongsToTenant(): void
     {
-        static::addGlobalScope(new TenantScope());
+        static::addGlobalScope(new TenantScope);
 
         static::creating(function ($model): void {
             if ($model->getAttribute('tenant_id') === null) {

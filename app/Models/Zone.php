@@ -13,8 +13,24 @@ class Zone extends Model
     use BelongsToTenant, HasFactory;
 
     protected $fillable = ['tenant_id', 'parent_id', 'name', 'code'];
-    public function tenant(): BelongsTo { return $this->belongsTo(Tenant::class); }
-    public function parent(): BelongsTo { return $this->belongsTo(self::class, 'parent_id'); }
-    public function children(): HasMany { return $this->hasMany(self::class, 'parent_id'); }
-    public function customers(): HasMany { return $this->hasMany(Customer::class); }
+
+    public function tenant(): BelongsTo
+    {
+        return $this->belongsTo(Tenant::class);
+    }
+
+    public function parent(): BelongsTo
+    {
+        return $this->belongsTo(self::class, 'parent_id');
+    }
+
+    public function children(): HasMany
+    {
+        return $this->hasMany(self::class, 'parent_id');
+    }
+
+    public function customers(): HasMany
+    {
+        return $this->hasMany(Customer::class);
+    }
 }

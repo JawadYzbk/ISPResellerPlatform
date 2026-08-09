@@ -26,10 +26,33 @@ class Tenant extends Model
         });
     }
 
-    public function users(): HasMany { return $this->hasMany(User::class); }
-    public function customers(): HasMany { return $this->hasMany(Customer::class); }
-    public function plans(): HasMany { return $this->hasMany(Plan::class); }
-    public function services(): HasMany { return $this->hasMany(Service::class); }
-    public function branches(): HasMany { return $this->hasMany(Branch::class); }
-    public function zones(): HasMany { return $this->hasMany(Zone::class); }
+    public function users(): HasMany
+    {
+        return $this->hasMany(User::class);
+    }
+
+    public function customers(): HasMany
+    {
+        return $this->hasMany(Customer::class);
+    }
+
+    public function plans(): HasMany
+    {
+        return $this->hasMany(Plan::class);
+    }
+
+    public function services(): HasMany
+    {
+        return $this->hasMany(Service::class);
+    }
+
+    public function branches(): HasMany
+    {
+        return $this->hasMany(Branch::class);
+    }
+
+    public function zones(): HasMany
+    {
+        return $this->hasMany(Zone::class);
+    }
 }
