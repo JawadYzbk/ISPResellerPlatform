@@ -12,6 +12,7 @@ final class Tenancy
     public function set(Tenant|int $tenant): void
     {
         $this->tenantId = $tenant instanceof Tenant ? $tenant->getKey() : $tenant;
+        setPermissionsTeamId($this->tenantId);
     }
 
     public function id(): ?int
@@ -27,6 +28,7 @@ final class Tenancy
     public function clear(): void
     {
         $this->tenantId = null;
+        setPermissionsTeamId(null);
     }
 
     public function run(Tenant|int $tenant, callable $callback): mixed
@@ -38,6 +40,7 @@ final class Tenancy
             return $callback();
         } finally {
             $this->tenantId = $previous;
+            setPermissionsTeamId($previous);
         }
     }
 }
