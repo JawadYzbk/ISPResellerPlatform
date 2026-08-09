@@ -1,31 +1,82 @@
-# ISP Manager — Planning Repository
+# ISP Manager
 
-This repository holds the **build handoff pack** for the ISP/reseller management platform
-(Laravel 13 + Inertia v3 + React 19 + Tailwind 4, on PostgreSQL 17 + Redis).
+ISP Manager is the operational backbone for small internet providers and resellers: subscriber CRM, service lifecycle, billing, field collection, support and network enforcement in one tenant-aware platform.
 
-## Where to start
+The build handoff in [`plan1/`](plan1/00-START-HERE.md) remains the product source of truth. The application is being delivered as vertical slices from that plan, with finance and router side effects isolated behind explicit boundaries.
 
-👉 **[`plan1/00-START-HERE.md`](plan1/00-START-HERE.md)** — read this first. It lists the reading
-order, the baked-in assumptions, the guardrails, and the decision log.
+## Current checkpoint
 
-The pack (`plan1/`) is the **single source of truth**. It was merged from two source plans — a
-build-handoff pack and a research-backed architecture brief — into one consolidated set of files:
+The first slice is live:
 
-| File | What it is |
+- Laravel 13 + Inertia 3 + React 19 + TypeScript + Tailwind 4
+- Shared-schema tenant context with global model scoping
+- Tenant, branch, zone, customer, plan and service foundations
+- Encrypted service credentials and hidden serialization
+- Staff login, dashboard, customer index and customer detail screens
+- Demo tenant seed with customers, plans and services
+- Money value object backed by `brick/money`
+- Pest tests for money arithmetic, authentication and tenant isolation
+- Docker Compose services for PHP, PostgreSQL 17, Redis 7, Mailpit and MinIO
+
+## Local setup
+
+Requirements: PHP 8.3+, Composer 2, Node 22+, npm 10+, and SQLite for the fastest local loop. Docker is recommended when you want the production-shaped PostgreSQL/Redis topology.
+
+```powershell
+Copy-Item .env.example .env
+composer install
+php artisan key:generate
+php artisan migrate --seed
+npm ci
+npm run dev
+```
+
+In another terminal:
+
+```powershell
+php artisan serve
+```
+
+Open [http://localhost:8000](http://localhost:8000). Demo account: `admin@example.com` / `password`.
+
+### Docker
+
+```powershell
+docker compose up --build
+```
+
+The app is at [http://localhost:8000](http://localhost:8000), Mailpit at [http://localhost:8025](http://localhost:8025), and the MinIO console at [http://localhost:9001](http://localhost:9001).
+
+## Quality gates
+
+```powershell
+vendor/bin/pint --test
+vendor/bin/phpstan analyse --no-progress
+php artisan test
+npm run typecheck
+npm run build
+```
+
+## Architecture
+
+The code is a modular monolith. Controllers validate and delegate to one Action. Actions own domain transactions. Tenant-owned models use `BelongsToTenant`, which adds a global scope and stamps writes from the explicit `Tenancy` context. External work will be added through an outbox and queue; routers are never called synchronously from a web request.
+
+Money is integer minor units plus ISO currency. Payments and journal entries will be append-only. Service commercial state and network state are separate fields so a paid customer can remain visibly drifted while a retry is pending.
+
+Secrets belong in encrypted casts, hidden model attributes and redacted logs. Any future reveal endpoint must be separately authorized, re-authenticated and audited.
+
+## Repository map
+
+| Path | Purpose |
 |---|---|
-| `plan1/00-START-HERE.md` | Assumptions, guardrails, decision log, ADR list, agent handoff prompt |
-| `plan1/01-product-spec.md` | Personas, capability model, modules, provisioning modes, user stories, business rules |
-| `plan1/02-domain-model.md` | Full schema, double-entry journal, state machines, invariants |
-| `plan1/03-architecture.md` | Versions, packages, modular-monolith boundaries, network control layer, outbox |
-| `plan1/04-api-spec.md` | Versioned REST `/api/v1` contract for mobile + portal |
-| `plan1/05-frontend-spec.md` | Inertia/React setup, page inventory, component library, UX rules |
-| `plan1/06-build-plan.md` | Phased ticket queue (ISP-001…) with acceptance criteria |
-| `plan1/07-conventions-and-testing.md` | Code standards, tests, Definition of Done, CI |
-| `plan1/08-suppliers-credentials-wallets.md` | Suppliers, upstream-credential inventory, price books, settlement — **P1, post-v1** |
-| `plan1/09-security-and-operations.md` | Threat model, OWASP mapping, deployment, observability, DR, runbooks |
+| `app/Actions` | Thin orchestration units with one public `handle()` method |
+| `app/Models` | Tenant-aware persistence models and relationships |
+| `app/Support` | Tenancy and money primitives |
+| `resources/js` | Inertia pages, layouts and domain UI components |
+| `database/migrations` | Explicit schema changes with tenant indexes |
+| `docs/` | ADRs, glossary, threat model and implementation status |
+| `plan1/` | Product and architecture handoff pack |
 
-## Provenance
+## Delivery discipline
 
-`archive/plan-2-research-brief.SOURCE.md` is the original research brief, kept for reference.
-Its content has been folded into the pack above; where the two sources disagreed, the resolved
-decisions are recorded in `plan1/00-START-HERE.md` §5 (marked `(merge)`).
+Commits are intentionally small and Conventional Commit formatted. Ticket-sized work should update the relevant handoff or ADR in the same commit when a decision changes. Do not add a paid dependency, alter ledger semantics or expose a router control plane without an explicit product decision.
