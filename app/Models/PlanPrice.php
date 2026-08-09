@@ -4,9 +4,9 @@ namespace App\Models;
 
 use App\Models\Concerns\Auditable;
 use App\Models\Concerns\BelongsToTenant;
+use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Support\Carbon;
 
 class PlanPrice extends Model
 {
@@ -29,7 +29,7 @@ class PlanPrice extends Model
         return $this->belongsTo(Plan::class);
     }
 
-    public function isEffectiveAt(Carbon $at): bool
+    public function isEffectiveAt(CarbonInterface $at): bool
     {
         return $this->effective_from->lessThanOrEqualTo($at)
             && ($this->effective_to === null || $this->effective_to->greaterThan($at));

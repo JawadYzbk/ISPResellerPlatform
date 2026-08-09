@@ -4,12 +4,12 @@ namespace App\Models;
 
 use App\Models\Concerns\Auditable;
 use App\Models\Concerns\BelongsToTenant;
+use Carbon\CarbonInterface;
 use Database\Factories\PlanFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 
 class Plan extends Model
@@ -46,7 +46,7 @@ class Plan extends Model
         return $this->hasMany(PlanPrice::class);
     }
 
-    public function priceAt(?Carbon $at = null): ?PlanPrice
+    public function priceAt(?CarbonInterface $at = null): ?PlanPrice
     {
         $at ??= now();
 
