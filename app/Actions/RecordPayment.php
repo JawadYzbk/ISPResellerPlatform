@@ -21,7 +21,7 @@ use Illuminate\Support\Facades\DB;
 
 final readonly class RecordPayment implements Action
 {
-    public function __construct(private DocumentNumberGenerator $numbers, private PostJournalEntry $journal) {}
+    public function __construct(private DocumentNumberGenerator $numbers, private PostJournalEntry $journal, private RenewService $renewService) {}
 
     public function handle(Customer $customer, int $amount, string $currency, string $method, string $idempotencyKey, ?Invoice $invoice = null, ?User $actor = null, ?CashShift $cashShift = null): Payment
     {
@@ -31,7 +31,7 @@ final readonly class RecordPayment implements Action
         if ($customer->balance_currency !== $currency) {
             throw new DomainException('Payment currency must match the customer ledger currency until an FX snapshot is provided.');
         }
-        if ($invoice !== null && ($invoice->customer_id !== $customer->id || $invoice->status !== InvoiceStatus::Issued || $invoice->currency !== $currency)) {
+        if ($invoice !== null && ($invoice->tenant_id !== $customer->tenant_id || $invoice->customer_id !== $customer->id || $invoice->status !== InvoiceStatus::Issued || $invoice->currency !== $currency)) {
             throw new DomainException('The invoice is not payable by this customer in this currency.');
         }
         if ($cashShift !== null && $cashShift->status !== CashShiftStatus::Open) {
@@ -73,6 +73,15 @@ final readonly class RecordPayment implements Action
                     sourceType: Payment::class,
                     sourceId: (string) $payment->id,
                 );
+
+                if ($invoice !== null) {
+                    $invoice->loadMissing('lines.service');
+                    foreach ($invoice->lines as $line) {
+                        if ($line->service !== null) {
+                            $this->renewService->handle($line->service, $actor);
+                        }
+                    }
+                }
 
                 return $payment->load('allocations');
             });
