@@ -1,0 +1,34 @@
+<?php
+
+namespace App\Models;
+
+use App\Models\Concerns\BelongsToTenant;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
+class TicketEvent extends Model
+{
+    use BelongsToTenant;
+
+    protected $fillable = ['tenant_id', 'ticket_id', 'actor_id', 'event_type', 'from_status', 'to_status', 'metadata'];
+
+    protected function casts(): array
+    {
+        return ['metadata' => 'array'];
+    }
+
+    public function tenant(): BelongsTo
+    {
+        return $this->belongsTo(Tenant::class);
+    }
+
+    public function ticket(): BelongsTo
+    {
+        return $this->belongsTo(Ticket::class);
+    }
+
+    public function actor(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'actor_id');
+    }
+}
