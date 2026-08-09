@@ -29,7 +29,7 @@ final class ApiTokenController extends Controller
             abort(423, 'A valid two-factor code is required to issue an API token.');
         }
 
-        $token = $user->createToken($validated['device_name']);
+        $token = $user->createToken($validated['device_name'], ['api']);
 
         return response()->json(['token' => $token->plainTextToken, 'type' => 'Bearer']);
     }
