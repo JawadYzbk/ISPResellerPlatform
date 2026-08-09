@@ -5,6 +5,7 @@ namespace App\Support;
 use App\Models\Branch;
 use App\Models\Currency;
 use App\Models\DocumentSequence;
+use App\Models\LedgerAccount;
 use App\Models\Tenant;
 use App\Models\Zone;
 
@@ -38,6 +39,15 @@ final class TenantProvisioner
                 ['code' => $tenant->collection_currency],
                 ['name' => $tenant->collection_currency, 'decimal_digits' => 2, 'is_collection' => true, 'is_active' => true],
             );
+
+            foreach ([
+                ['code' => '1100', 'name' => 'Accounts Receivable', 'category' => 'asset', 'normal_balance' => 'debit'],
+                ['code' => '1000', 'name' => 'Cash', 'category' => 'asset', 'normal_balance' => 'debit'],
+                ['code' => '4000', 'name' => 'Service Revenue', 'category' => 'revenue', 'normal_balance' => 'credit'],
+                ['code' => '4900', 'name' => 'FX Gain/Loss', 'category' => 'income', 'normal_balance' => 'credit'],
+            ] as $account) {
+                LedgerAccount::firstOrCreate(['code' => $account['code']], [...$account, 'is_system' => true]);
+            }
         });
     }
 }
