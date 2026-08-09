@@ -13,11 +13,11 @@ class Message extends Model
 {
     use Auditable, BelongsToTenant;
 
-    protected $fillable = ['tenant_id', 'public_id', 'customer_id', 'channel', 'recipient', 'template_key', 'locale', 'subject', 'body', 'status', 'provider', 'provider_message_id', 'idempotency_key', 'sent_at', 'delivered_at', 'failed_at', 'failure_reason', 'metadata'];
+    protected $fillable = ['tenant_id', 'public_id', 'customer_id', 'channel', 'recipient', 'template_key', 'locale', 'subject', 'body', 'status', 'delivery_attempts', 'provider', 'provider_message_id', 'idempotency_key', 'sent_at', 'delivered_at', 'failed_at', 'failure_reason', 'metadata'];
 
     protected function casts(): array
     {
-        return ['status' => MessageStatus::class, 'sent_at' => 'datetime', 'delivered_at' => 'datetime', 'failed_at' => 'datetime', 'metadata' => 'array'];
+        return ['status' => MessageStatus::class, 'delivery_attempts' => 'integer', 'sent_at' => 'datetime', 'delivered_at' => 'datetime', 'failed_at' => 'datetime', 'metadata' => 'array'];
     }
 
     protected static function booted(): void
