@@ -1,0 +1,59 @@
+<?php
+
+namespace App\Domain\Services;
+
+use App\Enums\NetworkState;
+use App\Enums\ServiceStatus;
+use App\Models\Service;
+use App\Models\ServiceEvent;
+use App\Models\User;
+use DomainException;
+use Illuminate\Support\Facades\DB;
+
+final class ServiceStateMachine
+{
+    /** @var array<string, list<string>> */
+    private const TRANSITIONS = [
+        'pending' => ['active', 'suspended', 'terminated'],
+        'active' => ['suspended', 'terminated'],
+        'suspended' => ['active', 'terminated'],
+        'terminated' => [],
+    ];
+
+    /** @param array<string, mixed> $metadata */
+    public function transition(Service $service, ServiceStatus $target, ?User $actor = null, array $metadata = [], bool $explicitReactivation = false): Service
+    {
+        return DB::transaction(function () use ($service, $target, $actor, $metadata, $explicitReactivation): Service {
+            $locked = Service::query()->lockForUpdate()->findOrFail($service->id);
+            $from = $locked->status;
+
+            if ($from === $target) {
+                return $locked;
+            }
+
+            $allowed = self::TRANSITIONS[$from->value] ?? [];
+            if (! in_array($target->value, $allowed, true) && ! ($from === ServiceStatus::Terminated && $target === ServiceStatus::Active && $explicitReactivation)) {
+                throw new DomainException("Service transition {$from->value} -> {$target->value} is not allowed.");
+            }
+
+            $locked->forceFill([
+                'status' => $target,
+                'network_state' => NetworkState::PendingSync,
+                'desired_state_version' => $locked->desired_state_version + 1,
+                'activated_at' => $target === ServiceStatus::Active ? ($locked->activated_at ?? now()) : $locked->activated_at,
+                'suspension_reason' => $target === ServiceStatus::Suspended ? ($metadata['reason'] ?? $locked->suspension_reason) : null,
+            ])->save();
+
+            ServiceEvent::create([
+                'service_id' => $locked->id,
+                'actor_id' => $actor?->id,
+                'event_type' => $from === ServiceStatus::Terminated ? 'reactivated' : 'status_changed',
+                'from_status' => $from->value,
+                'to_status' => $target->value,
+                'metadata' => $metadata,
+            ]);
+
+            return $locked->refresh();
+        });
+    }
+}
