@@ -9,14 +9,15 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 
 #[Fillable(['tenant_id', 'name', 'email', 'password', 'role', 'locale', 'timezone'])]
-#[Hidden(['password', 'remember_token'])]
+#[Hidden(['password', 'remember_token', 'two_factor_secret', 'two_factor_recovery_codes'])]
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, HasRoles, Notifiable;
+    use HasApiTokens, HasFactory, HasRoles, Notifiable;
 
     protected string $guard_name = 'web';
 
@@ -26,7 +27,15 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'last_authenticated_at' => 'datetime',
+            'two_factor_recovery_codes' => 'encrypted:array',
+            'two_factor_secret' => 'encrypted',
+            'two_factor_confirmed_at' => 'datetime',
         ];
+    }
+
+    public function requiresTwoFactor(): bool
+    {
+        return in_array($this->role, ['platform_operator', 'tenant_owner', 'operations_manager', 'billing_manager', 'network_administrator', 'reseller_owner'], true);
     }
 
     public function tenant(): BelongsTo
