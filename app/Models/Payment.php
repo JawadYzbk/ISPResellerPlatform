@@ -14,7 +14,7 @@ class Payment extends Model
 {
     use Auditable, BelongsToTenant;
 
-    protected $fillable = ['tenant_id', 'public_id', 'number', 'customer_id', 'invoice_id', 'status', 'amount', 'currency', 'method', 'idempotency_key', 'received_at', 'reversed_at', 'reversal_of_id', 'metadata', 'actor_id'];
+    protected $fillable = ['tenant_id', 'public_id', 'number', 'customer_id', 'invoice_id', 'cash_shift_id', 'status', 'amount', 'currency', 'method', 'idempotency_key', 'received_at', 'reversed_at', 'reversal_of_id', 'metadata', 'actor_id'];
 
     protected function casts(): array
     {
@@ -41,6 +41,11 @@ class Payment extends Model
     public function invoice(): BelongsTo
     {
         return $this->belongsTo(Invoice::class);
+    }
+
+    public function cashShift(): BelongsTo
+    {
+        return $this->belongsTo(CashShift::class);
     }
 
     public function allocations(): HasMany

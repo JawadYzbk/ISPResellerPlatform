@@ -5,8 +5,10 @@ namespace App\Actions;
 use App\Contracts\Action;
 use App\Domain\Ledger\JournalLineInput;
 use App\Domain\Ledger\PostJournalEntry;
+use App\Enums\CashShiftStatus;
 use App\Enums\InvoiceStatus;
 use App\Enums\PaymentStatus;
+use App\Models\CashShift;
 use App\Models\Customer;
 use App\Models\Invoice;
 use App\Models\LedgerAccount;
@@ -21,7 +23,7 @@ final readonly class RecordPayment implements Action
 {
     public function __construct(private DocumentNumberGenerator $numbers, private PostJournalEntry $journal) {}
 
-    public function handle(Customer $customer, int $amount, string $currency, string $method, string $idempotencyKey, ?Invoice $invoice = null, ?User $actor = null): Payment
+    public function handle(Customer $customer, int $amount, string $currency, string $method, string $idempotencyKey, ?Invoice $invoice = null, ?User $actor = null, ?CashShift $cashShift = null): Payment
     {
         if ($amount < 1) {
             throw new DomainException('Payment amount must be positive.');
@@ -32,6 +34,9 @@ final readonly class RecordPayment implements Action
         if ($invoice !== null && ($invoice->customer_id !== $customer->id || $invoice->status !== InvoiceStatus::Issued || $invoice->currency !== $currency)) {
             throw new DomainException('The invoice is not payable by this customer in this currency.');
         }
+        if ($cashShift !== null && $cashShift->status !== CashShiftStatus::Open) {
+            throw new DomainException('Payments cannot be recorded to a closed cash shift.');
+        }
 
         $existing = Payment::query()->where('idempotency_key', $idempotencyKey)->first();
         if ($existing instanceof Payment) {
@@ -39,13 +44,14 @@ final readonly class RecordPayment implements Action
         }
 
         try {
-            return DB::transaction(function () use ($customer, $amount, $currency, $method, $idempotencyKey, $invoice, $actor): Payment {
+            return DB::transaction(function () use ($customer, $amount, $currency, $method, $idempotencyKey, $invoice, $actor, $cashShift): Payment {
                 $cash = LedgerAccount::query()->where('code', '1000')->firstOrFail();
                 $receivable = LedgerAccount::query()->where('code', '1100')->firstOrFail();
                 $payment = Payment::create([
                     'number' => $this->numbers->next('receipt', 'RCT'),
                     'customer_id' => $customer->id,
                     'invoice_id' => $invoice?->id,
+                    'cash_shift_id' => $cashShift?->id,
                     'status' => PaymentStatus::Posted,
                     'amount' => $amount,
                     'currency' => $currency,
