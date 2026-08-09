@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\LogoutController;
+use App\Http\Controllers\Auth\ReauthenticateController;
 use App\Http\Controllers\Auth\TwoFactorController;
 use App\Http\Controllers\Web\CustomerController;
 use App\Http\Controllers\Web\DashboardController;
@@ -17,9 +18,11 @@ Route::middleware('guest')->group(function (): void {
 Route::middleware(['auth', 'tenant'])->group(function (): void {
     Route::post('/logout', LogoutController::class)->name('logout');
     Route::get('/two-factor/setup', [TwoFactorController::class, 'setup'])->name('two-factor.setup');
-    Route::post('/two-factor/setup', [TwoFactorController::class, 'confirm'])->name('two-factor.setup.confirm');
+    Route::post('/two-factor/setup', [TwoFactorController::class, 'confirm'])->middleware('recent-auth')->name('two-factor.setup.confirm');
     Route::get('/two-factor/challenge', [TwoFactorController::class, 'challenge'])->name('two-factor.challenge');
     Route::post('/two-factor/challenge', [TwoFactorController::class, 'verify'])->name('two-factor.challenge.verify');
+    Route::get('/security/reauthenticate', [ReauthenticateController::class, 'create'])->name('security.reauthenticate');
+    Route::post('/security/reauthenticate', [ReauthenticateController::class, 'store'])->name('security.reauthenticate.store');
 });
 
 Route::middleware(['auth', 'tenant', '2fa'])->group(function (): void {

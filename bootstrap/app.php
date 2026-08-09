@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\CaptureRequestContext;
+use App\Http\Middleware\EnsureRecentAuthentication;
 use App\Http\Middleware\EnsureTwoFactorVerified;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\IdentifyTenant;
@@ -29,6 +30,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'tenant' => IdentifyTenant::class,
             '2fa' => EnsureTwoFactorVerified::class,
+            'recent-auth' => EnsureRecentAuthentication::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
