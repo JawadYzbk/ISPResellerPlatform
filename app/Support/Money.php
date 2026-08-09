@@ -2,6 +2,7 @@
 
 namespace App\Support;
 
+use Brick\Money\AllocationMode;
 use Brick\Money\Money as BrickMoney;
 use InvalidArgumentException;
 
@@ -44,7 +45,7 @@ final readonly class Money
 
         return array_map(
             fn (BrickMoney $part): self => new self($part->getMinorAmount()->toInt(), $this->currency),
-            $this->brick()->allocate(...$ratios),
+            $this->brick()->allocate($ratios, AllocationMode::FloorToLargestRemainder),
         );
     }
 
