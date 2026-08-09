@@ -82,6 +82,14 @@
         font-size: 0.875rem;
         outline: none;
     }
+
+    .field-label {
+        @apply mb-2 block text-sm font-semibold;
+    }
+
+    .field-error {
+        @apply mt-1.5 text-xs text-coral;
+    }
     .field::placeholder {
         color: #9aa7a3;
     }

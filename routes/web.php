@@ -28,5 +28,7 @@ Route::middleware(['auth', 'tenant'])->group(function (): void {
 Route::middleware(['auth', 'tenant', '2fa'])->group(function (): void {
     Route::get('/dashboard', DashboardController::class)->name('dashboard');
     Route::get('/customers', [CustomerController::class, 'index'])->name('customers.index');
+    Route::get('/customers/create', [CustomerController::class, 'create'])->name('customers.create');
+    Route::post('/customers', [CustomerController::class, 'store'])->name('customers.store');
     Route::get('/customers/{customer:public_id}', [CustomerController::class, 'show'])->name('customers.show');
 });

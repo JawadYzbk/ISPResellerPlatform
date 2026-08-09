@@ -30,5 +30,5 @@ it('provisions the operational defaults for a new tenant', function (): void {
         ->and(Zone::where('code', 'DEFAULT')->exists())->toBeTrue()
         ->and(Currency::where('code', 'USD')->exists())->toBeTrue()
         ->and(Currency::where('code', 'LBP')->exists())->toBeTrue()
-        ->and(DocumentSequence::count())->toBe(4);
+        ->and(DocumentSequence::count())->toBe(5);
 });
