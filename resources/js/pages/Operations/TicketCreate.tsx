@@ -49,13 +49,23 @@ export default function TicketCreate({ customer, services }: Props) {
                 <form onSubmit={submit} className="card mt-6 space-y-6 p-6">
                     <label>
                         <span className="field-label">Subject</span>
-                        <input className="field" value={form.data.subject} onChange={(event) => form.setData('subject', event.target.value)} maxLength={160} required />
+                        <input
+                            className="field"
+                            value={form.data.subject}
+                            onChange={(event) => form.setData('subject', event.target.value)}
+                            maxLength={160}
+                            required
+                        />
                         {form.errors.subject && <p className="field-error">{form.errors.subject}</p>}
                     </label>
                     <div className="grid gap-5 sm:grid-cols-3">
                         <label>
                             <span className="field-label">Category</span>
-                            <select className="field" value={form.data.category} onChange={(event) => form.setData('category', event.target.value)}>
+                            <select
+                                className="field"
+                                value={form.data.category}
+                                onChange={(event) => form.setData('category', event.target.value)}
+                            >
                                 <option value="connection">Connection</option>
                                 <option value="billing">Billing</option>
                                 <option value="installation">Installation</option>
@@ -65,7 +75,11 @@ export default function TicketCreate({ customer, services }: Props) {
                         </label>
                         <label>
                             <span className="field-label">Priority</span>
-                            <select className="field" value={form.data.priority} onChange={(event) => form.setData('priority', event.target.value)}>
+                            <select
+                                className="field"
+                                value={form.data.priority}
+                                onChange={(event) => form.setData('priority', event.target.value)}
+                            >
                                 <option value="critical">Critical</option>
                                 <option value="high">High</option>
                                 <option value="normal">Normal</option>
@@ -74,7 +88,11 @@ export default function TicketCreate({ customer, services }: Props) {
                         </label>
                         <label>
                             <span className="field-label">Service</span>
-                            <select className="field" value={form.data.service_public_id} onChange={(event) => form.setData('service_public_id', event.target.value)}>
+                            <select
+                                className="field"
+                                value={form.data.service_public_id}
+                                onChange={(event) => form.setData('service_public_id', event.target.value)}
+                            >
                                 <option value="">Customer-level ticket</option>
                                 {services.map((service) => (
                                     <option key={service.public_id} value={service.public_id}>
@@ -86,11 +104,19 @@ export default function TicketCreate({ customer, services }: Props) {
                     </div>
                     <label>
                         <span className="field-label">Description</span>
-                        <textarea className="field min-h-40" value={form.data.description} onChange={(event) => form.setData('description', event.target.value)} maxLength={10000} required />
+                        <textarea
+                            className="field min-h-40"
+                            value={form.data.description}
+                            onChange={(event) => form.setData('description', event.target.value)}
+                            maxLength={10000}
+                            required
+                        />
                         {form.errors.description && <p className="field-error">{form.errors.description}</p>}
                     </label>
                     <div className="flex justify-end gap-3 border-t border-line pt-5">
-                        <Link href={`/customers/${customer.public_id}`} className="button-secondary">Cancel</Link>
+                        <Link href={`/customers/${customer.public_id}`} className="button-secondary">
+                            Cancel
+                        </Link>
                         <button className="button-primary" disabled={form.processing}>
                             <Save size={16} /> <TicketIcon size={16} /> Open ticket
                         </button>

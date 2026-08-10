@@ -63,7 +63,19 @@ type Props = PageProps & {
     movements: InventoryMovement[];
 };
 
-export default function InventoryPage({ units, filters, canAssign = false, canReceive = false, canTransfer = false, assignableServices = [], bulkBalances, bulkItems, bulkWarehouses, transferWarehouses, movements }: Props) {
+export default function InventoryPage({
+    units,
+    filters,
+    canAssign = false,
+    canReceive = false,
+    canTransfer = false,
+    assignableServices = [],
+    bulkBalances,
+    bulkItems,
+    bulkWarehouses,
+    transferWarehouses,
+    movements,
+}: Props) {
     const [search, setSearch] = useState(filters.search ?? '');
     const [status, setStatus] = useState(filters.status ?? '');
     const [movementType, setMovementType] = useState(filters.movement_type ?? '');
@@ -140,35 +152,166 @@ export default function InventoryPage({ units, filters, canAssign = false, canRe
 
             <section className="card mt-6 p-5">
                 <div className="flex items-center justify-between gap-4">
-                    <div><p className="section-title">Bulk stock</p><p className="mt-1 text-sm text-muted">Cable, connectors, and other quantity-tracked materials by warehouse.</p></div>
+                    <div>
+                        <p className="section-title">Bulk stock</p>
+                        <p className="mt-1 text-sm text-muted">
+                            Cable, connectors, and other quantity-tracked materials by warehouse.
+                        </p>
+                    </div>
                     <Package size={18} className="text-brand" />
                 </div>
                 <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                    {bulkBalances.map((balance) => <div key={`${balance.inventory_item_id}-${balance.warehouse_id}`} className="rounded-lg border border-line px-4 py-3 text-sm"><p className="font-semibold">{balance.name ?? balance.sku}</p><p className="mt-1 text-xs text-muted">{balance.sku} · {balance.warehouse}</p><p className="mt-2 text-lg font-semibold text-brand">{balance.quantity}</p></div>)}
-                    {bulkBalances.length === 0 && <p className="text-sm text-muted">No bulk stock balances have been recorded.</p>}
+                    {bulkBalances.map((balance) => (
+                        <div
+                            key={`${balance.inventory_item_id}-${balance.warehouse_id}`}
+                            className="rounded-lg border border-line px-4 py-3 text-sm"
+                        >
+                            <p className="font-semibold">{balance.name ?? balance.sku}</p>
+                            <p className="mt-1 text-xs text-muted">
+                                {balance.sku} · {balance.warehouse}
+                            </p>
+                            <p className="mt-2 text-lg font-semibold text-brand">{balance.quantity}</p>
+                        </div>
+                    ))}
+                    {bulkBalances.length === 0 && (
+                        <p className="text-sm text-muted">No bulk stock balances have been recorded.</p>
+                    )}
                 </div>
                 {canReceive && bulkItems.length > 0 && bulkWarehouses.length > 0 && (
-                    <form onSubmit={submitReceive} className="mt-5 grid gap-4 border-t border-line pt-5 sm:grid-cols-2 lg:grid-cols-4 lg:items-end">
-                        <label><span className="field-label">Material</span><select className="field" value={receiveForm.data.inventory_item_id} onChange={(event) => receiveForm.setData('inventory_item_id', event.target.value)}><option value="">Select item</option>{bulkItems.map((item) => <option key={item.id} value={item.id}>{item.sku} · {item.name}</option>)}</select></label>
-                        <label><span className="field-label">Warehouse</span><select className="field" value={receiveForm.data.warehouse_id} onChange={(event) => receiveForm.setData('warehouse_id', event.target.value)}><option value="">Select warehouse</option>{bulkWarehouses.map((warehouse) => <option key={warehouse.id} value={warehouse.id}>{warehouse.code} · {warehouse.name}</option>)}</select></label>
-                        <label><span className="field-label">Quantity received</span><input className="field" inputMode="decimal" value={receiveForm.data.quantity} onChange={(event) => receiveForm.setData('quantity', event.target.value)} placeholder="0.000" />{receiveForm.errors.quantity && <p className="field-error">{receiveForm.errors.quantity}</p>}</label>
-                        <button type="submit" className="button-secondary" disabled={receiveForm.processing}>Receive stock</button>
-                        <label className="sm:col-span-2 lg:col-span-4"><span className="field-label">Note</span><input className="field" value={receiveForm.data.note} onChange={(event) => receiveForm.setData('note', event.target.value)} placeholder="Optional receiving note" /></label>
+                    <form
+                        onSubmit={submitReceive}
+                        className="mt-5 grid gap-4 border-t border-line pt-5 sm:grid-cols-2 lg:grid-cols-4 lg:items-end"
+                    >
+                        <label>
+                            <span className="field-label">Material</span>
+                            <select
+                                className="field"
+                                value={receiveForm.data.inventory_item_id}
+                                onChange={(event) => receiveForm.setData('inventory_item_id', event.target.value)}
+                            >
+                                <option value="">Select item</option>
+                                {bulkItems.map((item) => (
+                                    <option key={item.id} value={item.id}>
+                                        {item.sku} · {item.name}
+                                    </option>
+                                ))}
+                            </select>
+                        </label>
+                        <label>
+                            <span className="field-label">Warehouse</span>
+                            <select
+                                className="field"
+                                value={receiveForm.data.warehouse_id}
+                                onChange={(event) => receiveForm.setData('warehouse_id', event.target.value)}
+                            >
+                                <option value="">Select warehouse</option>
+                                {bulkWarehouses.map((warehouse) => (
+                                    <option key={warehouse.id} value={warehouse.id}>
+                                        {warehouse.code} · {warehouse.name}
+                                    </option>
+                                ))}
+                            </select>
+                        </label>
+                        <label>
+                            <span className="field-label">Quantity received</span>
+                            <input
+                                className="field"
+                                inputMode="decimal"
+                                value={receiveForm.data.quantity}
+                                onChange={(event) => receiveForm.setData('quantity', event.target.value)}
+                                placeholder="0.000"
+                            />
+                            {receiveForm.errors.quantity && (
+                                <p className="field-error">{receiveForm.errors.quantity}</p>
+                            )}
+                        </label>
+                        <button type="submit" className="button-secondary" disabled={receiveForm.processing}>
+                            Receive stock
+                        </button>
+                        <label className="sm:col-span-2 lg:col-span-4">
+                            <span className="field-label">Note</span>
+                            <input
+                                className="field"
+                                value={receiveForm.data.note}
+                                onChange={(event) => receiveForm.setData('note', event.target.value)}
+                                placeholder="Optional receiving note"
+                            />
+                        </label>
                     </form>
                 )}
             </section>
 
             <section className="card mt-6 overflow-hidden">
                 <div className="flex items-center justify-between gap-4 border-b border-line px-5 py-4">
-                    <div><p className="section-title">Movement audit</p><p className="mt-1 text-sm text-muted">The latest serialized and bulk stock events, including receiving and work-order consumption.</p></div>
-                    <label className="min-w-40"><span className="sr-only">Movement type</span><select className="field py-2 text-xs" value={movementType} onChange={(event) => setMovementType(event.target.value)}><option value="">All movement types</option><option value="receive">Receive</option><option value="consume">Consume</option><option value="assign">Assign</option><option value="return">Return</option><option value="transfer">Transfer</option></select></label>
+                    <div>
+                        <p className="section-title">Movement audit</p>
+                        <p className="mt-1 text-sm text-muted">
+                            The latest serialized and bulk stock events, including receiving and work-order consumption.
+                        </p>
+                    </div>
+                    <label className="min-w-40">
+                        <span className="sr-only">Movement type</span>
+                        <select
+                            className="field py-2 text-xs"
+                            value={movementType}
+                            onChange={(event) => setMovementType(event.target.value)}
+                        >
+                            <option value="">All movement types</option>
+                            <option value="receive">Receive</option>
+                            <option value="consume">Consume</option>
+                            <option value="assign">Assign</option>
+                            <option value="return">Return</option>
+                            <option value="transfer">Transfer</option>
+                        </select>
+                    </label>
                 </div>
                 <div className="overflow-x-auto">
                     <table className="w-full min-w-[900px] text-start">
-                        <thead><tr className="border-b border-line bg-sand/50 text-xs font-semibold uppercase tracking-wider text-muted"><th className="px-5 py-3.5 text-start">When</th><th className="px-5 py-3.5 text-start">Movement</th><th className="px-5 py-3.5 text-start">Item</th><th className="px-5 py-3.5 text-start">Warehouse</th><th className="px-5 py-3.5 text-end">Quantity</th><th className="px-5 py-3.5 text-start">Reference</th><th className="px-5 py-3.5 text-start">Actor</th></tr></thead>
+                        <thead>
+                            <tr className="border-b border-line bg-sand/50 text-xs font-semibold uppercase tracking-wider text-muted">
+                                <th className="px-5 py-3.5 text-start">When</th>
+                                <th className="px-5 py-3.5 text-start">Movement</th>
+                                <th className="px-5 py-3.5 text-start">Item</th>
+                                <th className="px-5 py-3.5 text-start">Warehouse</th>
+                                <th className="px-5 py-3.5 text-end">Quantity</th>
+                                <th className="px-5 py-3.5 text-start">Reference</th>
+                                <th className="px-5 py-3.5 text-start">Actor</th>
+                            </tr>
+                        </thead>
                         <tbody className="divide-y divide-line">
-                            {movements.map((movement) => <tr key={movement.id}><td className="px-5 py-4 text-sm text-muted">{formatDate(movement.occurred_at)}</td><td className="px-5 py-4"><span className="inline-flex rounded-full bg-brand-soft px-2.5 py-1 text-xs font-semibold capitalize text-brand">{movement.movement_type}</span><p className="mt-1 text-xs text-muted">{movement.kind}</p></td><td className="px-5 py-4"><p className="text-sm font-semibold">{movement.item?.name ?? 'Unknown item'}</p><p className="mt-1 text-xs text-muted">{movement.serial_number ?? movement.item?.sku ?? '—'}</p></td><td className="px-5 py-4 text-sm text-muted">{movement.from_warehouse ? `${movement.from_warehouse} → ` : ''}{movement.to_warehouse ?? '—'}</td><td className="px-5 py-4 text-end text-sm font-semibold">{movement.quantity}</td><td className="px-5 py-4 text-sm text-muted">{movement.reference ?? movement.note ?? '—'}</td><td className="px-5 py-4 text-sm text-muted">{movement.actor ?? 'System'}</td></tr>)}
-                            {movements.length === 0 && <tr><td colSpan={7} className="px-5 py-12 text-center text-sm text-muted">No inventory movements match this filter.</td></tr>}
+                            {movements.map((movement) => (
+                                <tr key={movement.id}>
+                                    <td className="px-5 py-4 text-sm text-muted">{formatDate(movement.occurred_at)}</td>
+                                    <td className="px-5 py-4">
+                                        <span className="inline-flex rounded-full bg-brand-soft px-2.5 py-1 text-xs font-semibold capitalize text-brand">
+                                            {movement.movement_type}
+                                        </span>
+                                        <p className="mt-1 text-xs text-muted">{movement.kind}</p>
+                                    </td>
+                                    <td className="px-5 py-4">
+                                        <p className="text-sm font-semibold">{movement.item?.name ?? 'Unknown item'}</p>
+                                        <p className="mt-1 text-xs text-muted">
+                                            {movement.serial_number ?? movement.item?.sku ?? '—'}
+                                        </p>
+                                    </td>
+                                    <td className="px-5 py-4 text-sm text-muted">
+                                        {movement.from_warehouse ? `${movement.from_warehouse} → ` : ''}
+                                        {movement.to_warehouse ?? '—'}
+                                    </td>
+                                    <td className="px-5 py-4 text-end text-sm font-semibold">{movement.quantity}</td>
+                                    <td className="px-5 py-4 text-sm text-muted">
+                                        {movement.reference ?? movement.note ?? '—'}
+                                    </td>
+                                    <td className="px-5 py-4 text-sm text-muted">{movement.actor ?? 'System'}</td>
+                                </tr>
+                            ))}
+                            {movements.length === 0 && (
+                                <tr>
+                                    <td colSpan={7} className="px-5 py-12 text-center text-sm text-muted">
+                                        No inventory movements match this filter.
+                                    </td>
+                                </tr>
+                            )}
                         </tbody>
                     </table>
                 </div>
@@ -202,20 +345,29 @@ export default function InventoryPage({ units, filters, canAssign = false, canRe
                                         <p className="mt-1 text-xs text-muted">Unit #{unit.id}</p>
                                     </td>
                                     <td className="px-5 py-4">
-                                        <p className="text-sm font-semibold">{unit.item?.name ?? 'Unknown equipment'}</p>
+                                        <p className="text-sm font-semibold">
+                                            {unit.item?.name ?? 'Unknown equipment'}
+                                        </p>
                                         <p className="mt-1 text-xs text-muted">{unit.item?.sku ?? 'No SKU'}</p>
                                     </td>
                                     <td className="px-5 py-4 text-sm text-muted">
-                                        {unit.warehouse ? `${unit.warehouse.name} (${unit.warehouse.code})` : 'No warehouse'}
+                                        {unit.warehouse
+                                            ? `${unit.warehouse.name} (${unit.warehouse.code})`
+                                            : 'No warehouse'}
                                     </td>
                                     <td className="px-5 py-4">
                                         <StatusBadge status={unit.status} />
-                                        {unit.assigned_at && <p className="mt-1 text-xs text-muted">{formatDate(unit.assigned_at)}</p>}
+                                        {unit.assigned_at && (
+                                            <p className="mt-1 text-xs text-muted">{formatDate(unit.assigned_at)}</p>
+                                        )}
                                     </td>
                                     <td className="px-5 py-4">
                                         {unit.service ? (
                                             unit.service.customer_public_id ? (
-                                                <Link href={`/customers/${unit.service.customer_public_id}`} className="text-sm font-semibold hover:text-brand">
+                                                <Link
+                                                    href={`/customers/${unit.service.customer_public_id}`}
+                                                    className="text-sm font-semibold hover:text-brand"
+                                                >
                                                     {unit.service.username}
                                                 </Link>
                                             ) : (
@@ -224,7 +376,9 @@ export default function InventoryPage({ units, filters, canAssign = false, canRe
                                         ) : (
                                             <span className="text-sm text-muted">Unassigned</span>
                                         )}
-                                        {unit.service?.customer && <p className="mt-1 text-xs text-muted">{unit.service.customer}</p>}
+                                        {unit.service?.customer && (
+                                            <p className="mt-1 text-xs text-muted">{unit.service.customer}</p>
+                                        )}
                                     </td>
                                     <td className="px-5 py-4 text-end">
                                         {canAssign && unit.status === 'available' && assignableServices.length > 0 && (
@@ -255,15 +409,40 @@ export default function InventoryPage({ units, filters, canAssign = false, canRe
                                                 </button>
                                             </div>
                                         )}
-                                        {canTransfer && ['available', 'returned'].includes(unit.status) && transferWarehouses.length > 0 && (
-                                            <div className="mt-2 flex items-center justify-end gap-2">
-                                                <select className="field max-w-56 py-2 text-xs" value={selectedWarehouses[unit.id] ?? ''} onChange={(event) => setSelectedWarehouses((current) => ({ ...current, [unit.id]: event.target.value }))}>
-                                                    <option value="">Recover or transfer to</option>
-                                                    {transferWarehouses.filter((warehouse) => warehouse.code !== unit.warehouse?.code).map((warehouse) => <option key={warehouse.id} value={warehouse.id}>{warehouse.code} · {warehouse.name}</option>)}
-                                                </select>
-                                                <button type="button" className="text-sm font-semibold text-brand" onClick={() => transferUnit(unit)}>Transfer</button>
-                                            </div>
-                                        )}
+                                        {canTransfer &&
+                                            ['available', 'returned'].includes(unit.status) &&
+                                            transferWarehouses.length > 0 && (
+                                                <div className="mt-2 flex items-center justify-end gap-2">
+                                                    <select
+                                                        className="field max-w-56 py-2 text-xs"
+                                                        value={selectedWarehouses[unit.id] ?? ''}
+                                                        onChange={(event) =>
+                                                            setSelectedWarehouses((current) => ({
+                                                                ...current,
+                                                                [unit.id]: event.target.value,
+                                                            }))
+                                                        }
+                                                    >
+                                                        <option value="">Recover or transfer to</option>
+                                                        {transferWarehouses
+                                                            .filter(
+                                                                (warehouse) => warehouse.code !== unit.warehouse?.code,
+                                                            )
+                                                            .map((warehouse) => (
+                                                                <option key={warehouse.id} value={warehouse.id}>
+                                                                    {warehouse.code} · {warehouse.name}
+                                                                </option>
+                                                            ))}
+                                                    </select>
+                                                    <button
+                                                        type="button"
+                                                        className="text-sm font-semibold text-brand"
+                                                        onClick={() => transferUnit(unit)}
+                                                    >
+                                                        Transfer
+                                                    </button>
+                                                </div>
+                                            )}
                                     </td>
                                 </tr>
                             ))}
@@ -289,7 +468,13 @@ export default function InventoryPage({ units, filters, canAssign = false, canRe
                             if (!link.url) {
                                 return (
                                     <span key={index} className="grid size-8 place-items-center text-muted/40">
-                                        {isPrevious ? <ChevronLeft size={16} /> : isNext ? <ChevronRight size={16} /> : link.label}
+                                        {isPrevious ? (
+                                            <ChevronLeft size={16} />
+                                        ) : isNext ? (
+                                            <ChevronRight size={16} />
+                                        ) : (
+                                            link.label
+                                        )}
                                     </span>
                                 );
                             }
@@ -299,7 +484,13 @@ export default function InventoryPage({ units, filters, canAssign = false, canRe
                                     href={link.url}
                                     className={`grid size-8 place-items-center rounded-lg text-xs ${link.active ? 'bg-brand text-white' : 'text-muted hover:bg-sand'}`}
                                 >
-                                    {isPrevious ? <ChevronLeft size={16} /> : isNext ? <ChevronRight size={16} /> : link.label}
+                                    {isPrevious ? (
+                                        <ChevronLeft size={16} />
+                                    ) : isNext ? (
+                                        <ChevronRight size={16} />
+                                    ) : (
+                                        link.label
+                                    )}
                                 </Link>
                             );
                         })}

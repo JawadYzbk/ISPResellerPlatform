@@ -55,7 +55,9 @@ export default function SessionsPage({ sessions, filters, canDisconnect = false 
                 <div>
                     <p className="eyebrow">Network operations</p>
                     <h1 className="page-title">Live sessions</h1>
-                    <p className="page-subtitle">See who is online, where the session is anchored, and when the NAS last checked in.</p>
+                    <p className="page-subtitle">
+                        See who is online, where the session is anchored, and when the NAS last checked in.
+                    </p>
                 </div>
                 <Link href="/operations/network-commands" className="button-secondary">
                     Network command queue
@@ -104,7 +106,10 @@ export default function SessionsPage({ sessions, filters, canDisconnect = false 
                                 <tr key={`${session.session_id}-${session.username}`} className="hover:bg-sand/30">
                                     <td className="px-5 py-4">
                                         {session.customer ? (
-                                            <Link href={`/customers/${session.customer.public_id}`} className="font-semibold hover:text-brand">
+                                            <Link
+                                                href={`/customers/${session.customer.public_id}`}
+                                                className="font-semibold hover:text-brand"
+                                            >
                                                 {session.customer.name}
                                             </Link>
                                         ) : (
@@ -114,7 +119,10 @@ export default function SessionsPage({ sessions, filters, canDisconnect = false 
                                     </td>
                                     <td className="px-5 py-4">
                                         {session.service ? (
-                                            <Link href={`/services/${session.service.public_id}`} className="font-semibold hover:text-brand">
+                                            <Link
+                                                href={`/services/${session.service.public_id}`}
+                                                className="font-semibold hover:text-brand"
+                                            >
                                                 {session.username}
                                             </Link>
                                         ) : (
@@ -124,12 +132,20 @@ export default function SessionsPage({ sessions, filters, canDisconnect = false 
                                     </td>
                                     <td className="px-5 py-4 text-sm">
                                         <p className="font-semibold">{session.framed_ip ?? 'No IP reported'}</p>
-                                        <p className="mt-1 text-xs text-muted">{session.router ?? session.nasname ?? 'NAS unavailable'}</p>
-                                        <p className="mt-1 text-xs text-muted">Last seen {formatDate(session.last_seen_at)}</p>
+                                        <p className="mt-1 text-xs text-muted">
+                                            {session.router ?? session.nasname ?? 'NAS unavailable'}
+                                        </p>
+                                        <p className="mt-1 text-xs text-muted">
+                                            Last seen {formatDate(session.last_seen_at)}
+                                        </p>
                                     </td>
                                     <td className="px-5 py-4 text-sm">
-                                        <p className="font-semibold">{formatDuration(session.started_at, session.last_seen_at)}</p>
-                                        <p className="mt-1 text-xs text-muted">Started {formatDate(session.started_at)}</p>
+                                        <p className="font-semibold">
+                                            {formatDuration(session.started_at, session.last_seen_at)}
+                                        </p>
+                                        <p className="mt-1 text-xs text-muted">
+                                            Started {formatDate(session.started_at)}
+                                        </p>
                                     </td>
                                     <td className="px-5 py-4 text-sm text-muted">
                                         <p>↓ {formatBytes(session.input_octets)}</p>
@@ -141,8 +157,12 @@ export default function SessionsPage({ sessions, filters, canDisconnect = false 
                                                 type="button"
                                                 className="inline-flex items-center gap-1.5 text-sm font-semibold text-coral"
                                                 onClick={() =>
-                                                    window.confirm(`Disconnect ${session.username}'s current session?`) &&
-                                                    router.post(`/services/${session.service?.public_id}/disconnect-session`)
+                                                    window.confirm(
+                                                        `Disconnect ${session.username}'s current session?`,
+                                                    ) &&
+                                                    router.post(
+                                                        `/services/${session.service?.public_id}/disconnect-session`,
+                                                    )
                                                 }
                                             >
                                                 <WifiOff size={14} /> Disconnect
@@ -156,7 +176,9 @@ export default function SessionsPage({ sessions, filters, canDisconnect = false 
                                     <td colSpan={6} className="px-5 py-16 text-center">
                                         <Radio className="mx-auto text-muted" size={28} />
                                         <p className="mt-3 font-semibold">No active sessions match this search</p>
-                                        <p className="mt-1 text-sm text-muted">The page will update automatically as accounting records arrive.</p>
+                                        <p className="mt-1 text-sm text-muted">
+                                            The page will update automatically as accounting records arrive.
+                                        </p>
                                     </td>
                                 </tr>
                             )}
@@ -164,7 +186,9 @@ export default function SessionsPage({ sessions, filters, canDisconnect = false 
                     </table>
                 </div>
                 <div className="flex items-center justify-between border-t border-line px-5 py-4">
-                    <p className="text-xs text-muted">Page {sessions.current_page} of {sessions.last_page}</p>
+                    <p className="text-xs text-muted">
+                        Page {sessions.current_page} of {sessions.last_page}
+                    </p>
                     <div className="flex items-center gap-1">
                         {sessions.links.map((link, index) => {
                             const isPrevious = index === 0;
@@ -172,7 +196,13 @@ export default function SessionsPage({ sessions, filters, canDisconnect = false 
                             if (!link.url) {
                                 return (
                                     <span key={index} className="grid size-8 place-items-center text-muted/40">
-                                        {isPrevious ? <ChevronLeft size={16} /> : isNext ? <ChevronRight size={16} /> : link.label}
+                                        {isPrevious ? (
+                                            <ChevronLeft size={16} />
+                                        ) : isNext ? (
+                                            <ChevronRight size={16} />
+                                        ) : (
+                                            link.label
+                                        )}
                                     </span>
                                 );
                             }
@@ -183,7 +213,13 @@ export default function SessionsPage({ sessions, filters, canDisconnect = false 
                                     href={link.url}
                                     className={`grid size-8 place-items-center rounded-lg text-xs ${link.active ? 'bg-brand text-white' : 'text-muted hover:bg-sand'}`}
                                 >
-                                    {isPrevious ? <ChevronLeft size={16} /> : isNext ? <ChevronRight size={16} /> : link.label}
+                                    {isPrevious ? (
+                                        <ChevronLeft size={16} />
+                                    ) : isNext ? (
+                                        <ChevronRight size={16} />
+                                    ) : (
+                                        link.label
+                                    )}
                                 </Link>
                             );
                         })}

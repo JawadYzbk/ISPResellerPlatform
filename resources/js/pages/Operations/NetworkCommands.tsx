@@ -39,7 +39,7 @@ export default function NetworkCommandsPage({ commands, filters, canRetry = fals
     useEffect(() => {
         const reloadWhenVisible = () => {
             if (document.visibilityState !== 'visible') return;
-                router.reload({ only: ['commands'] });
+            router.reload({ only: ['commands'] });
         };
         const interval = window.setInterval(reloadWhenVisible, 10_000);
         document.addEventListener('visibilitychange', reloadWhenVisible);

@@ -31,7 +31,11 @@ export default function PopsPage({ pops, filters, canManage, statuses }: Props) 
 
     const applyFilters = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-        router.get('/operations/pops', { search: search || undefined, status: status || undefined }, { preserveState: true, replace: true });
+        router.get(
+            '/operations/pops',
+            { search: search || undefined, status: status || undefined },
+            { preserveState: true, replace: true },
+        );
     };
 
     const submitPop = (event: React.FormEvent<HTMLFormElement>) => {
@@ -46,7 +50,9 @@ export default function PopsPage({ pops, filters, canManage, statuses }: Props) 
             <div>
                 <p className="eyebrow">Network inventory</p>
                 <h1 className="page-title">Points of presence</h1>
-                <p className="page-subtitle">Keep router locations, transit capacity, and provider contracts visible together.</p>
+                <p className="page-subtitle">
+                    Keep router locations, transit capacity, and provider contracts visible together.
+                </p>
             </div>
 
             {canManage && (
@@ -58,29 +64,54 @@ export default function PopsPage({ pops, filters, canManage, statuses }: Props) 
                     <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
                         <label>
                             <span className="field-label">Name</span>
-                            <input className="field" value={popForm.data.name} onChange={(event) => popForm.setData('name', event.target.value)} placeholder="Central tower" />
+                            <input
+                                className="field"
+                                value={popForm.data.name}
+                                onChange={(event) => popForm.setData('name', event.target.value)}
+                                placeholder="Central tower"
+                            />
                             {popForm.errors.name && <p className="field-error">{popForm.errors.name}</p>}
                         </label>
                         <label>
                             <span className="field-label">Code</span>
-                            <input className="field uppercase" value={popForm.data.code} onChange={(event) => popForm.setData('code', event.target.value)} placeholder="CENTRAL" />
+                            <input
+                                className="field uppercase"
+                                value={popForm.data.code}
+                                onChange={(event) => popForm.setData('code', event.target.value)}
+                                placeholder="CENTRAL"
+                            />
                             {popForm.errors.code && <p className="field-error">{popForm.errors.code}</p>}
                         </label>
                         <label>
                             <span className="field-label">Address</span>
-                            <input className="field" value={popForm.data.address} onChange={(event) => popForm.setData('address', event.target.value)} placeholder="Main street" />
+                            <input
+                                className="field"
+                                value={popForm.data.address}
+                                onChange={(event) => popForm.setData('address', event.target.value)}
+                                placeholder="Main street"
+                            />
                             {popForm.errors.address && <p className="field-error">{popForm.errors.address}</p>}
                         </label>
                         <label>
                             <span className="field-label">Status</span>
-                            <select className="field" value={popForm.data.status} onChange={(event) => popForm.setData('status', event.target.value)}>
-                                {statuses.map((option) => <option key={option} value={option}>{option.replace('_', ' ')}</option>)}
+                            <select
+                                className="field"
+                                value={popForm.data.status}
+                                onChange={(event) => popForm.setData('status', event.target.value)}
+                            >
+                                {statuses.map((option) => (
+                                    <option key={option} value={option}>
+                                        {option.replace('_', ' ')}
+                                    </option>
+                                ))}
                             </select>
                             {popForm.errors.status && <p className="field-error">{popForm.errors.status}</p>}
                         </label>
                     </div>
                     <div className="flex justify-end">
-                        <button type="submit" className="button-primary" disabled={popForm.processing}><Plus size={16} /> Add POP</button>
+                        <button type="submit" className="button-primary" disabled={popForm.processing}>
+                            <Plus size={16} /> Add POP
+                        </button>
                     </div>
                 </form>
             )}
@@ -90,17 +121,28 @@ export default function PopsPage({ pops, filters, canManage, statuses }: Props) 
                     <span className="field-label">Search POP</span>
                     <div className="relative">
                         <Search size={17} className="pointer-events-none absolute start-3 top-3 text-muted" />
-                        <input className="field ps-10" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Name or code" />
+                        <input
+                            className="field ps-10"
+                            value={search}
+                            onChange={(event) => setSearch(event.target.value)}
+                            placeholder="Name or code"
+                        />
                     </div>
                 </label>
                 <label className="block sm:min-w-48">
                     <span className="field-label">Status</span>
                     <select className="field" value={status} onChange={(event) => setStatus(event.target.value)}>
                         <option value="">All statuses</option>
-                        {statuses.map((option) => <option key={option} value={option}>{option.replace('_', ' ')}</option>)}
+                        {statuses.map((option) => (
+                            <option key={option} value={option}>
+                                {option.replace('_', ' ')}
+                            </option>
+                        ))}
                     </select>
                 </label>
-                <button type="submit" className="button-primary">Apply filters</button>
+                <button type="submit" className="button-primary">
+                    Apply filters
+                </button>
             </form>
 
             <div className="card mt-6 overflow-hidden">
@@ -123,29 +165,74 @@ export default function PopsPage({ pops, filters, canManage, statuses }: Props) 
                             {pops.data.map((pop) => (
                                 <tr key={pop.id} className="hover:bg-sand/30">
                                     <td className="px-5 py-4">
-                                        <Link href={'/operations/pops/' + pop.id} className="text-sm font-semibold hover:text-brand">{pop.name}</Link>
+                                        <Link
+                                            href={'/operations/pops/' + pop.id}
+                                            className="text-sm font-semibold hover:text-brand"
+                                        >
+                                            {pop.name}
+                                        </Link>
                                         <p className="mt-1 text-xs text-muted">{pop.code}</p>
                                     </td>
-                                    <td className="px-5 py-4 text-sm text-muted">{pop.address ?? 'No address recorded'}</td>
-                                    <td className="px-5 py-4"><StatusBadge status={pop.status} /></td>
+                                    <td className="px-5 py-4 text-sm text-muted">
+                                        {pop.address ?? 'No address recorded'}
+                                    </td>
+                                    <td className="px-5 py-4">
+                                        <StatusBadge status={pop.status} />
+                                    </td>
                                     <td className="px-5 py-4 text-sm text-muted">{pop.routers_count}</td>
                                     <td className="px-5 py-4 text-sm text-muted">{pop.upstream_links_count}</td>
                                 </tr>
                             ))}
                             {pops.data.length === 0 && (
-                                <tr><td colSpan={5} className="px-5 py-16 text-center"><Network className="mx-auto text-muted" size={28} /><p className="mt-3 font-semibold">No POPs match these filters</p></td></tr>
+                                <tr>
+                                    <td colSpan={5} className="px-5 py-16 text-center">
+                                        <Network className="mx-auto text-muted" size={28} />
+                                        <p className="mt-3 font-semibold">No POPs match these filters</p>
+                                    </td>
+                                </tr>
                             )}
                         </tbody>
                     </table>
                 </div>
                 <div className="flex items-center justify-between border-t border-line px-5 py-4">
-                    <p className="text-xs text-muted">Page {pops.current_page} of {pops.last_page}</p>
+                    <p className="text-xs text-muted">
+                        Page {pops.current_page} of {pops.last_page}
+                    </p>
                     <div className="flex items-center gap-1">
                         {pops.links.map((link, index) => {
                             const isPrevious = index === 0;
                             const isNext = index === pops.links.length - 1;
-                            if (!link.url) return <span key={index} className="grid size-8 place-items-center text-muted/40">{isPrevious ? <ChevronLeft size={16} /> : isNext ? <ChevronRight size={16} /> : link.label}</span>;
-                            return <Link key={index} href={link.url} className={link.active ? 'grid size-8 place-items-center rounded-lg bg-brand text-xs text-white' : 'grid size-8 place-items-center rounded-lg text-xs text-muted hover:bg-sand'}>{isPrevious ? <ChevronLeft size={16} /> : isNext ? <ChevronRight size={16} /> : link.label}</Link>;
+                            if (!link.url)
+                                return (
+                                    <span key={index} className="grid size-8 place-items-center text-muted/40">
+                                        {isPrevious ? (
+                                            <ChevronLeft size={16} />
+                                        ) : isNext ? (
+                                            <ChevronRight size={16} />
+                                        ) : (
+                                            link.label
+                                        )}
+                                    </span>
+                                );
+                            return (
+                                <Link
+                                    key={index}
+                                    href={link.url}
+                                    className={
+                                        link.active
+                                            ? 'grid size-8 place-items-center rounded-lg bg-brand text-xs text-white'
+                                            : 'grid size-8 place-items-center rounded-lg text-xs text-muted hover:bg-sand'
+                                    }
+                                >
+                                    {isPrevious ? (
+                                        <ChevronLeft size={16} />
+                                    ) : isNext ? (
+                                        <ChevronRight size={16} />
+                                    ) : (
+                                        link.label
+                                    )}
+                                </Link>
+                            );
                         })}
                     </div>
                 </div>

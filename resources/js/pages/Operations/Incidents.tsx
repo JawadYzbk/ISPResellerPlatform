@@ -67,17 +67,27 @@ export default function IncidentsPage({ incidents, filters }: Props) {
                 <div>
                     <p className="eyebrow">Network operations</p>
                     <h1 className="page-title">Incidents</h1>
-                    <p className="page-subtitle">Review router outages and service drift raised by automated health checks.</p>
+                    <p className="page-subtitle">
+                        Review router outages and service drift raised by automated health checks.
+                    </p>
                 </div>
                 <span className="inline-flex items-center gap-2 text-sm text-muted">
                     <RefreshCw size={15} /> Updates every 10 seconds
                 </span>
             </div>
 
-            <form onSubmit={applyFilters} className="card mt-8 grid gap-4 p-5 md:grid-cols-[1.4fr_0.7fr_0.7fr_auto] md:items-end">
+            <form
+                onSubmit={applyFilters}
+                className="card mt-8 grid gap-4 p-5 md:grid-cols-[1.4fr_0.7fr_0.7fr_auto] md:items-end"
+            >
                 <label>
                     <span className="field-label">Search</span>
-                    <input className="field" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Title, router, service or customer" />
+                    <input
+                        className="field"
+                        value={search}
+                        onChange={(event) => setSearch(event.target.value)}
+                        placeholder="Title, router, service or customer"
+                    />
                 </label>
                 <label>
                     <span className="field-label">Status</span>
@@ -97,7 +107,9 @@ export default function IncidentsPage({ incidents, filters }: Props) {
                         <option value="info">Info</option>
                     </select>
                 </label>
-                <button type="submit" className="button-primary">Apply filters</button>
+                <button type="submit" className="button-primary">
+                    Apply filters
+                </button>
             </form>
 
             <div className="card mt-6 overflow-hidden">
@@ -121,33 +133,121 @@ export default function IncidentsPage({ incidents, filters }: Props) {
                             {incidents.data.map((incident) => (
                                 <tr key={incident.public_id} className="hover:bg-sand/30">
                                     <td className="px-5 py-4">
-                                        <Link href={`/operations/incidents/${incident.public_id}`} className="font-semibold hover:text-brand">
+                                        <Link
+                                            href={`/operations/incidents/${incident.public_id}`}
+                                            className="font-semibold hover:text-brand"
+                                        >
                                             {incident.title}
                                         </Link>
-                                        <p className="mt-1 text-xs capitalize text-muted">{incident.type.replaceAll('_', ' ')}</p>
+                                        <p className="mt-1 text-xs capitalize text-muted">
+                                            {incident.type.replaceAll('_', ' ')}
+                                        </p>
                                     </td>
                                     <td className="px-5 py-4 text-sm">
-                                        {incident.router ? <Link href={`/operations/routers/${incident.router.public_id}`} className="font-semibold hover:text-brand">{incident.router.name}</Link> : incident.service ? <Link href={`/services/${incident.service.public_id}`} className="font-semibold hover:text-brand">{incident.service.username}</Link> : <span className="text-muted">Platform</span>}
-                                        <p className="mt-1 text-xs text-muted">{incident.customer ? <Link href={`/customers/${incident.customer.public_id}`} className="hover:text-brand">{incident.customer.name}</Link> : incident.router?.pop ?? incident.router?.host ?? 'No related customer'}</p>
+                                        {incident.router ? (
+                                            <Link
+                                                href={`/operations/routers/${incident.router.public_id}`}
+                                                className="font-semibold hover:text-brand"
+                                            >
+                                                {incident.router.name}
+                                            </Link>
+                                        ) : incident.service ? (
+                                            <Link
+                                                href={`/services/${incident.service.public_id}`}
+                                                className="font-semibold hover:text-brand"
+                                            >
+                                                {incident.service.username}
+                                            </Link>
+                                        ) : (
+                                            <span className="text-muted">Platform</span>
+                                        )}
+                                        <p className="mt-1 text-xs text-muted">
+                                            {incident.customer ? (
+                                                <Link
+                                                    href={`/customers/${incident.customer.public_id}`}
+                                                    className="hover:text-brand"
+                                                >
+                                                    {incident.customer.name}
+                                                </Link>
+                                            ) : (
+                                                (incident.router?.pop ?? incident.router?.host ?? 'No related customer')
+                                            )}
+                                        </p>
                                     </td>
-                                    <td className="px-5 py-4"><span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold capitalize ${severityClass[incident.severity] ?? 'bg-slate-100 text-slate-600'}`}>{incident.severity}</span></td>
-                                    <td className="px-5 py-4"><StatusBadge status={incident.status as Status} /></td>
-                                    <td className="px-5 py-4 text-sm text-muted">{formatDate(incident.opened_at)}{incident.resolved_at && <span className="mt-1 block text-xs">Resolved {formatDate(incident.resolved_at)}</span>}</td>
-                                    <td className="px-5 py-4 text-end"><Link href={`/operations/incidents/${incident.public_id}`} className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand">View <ExternalLink size={14} /></Link></td>
+                                    <td className="px-5 py-4">
+                                        <span
+                                            className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold capitalize ${severityClass[incident.severity] ?? 'bg-slate-100 text-slate-600'}`}
+                                        >
+                                            {incident.severity}
+                                        </span>
+                                    </td>
+                                    <td className="px-5 py-4">
+                                        <StatusBadge status={incident.status as Status} />
+                                    </td>
+                                    <td className="px-5 py-4 text-sm text-muted">
+                                        {formatDate(incident.opened_at)}
+                                        {incident.resolved_at && (
+                                            <span className="mt-1 block text-xs">
+                                                Resolved {formatDate(incident.resolved_at)}
+                                            </span>
+                                        )}
+                                    </td>
+                                    <td className="px-5 py-4 text-end">
+                                        <Link
+                                            href={`/operations/incidents/${incident.public_id}`}
+                                            className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand"
+                                        >
+                                            View <ExternalLink size={14} />
+                                        </Link>
+                                    </td>
                                 </tr>
                             ))}
-                            {incidents.data.length === 0 && <tr><td colSpan={6} className="px-5 py-16 text-center"><AlertTriangle className="mx-auto text-muted" size={28} /><p className="mt-3 font-semibold">No incidents match these filters</p></td></tr>}
+                            {incidents.data.length === 0 && (
+                                <tr>
+                                    <td colSpan={6} className="px-5 py-16 text-center">
+                                        <AlertTriangle className="mx-auto text-muted" size={28} />
+                                        <p className="mt-3 font-semibold">No incidents match these filters</p>
+                                    </td>
+                                </tr>
+                            )}
                         </tbody>
                     </table>
                 </div>
                 <div className="flex items-center justify-between border-t border-line px-5 py-4">
-                    <p className="text-xs text-muted">Page {incidents.current_page} of {incidents.last_page}</p>
+                    <p className="text-xs text-muted">
+                        Page {incidents.current_page} of {incidents.last_page}
+                    </p>
                     <div className="flex items-center gap-1">
                         {incidents.links.map((link, index) => {
                             const isPrevious = index === 0;
                             const isNext = index === incidents.links.length - 1;
-                            if (!link.url) return <span key={index} className="grid size-8 place-items-center text-muted/40">{isPrevious ? <ChevronLeft size={16} /> : isNext ? <ChevronRight size={16} /> : link.label}</span>;
-                            return <Link key={index} href={link.url} className={`grid size-8 place-items-center rounded-lg text-xs ${link.active ? 'bg-brand text-white' : 'text-muted hover:bg-sand'}`}>{isPrevious ? <ChevronLeft size={16} /> : isNext ? <ChevronRight size={16} /> : link.label}</Link>;
+                            if (!link.url)
+                                return (
+                                    <span key={index} className="grid size-8 place-items-center text-muted/40">
+                                        {isPrevious ? (
+                                            <ChevronLeft size={16} />
+                                        ) : isNext ? (
+                                            <ChevronRight size={16} />
+                                        ) : (
+                                            link.label
+                                        )}
+                                    </span>
+                                );
+                            return (
+                                <Link
+                                    key={index}
+                                    href={link.url}
+                                    className={`grid size-8 place-items-center rounded-lg text-xs ${link.active ? 'bg-brand text-white' : 'text-muted hover:bg-sand'}`}
+                                >
+                                    {isPrevious ? (
+                                        <ChevronLeft size={16} />
+                                    ) : isNext ? (
+                                        <ChevronRight size={16} />
+                                    ) : (
+                                        link.label
+                                    )}
+                                </Link>
+                            );
                         })}
                     </div>
                 </div>

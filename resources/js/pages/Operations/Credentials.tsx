@@ -120,35 +120,77 @@ export default function CredentialsPage({
                 <form onSubmit={importCredentials} className="card mt-8 space-y-5 p-5">
                     <div>
                         <h2 className="text-lg font-semibold">Import credential batch</h2>
-                        <p className="mt-1 text-sm text-muted">CSV columns: <code>identifier,secret</code>. Plaintext secrets are encrypted immediately and never included in the inventory response.</p>
+                        <p className="mt-1 text-sm text-muted">
+                            CSV columns: <code>identifier,secret</code>. Plaintext secrets are encrypted immediately and
+                            never included in the inventory response.
+                        </p>
                     </div>
                     <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
                         <label>
                             <span className="field-label">Supplier</span>
-                            <select className="field" value={importForm.data.supplier_id} onChange={(event) => importForm.setData('supplier_id', event.target.value)}>
+                            <select
+                                className="field"
+                                value={importForm.data.supplier_id}
+                                onChange={(event) => importForm.setData('supplier_id', event.target.value)}
+                            >
                                 <option value="">Select supplier</option>
-                                {suppliers.map((supplier) => <option key={supplier.id} value={supplier.id}>{supplier.name} ({supplier.code})</option>)}
+                                {suppliers.map((supplier) => (
+                                    <option key={supplier.id} value={supplier.id}>
+                                        {supplier.name} ({supplier.code})
+                                    </option>
+                                ))}
                             </select>
-                            {importForm.errors.supplier_id && <p className="field-error">{importForm.errors.supplier_id}</p>}
+                            {importForm.errors.supplier_id && (
+                                <p className="field-error">{importForm.errors.supplier_id}</p>
+                            )}
                         </label>
                         <label>
                             <span className="field-label">Batch reference</span>
-                            <input className="field" value={importForm.data.reference} onChange={(event) => importForm.setData('reference', event.target.value)} placeholder="SUP-2026-08" />
-                            {importForm.errors.reference && <p className="field-error">{importForm.errors.reference}</p>}
+                            <input
+                                className="field"
+                                value={importForm.data.reference}
+                                onChange={(event) => importForm.setData('reference', event.target.value)}
+                                placeholder="SUP-2026-08"
+                            />
+                            {importForm.errors.reference && (
+                                <p className="field-error">{importForm.errors.reference}</p>
+                            )}
                         </label>
                         <label>
                             <span className="field-label">Expiry (optional)</span>
-                            <input className="field" type="date" value={importForm.data.expires_at} onChange={(event) => importForm.setData('expires_at', event.target.value)} />
-                            {importForm.errors.expires_at && <p className="field-error">{importForm.errors.expires_at}</p>}
+                            <input
+                                className="field"
+                                type="date"
+                                value={importForm.data.expires_at}
+                                onChange={(event) => importForm.setData('expires_at', event.target.value)}
+                            />
+                            {importForm.errors.expires_at && (
+                                <p className="field-error">{importForm.errors.expires_at}</p>
+                            )}
                         </label>
                         <label>
                             <span className="field-label">CSV file</span>
-                            <input className="field file:me-3 file:rounded-md file:border-0 file:bg-brand-soft file:px-3 file:py-1.5 file:font-semibold file:text-brand" type="file" accept=".csv,.txt" onChange={(event) => importForm.setData('file', event.target.files?.[0] ?? null)} />
+                            <input
+                                className="field file:me-3 file:rounded-md file:border-0 file:bg-brand-soft file:px-3 file:py-1.5 file:font-semibold file:text-brand"
+                                type="file"
+                                accept=".csv,.txt"
+                                onChange={(event) => importForm.setData('file', event.target.files?.[0] ?? null)}
+                            />
                             {importForm.errors.file && <p className="field-error">{importForm.errors.file}</p>}
                         </label>
                     </div>
                     <div className="flex justify-end">
-                        <button type="submit" className="button-primary" disabled={importForm.processing || importForm.data.file === null || importForm.data.supplier_id === ''}><Upload size={16} /> Import batch</button>
+                        <button
+                            type="submit"
+                            className="button-primary"
+                            disabled={
+                                importForm.processing ||
+                                importForm.data.file === null ||
+                                importForm.data.supplier_id === ''
+                            }
+                        >
+                            <Upload size={16} /> Import batch
+                        </button>
                     </div>
                 </form>
             )}
@@ -207,10 +249,16 @@ export default function CredentialsPage({
                                     <td className="px-5 py-4">
                                         <p className="text-sm font-semibold">{credential.identifier}</p>
                                         <p className="mt-1 text-xs text-muted">Inventory #{credential.id}</p>
-                                        {revealedSecrets[credential.id] && <p className="mt-2 break-all rounded bg-amber-50 px-2 py-1 font-mono text-xs text-amber-900">{revealedSecrets[credential.id]}</p>}
+                                        {revealedSecrets[credential.id] && (
+                                            <p className="mt-2 break-all rounded bg-amber-50 px-2 py-1 font-mono text-xs text-amber-900">
+                                                {revealedSecrets[credential.id]}
+                                            </p>
+                                        )}
                                     </td>
                                     <td className="px-5 py-4">
-                                        <p className="text-sm font-semibold">{credential.supplier?.name ?? 'No supplier'}</p>
+                                        <p className="text-sm font-semibold">
+                                            {credential.supplier?.name ?? 'No supplier'}
+                                        </p>
                                         <p className="mt-1 text-xs text-muted">
                                             {credential.batch_reference ?? 'No batch reference'}
                                         </p>
@@ -247,35 +295,45 @@ export default function CredentialsPage({
                                         )}
                                     </td>
                                     <td className="px-5 py-4 text-end">
-                                        {canReveal && !revealedSecrets[credential.id] && <button type="button" className="mb-2 block ms-auto text-sm font-semibold text-coral hover:underline" onClick={() => revealCredential(credential.id)}>Reveal secret</button>}
-                                        {canAssign && credential.status === 'available' && assignableServices.length > 0 && (
-                                            <div className="flex items-center justify-end gap-2">
-                                                <select
-                                                    className="field max-w-56 py-2 text-xs"
-                                                    value={selectedServices[credential.id] ?? ''}
-                                                    onChange={(event) =>
-                                                        setSelectedServices((current) => ({
-                                                            ...current,
-                                                            [credential.id]: event.target.value,
-                                                        }))
-                                                    }
-                                                >
-                                                    <option value="">Select service</option>
-                                                    {assignableServices.map((service) => (
-                                                        <option key={service.public_id} value={service.public_id}>
-                                                            {service.username} · {service.customer ?? 'No customer'}
-                                                        </option>
-                                                    ))}
-                                                </select>
-                                                <button
-                                                    type="button"
-                                                    className="text-sm font-semibold text-brand"
-                                                    onClick={() => assignCredential(credential)}
-                                                >
-                                                    Assign
-                                                </button>
-                                            </div>
+                                        {canReveal && !revealedSecrets[credential.id] && (
+                                            <button
+                                                type="button"
+                                                className="mb-2 block ms-auto text-sm font-semibold text-coral hover:underline"
+                                                onClick={() => revealCredential(credential.id)}
+                                            >
+                                                Reveal secret
+                                            </button>
                                         )}
+                                        {canAssign &&
+                                            credential.status === 'available' &&
+                                            assignableServices.length > 0 && (
+                                                <div className="flex items-center justify-end gap-2">
+                                                    <select
+                                                        className="field max-w-56 py-2 text-xs"
+                                                        value={selectedServices[credential.id] ?? ''}
+                                                        onChange={(event) =>
+                                                            setSelectedServices((current) => ({
+                                                                ...current,
+                                                                [credential.id]: event.target.value,
+                                                            }))
+                                                        }
+                                                    >
+                                                        <option value="">Select service</option>
+                                                        {assignableServices.map((service) => (
+                                                            <option key={service.public_id} value={service.public_id}>
+                                                                {service.username} · {service.customer ?? 'No customer'}
+                                                            </option>
+                                                        ))}
+                                                    </select>
+                                                    <button
+                                                        type="button"
+                                                        className="text-sm font-semibold text-brand"
+                                                        onClick={() => assignCredential(credential)}
+                                                    >
+                                                        Assign
+                                                    </button>
+                                                </div>
+                                            )}
                                     </td>
                                 </tr>
                             ))}
@@ -301,7 +359,13 @@ export default function CredentialsPage({
                             if (!link.url) {
                                 return (
                                     <span key={index} className="grid size-8 place-items-center text-muted/40">
-                                        {isPrevious ? <ChevronLeft size={16} /> : isNext ? <ChevronRight size={16} /> : link.label}
+                                        {isPrevious ? (
+                                            <ChevronLeft size={16} />
+                                        ) : isNext ? (
+                                            <ChevronRight size={16} />
+                                        ) : (
+                                            link.label
+                                        )}
                                     </span>
                                 );
                             }
@@ -311,7 +375,13 @@ export default function CredentialsPage({
                                     href={link.url}
                                     className={`grid size-8 place-items-center rounded-lg text-xs ${link.active ? 'bg-brand text-white' : 'text-muted hover:bg-sand'}`}
                                 >
-                                    {isPrevious ? <ChevronLeft size={16} /> : isNext ? <ChevronRight size={16} /> : link.label}
+                                    {isPrevious ? (
+                                        <ChevronLeft size={16} />
+                                    ) : isNext ? (
+                                        <ChevronRight size={16} />
+                                    ) : (
+                                        link.label
+                                    )}
                                 </Link>
                             );
                         })}

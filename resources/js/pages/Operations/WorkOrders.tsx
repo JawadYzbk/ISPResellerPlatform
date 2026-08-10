@@ -51,8 +51,16 @@ export default function WorkOrdersPage({ workOrders, filters }: Props) {
             <div>
                 <p className="eyebrow">Field operations</p>
                 <h1 className="page-title">Work orders</h1>
-                <p className="page-subtitle">Coordinate installations and repairs, then complete the service transition from one controlled action.</p>
-                <Link href="/operations/work-orders/calendar" className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-brand"><CalendarDays size={15} /> Open calendar</Link>
+                <p className="page-subtitle">
+                    Coordinate installations and repairs, then complete the service transition from one controlled
+                    action.
+                </p>
+                <Link
+                    href="/operations/work-orders/calendar"
+                    className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-brand"
+                >
+                    <CalendarDays size={15} /> Open calendar
+                </Link>
             </div>
 
             <form onSubmit={applyFilters} className="card mt-8 flex flex-col gap-4 p-5 sm:flex-row sm:items-end">
@@ -110,9 +118,18 @@ export default function WorkOrdersPage({ workOrders, filters }: Props) {
                             {workOrders.data.map((order) => (
                                 <tr key={order.public_id} className="hover:bg-sand/30">
                                     <td className="px-5 py-4">
-                                        <Link href={`/operations/work-orders/${order.public_id}`} className="text-sm font-semibold hover:text-brand">{order.number}</Link>
-                                        <p className="mt-1 text-xs capitalize text-muted">{order.type.replace('_', ' ')}</p>
-                                        <p className="mt-1 text-xs text-muted">{order.service?.username ?? 'No service linked'}</p>
+                                        <Link
+                                            href={`/operations/work-orders/${order.public_id}`}
+                                            className="text-sm font-semibold hover:text-brand"
+                                        >
+                                            {order.number}
+                                        </Link>
+                                        <p className="mt-1 text-xs capitalize text-muted">
+                                            {order.type.replace('_', ' ')}
+                                        </p>
+                                        <p className="mt-1 text-xs text-muted">
+                                            {order.service?.username ?? 'No service linked'}
+                                        </p>
                                     </td>
                                     <td className="px-5 py-4">
                                         {order.customer ? (
@@ -125,13 +142,17 @@ export default function WorkOrdersPage({ workOrders, filters }: Props) {
                                         ) : (
                                             <span className="text-sm text-muted">No customer</span>
                                         )}
-                                        <p className="mt-1 text-xs text-muted">{order.assignee?.name ?? 'Unassigned'}</p>
+                                        <p className="mt-1 text-xs text-muted">
+                                            {order.assignee?.name ?? 'Unassigned'}
+                                        </p>
                                     </td>
                                     <td className="px-5 py-4 text-sm text-muted">{formatDate(order.scheduled_at)}</td>
                                     <td className="px-5 py-4">
                                         <StatusBadge status={order.status} />
                                     </td>
-                                    <td className="px-5 py-4 text-sm text-muted">{checklistProgress(order.checklist)}</td>
+                                    <td className="px-5 py-4 text-sm text-muted">
+                                        {checklistProgress(order.checklist)}
+                                    </td>
                                     <td className="px-5 py-4 text-end">
                                         {['assigned', 'in_progress'].includes(order.status) ? (
                                             <button
@@ -173,7 +194,13 @@ export default function WorkOrdersPage({ workOrders, filters }: Props) {
                             if (!link.url) {
                                 return (
                                     <span key={index} className="grid size-8 place-items-center text-muted/40">
-                                        {isPrevious ? <ChevronLeft size={16} /> : isNext ? <ChevronRight size={16} /> : link.label}
+                                        {isPrevious ? (
+                                            <ChevronLeft size={16} />
+                                        ) : isNext ? (
+                                            <ChevronRight size={16} />
+                                        ) : (
+                                            link.label
+                                        )}
                                     </span>
                                 );
                             }
@@ -183,7 +210,13 @@ export default function WorkOrdersPage({ workOrders, filters }: Props) {
                                     href={link.url}
                                     className={`grid size-8 place-items-center rounded-lg text-xs ${link.active ? 'bg-brand text-white' : 'text-muted hover:bg-sand'}`}
                                 >
-                                    {isPrevious ? <ChevronLeft size={16} /> : isNext ? <ChevronRight size={16} /> : link.label}
+                                    {isPrevious ? (
+                                        <ChevronLeft size={16} />
+                                    ) : isNext ? (
+                                        <ChevronRight size={16} />
+                                    ) : (
+                                        link.label
+                                    )}
                                 </Link>
                             );
                         })}

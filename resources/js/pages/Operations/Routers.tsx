@@ -42,7 +42,9 @@ export default function RoutersPage({ routers, filters, canCheckHealth = false, 
                 <div>
                     <p className="eyebrow">Network operations</p>
                     <h1 className="page-title">Routers</h1>
-                    <p className="page-subtitle">Inspect device reachability and the services assigned to each router.</p>
+                    <p className="page-subtitle">
+                        Inspect device reachability and the services assigned to each router.
+                    </p>
                 </div>
                 <div className="flex flex-wrap gap-2">
                     <Link href="/operations/network-commands" className="button-secondary">
@@ -95,7 +97,12 @@ export default function RoutersPage({ routers, filters, canCheckHealth = false, 
                             {routers.data.map((device) => (
                                 <tr key={device.public_id} className="hover:bg-sand/30">
                                     <td className="px-5 py-4">
-                                        <Link href={`/operations/routers/${device.public_id}`} className="text-sm font-semibold hover:text-brand">{device.name}</Link>
+                                        <Link
+                                            href={`/operations/routers/${device.public_id}`}
+                                            className="text-sm font-semibold hover:text-brand"
+                                        >
+                                            {device.name}
+                                        </Link>
                                         <p className="mt-1 text-xs text-muted">
                                             {device.host}:{device.api_port}
                                         </p>
@@ -107,7 +114,9 @@ export default function RoutersPage({ routers, filters, canCheckHealth = false, 
                                         <div className="flex flex-wrap items-center gap-2">
                                             <StatusBadge status={device.status} />
                                             {!device.tls_verify && (
-                                                <span className="text-xs font-semibold text-amber-700">TLS verify off</span>
+                                                <span className="text-xs font-semibold text-amber-700">
+                                                    TLS verify off
+                                                </span>
                                             )}
                                             {device.consecutive_failures > 0 && (
                                                 <span className="text-xs text-muted">
@@ -123,7 +132,9 @@ export default function RoutersPage({ routers, filters, canCheckHealth = false, 
                                             <button
                                                 type="button"
                                                 className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand"
-                                                onClick={() => router.post(`/operations/routers/${device.public_id}/health`)}
+                                                onClick={() =>
+                                                    router.post(`/operations/routers/${device.public_id}/health`)
+                                                }
                                             >
                                                 <RefreshCw size={14} /> Check health
                                             </button>
@@ -153,7 +164,13 @@ export default function RoutersPage({ routers, filters, canCheckHealth = false, 
                             if (!link.url) {
                                 return (
                                     <span key={index} className="grid size-8 place-items-center text-muted/40">
-                                        {isPrevious ? <ChevronLeft size={16} /> : isNext ? <ChevronRight size={16} /> : link.label}
+                                        {isPrevious ? (
+                                            <ChevronLeft size={16} />
+                                        ) : isNext ? (
+                                            <ChevronRight size={16} />
+                                        ) : (
+                                            link.label
+                                        )}
                                     </span>
                                 );
                             }
@@ -163,7 +180,13 @@ export default function RoutersPage({ routers, filters, canCheckHealth = false, 
                                     href={link.url}
                                     className={`grid size-8 place-items-center rounded-lg text-xs ${link.active ? 'bg-brand text-white' : 'text-muted hover:bg-sand'}`}
                                 >
-                                    {isPrevious ? <ChevronLeft size={16} /> : isNext ? <ChevronRight size={16} /> : link.label}
+                                    {isPrevious ? (
+                                        <ChevronLeft size={16} />
+                                    ) : isNext ? (
+                                        <ChevronRight size={16} />
+                                    ) : (
+                                        link.label
+                                    )}
                                 </Link>
                             );
                         })}
