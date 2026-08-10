@@ -95,7 +95,7 @@ export default function RoutersPage({ routers, filters, canCheckHealth = false, 
                             {routers.data.map((device) => (
                                 <tr key={device.public_id} className="hover:bg-sand/30">
                                     <td className="px-5 py-4">
-                                        <p className="text-sm font-semibold">{device.name}</p>
+                                        <Link href={`/operations/routers/${device.public_id}`} className="text-sm font-semibold hover:text-brand">{device.name}</Link>
                                         <p className="mt-1 text-xs text-muted">
                                             {device.host}:{device.api_port}
                                         </p>
