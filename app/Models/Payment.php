@@ -14,7 +14,11 @@ use Illuminate\Support\Str;
 /**
  * @property PaymentStatus $status
  * @property Carbon|null $received_at
+ * @property Carbon|null $reversed_at
  * @property CashShift|null $cashShift
+ * @property Customer $customer
+ * @property Invoice|null $invoice
+ * @property User|null $actor
  */
 class Payment extends Model
 {
@@ -53,6 +57,12 @@ class Payment extends Model
     public function cashShift(): BelongsTo
     {
         return $this->belongsTo(CashShift::class);
+    }
+
+    /** @return BelongsTo<User, $this> */
+    public function actor(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'actor_id');
     }
 
     public function allocations(): HasMany

@@ -3,21 +3,19 @@
 namespace App\Actions;
 
 use App\Contracts\Action;
-use App\Enums\PaymentStatus;
-use App\Models\Invoice;
+use App\Models\Payment;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
 
-final readonly class ListInvoices implements Action
+final readonly class ListPayments implements Action
 {
-    /** @return LengthAwarePaginator<int, Invoice> */
-    public function handle(?string $status, ?string $search, int $perPage = 25): LengthAwarePaginator
+    /** @return LengthAwarePaginator<int, Payment> */
+    public function handle(?string $status, ?string $method, ?string $search, int $perPage = 25): LengthAwarePaginator
     {
-        return Invoice::query()
-            ->with(['customer', 'payments' => fn ($query) => $query
-                ->where('status', PaymentStatus::Posted)
-                ->with('allocations')])
+        return Payment::query()
+            ->with(['customer', 'invoice', 'actor'])
             ->when($status, fn (Builder $query) => $query->where('status', $status))
+            ->when($method, fn (Builder $query) => $query->where('method', $method))
             ->when($search, function (Builder $query) use ($search): void {
                 $term = trim($search);
                 $query->where(function (Builder $query) use ($term): void {
@@ -28,7 +26,8 @@ final readonly class ListInvoices implements Action
                             ->orWhere('last_name', 'like', "%{$term}%"));
                 });
             })
-            ->orderByDesc('created_at')
+            ->orderByDesc('received_at')
+            ->orderByDesc('id')
             ->paginate(min(max($perPage, 10), 100))
             ->withQueryString();
     }

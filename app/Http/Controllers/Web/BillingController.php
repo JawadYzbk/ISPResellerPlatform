@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Web;
 
 use App\Actions\IssueInvoice;
 use App\Actions\ListInvoices;
+use App\Actions\ListPayments;
+use App\Actions\ReversePayment;
 use App\Http\Controllers\Controller;
 use App\Models\Invoice;
 use App\Models\Payment;
@@ -72,5 +74,60 @@ final class BillingController extends Controller
         $issue->handle($invoice, $request->user());
 
         return redirect()->route('billing.invoices')->with('success', "Invoice {$invoice->number} issued.");
+    }
+
+    public function payments(Request $request, ListPayments $listPayments): Response
+    {
+        $user = $request->user();
+        abort_unless($user instanceof User && $user->can('payments.collect'), 403);
+        $payments = $listPayments->handle(
+            $request->string('status')->toString() ?: null,
+            $request->string('method')->toString() ?: null,
+            $request->string('search')->toString() ?: null,
+        );
+        $paymentRecords = $payments->getCollection();
+        $rows = $paymentRecords->map(function (Payment $payment): array {
+            return [
+                'public_id' => $payment->public_id,
+                'number' => $payment->number,
+                'status' => $payment->status->value,
+                'amount' => $payment->amount,
+                'currency' => $payment->currency,
+                'method' => $payment->method,
+                'received_at' => $payment->received_at?->toIso8601String(),
+                'reversed_at' => $payment->reversed_at?->toIso8601String(),
+                'collector' => $payment->actor?->name,
+                'customer' => [
+                    'public_id' => $payment->customer->public_id,
+                    'code' => $payment->customer->code,
+                    'name' => $payment->customer->full_name,
+                ],
+                'invoice' => $payment->invoice === null ? null : [
+                    'public_id' => $payment->invoice->public_id,
+                    'number' => $payment->invoice->number,
+                ],
+            ];
+        })->values();
+        $payments = new LengthAwarePaginator(
+            $rows,
+            $payments->total(),
+            $payments->perPage(),
+            $payments->currentPage(),
+            ['path' => $request->url(), 'query' => $request->query()],
+        );
+
+        return Inertia::render('Billing/Payments', [
+            'payments' => $payments,
+            'filters' => $request->only(['status', 'method', 'search']),
+            'canReverse' => $user->can('payments.void'),
+        ]);
+    }
+
+    public function reversePayment(Request $request, Payment $payment, ReversePayment $reversePayment): RedirectResponse
+    {
+        abort_unless($request->user()?->can('payments.void') === true, 403);
+        $reversePayment->handle($payment, $request->user());
+
+        return redirect()->route('billing.payments')->with('success', "Payment {$payment->number} reversed.");
     }
 }

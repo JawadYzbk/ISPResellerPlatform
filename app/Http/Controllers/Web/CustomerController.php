@@ -9,6 +9,7 @@ use App\Actions\ListCustomers;
 use App\Actions\RecordPayment;
 use App\Actions\UpdateCustomer;
 use App\Enums\InvoiceStatus;
+use App\Enums\PaymentStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\CollectPaymentRequest;
 use App\Http\Requests\CustomerRequest;
@@ -73,9 +74,11 @@ final class CustomerController extends Controller
             ->latest('issued_at')
             ->get(['id', 'public_id', 'number', 'currency', 'total_amount', 'due_at'])
             ->map(function (Invoice $invoice): array {
-                $allocated = $invoice->payments->sum(fn ($payment): int => $payment->allocations
-                    ->where('invoice_id', $invoice->id)
-                    ->sum('amount'));
+                $allocated = $invoice->payments
+                    ->where('status', PaymentStatus::Posted)
+                    ->sum(fn ($payment): int => $payment->allocations
+                        ->where('invoice_id', $invoice->id)
+                        ->sum('amount'));
 
                 return [
                     'public_id' => $invoice->public_id,
