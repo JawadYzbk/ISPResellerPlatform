@@ -23,6 +23,7 @@ use Illuminate\Support\Str;
  * @property ProvisioningMode $provisioning_mode
  * @property string $public_id
  * @property int $current_period_bytes
+ * @property string|null $suspension_reason
  * @property Carbon|null $activated_at
  * @property Carbon|null $fup_applied_at
  * @property Carbon|null $expires_at

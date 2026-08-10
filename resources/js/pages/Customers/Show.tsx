@@ -8,6 +8,8 @@ import {
     MessageCircle,
     Phone,
     Plus,
+    Pause,
+    Play,
     RefreshCw,
     ShieldOff,
     Wifi,
@@ -25,6 +27,9 @@ type Props = PageProps & {
     canEdit?: boolean;
     canCollectPayment?: boolean;
     canResyncServices?: boolean;
+    canActivateServices?: boolean;
+    canSuspendServices?: boolean;
+    canForceResumeServices?: boolean;
 };
 
 export default function CustomerShow({
@@ -34,6 +39,9 @@ export default function CustomerShow({
     canEdit = false,
     canCollectPayment = false,
     canResyncServices = false,
+    canActivateServices = false,
+    canSuspendServices = false,
+    canForceResumeServices = false,
 }: Props) {
     const fullName = `${customer.first_name} ${customer.last_name ?? ''}`.trim();
     return (
@@ -165,16 +173,58 @@ export default function CustomerShow({
                                             <p className="text-xs text-muted">Provisioning</p>
                                             <p className="mt-1 text-sm font-semibold capitalize">Manual handoff</p>
                                         </div>
-                                        {canResyncServices && service.status !== 'terminated' && (
-                                            <button
-                                                type="button"
-                                                className="flex items-center gap-1.5 text-sm font-semibold text-brand sm:justify-end"
-                                                onClick={() => router.post(`/services/${service.public_id}/resync`)}
-                                            >
-                                                <RefreshCw size={14} />
-                                                Re-sync service
-                                            </button>
-                                        )}
+                                        <div className="flex flex-wrap items-center gap-3 sm:justify-end">
+                                            {service.status === 'pending' && canActivateServices && (
+                                                <button
+                                                    type="button"
+                                                    className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand"
+                                                    onClick={() =>
+                                                        window.confirm('Activate this service?') &&
+                                                        router.post(`/services/${service.public_id}/activate`)
+                                                    }
+                                                >
+                                                    <Play size={14} /> Activate
+                                                </button>
+                                            )}
+                                            {service.status === 'active' && canSuspendServices && (
+                                                <button
+                                                    type="button"
+                                                    className="inline-flex items-center gap-1.5 text-sm font-semibold text-coral"
+                                                    onClick={() =>
+                                                        window.confirm('Suspend this service?') &&
+                                                        router.post(`/services/${service.public_id}/suspend`, {
+                                                            reason: 'manual_operator',
+                                                        })
+                                                    }
+                                                >
+                                                    <Pause size={14} /> Suspend
+                                                </button>
+                                            )}
+                                            {service.status === 'suspended' &&
+                                                canActivateServices &&
+                                                (service.suspension_reason === 'auto_overdue' ||
+                                                    canForceResumeServices) && (
+                                                    <button
+                                                        type="button"
+                                                        className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand"
+                                                        onClick={() =>
+                                                            window.confirm('Reactivate this service?') &&
+                                                            router.post(`/services/${service.public_id}/resume`)
+                                                        }
+                                                    >
+                                                        <Play size={14} /> Resume
+                                                    </button>
+                                                )}
+                                            {canResyncServices && service.status !== 'terminated' && (
+                                                <button
+                                                    type="button"
+                                                    className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand"
+                                                    onClick={() => router.post(`/services/${service.public_id}/resync`)}
+                                                >
+                                                    <RefreshCw size={14} /> Re-sync
+                                                </button>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
                             ))}

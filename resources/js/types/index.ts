@@ -167,6 +167,7 @@ export type Service = {
     public_id: string;
     username: string;
     status: 'pending' | 'active' | 'suspended' | 'terminated';
+    suspension_reason?: string | null;
     network_state: 'unknown' | 'pending_sync' | 'in_sync' | 'drifted' | 'failed';
     expires_at: string | null;
     plan: Plan;

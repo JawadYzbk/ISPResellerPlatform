@@ -51,6 +51,9 @@ Route::middleware(['auth', 'tenant', '2fa'])->group(function (): void {
     Route::get('/customers/{customer:public_id}', [CustomerController::class, 'show'])->name('customers.show');
     Route::post('/customers/{customer:public_id}/anonymize', [CustomerController::class, 'anonymize'])->middleware('recent-auth')->name('customers.anonymize');
     Route::get('/services', [ServiceController::class, 'index'])->name('services.index');
+    Route::post('/services/{service:public_id}/activate', [ServiceController::class, 'activate'])->name('services.activate');
+    Route::post('/services/{service:public_id}/suspend', [ServiceController::class, 'suspend'])->name('services.suspend');
+    Route::post('/services/{service:public_id}/resume', [ServiceController::class, 'resume'])->name('services.resume');
     Route::post('/services/{service:public_id}/resync', [ServiceController::class, 'resync'])->name('services.resync');
     Route::get('/operations/network-commands', [NetworkOperationsController::class, 'index'])->name('operations.network-commands');
     Route::post('/operations/network-commands/{command:public_id}/retry', [NetworkOperationsController::class, 'retry'])->name('operations.network-commands.retry');
