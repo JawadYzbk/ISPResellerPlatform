@@ -3,10 +3,13 @@
 namespace App\Actions;
 
 use App\Contracts\Action;
+use App\Domain\Ledger\JournalLineInput;
+use App\Domain\Ledger\PostJournalEntry;
 use App\Models\Customer;
 use App\Models\ImportBatch;
 use App\Models\InventoryMovement;
 use App\Models\InventoryUnit;
+use App\Models\JournalEntry;
 use App\Models\Plan;
 use App\Models\Service;
 use DomainException;
@@ -14,10 +17,12 @@ use Illuminate\Support\Facades\DB;
 
 final readonly class RollbackImport implements Action
 {
+    public function __construct(private PostJournalEntry $journal) {}
+
     public function handle(ImportBatch $batch): int
     {
-        if (! in_array($batch->type, ['customers', 'plans', 'services', 'equipment'], true) || $batch->status !== 'completed') {
-            throw new DomainException('Only completed customer, plan, service or equipment imports can be rolled back.');
+        if (! in_array($batch->type, ['customers', 'plans', 'services', 'equipment', 'balances'], true) || $batch->status !== 'completed') {
+            throw new DomainException('Only completed customer, plan, service, equipment or balance imports can be rolled back.');
         }
 
         return DB::transaction(function () use ($batch): int {
@@ -43,6 +48,25 @@ final readonly class RollbackImport implements Action
                     throw new DomainException('An imported equipment unit is already referenced by inventory movement and cannot be rolled back.');
                 }
                 $deleted = $ids === [] ? 0 : InventoryUnit::query()->whereKey($ids)->delete();
+            } elseif ($batch->type === 'balances') {
+                $reversed = 0;
+                /** @var list<array<string, mixed>> $report */
+                $report = $batch->report ?? [];
+                foreach ($report as $index => $row) {
+                    if (! isset($row['journal_entry_id'])) {
+                        continue;
+                    }
+                    $entry = JournalEntry::query()->with('lines')->findOrFail((int) $row['journal_entry_id']);
+                    $lines = [];
+                    foreach ($entry->lines as $line) {
+                        $lines[] = new JournalLineInput($line->account_id, $line->currency, debitAmount: $line->credit_amount, creditAmount: $line->debit_amount, customerId: $line->customer_id, memo: 'Rollback of import '.$batch->public_id);
+                    }
+                    $reversal = $this->journal->post('Rollback balance import '.$batch->public_id, $lines, sourceType: ImportBatch::class, sourceId: $batch->id.':rollback:'.$entry->id);
+                    $report[$index]['reversal_journal_entry_id'] = $reversal->id;
+                    $reversed++;
+                }
+                $batch->report = $report;
+                $deleted = $reversed;
             } else {
                 $deleted = $ids === [] ? 0 : Customer::query()->whereKey($ids)->delete();
             }

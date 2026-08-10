@@ -7,6 +7,13 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use LogicException;
 
+/**
+ * @property int $account_id
+ * @property int $customer_id
+ * @property string $currency
+ * @property int $debit_amount
+ * @property int $credit_amount
+ */
 class JournalLine extends Model
 {
     use BelongsToTenant;

@@ -34,6 +34,7 @@ class JournalEntry extends Model
         return $this->belongsTo(Tenant::class);
     }
 
+    /** @return HasMany<JournalLine, $this> */
     public function lines(): HasMany
     {
         return $this->hasMany(JournalLine::class);
