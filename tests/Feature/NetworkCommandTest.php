@@ -27,6 +27,14 @@ it('dispatches network work only after the command transaction commits', functio
     Queue::assertPushed(ExecuteNetworkCommand::class, fn (ExecuteNetworkCommand $job): bool => $job->commandId === $command->id);
 });
 
+it('uses the planned backoff for transient network failures', function (): void {
+    $tenant = Tenant::create(['name' => 'Southline', 'slug' => 'southline', 'base_currency' => 'USD', 'collection_currency' => 'USD']);
+    app(Tenancy::class)->set($tenant);
+    $job = new ExecuteNetworkCommand(1);
+
+    expect($job->tries)->toBe(3)->and($job->backoff())->toBe([10, 60, 300]);
+});
+
 it('refuses stale commands and records fake driver success', function (): void {
     $tenant = Tenant::create(['name' => 'Southline', 'slug' => 'southline', 'base_currency' => 'USD', 'collection_currency' => 'USD']);
     app(Tenancy::class)->set($tenant);

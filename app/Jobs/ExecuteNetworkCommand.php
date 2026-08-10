@@ -17,6 +17,12 @@ final class ExecuteNetworkCommand extends TenantAwareJob implements ShouldQueue
         parent::__construct($tenantId);
     }
 
+    /** @return list<int> */
+    public function backoff(): array
+    {
+        return [10, 60, 300];
+    }
+
     public function handle(DriverManager $drivers): void
     {
         $command = NetworkCommand::query()->with('service')->findOrFail($this->commandId);
