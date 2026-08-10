@@ -6,6 +6,7 @@ use App\Http\Middleware\EnsureRecentAuthentication;
 use App\Http\Middleware\EnsureTwoFactorVerified;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\IdentifyTenant;
+use App\Http\Middleware\SecurityHeaders;
 use App\Http\Responses\ProblemDetails;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Application;
@@ -30,6 +31,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->web(append: [
             CaptureRequestContext::class,
             HandleInertiaRequests::class,
+            SecurityHeaders::class,
         ]);
 
         $middleware->alias([
