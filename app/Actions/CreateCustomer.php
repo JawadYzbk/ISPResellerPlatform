@@ -11,15 +11,22 @@ use App\Support\CustomerCodeGenerator;
 
 final readonly class CreateCustomer implements Action
 {
-    public function __construct(private CustomerCodeGenerator $codeGenerator) {}
+    public function __construct(private CustomerCodeGenerator $codeGenerator, private QueueCustomerNotification $notify) {}
 
     public function handle(CustomerRequest $request, Tenant $tenant): Customer
     {
-        return Customer::create([
+        $customer = Customer::create([
             ...$request->validated(),
             'code' => $this->codeGenerator->next(),
             'status' => CustomerStatus::Active,
             'balance_currency' => $tenant->collection_currency,
         ]);
+
+        $this->notify->handle($customer, 'customer.welcome', 'customer-welcome:'.$customer->id, [
+            'customer_name' => $customer->full_name,
+            'customer_code' => $customer->code,
+        ]);
+
+        return $customer;
     }
 }

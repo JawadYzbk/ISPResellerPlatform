@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\DB;
 
 final readonly class RenewService implements Action
 {
-    public function __construct(private TransitionService $transition, private EnqueueNetworkCommand $enqueue) {}
+    public function __construct(private TransitionService $transition, private EnqueueNetworkCommand $enqueue, private QueueCustomerNotification $notify) {}
 
     public function handle(Service $service, ?User $actor = null): Service
     {
@@ -41,6 +41,11 @@ final readonly class RenewService implements Action
 
             if ($autoOverdue) {
                 $this->enqueue->handle($updated, 'activate', ['reason' => 'payment_renewal']);
+                $updated->loadMissing('customer');
+                $this->notify->handle($updated->customer, 'service.reactivated', 'service-status:'.$updated->id.':'.$updated->desired_state_version, [
+                    'customer_name' => $updated->customer->full_name,
+                    'service_username' => $updated->username,
+                ]);
             }
 
             return $updated->refresh();

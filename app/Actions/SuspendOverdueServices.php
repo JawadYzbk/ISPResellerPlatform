@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\DB;
 
 final readonly class SuspendOverdueServices implements Action
 {
-    public function __construct(private TransitionService $transition, private EnqueueNetworkCommand $enqueue) {}
+    public function __construct(private TransitionService $transition, private EnqueueNetworkCommand $enqueue, private QueueCustomerNotification $notify) {}
 
     public function handle(Tenant $tenant, ?CarbonImmutable $at = null): int
     {
@@ -37,6 +37,12 @@ final readonly class SuspendOverdueServices implements Action
                                 'expired_at' => CarbonImmutable::parse((string) $locked->expires_at)->toIso8601String(),
                             ]);
                             $this->enqueue->handle($updated, 'suspend', ['reason' => 'auto_overdue']);
+                            $updated->loadMissing('customer');
+                            $this->notify->handle($updated->customer, 'service.suspended', 'service-status:'.$updated->id.':'.$updated->desired_state_version, [
+                                'customer_name' => $updated->customer->full_name,
+                                'service_username' => $updated->username,
+                                'reason' => 'auto_overdue',
+                            ]);
                             $suspended++;
                         });
                     }

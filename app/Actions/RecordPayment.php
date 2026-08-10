@@ -21,7 +21,7 @@ use Illuminate\Support\Facades\DB;
 
 final readonly class RecordPayment implements Action
 {
-    public function __construct(private DocumentNumberGenerator $numbers, private PostJournalEntry $journal, private RenewService $renewService) {}
+    public function __construct(private DocumentNumberGenerator $numbers, private PostJournalEntry $journal, private RenewService $renewService, private QueueCustomerNotification $notify) {}
 
     public function handle(Customer $customer, int $amount, string $currency, string $method, string $idempotencyKey, ?Invoice $invoice = null, ?User $actor = null, ?CashShift $cashShift = null): Payment
     {
@@ -44,7 +44,7 @@ final readonly class RecordPayment implements Action
         }
 
         try {
-            return DB::transaction(function () use ($customer, $amount, $currency, $method, $idempotencyKey, $invoice, $actor, $cashShift): Payment {
+            $payment = DB::transaction(function () use ($customer, $amount, $currency, $method, $idempotencyKey, $invoice, $actor, $cashShift): Payment {
                 $cash = LedgerAccount::query()->where('code', '1000')->firstOrFail();
                 $receivable = LedgerAccount::query()->where('code', '1100')->firstOrFail();
                 $payment = Payment::create([
@@ -85,6 +85,15 @@ final readonly class RecordPayment implements Action
 
                 return $payment->load('allocations');
             });
+
+            $this->notify->handle($customer, 'payment.receipt', 'payment-receipt:'.$payment->id, [
+                'customer_name' => $customer->full_name,
+                'receipt_number' => $payment->number,
+                'amount' => $payment->amount,
+                'currency' => $payment->currency,
+            ]);
+
+            return $payment;
         } catch (UniqueConstraintViolationException) {
             return Payment::query()->where('idempotency_key', $idempotencyKey)->firstOrFail()->load('allocations');
         }
