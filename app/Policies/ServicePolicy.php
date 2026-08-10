@@ -31,4 +31,9 @@ final class ServicePolicy
     {
         return $user->tenant_id === $service->tenant_id && $user->can('services.suspend');
     }
+
+    public function terminate(User $user, Service $service): bool
+    {
+        return $user->tenant_id === $service->tenant_id && $user->can('services.terminate');
+    }
 }

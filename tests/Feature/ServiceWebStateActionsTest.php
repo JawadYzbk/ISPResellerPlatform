@@ -43,3 +43,21 @@ it('requires force-resume permission for a manually suspended service', function
 
     $this->actingAs($user)->post(route('services.resume', $service->public_id))->assertForbidden();
 });
+
+it('terminates a service, returns assigned equipment, and queues a disconnect', function (): void {
+    Queue::fake();
+    $tenant = Tenant::create(['name' => 'Northline', 'slug' => 'northline', 'base_currency' => 'USD', 'collection_currency' => 'USD']);
+    $user = User::create(['tenant_id' => $tenant->id, 'name' => 'Operations', 'email' => 'termination@example.test', 'password' => Hash::make('password'), 'role' => 'tenant_owner']);
+    app(CapabilitySeeder::class)->run();
+    app(Tenancy::class)->set($tenant);
+    $user->assignRole('tenant_owner');
+    $service = Service::factory()->create(['status' => ServiceStatus::Active]);
+    $customerPublicId = $service->customer->public_id;
+
+    $this->actingAs($user)->post(route('services.terminate', $service->public_id), ['reason' => 'Customer requested cancellation'])
+        ->assertRedirect(route('customers.show', $customerPublicId));
+
+    app(Tenancy::class)->set($tenant);
+    expect($service->refresh()->status)->toBe(ServiceStatus::Terminated)
+        ->and(NetworkCommand::query()->where('service_id', $service->id)->where('action', 'disconnect')->count())->toBe(1);
+});

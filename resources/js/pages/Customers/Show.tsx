@@ -34,6 +34,7 @@ type Props = PageProps & {
     canResyncServices?: boolean;
     canActivateServices?: boolean;
     canSuspendServices?: boolean;
+    canTerminateServices?: boolean;
     canForceResumeServices?: boolean;
 };
 
@@ -46,6 +47,7 @@ export default function CustomerShow({
     canResyncServices = false,
     canActivateServices = false,
     canSuspendServices = false,
+    canTerminateServices = false,
     canForceResumeServices = false,
 }: Props) {
     const fullName = `${customer.first_name} ${customer.last_name ?? ''}`.trim();
@@ -234,6 +236,20 @@ export default function CustomerShow({
                                                         <Play size={14} /> Resume
                                                     </button>
                                                 )}
+                                            {canTerminateServices && service.status !== 'terminated' && (
+                                                <button
+                                                    type="button"
+                                                    className="inline-flex items-center gap-1.5 text-sm font-semibold text-coral"
+                                                    onClick={() =>
+                                                        window.confirm('Terminate this service? Equipment will be marked for recovery.') &&
+                                                        router.post(`/services/${service.public_id}/terminate`, {
+                                                            reason: 'manual_operator',
+                                                        })
+                                                    }
+                                                >
+                                                    <ShieldOff size={14} /> Terminate
+                                                </button>
+                                            )}
                                             {canResyncServices && service.status !== 'terminated' && (
                                                 <button
                                                     type="button"

@@ -38,3 +38,24 @@ it('lists services and idempotently queues a suspend command', function (): void
     expect($service->refresh()->status)->toBe(ServiceStatus::Suspended)
         ->and(NetworkCommand::count())->toBe(1);
 });
+
+it('idempotently terminates a service through the operator API', function (): void {
+    Queue::fake();
+    $tenant = Tenant::create(['name' => 'Northline', 'slug' => 'northline', 'base_currency' => 'USD', 'collection_currency' => 'USD']);
+    app(Tenancy::class)->set($tenant);
+    $user = User::create(['tenant_id' => $tenant->id, 'name' => 'Operations', 'email' => 'service-termination-api@example.test', 'password' => Hash::make('password'), 'role' => 'operations_manager']);
+    app(CapabilitySeeder::class)->run();
+    $user->assignRole('operations_manager');
+    $service = Service::factory()->create(['status' => ServiceStatus::Active]);
+    $token = $user->createToken('service-termination-api', ['api', 'staff:operator'])->plainTextToken;
+    $headers = ['X-Idempotency-Key' => 'service-terminate-001'];
+
+    $first = $this->withToken($token)->withHeaders($headers)->postJson('/api/v1/services/'.$service->public_id.'/terminate', ['reason' => 'Customer requested cancellation']);
+    $second = $this->withToken($token)->withHeaders($headers)->postJson('/api/v1/services/'.$service->public_id.'/terminate', ['reason' => 'Customer requested cancellation']);
+
+    $first->assertStatus(202)->assertJsonPath('status', 'terminated')->assertJsonPath('command_id', fn (mixed $id): bool => is_string($id));
+    $second->assertStatus(202)->assertJsonPath('command_id', $first->json('command_id'));
+    app(Tenancy::class)->set($tenant);
+    expect($service->refresh()->status)->toBe(ServiceStatus::Terminated)
+        ->and(NetworkCommand::query()->where('service_id', $service->id)->where('action', 'disconnect')->count())->toBe(1);
+});

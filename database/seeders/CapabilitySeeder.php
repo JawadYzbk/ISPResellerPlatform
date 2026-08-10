@@ -17,7 +17,7 @@ class CapabilitySeeder extends Seeder
         'tenant_owner' => PermissionCatalog::ALL,
         'operations_manager' => [
             'customers.view', 'customers.create', 'customers.update', 'customers.export',
-            'services.view', 'services.create', 'services.activate', 'services.suspend', 'services.change_plan',
+            'services.view', 'services.create', 'services.activate', 'services.suspend', 'services.terminate', 'services.change_plan',
             'plans.manage',
             'tickets.view', 'tickets.create', 'tickets.assign', 'tickets.close', 'workorders.complete',
             'inventory.view', 'inventory.receive', 'inventory.transfer', 'inventory.assign',

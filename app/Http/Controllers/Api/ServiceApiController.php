@@ -58,6 +58,15 @@ final class ServiceApiController extends Controller
         return $this->transition($service, ServiceStatus::Active, 'activate', $request->user(), $transition, $enqueue, ['reason' => 'manual_resume']);
     }
 
+    public function terminate(Request $request, string $service, TransitionService $transition, EnqueueNetworkCommand $enqueue): JsonResponse
+    {
+        $service = $this->find($service);
+        $this->authorize('terminate', $service);
+        $validated = $request->validate(['reason' => ['required', 'string', 'max:5000']]);
+
+        return $this->transition($service, ServiceStatus::Terminated, 'disconnect', $request->user(), $transition, $enqueue, $validated);
+    }
+
     /** @param array<string, mixed> $metadata */
     private function transition(Service $service, ServiceStatus $target, string $action, ?User $actor, TransitionService $transition, EnqueueNetworkCommand $enqueue, array $metadata = []): JsonResponse
     {

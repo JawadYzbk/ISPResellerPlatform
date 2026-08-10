@@ -78,6 +78,18 @@ final class ServiceController extends Controller
         return $this->redirectToCustomer($service, 'Service reactivation queued.');
     }
 
+    public function terminate(Request $request, Service $service, TransitionService $transition, EnqueueNetworkCommand $enqueue): RedirectResponse
+    {
+        $this->authorize('terminate', $service);
+        $validated = $request->validate(['reason' => ['required', 'string', 'max:5000']]);
+        $user = $request->user();
+        abort_unless($user instanceof User, 401);
+        $updated = $transition->handle($service, ServiceStatus::Terminated, $user, $validated);
+        $enqueue->handle($updated, 'disconnect', ['reason' => 'service_terminated']);
+
+        return $this->redirectToCustomer($service, 'Service terminated and network disconnect queued.');
+    }
+
     public function resync(Request $request, Service $service, EnqueueNetworkCommand $enqueue): RedirectResponse
     {
         $action = $service->status === ServiceStatus::Suspended ? 'suspend' : 'activate';

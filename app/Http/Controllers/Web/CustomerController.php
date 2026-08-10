@@ -244,6 +244,7 @@ final class CustomerController extends Controller
             'canResyncServices' => $request->user()?->can('services.activate') === true || $request->user()?->can('services.suspend') === true,
             'canActivateServices' => $request->user()?->can('services.activate') === true,
             'canSuspendServices' => $request->user()?->can('services.suspend') === true,
+            'canTerminateServices' => $request->user()?->can('services.terminate') === true,
             'canForceResumeServices' => $request->user()?->can('services.force_resume') === true,
         ]);
     }
