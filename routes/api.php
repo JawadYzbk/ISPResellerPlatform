@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\ApiTokenController;
 use App\Http\Controllers\Api\CollectorPaymentController;
 use App\Http\Controllers\Api\CustomerApiController;
+use App\Http\Controllers\Api\NetworkCommandController;
 use App\Http\Controllers\Api\PaymentApiController;
 use App\Http\Controllers\Api\PortalAuthController;
 use App\Http\Controllers\Api\PortalController;
@@ -26,5 +27,6 @@ Route::prefix('v1')->group(function (): void {
         Route::get('/customers/{customer:public_id}', [CustomerApiController::class, 'show'])->name('api.customers.show');
         Route::post('/payments', [PaymentApiController::class, 'store'])->middleware('idempotency')->name('api.payments.store');
         Route::post('/collector/payments/batch', [CollectorPaymentController::class, 'store'])->middleware('idempotency')->name('api.collector.payments.batch');
+        Route::post('/network/commands/{command}/retry', [NetworkCommandController::class, 'retry'])->middleware('idempotency')->name('api.network.commands.retry');
     });
 });
