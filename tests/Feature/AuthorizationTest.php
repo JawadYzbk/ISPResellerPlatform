@@ -57,3 +57,16 @@ it('reconciles the role column for existing tenant owners', function (): void {
         ->and($owner->can('settings.manage'))->toBeTrue()
         ->and($owner->can('partners.manage'))->toBeTrue();
 });
+
+it('allows a seeded tenant owner to load representative operator pages', function (): void {
+    $tenant = Tenant::create(['name' => 'North', 'slug' => 'north', 'base_currency' => 'USD', 'collection_currency' => 'USD']);
+    $owner = User::create(['tenant_id' => $tenant->id, 'name' => 'Owner', 'email' => 'owner-pages@example.test', 'password' => 'password', 'role' => 'tenant_owner']);
+
+    app(CapabilitySeeder::class)->run();
+    app(Tenancy::class)->set($tenant);
+    $owner->assignRole('tenant_owner');
+
+    $this->actingAs($owner)->get('/customers')->assertOk();
+    $this->actingAs($owner)->get('/billing/invoices')->assertOk();
+    $this->actingAs($owner)->get('/partners/commercial')->assertOk();
+});
