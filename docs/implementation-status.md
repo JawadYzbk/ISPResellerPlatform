@@ -31,6 +31,7 @@ Last updated: 2026-08-10
 | ISP-P1-01 | Supplier credential inventory, import, assignment and audited reveal | foundation delivered |
 | ISP-100 | Security headers, dependency audits, session hardening and transactional APP_KEY credential re-encryption command | key rotation delivered; remaining launch controls in progress |
 | ISP-102/103 | Encrypted backup package configuration, dependency health, scheduler/queue-worker heartbeats, daily ledger invariant checks and privacy-safe Sentry wiring | repository wiring delivered; off-site storage, restore rehearsal and external alert routing remain |
+| ISP-101 | Lazy Inertia page chunks and production frontend bundle audit | repository optimization delivered; 50k-service query benchmark and EXPLAIN review remain |
 
 ## In progress
 
@@ -39,6 +40,7 @@ Last updated: 2026-08-10
 - Customer self-service online payments through a real gateway and realtime deployment rollout.
 - Monitoring alert routing and external dashboard signal delivery.
 - Security operations: backup/restore rehearsal and Sentry project validation.
+- Performance acceptance against the 50k-service seed and ten-query EXPLAIN review.
 
 ## Deliberately not claimed yet
 
