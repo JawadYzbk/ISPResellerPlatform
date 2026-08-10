@@ -13,6 +13,10 @@ use Illuminate\Support\Facades\Hash;
 
 uses(RefreshDatabase::class);
 
+it('redirects guests to sign in before loading the commercial workspace', function (): void {
+    $this->get('/partners/commercial')->assertRedirect(route('login'));
+});
+
 it('renders the partner commercial workspace without reseller costs', function (): void {
     $tenant = Tenant::create(['name' => 'Northline', 'slug' => 'northline', 'base_currency' => 'USD', 'collection_currency' => 'USD']);
     app(Tenancy::class)->set($tenant);

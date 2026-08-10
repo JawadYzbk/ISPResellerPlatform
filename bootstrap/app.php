@@ -10,6 +10,8 @@ use App\Http\Middleware\IdentifyPortalTenant;
 use App\Http\Middleware\IdentifyTenant;
 use App\Http\Middleware\SecurityHeaders;
 use App\Http\Responses\ProblemDetails;
+use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Auth\Middleware\Authenticate;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Application;
@@ -19,6 +21,7 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
+use Inertia\Inertia;
 use Laravel\Sanctum\Http\Middleware\CheckAbilities;
 use Laravel\Sanctum\Http\Middleware\CheckForAnyAbility;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
@@ -76,10 +79,59 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $exceptions->render(function (Throwable $exception, Request $request) {
             if (! $request->expectsJson() && ! $request->is('api/*')) {
+                if ($exception instanceof AuthenticationException || $exception instanceof ValidationException) {
+                    return null;
+                }
+
+                $status = match (true) {
+                    $exception instanceof AuthorizationException => 403,
+                    $exception instanceof HttpExceptionInterface => $exception->getStatusCode(),
+                    default => 500,
+                };
+
+                $pages = [
+                    403 => [
+                        'title' => 'This action is unauthorized.',
+                        'message' => 'Your account is signed in, but it does not have the capability required for this area.',
+                    ],
+                    404 => [
+                        'title' => 'We could not find that page.',
+                        'message' => 'The link may be stale, or the record may no longer be available in this tenant.',
+                    ],
+                    419 => [
+                        'title' => 'This page has expired.',
+                        'message' => 'Refresh the page and submit the action again.',
+                    ],
+                    429 => [
+                        'title' => 'Too many requests.',
+                        'message' => 'Please wait a moment and try again.',
+                    ],
+                    500 => [
+                        'title' => 'Something went wrong.',
+                        'message' => 'The request could not be completed. The incident has been recorded for investigation.',
+                    ],
+                    503 => [
+                        'title' => 'The platform is temporarily unavailable.',
+                        'message' => 'The service is restarting or undergoing maintenance. Try again shortly.',
+                    ],
+                ];
+
+                if (isset($pages[$status])) {
+                    return Inertia::render('Errors/Http', [
+                        'status' => $status,
+                        ...$pages[$status],
+                    ])->toResponse($request)->setStatusCode($status);
+                }
+
                 return null;
             }
 
-            $status = $exception instanceof ValidationException ? 422 : ($exception instanceof HttpExceptionInterface ? $exception->getStatusCode() : 500);
+            $status = match (true) {
+                $exception instanceof ValidationException => 422,
+                $exception instanceof AuthorizationException => 403,
+                $exception instanceof HttpExceptionInterface => $exception->getStatusCode(),
+                default => 500,
+            };
             $extra = $exception instanceof ValidationException ? ['errors' => $exception->errors()] : [];
 
             return ProblemDetails::fromThrowable(
