@@ -70,6 +70,7 @@ final class PopOperationsController extends Controller
     {
         $user = $request->user();
         abort_unless($user instanceof User && $user->can('network.provision') && $user->tenant instanceof Tenant, 403);
+        $request->merge(['code' => strtoupper(trim($request->string('code')->toString()))]);
         $validated = $request->validate($this->popRules($user->tenant));
         $pop = $save->handle($validated);
 
@@ -80,6 +81,7 @@ final class PopOperationsController extends Controller
     {
         $user = $request->user();
         abort_unless($user instanceof User && $user->can('network.provision') && $user->tenant instanceof Tenant, 403);
+        $request->merge(['code' => strtoupper(trim($request->string('code')->toString()))]);
         $validated = $request->validate($this->popRules($user->tenant, $pop));
         $save->handle($validated, $pop);
 
