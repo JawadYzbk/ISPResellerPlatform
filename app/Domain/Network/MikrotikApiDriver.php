@@ -28,7 +28,7 @@ final class MikrotikApiDriver implements NetworkDriver
         $comment = $this->comment($service);
         $reference = $this->storedReference($service);
 
-        if (in_array($command->action, ['activate', 'suspend', 'throttle'], true) && $reference === null) {
+        if (in_array($command->action, ['activate', 'suspend', 'throttle', 'change_plan'], true) && $reference === null) {
             [$reference, $lookupError] = $this->lookupReference($router, $comment);
             if ($lookupError !== null) {
                 return DriverResult::failure($lookupError, ['action' => $command->action, 'router_id' => $router->id]);
@@ -42,11 +42,11 @@ final class MikrotikApiDriver implements NetworkDriver
             return $this->disconnect($service, $router);
         }
 
-        if (in_array($command->action, ['suspend', 'throttle'], true) && $reference === null) {
+        if (in_array($command->action, ['suspend', 'throttle', 'change_plan'], true) && $reference === null) {
             return DriverResult::failure('router_subscriber_not_found', ['action' => $command->action, 'router_id' => $router->id]);
         }
 
-        if (! in_array($command->action, ['activate', 'suspend', 'throttle'], true)) {
+        if (! in_array($command->action, ['activate', 'suspend', 'throttle', 'change_plan'], true)) {
             return DriverResult::failure('unsupported_router_action: '.$command->action);
         }
 
@@ -60,6 +60,7 @@ final class MikrotikApiDriver implements NetworkDriver
                 : ['disabled' => 'false', 'profile' => $this->profile($service)],
             'suspend' => ['disabled' => 'yes'],
             'throttle' => ['profile' => (string) ($command->payload['fup_profile'] ?? 'fup')],
+            'change_plan' => ['profile' => $this->profile($service)],
         };
 
         try {

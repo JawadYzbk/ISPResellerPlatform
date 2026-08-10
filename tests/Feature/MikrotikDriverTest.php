@@ -51,6 +51,22 @@ it('applies a configured RouterOS FUP profile for throttle commands', function (
         && $request->data()['profile'] === 'fup-1');
 });
 
+it('applies a changed RouterOS plan profile without recreating the subscriber', function (): void {
+    Http::fake(['https://router.example.test/rest/ppp/secret/%2A1' => Http::response(['.id' => '*1'], 200)]);
+    $tenant = Tenant::create(['name' => 'Westline', 'slug' => 'westline', 'base_currency' => 'USD', 'collection_currency' => 'USD']);
+    app(Tenancy::class)->set($tenant);
+    $router = Router::create(['name' => 'Core', 'host' => 'router.example.test', 'username' => 'api', 'password_encrypted' => 'secret']);
+    $service = Service::factory()->create(['router_id' => $router->id, 'provisioning_mode' => ProvisioningMode::Mikrotik, 'metadata' => ['routeros_id' => '*1']]);
+    $command = NetworkCommand::create(['service_id' => $service->id, 'action' => 'change_plan', 'desired_state_version' => 1, 'status' => 'pending']);
+
+    $result = app(MikrotikApiDriver::class)->execute($service, $command);
+
+    expect($result->status)->toBe('success');
+    Http::assertSent(fn ($request): bool => $request->method() === 'PATCH'
+        && $request->url() === 'https://router.example.test/rest/ppp/secret/%2A1'
+        && $request->data()['profile'] === 'plan-'.$service->plan->slug);
+});
+
 it('disconnects active RouterOS sessions by returned device id', function (): void {
     Http::fake([
         'https://router.example.test/rest/ppp/active?name=*' => Http::response([['.id' => '*9']], 200),

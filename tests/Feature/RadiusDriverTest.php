@@ -25,7 +25,7 @@ final class RadiusDriverFakeTransport implements RadiusTransport
         $identifier = ord($packet[1]);
         $requestAuthenticator = substr($packet, 4, 16);
         $attributes = substr($packet, 20);
-        $header = pack('CCn', 41, $identifier, 20 + strlen($attributes));
+        $header = pack('CCn', ord($packet[0]) === 43 ? 44 : 41, $identifier, 20 + strlen($attributes));
 
         return $header.md5($header.$requestAuthenticator.$attributes.'shared-secret', true).$attributes;
     }
@@ -57,4 +57,21 @@ it('keeps a RADIUS service successful when no router is configured for a non-liv
     $result = app(RadiusDriver::class)->execute($service, $command);
 
     expect($result->status)->toBe('success')->and($result->data['coa_status'])->toBe('not_required');
+});
+
+it('uses CoA to apply a changed RADIUS plan without disconnecting the session', function (): void {
+    $tenant = Tenant::create(['name' => 'Eastline', 'slug' => 'eastline', 'base_currency' => 'USD', 'collection_currency' => 'USD']);
+    app(Tenancy::class)->set($tenant);
+    $router = Router::create(['name' => 'Core', 'host' => 'radius.example.test', 'username' => 'api', 'password_encrypted' => 'router-secret', 'radius_secret_encrypted' => 'shared-secret']);
+    $service = Service::factory()->create(['router_id' => $router->id, 'provisioning_mode' => ProvisioningMode::Radius, 'status' => ServiceStatus::Active]);
+    $command = NetworkCommand::create(['service_id' => $service->id, 'action' => 'change_plan', 'desired_state_version' => 1, 'status' => 'pending']);
+    $transport = new RadiusDriverFakeTransport;
+    app()->instance(RadiusTransport::class, $transport);
+
+    $result = app(RadiusDriver::class)->execute($service, $command);
+
+    expect($result->status)->toBe('success')
+        ->and($result->data['coa_status'])->toBe('ack')
+        ->and(RadiusUserGroup::query()->where('service_id', $service->id)->value('groupname'))->toBe('plan-'.$service->plan_id)
+        ->and(ord($transport->sent[0]['packet'][0]))->toBe(43);
 });

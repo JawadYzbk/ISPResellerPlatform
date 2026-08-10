@@ -18,7 +18,7 @@ final class RadiusDriver implements NetworkDriver
         $service->loadMissing(['plan', 'router']);
         $this->sync->sync($service);
 
-        if (! in_array($command->action, ['suspend', 'disconnect', 'throttle'], true)) {
+        if (! in_array($command->action, ['suspend', 'disconnect', 'throttle', 'change_plan'], true)) {
             return DriverResult::success('RADIUS state synchronized.', ['action' => $command->action, 'coa_status' => 'not_required']);
         }
         if ($service->router === null) {
@@ -26,8 +26,8 @@ final class RadiusDriver implements NetworkDriver
         }
 
         try {
-            $result = $command->action === 'throttle'
-                ? $this->coa->changeOfAuthorization($service->router, $service->username, $command->payload['session_id'] ?? null, [['type' => 11, 'value' => (string) ($command->payload['fup_profile'] ?? 'fup')]])
+            $result = in_array($command->action, ['throttle', 'change_plan'], true)
+                ? $this->coa->changeOfAuthorization($service->router, $service->username, $command->payload['session_id'] ?? null, [['type' => 11, 'value' => $command->action === 'change_plan' ? $service->plan->upload_kbps.'k/'.$service->plan->download_kbps.'k' : (string) ($command->payload['fup_profile'] ?? 'fup')]])
                 : $this->coa->disconnect($service->router, $service->username, $command->payload['session_id'] ?? null);
         } catch (Throwable $exception) {
             return DriverResult::failure('RADIUS CoA failed: '.$exception->getMessage());
