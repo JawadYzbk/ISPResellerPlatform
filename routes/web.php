@@ -126,6 +126,7 @@ Route::middleware(['auth', 'tenant', '2fa'])->group(function (): void {
     Route::get('/operations/inventory', [InventoryOperationsController::class, 'index'])->name('operations.inventory');
     Route::post('/operations/inventory/bulk-receive', [InventoryOperationsController::class, 'receiveBulk'])->middleware('recent-auth')->name('operations.inventory.bulk-receive');
     Route::post('/operations/inventory/{unit}/assign', [InventoryOperationsController::class, 'assign'])->middleware('recent-auth')->name('operations.inventory.assign');
+    Route::post('/operations/inventory/{unit}/transfer', [InventoryOperationsController::class, 'transfer'])->middleware('recent-auth')->name('operations.inventory.transfer');
     Route::get('/operations/imports', [ImportOperationsController::class, 'index'])->name('operations.imports');
     Route::post('/operations/imports', [ImportOperationsController::class, 'store'])->name('operations.imports.store');
     Route::post('/operations/imports/{import}/rollback', [ImportOperationsController::class, 'rollback'])->middleware('recent-auth')->name('operations.imports.rollback');

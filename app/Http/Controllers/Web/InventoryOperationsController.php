@@ -6,6 +6,7 @@ use App\Actions\AssignInventoryUnit;
 use App\Actions\ListBulkStock;
 use App\Actions\ListInventoryUnits;
 use App\Actions\ReceiveBulkStock;
+use App\Actions\TransferInventoryUnit;
 use App\Http\Controllers\Controller;
 use App\Models\InventoryItem;
 use App\Models\InventoryUnit;
@@ -68,6 +69,7 @@ final class InventoryOperationsController extends Controller
 
         $canAssign = $user->can('inventory.assign');
         $canReceive = $user->can('inventory.receive');
+        $canTransfer = $user->can('inventory.transfer');
         $assignableServices = $canAssign
             ? Service::query()
                 ->with('customer')
@@ -97,12 +99,16 @@ final class InventoryOperationsController extends Controller
             'filters' => $request->only(['status', 'search']),
             'canAssign' => $canAssign,
             'canReceive' => $canReceive,
+            'canTransfer' => $canTransfer,
             'assignableServices' => $assignableServices,
             'bulkBalances' => $bulkBalances,
             'bulkItems' => $canReceive
                 ? InventoryItem::query()->where('is_serialized', false)->where('is_active', true)->orderBy('name')->get(['id', 'sku', 'name'])->values()
                 : [],
             'bulkWarehouses' => $canReceive
+                ? Warehouse::query()->where('is_active', true)->orderBy('code')->get(['id', 'code', 'name'])->values()
+                : [],
+            'transferWarehouses' => $canTransfer
                 ? Warehouse::query()->where('is_active', true)->orderBy('code')->get(['id', 'code', 'name'])->values()
                 : [],
         ]);
@@ -138,6 +144,21 @@ final class InventoryOperationsController extends Controller
         $assign->handle($unit, $service, $user);
 
         return redirect()->route('operations.inventory')->with('success', "Inventory unit {$unit->serial_number} assigned.");
+    }
+
+    public function transfer(Request $request, InventoryUnit $unit, TransferInventoryUnit $transfer): RedirectResponse
+    {
+        $user = $request->user();
+        abort_unless($user instanceof User && $user->can('inventory.transfer'), 403);
+        $validated = $request->validate(['warehouse_id' => ['required', 'integer']]);
+        $warehouse = Warehouse::query()->findOrFail($validated['warehouse_id']);
+        try {
+            $transfer->handle($unit, $warehouse, $user);
+        } catch (DomainException $exception) {
+            throw ValidationException::withMessages(['warehouse_id' => $exception->getMessage()]);
+        }
+
+        return redirect()->route('operations.inventory')->with('success', "Inventory unit {$unit->serial_number} transferred.");
     }
 
     private function isoDate(mixed $value): ?string
