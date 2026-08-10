@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Api;
 use App\Actions\GetPortalNotices;
 use App\Actions\GetPortalServices;
 use App\Actions\GetPortalUsage;
+use App\Actions\RestartPortalSession;
 use App\Actions\UpdatePortalProfile;
+use App\Exceptions\PortalSessionRestartRateLimited;
 use App\Http\Controllers\Controller;
 use App\Models\Customer;
 use App\Models\Service;
@@ -92,5 +94,27 @@ final class PortalController extends Controller
         abort_unless($customer instanceof Customer, 401);
 
         return response()->json(['data' => $notices->handle($customer)]);
+    }
+
+    public function restartSession(Request $request, Tenant $tenant, string $service, RestartPortalSession $restart): JsonResponse
+    {
+        $customer = $request->attributes->get('portal_customer');
+        abort_unless($customer instanceof Customer, 401);
+        $serviceModel = Service::query()->where('public_id', $service)->firstOrFail();
+
+        try {
+            $command = $restart->handle($customer, $serviceModel);
+        } catch (PortalSessionRestartRateLimited $exception) {
+            return response()->json(['message' => $exception->getMessage()], 429)->header('Retry-After', '300');
+        } catch (\DomainException $exception) {
+            return response()->json(['message' => $exception->getMessage()], 422);
+        }
+
+        return response()->json([
+            'service_id' => $serviceModel->public_id,
+            'status' => 'restart_queued',
+            'command_id' => $command->public_id,
+            'session_id' => $command->payload['session_id'] ?? null,
+        ], 202);
     }
 }

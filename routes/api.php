@@ -40,6 +40,7 @@ Route::prefix('v1')->group(function (): void {
         Route::patch('/me/profile', [PortalController::class, 'updateProfile'])->middleware('portal.auth')->name('api.portal.profile.update');
         Route::get('/me/services', [PortalController::class, 'services'])->middleware('portal.auth')->name('api.portal.services');
         Route::get('/me/services/{service}/usage', [PortalController::class, 'usage'])->middleware('portal.auth')->name('api.portal.services.usage');
+        Route::post('/me/services/{service}/restart-session', [PortalController::class, 'restartSession'])->middleware(['portal.auth', 'idempotency'])->name('api.portal.services.restart');
         Route::get('/me/notices', [PortalController::class, 'notices'])->middleware('portal.auth')->name('api.portal.notices');
         Route::get('/me/tickets', [PortalTicketController::class, 'index'])->middleware('portal.auth')->name('api.portal.tickets.index');
         Route::post('/me/tickets', [PortalTicketController::class, 'store'])->middleware('portal.auth')->name('api.portal.tickets.store');
