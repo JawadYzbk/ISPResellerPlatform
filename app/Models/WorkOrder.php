@@ -5,12 +5,20 @@ namespace App\Models;
 use App\Enums\WorkOrderStatus;
 use App\Models\Concerns\Auditable;
 use App\Models\Concerns\BelongsToTenant;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
-/** @property WorkOrderStatus $status */
+/**
+ * @property WorkOrderStatus $status
+ * @property Carbon|null $scheduled_at
+ * @property Carbon|null $started_at
+ * @property Carbon|null $completed_at
+ * @property array<string, mixed>|null $checklist
+ * @property array<string, mixed>|null $metadata
+ */
 class WorkOrder extends Model
 {
     use Auditable, BelongsToTenant;
@@ -34,6 +42,7 @@ class WorkOrder extends Model
         return $this->belongsTo(Tenant::class);
     }
 
+    /** @return BelongsTo<Customer, $this> */
     public function customer(): BelongsTo
     {
         return $this->belongsTo(Customer::class);
@@ -50,6 +59,7 @@ class WorkOrder extends Model
         return $this->belongsTo(User::class, 'assigned_to');
     }
 
+    /** @return HasMany<WorkOrderEvent, $this> */
     public function events(): HasMany
     {
         return $this->hasMany(WorkOrderEvent::class);
