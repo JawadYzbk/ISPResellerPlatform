@@ -18,7 +18,7 @@ Last updated: 2026-08-10
 | ISP-030/031/032/033 | Historical FX, append-only double-entry ledger, invoice lifecycle, idempotent payments and reversals | delivered |
 | ISP-034/035/036 | Payment renewal, cash shifts and tenant-aware idempotent billing runs | delivered |
 | ISP-041/043/044 | Driver boundary, post-commit network outbox, stale guards, retries, overdue suspension and reactivation | delivered with manual/fake drivers |
-| ISP-050/051 | Template rendering, idempotent message queueing and provider delivery boundary | delivered with null/fake providers |
+| ISP-050/051/052 | Template rendering, idempotent message queueing, provider delivery boundary and tenant-local expiry reminders with opt-out/quiet-hour handling | delivered with null/fake providers |
 | ISP-060/061/062 | Ticket lifecycle, tenant-timezone business-hours SLA clock, resolved-ticket auto-close, work-order completion and serialized inventory assignment | delivered |
 | ISP-070/071/072 | Sanctum API, cursor pagination, query whitelists, idempotency middleware, customer portal OTP/session flow, collector batches and OpenAPI slice | delivered for current customer/payment scope |
 | ISP-073 | Technician-assigned work-order list/detail endpoints and idempotent completion | delivered for current work-order scope |
@@ -32,7 +32,7 @@ Last updated: 2026-08-10
 ## In progress
 
 - Real RouterOS/CoA integration against a CHR lab, automatic reconciliation and device inventory healing.
-- Provider integrations (WhatsApp/SMS/email/FCM), callbacks, fallback policy and notification automations.
+- Provider integrations (WhatsApp/SMS/email/FCM), callbacks, fallback policy and full notification automation coverage.
 - Customer self-service payments and realtime events.
 - Full reseller price books/commissions/settlements, service/plan/balance/equipment import coverage, XLSX workflows and expanded reports beyond finance.
 - Monitoring alerts and full deferred owner dashboard/panel streaming.
