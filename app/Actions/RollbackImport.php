@@ -5,6 +5,8 @@ namespace App\Actions;
 use App\Contracts\Action;
 use App\Models\Customer;
 use App\Models\ImportBatch;
+use App\Models\InventoryMovement;
+use App\Models\InventoryUnit;
 use App\Models\Plan;
 use App\Models\Service;
 use DomainException;
@@ -14,8 +16,8 @@ final readonly class RollbackImport implements Action
 {
     public function handle(ImportBatch $batch): int
     {
-        if (! in_array($batch->type, ['customers', 'plans', 'services'], true) || $batch->status !== 'completed') {
-            throw new DomainException('Only completed customer, plan or service imports can be rolled back.');
+        if (! in_array($batch->type, ['customers', 'plans', 'services', 'equipment'], true) || $batch->status !== 'completed') {
+            throw new DomainException('Only completed customer, plan, service or equipment imports can be rolled back.');
         }
 
         return DB::transaction(function () use ($batch): int {
@@ -34,6 +36,13 @@ final readonly class RollbackImport implements Action
                     throw new DomainException('An imported service is already referenced by billing history and cannot be rolled back.');
                 }
                 $deleted = $ids === [] ? 0 : Service::query()->whereKey($ids)->delete();
+            } elseif ($batch->type === 'equipment') {
+                $ids = collect($batch->report ?? [])->pluck('inventory_unit_id')->filter()->map(fn (mixed $id): int => (int) $id)->all();
+                $unitsInUse = $ids === [] ? false : InventoryMovement::query()->whereIn('inventory_unit_id', $ids)->exists();
+                if ($unitsInUse) {
+                    throw new DomainException('An imported equipment unit is already referenced by inventory movement and cannot be rolled back.');
+                }
+                $deleted = $ids === [] ? 0 : InventoryUnit::query()->whereKey($ids)->delete();
             } else {
                 $deleted = $ids === [] ? 0 : Customer::query()->whereKey($ids)->delete();
             }
