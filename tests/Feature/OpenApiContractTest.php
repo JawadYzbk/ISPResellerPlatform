@@ -41,12 +41,12 @@ function documentedOpenApiOperations(): array
     $documented = [];
     $path = null;
 
-    foreach (preg_split('/\\R/', (string) file_get_contents(base_path('openapi/isp-platform-v1.yaml'))) as $line) {
+    foreach (preg_split('/\R/', (string) file_get_contents(base_path('openapi/isp-platform-v1.yaml'))) as $line) {
         if ($line === 'components:') {
             break;
         }
 
-        if (preg_match('/^  (\\/[^:]+):$/', $line, $matches) === 1) {
+        if (preg_match('/^  (\/[^:]+):$/', $line, $matches) === 1) {
             $path = $matches[1];
             $documented[$path] ??= [];
 
@@ -75,7 +75,7 @@ function normalizeOperations(array $operations): array
 
 function normalizeOpenApiPath(string $path): string
 {
-    return (string) preg_replace_callback('/\\{([^}]+)\\}/', static function (array $matches): string {
+    return (string) preg_replace_callback('/\{([^}]+)\}/', static function (array $matches): string {
         $parts = explode(':', $matches[1], 2);
 
         return '{'.($parts[1] ?? $parts[0]).'}';
