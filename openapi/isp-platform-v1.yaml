@@ -48,6 +48,47 @@ paths:
       responses:
         '204': { description: Token revoked }
         '401': { description: Unauthenticated }
+  /auth/staff/login:
+    post:
+      security: []
+      summary: Authenticate a staff device and issue a scoped Sanctum token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password, device_name, device_id]
+              properties:
+                email: { type: string, format: email }
+                password: { type: string, format: password }
+                device_name: { type: string, maxLength: 100 }
+                device_id: { type: string, maxLength: 100 }
+                abilities:
+                  type: array
+                  items: { type: string, enum: [staff:collector, staff:technician, staff:operator] }
+      responses:
+        '200': { description: Bearer token, user identity and granted abilities }
+        '401': { description: Invalid staff credentials }
+        '422': { description: Two-factor challenge required; response includes challenge_id }
+        '423': { description: Staff two-factor setup is required }
+  /auth/staff/two-factor:
+    post:
+      security: []
+      summary: Complete a staff two-factor authentication challenge
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [challenge_id, code]
+              properties:
+                challenge_id: { type: string, maxLength: 26 }
+                code: { type: string, minLength: 6, maxLength: 16 }
+      responses:
+        '200': { description: Bearer token, user identity and granted abilities }
+        '422': { description: Invalid or expired challenge/code }
   /app/config:
     get:
       summary: Read mobile version and maintenance configuration
@@ -70,6 +111,18 @@ paths:
       summary: Read the authenticated staff identity
       responses:
         '200': { description: Current user and role data }
+        '401': { description: Unauthenticated }
+  /auth/me:
+    get:
+      summary: Read the authenticated staff identity and token abilities
+      responses:
+        '200': { description: Current user and token ability data }
+        '401': { description: Unauthenticated }
+  /auth/logout:
+    post:
+      summary: Revoke the current bearer token
+      responses:
+        '204': { description: Token revoked }
         '401': { description: Unauthenticated }
   /customers:
     get:
