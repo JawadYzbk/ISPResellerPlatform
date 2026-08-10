@@ -30,6 +30,12 @@ jobs:
       - name: Install JavaScript dependencies
         run: npm ci
 
+      - name: Composer dependency audit
+        run: composer audit --no-interaction
+
+      - name: JavaScript dependency audit
+        run: npm audit --audit-level=high
+
       - name: PHP formatting
         run: vendor/bin/pint --test
 
