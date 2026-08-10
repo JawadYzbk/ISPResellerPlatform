@@ -27,6 +27,8 @@ Automatic overdue suspension runs hourly at minute 5. A renewal from `auto_overd
 
 ## Payments and collections
 
+Use **Billing -> Invoices** to search draft and issued invoices. A billing user with the invoice-issue capability can issue a draft from the queue; an issued invoice links to the customer payment form and shows the outstanding allocation-backed balance. Do not treat a displayed invoice as settled until the posted allocation is visible.
+
 Record the payment against the customer’s public ID and, when applicable, an issued invoice. Amounts are integer minor units; currency must match the customer ledger currency. The action posts the cash-to-receivable journal entry, allocates the invoice, renews services on the invoice, and queues a receipt notice.
 
 Use one stable `X-Idempotency-Key` per client payment attempt. Reusing the same key returns the original payment; do not generate a new key when retrying after a timeout. Never “fix” a duplicate by deleting a payment.
@@ -41,9 +43,13 @@ Router incidents can broadcast notices only to customers affected by the router,
 
 ## Network operations
 
+Use **Operations -> Routers** to filter devices by online/offline state and run a bounded health check. The page shows the last successful observation, consecutive failures, assigned service count and TLS verification state; it never renders router credentials. Use **Operations -> Network queue** to follow the resulting command and its retry history.
+
 Network changes are queued through the outbox and executed by the queue worker. Inspect the command state and retry only after checking the router connection and the desired service state. `routers:reconcile-subscribers` is report-only by default; `--heal` is an explicit change and requires an approved incident or maintenance record.
 
 For RouterOS/RADIUS/CoA behavior, use the lab acceptance procedure before enabling a new device driver in production. A platform state of `active` is not proof that the router has accepted the command.
+
+On a customer service card, **Activate**, **Suspend**, **Resume** and **Re-sync service** queue commands from the current commercial state. They confirm that work was queued, not that a real device accepted it; inspect the resulting command and network state after the worker runs.
 
 On a customer service card, **Re-sync service** queues an `activate` or `suspend` command from the current commercial state. It confirms that work was queued, not that a real device accepted it; inspect the resulting command and network state after the worker runs. Terminated services are not re-synced.
 
