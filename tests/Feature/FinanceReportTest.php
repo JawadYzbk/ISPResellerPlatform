@@ -48,7 +48,8 @@ it('reconciles issued revenue and posted collections by currency', function (): 
         ->and($report['top_usage'][0]['service_id'])->toBe($service->public_id)
         ->and($report['top_usage'][0]['total_octets'])->toBe(1000)
         ->and(app(ExportFinanceReportCsv::class)->handle(CarbonImmutable::now()->subDay(), CarbonImmutable::now()->addDay()))
-        ->toContain('invoiced_by_currency,USD,3500');
+        ->toContain('invoiced_by_currency,USD,3500')
+        ->toContain('revenue_by_plan:'.$plan->slug.',USD,3500');
 });
 
 it('streams the finance report as CSV for an authorised operator', function (): void {

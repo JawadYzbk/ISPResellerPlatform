@@ -19,6 +19,14 @@ const firstRate = (rates: Record<string, number | null>) => {
     return rate === null || rate === undefined ? '—' : `${rate.toFixed(2)}%`;
 };
 
+const formatBytes = (bytes: number) => {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 ** 2) return `${(bytes / 1024).toFixed(1)} KB`;
+    if (bytes < 1024 ** 3) return `${(bytes / 1024 ** 2).toFixed(1)} MB`;
+
+    return `${(bytes / 1024 ** 3).toFixed(1)} GB`;
+};
+
 export default function FinanceReportPage({ report }: Props) {
     return (
         <AppLayout>
@@ -122,6 +130,41 @@ export default function FinanceReportPage({ report }: Props) {
                         </tbody>
                     </table>
                 </div>
+            </div>
+            <div className="mt-6 grid gap-6 lg:grid-cols-2">
+                <div className="card p-6">
+                    <h2 className="section-title">Revenue by plan</h2>
+                    <div className="mt-4 divide-y divide-line text-sm">
+                        {Object.entries(report.revenue_by_plan).map(([plan, amounts]) => (
+                            <div key={plan} className="flex items-center justify-between py-3">
+                                <span className="font-semibold">{plan}</span>
+                                <span className="text-muted">
+                                    {Object.entries(amounts)
+                                        .map(([currency, amount]) => formatMoney(amount, currency))
+                                        .join(' · ')}
+                                </span>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+                <div className="card p-6">
+                    <h2 className="section-title">Top usage</h2>
+                    <div className="mt-4 divide-y divide-line text-sm">
+                        {report.top_usage.map((usage) => (
+                            <div
+                                key={usage.service_id ?? usage.username}
+                                className="flex items-center justify-between py-3"
+                            >
+                                <span className="font-semibold">{usage.username ?? 'Unknown service'}</span>
+                                <span className="text-muted">{formatBytes(usage.total_octets)}</span>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+            <div className="mt-6 text-sm text-muted">
+                {report.active_customer_count} active customers · {report.churned_services} churned services in the
+                selected period
             </div>
         </AppLayout>
     );

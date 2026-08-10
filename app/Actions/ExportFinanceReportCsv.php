@@ -35,6 +35,24 @@ final readonly class ExportFinanceReportCsv implements Action
                 fputcsv($stream, ['aging_'.$bucket, $currency, $amount]);
             }
         }
+        foreach (['revenue_by_plan', 'revenue_by_zone'] as $metric) {
+            foreach ($report[$metric] as $dimension => $amounts) {
+                foreach ($amounts as $currency => $amount) {
+                    fputcsv($stream, [$metric.':'.$dimension, $currency, $amount]);
+                }
+            }
+        }
+        foreach ($report['tax_by_currency'] as $currency => $amount) {
+            fputcsv($stream, ['tax_by_currency', $currency, $amount]);
+        }
+        foreach ($report['arpu_by_currency'] as $currency => $amount) {
+            fputcsv($stream, ['arpu_by_currency', $currency, $amount]);
+        }
+        fputcsv($stream, ['active_customer_count', '', $report['active_customer_count']]);
+        fputcsv($stream, ['churned_services', '', $report['churned_services']]);
+        foreach ($report['top_usage'] as $usage) {
+            fputcsv($stream, ['top_usage:'.($usage['username'] ?? 'unknown'), '', $usage['total_octets']]);
+        }
         rewind($stream);
         $csv = stream_get_contents($stream) ?: '';
         fclose($stream);

@@ -62,6 +62,13 @@ export type FinanceReport = {
     aging_by_currency: Record<string, Record<'current' | '1_30' | '31_60' | '61_90' | '90_plus', number>>;
     outstanding_by_currency: Record<string, number>;
     customer_balances_by_currency: Record<string, number>;
+    revenue_by_plan: Record<string, Record<string, number>>;
+    revenue_by_zone: Record<string, Record<string, number>>;
+    tax_by_currency: Record<string, number>;
+    churned_services: number;
+    active_customer_count: number;
+    arpu_by_currency: Record<string, number | null>;
+    top_usage: { service_id: string | null; username: string | null; total_octets: number }[];
 };
 
 export type OperationsReport = {
