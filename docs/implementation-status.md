@@ -26,7 +26,7 @@ Last updated: 2026-08-10
 | ISP-040/063 | POP/router inventory, encrypted connection tests, repeated-failure incidents and bounded router health observations | foundation delivered |
 | ISP-090/091 | Basic partner hierarchy/wallets with descendant-scoped API, tenant finance and operations reports with CSV export | foundation delivered; expanded report foundation delivered |
 | ISP-092 | Manager attention queue with deep links plus live NOC signal panels for routers, sessions, commands, drift and incidents | delivered for current dashboard scope |
-| ISP-093 | Customer, plan, service and serialized-equipment CSV import preview, row-level validation, partial-success commit and guarded rollback API | delivered for current CSV scope |
+| ISP-093 | Customer, plan, service, serialized-equipment and journal-backed balance CSV import preview, row-level validation, partial-success commit and guarded/reversing rollback API | delivered for current CSV scope |
 | ISP-P1-01 | Supplier credential inventory, import, assignment and audited reveal | foundation delivered |
 
 ## In progress
