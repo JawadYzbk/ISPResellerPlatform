@@ -30,6 +30,8 @@ The WhatsApp Web.js bridge is deliberately behind the `whatsapp` Compose profile
 
 Frankfurter synchronization is disabled by default. For a tenant whose base currency is USD and collection currency is LBP, set `FRANKFURTER_ENABLED=true`, confirm the approved quote policy, and run `php artisan fx:sync-frankfurter` once before enabling the scheduler. Imported quotes are append-only effective-dated ratios. Manual rates remain available for treasury or street-rate policy, and payment receipts preserve the selected rate, source, effective date, and rounding mode.
 
+For online customer payments, set `PAYMENT_GATEWAY=stripe`, `STRIPE_SECRET`, `STRIPE_PUBLISHABLE_KEY`, and `STRIPE_WEBHOOK_SECRET`. Register `POST https://<public-host>/api/v1/webhooks/payments/stripe` in Stripe and subscribe only to `payment_intent.succeeded`; the application verifies Stripe's raw request body and `Stripe-Signature` header before settling the invoice. The portal uses the publishable key and PaymentIntent client secret only; never place `STRIPE_SECRET` in frontend configuration. Test one successful payment and one rejected signature in the approved Stripe environment before enabling customer checkout. See the [Stripe PaymentIntent](https://docs.stripe.com/api/payment_intents/create) and [webhook verification](https://docs.stripe.com/webhooks) documentation for provider-side setup.
+
 The shared `bootstrap/cache` volume makes the cache commands visible to all PHP services. Do not expose PostgreSQL, Redis, or MinIO directly to the public internet. Put TLS termination and the public DNS name in front of the `web` service, and set `APP_URL`, `REVERB_HOST`, and `REVERB_ALLOWED_ORIGINS` to that public origin.
 
 ## Application release
