@@ -53,5 +53,5 @@ it('streams the finance report as CSV for an authorised operator', function (): 
         ->assertHeader('content-type', 'text/csv; charset=UTF-8')
         ->assertStreamed();
 
-    expect($response->streamedContent())->toContain('metric,currency,amount_minor');
+    expect($response->streamedContent())->toContain('metric,currency,value');
 });

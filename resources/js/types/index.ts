@@ -58,6 +58,9 @@ export type FinanceReport = {
     payment_count: number;
     invoiced_by_currency: Record<string, number>;
     collected_by_currency: Record<string, number>;
+    collection_rate_by_currency: Record<string, number | null>;
+    aging_by_currency: Record<string, Record<'current' | '1_30' | '31_60' | '61_90' | '90_plus', number>>;
+    outstanding_by_currency: Record<string, number>;
     customer_balances_by_currency: Record<string, number>;
 };
 

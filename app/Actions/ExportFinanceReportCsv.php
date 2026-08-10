@@ -17,14 +17,22 @@ final readonly class ExportFinanceReportCsv implements Action
             throw new RuntimeException('Unable to create the finance report export stream.');
         }
         $report = $this->report->handle($from, $to);
-        fputcsv($stream, ['metric', 'currency', 'amount_minor']);
+        fputcsv($stream, ['metric', 'currency', 'value']);
         fputcsv($stream, ['from', '', $report['from']]);
         fputcsv($stream, ['to', '', $report['to']]);
         fputcsv($stream, ['invoice_count', '', $report['invoice_count']]);
         fputcsv($stream, ['payment_count', '', $report['payment_count']]);
-        foreach (['invoiced_by_currency', 'collected_by_currency', 'customer_balances_by_currency'] as $metric) {
+        foreach (['invoiced_by_currency', 'collected_by_currency', 'customer_balances_by_currency', 'outstanding_by_currency'] as $metric) {
             foreach ($report[$metric] as $currency => $amount) {
                 fputcsv($stream, [$metric, $currency, $amount]);
+            }
+        }
+        foreach ($report['collection_rate_by_currency'] as $currency => $rate) {
+            fputcsv($stream, ['collection_rate_percent', $currency, $rate]);
+        }
+        foreach ($report['aging_by_currency'] as $currency => $buckets) {
+            foreach ($buckets as $bucket => $amount) {
+                fputcsv($stream, ['aging_'.$bucket, $currency, $amount]);
             }
         }
         rewind($stream);

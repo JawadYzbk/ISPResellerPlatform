@@ -1,5 +1,5 @@
 import { Head, Link } from '@inertiajs/react';
-import { ArrowLeft, BarChart3, Download, Receipt, Wallet } from 'lucide-react';
+import { ArrowLeft, BarChart3, Download, Receipt, TrendingUp, Wallet } from 'lucide-react';
 
 import AppLayout from '@/layouts/AppLayout';
 import { formatMoney } from '@/lib/format';
@@ -10,6 +10,13 @@ type Props = PageProps & { report: FinanceReport };
 const firstAmount = (amounts: Record<string, number>) => {
     const currency = Object.keys(amounts)[0] ?? 'USD';
     return formatMoney(amounts[currency] ?? 0, currency);
+};
+
+const firstRate = (rates: Record<string, number | null>) => {
+    const currency = Object.keys(rates)[0];
+    const rate = currency === undefined ? null : rates[currency];
+
+    return rate === null || rate === undefined ? '—' : `${rate.toFixed(2)}%`;
 };
 
 export default function FinanceReportPage({ report }: Props) {
@@ -41,7 +48,7 @@ export default function FinanceReportPage({ report }: Props) {
                     </a>
                 </div>
             </div>
-            <div className="mt-8 grid gap-4 md:grid-cols-3">
+            <div className="mt-8 grid gap-4 md:grid-cols-4">
                 <div className="card p-5">
                     <Receipt className="text-brand" size={20} />
                     <p className="mt-4 text-sm text-muted">Issued invoices</p>
@@ -55,12 +62,20 @@ export default function FinanceReportPage({ report }: Props) {
                     <p className="mt-1 text-sm text-muted">{firstAmount(report.collected_by_currency)}</p>
                 </div>
                 <div className="card p-5">
-                    <BarChart3 className="text-brand" size={20} />
-                    <p className="mt-4 text-sm text-muted">Customer balance</p>
+                    <TrendingUp className="text-brand" size={20} />
+                    <p className="mt-4 text-sm text-muted">Collection rate</p>
                     <p className="mt-1 font-display text-2xl font-semibold">
-                        {firstAmount(report.customer_balances_by_currency)}
+                        {firstRate(report.collection_rate_by_currency)}
                     </p>
-                    <p className="mt-1 text-sm text-muted">Ledger cache by currency</p>
+                    <p className="mt-1 text-sm text-muted">Collected against invoiced</p>
+                </div>
+                <div className="card p-5">
+                    <BarChart3 className="text-brand" size={20} />
+                    <p className="mt-4 text-sm text-muted">Open accounts receivable</p>
+                    <p className="mt-1 font-display text-2xl font-semibold">
+                        {firstAmount(report.outstanding_by_currency)}
+                    </p>
+                    <p className="mt-1 text-sm text-muted">Issued invoices less allocations</p>
                 </div>
             </div>
             <div className="mt-6 card p-6">
@@ -77,6 +92,35 @@ export default function FinanceReportPage({ report }: Props) {
                             </div>
                         ),
                     )}
+                </div>
+            </div>
+            <div className="mt-6 card p-6">
+                <h2 className="section-title">Accounts receivable aging</h2>
+                <div className="mt-4 overflow-x-auto">
+                    <table className="w-full min-w-[720px] text-left text-sm">
+                        <thead className="text-xs uppercase tracking-[0.14em] text-muted">
+                            <tr>
+                                <th className="pb-3">Currency</th>
+                                <th className="pb-3">Current</th>
+                                <th className="pb-3">1–30 days</th>
+                                <th className="pb-3">31–60 days</th>
+                                <th className="pb-3">61–90 days</th>
+                                <th className="pb-3">90+ days</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-line">
+                            {Object.entries(report.aging_by_currency).map(([currency, buckets]) => (
+                                <tr key={currency}>
+                                    <td className="py-3 font-semibold">{currency}</td>
+                                    <td className="py-3">{formatMoney(buckets.current, currency)}</td>
+                                    <td className="py-3">{formatMoney(buckets['1_30'], currency)}</td>
+                                    <td className="py-3">{formatMoney(buckets['31_60'], currency)}</td>
+                                    <td className="py-3">{formatMoney(buckets['61_90'], currency)}</td>
+                                    <td className="py-3">{formatMoney(buckets['90_plus'], currency)}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </AppLayout>
