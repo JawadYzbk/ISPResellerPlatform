@@ -26,9 +26,9 @@ return Application::configure(basePath: dirname(__DIR__))
         web: __DIR__.'/../routes/web.php',
         api: __DIR__.'/../routes/api.php',
         commands: __DIR__.'/../routes/console.php',
-        channels: __DIR__.'/../routes/channels.php',
         health: '/up',
     )
+    ->withBroadcasting(__DIR__.'/../routes/channels.php', ['middleware' => ['web', 'auth', 'tenant', '2fa']])
     ->withCommands([__DIR__.'/../app/Console/Commands'])
     ->withSchedule(function (Schedule $schedule): void {
         $schedule->command('platform:heartbeat')->everyMinute();
