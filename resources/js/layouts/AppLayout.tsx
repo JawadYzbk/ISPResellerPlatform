@@ -44,6 +44,9 @@ export default function AppLayout({ children }: PropsWithChildren) {
         { label: 'Reports', href: '/reports/operations', icon: BarChart3 },
         { label: 'Network queue', href: '/operations/network-commands', icon: Wrench },
         { label: 'Routers', href: '/operations/routers', icon: Router },
+        ...(auth.permissions.includes('settings.manage')
+            ? [{ label: 'Settings', href: '/settings/general', icon: Wrench }]
+            : []),
     ];
 
     return (
