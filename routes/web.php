@@ -85,7 +85,10 @@ Route::middleware(['auth', 'tenant', '2fa'])->group(function (): void {
     Route::put('/operations/routers/{router:public_id}', [RouterOperationsController::class, 'update'])->middleware('recent-auth')->name('operations.routers.update');
     Route::post('/operations/routers/{router:public_id}/health', [RouterOperationsController::class, 'health'])->name('operations.routers.health');
     Route::get('/operations/pops', [PopOperationsController::class, 'index'])->name('operations.pops');
+    Route::post('/operations/pops', [PopOperationsController::class, 'store'])->middleware('recent-auth')->name('operations.pops.store');
     Route::get('/operations/pops/{pop}', [PopOperationsController::class, 'show'])->name('operations.pops.show');
+    Route::put('/operations/pops/{pop}', [PopOperationsController::class, 'update'])->middleware('recent-auth')->name('operations.pops.update');
+    Route::post('/operations/pops/{pop}/upstream-links', [PopOperationsController::class, 'storeUpstreamLink'])->middleware('recent-auth')->name('operations.pops.upstream-links.store');
     Route::get('/operations/ip-pools', [IpPoolOperationsController::class, 'index'])->name('operations.ip-pools');
     Route::post('/operations/ip-pools', [IpPoolOperationsController::class, 'storePool'])->middleware('recent-auth')->name('operations.ip-pools.store');
     Route::post('/operations/ip-pools/{pool}/addresses', [IpPoolOperationsController::class, 'storeAddress'])->middleware('recent-auth')->name('operations.ip-pools.addresses.store');

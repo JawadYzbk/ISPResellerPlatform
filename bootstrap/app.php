@@ -10,11 +10,13 @@ use App\Http\Middleware\IdentifyPortalTenant;
 use App\Http\Middleware\IdentifyTenant;
 use App\Http\Middleware\SecurityHeaders;
 use App\Http\Responses\ProblemDetails;
+use Illuminate\Auth\Middleware\Authenticate;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Laravel\Sanctum\Http\Middleware\CheckAbilities;
@@ -47,6 +49,13 @@ return Application::configure(basePath: dirname(__DIR__))
             CaptureRequestContext::class,
             HandleInertiaRequests::class,
             SecurityHeaders::class,
+        ]);
+
+        $middleware->priority([
+            Authenticate::class,
+            IdentifyTenant::class,
+            EnsureTwoFactorVerified::class,
+            SubstituteBindings::class,
         ]);
 
         $middleware->alias([
