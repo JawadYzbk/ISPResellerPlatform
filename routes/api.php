@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\ApiTokenController;
 use App\Http\Controllers\Api\AppConfigController;
+use App\Http\Controllers\Api\BalanceImportController;
 use App\Http\Controllers\Api\CollectorPaymentController;
 use App\Http\Controllers\Api\CustomerApiController;
 use App\Http\Controllers\Api\CustomerImportController;
@@ -52,6 +53,8 @@ Route::prefix('v1')->group(function (): void {
             Route::post('/imports/services/{import}/rollback', [ServiceImportController::class, 'rollback'])->name('api.imports.services.rollback');
             Route::post('/imports/equipment', [EquipmentImportController::class, 'store'])->name('api.imports.equipment.store');
             Route::post('/imports/equipment/{import}/rollback', [EquipmentImportController::class, 'rollback'])->name('api.imports.equipment.rollback');
+            Route::post('/imports/balances', [BalanceImportController::class, 'store'])->name('api.imports.balances.store');
+            Route::post('/imports/balances/{import}/rollback', [BalanceImportController::class, 'rollback'])->name('api.imports.balances.rollback');
             Route::post('/imports/{import}/rollback', [CustomerImportController::class, 'rollback'])->name('api.imports.rollback');
             Route::get('/partners', [PartnerApiController::class, 'index'])->name('api.partners.index');
             Route::get('/partners/{partner}', [PartnerApiController::class, 'show'])->name('api.partners.show');
