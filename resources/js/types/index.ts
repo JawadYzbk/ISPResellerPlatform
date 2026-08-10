@@ -48,6 +48,8 @@ export type FinanceReport = {
     customer_balances_by_currency: Record<string, number>;
 };
 
+export type PublicTenant = { slug: string; name: string };
+
 export type Zone = {
     id: number;
     name: string;
