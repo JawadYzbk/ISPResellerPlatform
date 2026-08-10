@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Web;
 
 use App\Actions\CloseCashShift;
+use App\Actions\GetCashShiftDailyReport;
 use App\Actions\ListCashShifts;
 use App\Actions\OpenCashShift;
 use App\Http\Controllers\Controller;
@@ -19,12 +20,14 @@ use Inertia\Response;
 
 final class CashShiftOperationsController extends Controller
 {
-    public function index(Request $request, ListCashShifts $listShifts): Response
+    public function index(Request $request, ListCashShifts $listShifts, GetCashShiftDailyReport $dailyReport): Response
     {
         $user = $request->user();
         abort_unless($user instanceof User && $user->can('payments.collect'), 403);
         abort_unless($user->tenant instanceof Tenant, 403);
-        $shifts = $listShifts->handle($user);
+        $canViewReport = $user->can('reports.finance');
+        $date = $request->validate(['date' => ['nullable', 'date_format:Y-m-d']])['date'] ?? now()->toDateString();
+        $shifts = $listShifts->handle($user, allCollectors: $canViewReport);
         $rows = $shifts->getCollection()->map(fn (CashShift $shift): array => $this->shift($shift))->values();
         $shifts = new LengthAwarePaginator(
             $rows,
@@ -41,6 +44,8 @@ final class CashShiftOperationsController extends Controller
             'shifts' => $shifts,
             'currentShift' => $current === null ? null : [...$this->shift($current), 'system_totals' => $systemTotals],
             'currencies' => $currencies,
+            'canViewReport' => $canViewReport,
+            'dailyReport' => $canViewReport ? $dailyReport->handle($date) : null,
         ]);
     }
 
@@ -80,6 +85,7 @@ final class CashShiftOperationsController extends Controller
             'declared_totals' => $shift->declared_totals ?? [],
             'variance' => $shift->variance,
             'variance_note' => $shift->variance_note,
+            'collector' => $shift->user?->name,
         ];
     }
 }

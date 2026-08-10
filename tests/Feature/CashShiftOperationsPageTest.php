@@ -68,3 +68,28 @@ it('requires a variance note when the declared shift total differs', function ()
     app(Tenancy::class)->set($tenant);
     expect($shift->refresh()->status)->toBe(CashShiftStatus::Open);
 });
+
+it('shows manager-level daily collector totals across shifts', function (): void {
+    $tenant = Tenant::create(['name' => 'Northline', 'slug' => 'northline', 'base_currency' => 'USD', 'collection_currency' => 'USD']);
+    $manager = User::create(['tenant_id' => $tenant->id, 'name' => 'Billing manager', 'email' => 'shift-manager@example.test', 'password' => Hash::make('password'), 'role' => 'billing_manager']);
+    $collector = User::create(['tenant_id' => $tenant->id, 'name' => 'Field collector', 'email' => 'shift-collector@example.test', 'password' => Hash::make('password'), 'role' => 'collector']);
+    app(CapabilitySeeder::class)->run();
+    app(Tenancy::class)->set($tenant);
+    $manager->assignRole('billing_manager');
+    $collector->assignRole('collector');
+    $managerShift = CashShift::create(['user_id' => $manager->id, 'status' => CashShiftStatus::Closed, 'opened_at' => now()->startOfDay(), 'closed_at' => now(), 'system_totals' => ['USD' => 1000], 'declared_totals' => ['USD' => 1000], 'variance' => false]);
+    $collectorShift = CashShift::create(['user_id' => $collector->id, 'status' => CashShiftStatus::Closed, 'opened_at' => now()->startOfDay(), 'closed_at' => now(), 'system_totals' => ['USD' => 2000], 'declared_totals' => ['USD' => 2000], 'variance' => false]);
+    $customer = Customer::factory()->create(['balance_currency' => 'USD']);
+    Payment::create(['cash_shift_id' => $managerShift->id, 'customer_id' => $customer->id, 'number' => 'RCT-REPORT-001', 'status' => 'posted', 'amount' => 1000, 'currency' => 'USD', 'method' => 'cash', 'idempotency_key' => 'shift-report-001', 'received_at' => now(), 'actor_id' => $manager->id]);
+    Payment::create(['cash_shift_id' => $collectorShift->id, 'customer_id' => $customer->id, 'number' => 'RCT-REPORT-002', 'status' => 'posted', 'amount' => 2000, 'currency' => 'USD', 'method' => 'cash', 'idempotency_key' => 'shift-report-002', 'received_at' => now(), 'actor_id' => $collector->id]);
+
+    $this->actingAs($manager)
+        ->get(route('billing.shifts', ['date' => now()->toDateString()]))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->where('canViewReport', true)
+            ->where('dailyReport.payment_count', 2)
+            ->where('dailyReport.totals.USD', 3000)
+            ->where('shifts.total', 2)
+        );
+});
