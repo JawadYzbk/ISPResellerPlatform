@@ -18,3 +18,25 @@ it('adds baseline browser security headers to web responses', function (): void 
         ->toContain('ws://127.0.0.1:5173')
         ->toContain('http://[::1]:5173');
 });
+
+it('does not expose development script capabilities in production CSP', function (): void {
+    config(['app.env' => 'production']);
+
+    $policy = $this->get('/login')->headers->get('Content-Security-Policy');
+
+    expect($policy)
+        ->not->toContain("'unsafe-eval'")
+        ->not->toContain('http://127.0.0.1:5173')
+        ->not->toContain('ws://127.0.0.1:5173');
+});
+
+it('allows the configured Reverb websocket origin', function (): void {
+    config([
+        'app.env' => 'production',
+        'broadcasting.connections.reverb.options' => ['host' => 'realtime.example.test', 'port' => 443, 'scheme' => 'https'],
+    ]);
+
+    $policy = $this->get('/login')->headers->get('Content-Security-Policy');
+
+    expect($policy)->toContain('wss://realtime.example.test:443');
+});
