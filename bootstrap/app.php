@@ -32,6 +32,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $schedule->command('notifications:expiry-reminders')->hourlyAt(10);
         $schedule->command('radius:mark-stale-sessions')->everyFifteenMinutes();
         $schedule->command('tickets:auto-close-resolved')->hourlyAt(20);
+        $schedule->command('billing:generate-invoices')->dailyAt('01:20');
     })
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->web(append: [
