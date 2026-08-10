@@ -54,6 +54,29 @@ services:
       app:
         condition: service_started
 
+  scheduler:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+    working_dir: /var/www/html
+    command: sh -c "composer install --no-interaction && php artisan schedule:work"
+    volumes:
+      - .:/var/www/html
+    environment:
+      APP_ENV: local
+      DB_CONNECTION: pgsql
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_DATABASE: isp_manager
+      DB_USERNAME: isp_manager
+      DB_PASSWORD: isp_manager
+      REDIS_CLIENT: predis
+      REDIS_HOST: redis
+      QUEUE_CONNECTION: redis
+    depends_on:
+      app:
+        condition: service_started
+
   frontend:
     image: node:22-alpine
     working_dir: /var/www/html

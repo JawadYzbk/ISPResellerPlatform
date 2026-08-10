@@ -61,14 +61,10 @@ composer install
 php artisan key:generate
 php artisan migrate --seed
 npm ci
-npm run dev
+composer run dev
 ```
 
-In another terminal:
-
-```powershell
-php artisan serve
-```
+`composer run dev` starts the PHP server, queue listener, scheduler, log tail and Vite together.
 
 Open [http://localhost:8000](http://localhost:8000). Demo account: `admin@example.com` / `password`.
 
