@@ -16,7 +16,7 @@ it('runs a customer CSV import and rollback through the API', function (): void 
     $user = User::create(['tenant_id' => $tenant->id, 'name' => 'Owner', 'email' => 'owner-import@example.test', 'password' => Hash::make('password'), 'role' => 'tenant_owner']);
     app(CapabilitySeeder::class)->run();
     $user->assignRole('tenant_owner');
-    $token = $user->createToken('importer', ['api'])->plainTextToken;
+    $token = $user->createToken('importer', ['api', 'staff:operator'])->plainTextToken;
 
     $response = $this->withToken($token)->postJson('/api/v1/imports/customers', ['filename' => 'customers.csv', 'dry_run' => false, 'csv' => "first_name,phone\nAda,+96170123456"]);
     $response->assertCreated()->assertJsonPath('status', 'completed')->assertJsonPath('successful_rows', 1);

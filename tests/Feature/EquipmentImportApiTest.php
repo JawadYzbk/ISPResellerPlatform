@@ -20,7 +20,7 @@ it('imports and rolls back equipment through the scoped API', function (): void 
     $user = User::create(['tenant_id' => $tenant->id, 'name' => 'Operations', 'email' => 'equipment-import@example.test', 'password' => Hash::make('password'), 'role' => 'operations_manager']);
     app(CapabilitySeeder::class)->run();
     $user->assignRole('operations_manager');
-    $token = $user->createToken('equipment-importer', ['api'])->plainTextToken;
+    $token = $user->createToken('equipment-importer', ['api', 'staff:operator'])->plainTextToken;
     $csv = "sku,warehouse_code,serial_number,status\nONT-001,MAIN,SN-001,available";
 
     $response = $this->withToken($token)->postJson('/api/v1/imports/equipment', ['filename' => 'equipment.csv', 'csv' => $csv]);
@@ -42,7 +42,7 @@ it('rejects equipment imports without inventory receive capability', function ()
     $user = User::create(['tenant_id' => $tenant->id, 'name' => 'Collector', 'email' => 'equipment-import-collector@example.test', 'password' => Hash::make('password'), 'role' => 'collector']);
     app(CapabilitySeeder::class)->run();
     $user->assignRole('collector');
-    $token = $user->createToken('equipment-importer', ['api'])->plainTextToken;
+    $token = $user->createToken('equipment-importer', ['api', 'staff:operator'])->plainTextToken;
 
     $this->withToken($token)->postJson('/api/v1/imports/equipment', [
         'csv' => "sku,warehouse_code,serial_number\nONT-001,MAIN,SN-001",

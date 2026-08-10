@@ -21,7 +21,7 @@ it('uses cursor pagination and whitelisted filters for customer API reads', func
     app(CapabilitySeeder::class)->run();
     $user->assignRole('tenant_owner');
     Customer::factory()->create(['first_name' => 'Maya']);
-    $token = $user->createToken('api-test', ['api'])->plainTextToken;
+    $token = $user->createToken('api-test', ['api', 'staff:operator'])->plainTextToken;
 
     $this->withToken($token)->getJson('/api/v1/customers?filter[search]=Maya')->assertOk()->assertJsonPath('data.0.first_name', 'Maya');
 });
@@ -36,7 +36,7 @@ it('replays an API payment response without duplicating the payment', function (
     $plan = Plan::factory()->create(['amount_minor' => 3500]);
     $plan->prices()->create(['currency' => 'USD', 'amount_minor' => 3500, 'effective_from' => now()->subDay()]);
     $invoice = app(IssueInvoice::class)->handle(app(CreateInvoice::class)->handle($customer, $plan));
-    $token = $user->createToken('api-test', ['api'])->plainTextToken;
+    $token = $user->createToken('api-test', ['api', 'staff:operator'])->plainTextToken;
     $payload = ['customer_id' => $customer->public_id, 'invoice_id' => $invoice->public_id, 'amount' => 3500, 'currency' => 'USD', 'method' => 'cash'];
 
     $first = $this->withToken($token)->withHeader('X-Idempotency-Key', 'api-payment-001')->postJson('/api/v1/payments', $payload);
@@ -54,7 +54,7 @@ it('rejects a reused API idempotency key with a different request', function ():
     app(CapabilitySeeder::class)->run();
     $user->assignRole('cashier');
     $customer = Customer::factory()->create();
-    $token = $user->createToken('api-test', ['api'])->plainTextToken;
+    $token = $user->createToken('api-test', ['api', 'staff:operator'])->plainTextToken;
     $headers = ['X-Idempotency-Key' => 'api-payment-002'];
     $payload = ['customer_id' => $customer->public_id, 'amount' => 100, 'currency' => 'USD', 'method' => 'cash'];
 

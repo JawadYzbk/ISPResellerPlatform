@@ -23,7 +23,7 @@ it('lists and shows only work orders assigned to the technician', function (): v
     $service = Service::factory()->create(['customer_id' => $customer->id, 'status' => 'pending']);
     $assigned = WorkOrder::create(['number' => 'WO-TECH-001', 'type' => 'installation', 'customer_id' => $service->customer_id, 'service_id' => $service->id, 'assigned_to' => $user->id, 'status' => WorkOrderStatus::Assigned, 'scheduled_at' => now()->startOfDay()]);
     WorkOrder::create(['number' => 'WO-OTHER-001', 'type' => 'repair', 'status' => WorkOrderStatus::Pending]);
-    $token = $user->createToken('technician', ['api'])->plainTextToken;
+    $token = $user->createToken('technician', ['api', 'staff:technician'])->plainTextToken;
 
     $this->withToken($token)->getJson('/api/v1/technician/work-orders?status=assigned')
         ->assertOk()

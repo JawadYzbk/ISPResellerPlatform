@@ -16,7 +16,7 @@ it('imports and rolls back plans through the scoped API', function (): void {
     $user = User::create(['tenant_id' => $tenant->id, 'name' => 'Operations', 'email' => 'plans-import@example.test', 'password' => Hash::make('password'), 'role' => 'operations_manager']);
     app(CapabilitySeeder::class)->run();
     $user->assignRole('operations_manager');
-    $token = $user->createToken('plan-importer', ['api'])->plainTextToken;
+    $token = $user->createToken('plan-importer', ['api', 'staff:operator'])->plainTextToken;
     $csv = "name,download_kbps,upload_kbps,duration_days,amount_minor,currency\nHome 50,50000,10000,30,2500,USD";
 
     $response = $this->withToken($token)->postJson('/api/v1/imports/plans', ['filename' => 'plans.csv', 'csv' => $csv]);
@@ -38,7 +38,7 @@ it('rejects plan imports without plan management capability', function (): void 
     $user = User::create(['tenant_id' => $tenant->id, 'name' => 'Collector', 'email' => 'plans-import-collector@example.test', 'password' => Hash::make('password'), 'role' => 'collector']);
     app(CapabilitySeeder::class)->run();
     $user->assignRole('collector');
-    $token = $user->createToken('plan-importer', ['api'])->plainTextToken;
+    $token = $user->createToken('plan-importer', ['api', 'staff:operator'])->plainTextToken;
 
     $this->withToken($token)->postJson('/api/v1/imports/plans', [
         'csv' => "name,download_kbps,upload_kbps,duration_days,amount_minor,currency\nHome 50,50000,10000,30,2500,USD",

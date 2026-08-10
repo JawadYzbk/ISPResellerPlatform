@@ -20,7 +20,7 @@ it('keeps customer API resources tenant-scoped', function (): void {
     $northCustomer = Customer::factory()->create();
     app(Tenancy::class)->run($south, fn (): Customer => Customer::factory()->create());
 
-    $token = $user->createToken('api-test', ['api'])->plainTextToken;
+    $token = $user->createToken('api-test', ['api', 'staff:operator'])->plainTextToken;
 
     $this->withToken($token)->getJson('/api/v1/customers')->assertOk()->assertJsonPath('data.0.id', $northCustomer->id);
     $this->withToken($token)->getJson('/api/v1/customers/'.$northCustomer->public_id)->assertOk()->assertJsonPath('id', $northCustomer->id);

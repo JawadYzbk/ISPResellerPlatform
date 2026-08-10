@@ -20,7 +20,7 @@ it('imports and rolls back services through the scoped API', function (): void {
     $user = User::create(['tenant_id' => $tenant->id, 'name' => 'Operations', 'email' => 'services-import@example.test', 'password' => Hash::make('password'), 'role' => 'operations_manager']);
     app(CapabilitySeeder::class)->run();
     $user->assignRole('operations_manager');
-    $token = $user->createToken('service-importer', ['api'])->plainTextToken;
+    $token = $user->createToken('service-importer', ['api', 'staff:operator'])->plainTextToken;
     $csv = "customer_code,plan_slug,username,status,provisioning_mode,network_state\nCUS-001,home-50,ada.home,active,radius,in_sync";
 
     $response = $this->withToken($token)->postJson('/api/v1/imports/services', ['filename' => 'services.csv', 'csv' => $csv]);
@@ -43,7 +43,7 @@ it('rejects service imports without service creation capability', function (): v
     $user = User::create(['tenant_id' => $tenant->id, 'name' => 'Collector', 'email' => 'services-import-collector@example.test', 'password' => Hash::make('password'), 'role' => 'collector']);
     app(CapabilitySeeder::class)->run();
     $user->assignRole('collector');
-    $token = $user->createToken('service-importer', ['api'])->plainTextToken;
+    $token = $user->createToken('service-importer', ['api', 'staff:operator'])->plainTextToken;
 
     $this->withToken($token)->postJson('/api/v1/imports/services', [
         'csv' => "customer_code,plan_slug,username\nCUS-001,home-50,ada.home",

@@ -19,7 +19,7 @@ it('records collector batches with per-item success and error results', function
     $user->assignRole('collector');
     $first = Customer::factory()->create();
     $second = Customer::factory()->create();
-    $token = $user->createToken('collector', ['api'])->plainTextToken;
+    $token = $user->createToken('collector', ['api', 'staff:collector'])->plainTextToken;
     $items = [
         ['customer_id' => $first->public_id, 'amount' => 100, 'currency' => 'USD', 'method' => 'cash', 'idempotency_key' => 'batch-001'],
         ['customer_id' => $first->public_id, 'amount' => 100, 'currency' => 'USD', 'method' => 'cash', 'idempotency_key' => 'batch-001'],

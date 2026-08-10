@@ -20,7 +20,7 @@ it('limits reseller partner APIs to descendants and funds a visible wallet idemp
     $user = User::create(['tenant_id' => $tenant->id, 'partner_id' => $parent->id, 'name' => 'Reseller', 'email' => 'reseller-api@example.test', 'password' => Hash::make('password'), 'role' => 'reseller_owner']);
     app(CapabilitySeeder::class)->run();
     $user->assignRole('reseller_owner');
-    $token = $user->createToken('partner-api', ['api'])->plainTextToken;
+    $token = $user->createToken('partner-api', ['api', 'staff:operator'])->plainTextToken;
 
     $this->withToken($token)->getJson('/api/v1/partners')->assertOk()->assertJsonCount(2, 'data')->assertJsonMissing(['code' => $sibling->code]);
     $headers = ['X-Idempotency-Key' => 'partner-top-up-001'];

@@ -24,7 +24,7 @@ it('completes an installation once and makes retries replay the same result', fu
     $user->assignRole('technician');
     $service = Service::factory()->create(['status' => ServiceStatus::Pending]);
     $workOrder = WorkOrder::create(['number' => 'WO-00001', 'type' => 'installation', 'customer_id' => $service->customer_id, 'service_id' => $service->id, 'assigned_to' => $user->id, 'status' => WorkOrderStatus::Assigned]);
-    $token = $user->createToken('technician', ['api'])->plainTextToken;
+    $token = $user->createToken('technician', ['api', 'staff:technician'])->plainTextToken;
     $headers = ['X-Idempotency-Key' => 'work-order-complete-001'];
 
     $first = $this->withToken($token)->withHeaders($headers)->postJson('/api/v1/technician/work-orders/'.$workOrder->id.'/complete');

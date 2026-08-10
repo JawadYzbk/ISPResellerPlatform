@@ -21,7 +21,7 @@ it('lists services and idempotently queues a suspend command', function (): void
     app(CapabilitySeeder::class)->run();
     $user->assignRole('operations_manager');
     $service = Service::factory()->create(['status' => ServiceStatus::Active]);
-    $token = $user->createToken('service-api', ['api'])->plainTextToken;
+    $token = $user->createToken('service-api', ['api', 'staff:operator'])->plainTextToken;
 
     $this->withToken($token)->getJson('/api/v1/services?filter[status]=active')->assertOk()->assertJsonPath('data.0.id', $service->id);
 
