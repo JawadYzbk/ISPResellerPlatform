@@ -36,6 +36,7 @@ The two-factor setup and challenge routes remain available, but web enforcement 
 - Treat ledger rows, payments, allocations, and audit events as append-only evidence. Use an approved adjustment workflow for corrections.
 - Treat service commercial status and network state as separate. A paid service may remain operationally drifted until the outbox command succeeds.
 - Require re-authentication and the appropriate capability before revealing upstream credentials. Record the reason and ticket reference in the audit trail.
+- Use the customer **Anonymize** action only where legal retention permits. It requires recent re-authentication, replaces personal fields with a non-personal placeholder, preserves financial and service history, and records a privacy-safe audit event. The action is irreversible.
 - Use idempotency keys for payment, activation, suspension, settlement payment, import rollback, and network retry requests.
 
 ## Release checklist

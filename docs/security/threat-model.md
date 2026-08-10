@@ -17,6 +17,7 @@
 - CI runs tests, formatting, static analysis, typecheck and a production frontend build.
 - Sentry is opt-in, disabled by an empty DSN, and strips user identity and request payload data before sending events.
 - Backup archives are configured for encryption, verification and failure/health notifications.
+- Customer PII anonymization replaces personal fields with non-personal placeholders, preserves financial and service records, and writes a safe audit event without retaining the original values in activity properties.
 
 ## Required controls before pilot
 
