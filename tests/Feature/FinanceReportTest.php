@@ -6,10 +6,14 @@ use App\Actions\GetFinanceReport;
 use App\Actions\IssueInvoice;
 use App\Actions\RecordPayment;
 use App\Enums\ServiceStatus;
+use App\Models\CashShift;
 use App\Models\Customer;
 use App\Models\Plan;
+use App\Models\Pop;
+use App\Models\Router;
 use App\Models\Service;
 use App\Models\Tenant;
+use App\Models\UpstreamLink;
 use App\Models\UsageDaily;
 use App\Models\User;
 use App\Support\Tenancy;
@@ -73,4 +77,30 @@ it('streams the finance report as CSV for an authorised operator', function (): 
         ->assertStreamed();
 
     expect(substr($xlsx->streamedContent(), 0, 2))->toBe('PK');
+});
+
+it('reports POP margin and collector performance from posted records', function (): void {
+    $tenant = Tenant::create(['name' => 'Westline', 'slug' => 'westline', 'base_currency' => 'USD', 'collection_currency' => 'USD']);
+    app(Tenancy::class)->set($tenant);
+    $collector = User::create(['tenant_id' => $tenant->id, 'name' => 'Nadia Collector', 'email' => 'nadia-report@example.test', 'password' => Hash::make('password'), 'role' => 'collector']);
+    $shift = CashShift::create(['user_id' => $collector->id, 'status' => 'open', 'opened_at' => now()]);
+    $pop = Pop::create(['name' => 'Central POP', 'code' => 'CENTRAL']);
+    $router = Router::create(['pop_id' => $pop->id, 'name' => 'Core-01', 'host' => '192.0.2.20', 'username' => 'api', 'password_encrypted' => 'secret']);
+    $service = Service::factory()->create(['router_id' => $router->id, 'status' => ServiceStatus::Active]);
+    $service->plan->prices()->create(['currency' => 'USD', 'amount_minor' => 3500, 'effective_from' => now()->subDay()]);
+    $invoice = app(IssueInvoice::class)->handle(app(CreateInvoice::class)->handle($service->customer, $service->plan, $service));
+    app(RecordPayment::class)->handle($service->customer, 3500, 'USD', 'cash', 'report-collector-001', $invoice, $collector, $shift);
+    UpstreamLink::create(['pop_id' => $pop->id, 'provider_name' => 'Transit Provider', 'capacity_mbps' => 1000, 'monthly_cost_amount' => 1000, 'currency' => 'USD', 'contract_start' => now()->startOfMonth(), 'contract_end' => now()->endOfMonth()]);
+
+    $from = CarbonImmutable::now()->startOfMonth();
+    $to = CarbonImmutable::now()->endOfMonth();
+    $report = app(GetFinanceReport::class)->handle($from, $to);
+
+    expect($report['margin_by_pop']['CENTRAL']['revenue_by_currency']['USD'])->toBe(3500)
+        ->and($report['margin_by_pop']['CENTRAL']['upstream_cost_by_currency']['USD'])->toBe(1000)
+        ->and($report['margin_by_pop']['CENTRAL']['margin_by_currency']['USD'])->toBe(2500)
+        ->and($report['collector_performance'][0]['collector'])->toBe('Nadia Collector')
+        ->and($report['collector_performance'][0]['payment_count'])->toBe(1)
+        ->and($report['collector_performance'][0]['totals_by_currency']['USD'])->toBe(3500)
+        ->and(app(ExportFinanceReportCsv::class)->handle($from, $to))->toContain('margin_by_pop:CENTRAL,USD,2500');
 });

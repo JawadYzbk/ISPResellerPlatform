@@ -11,9 +11,11 @@ use App\Models\Payment;
 use App\Models\PaymentAllocation;
 use App\Models\Service;
 use App\Models\ServiceEvent;
+use App\Models\UpstreamLink;
 use App\Models\UsageDaily;
 use Carbon\Carbon;
 use Carbon\CarbonImmutable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 
 final readonly class GetFinanceReport implements Action
@@ -32,7 +34,13 @@ final readonly class GetFinanceReport implements Action
             $collectionRates[$currency] = $invoiced === 0 ? null : round(($collected / $invoiced) * 100, 2);
         }
         $aging = $this->aging($to);
-        $breakdowns = $this->breakdowns($invoices->clone()->with(['customer.zone', 'lines.plan'])->get(), $from, $to, $collectedByCurrency);
+        $breakdowns = $this->breakdowns(
+            $invoices->clone()->with(['customer.zone', 'lines.plan', 'lines.service.router.pop'])->get(),
+            $from,
+            $to,
+            $collectedByCurrency,
+            $payments->clone()->with('cashShift.user')->get(),
+        );
 
         return [
             'from' => $from->toDateString(),
@@ -49,11 +57,12 @@ final readonly class GetFinanceReport implements Action
         ];
     }
 
-    /** @param Collection<int, Invoice> $invoices @param array<string, int> $collectedByCurrency @return array<string, mixed> */
-    private function breakdowns(Collection $invoices, CarbonImmutable $from, CarbonImmutable $to, array $collectedByCurrency): array
+    /** @param Collection<int, Invoice> $invoices @param array<string, int> $collectedByCurrency @param Collection<int, Payment> $payments @return array<string, mixed> */
+    private function breakdowns(Collection $invoices, CarbonImmutable $from, CarbonImmutable $to, array $collectedByCurrency, Collection $payments): array
     {
         $revenueByPlan = [];
         $revenueByZone = [];
+        $revenueByPop = [];
         $taxByCurrency = [];
         foreach ($invoices as $invoice) {
             $currency = $invoice->currency;
@@ -63,6 +72,8 @@ final readonly class GetFinanceReport implements Action
             foreach ($invoice->lines as $line) {
                 $plan = (string) ($line->plan?->getAttribute('slug') ?? 'unassigned');
                 $revenueByPlan[$plan][$currency] = ($revenueByPlan[$plan][$currency] ?? 0) + $line->total_amount;
+                $pop = (string) ($line->service?->router?->pop?->getAttribute('code') ?? 'unassigned');
+                $revenueByPop[$pop][$currency] = ($revenueByPop[$pop][$currency] ?? 0) + $line->total_amount;
             }
         }
 
@@ -75,12 +86,94 @@ final readonly class GetFinanceReport implements Action
         return [
             'revenue_by_plan' => $revenueByPlan,
             'revenue_by_zone' => $revenueByZone,
+            'margin_by_pop' => $this->marginByPop($revenueByPop, $from, $to),
             'tax_by_currency' => $taxByCurrency,
             'churned_services' => ServiceEvent::query()->where('to_status', 'terminated')->whereBetween('created_at', [$from->startOfDay(), $to->endOfDay()])->count(),
+            'retention_by_period' => $this->retention($from, $to),
             'active_customer_count' => $activeCustomerCount,
             'arpu_by_currency' => $arpu,
             'top_usage' => $this->topUsage($from, $to),
+            'collector_performance' => $this->collectorPerformance($payments),
         ];
+    }
+
+    /** @param array<string, array<string, int>> $revenueByPop @return array<string, array<string, array<string, int>>> */
+    private function marginByPop(array $revenueByPop, CarbonImmutable $from, CarbonImmutable $to): array
+    {
+        $costByPop = [];
+        UpstreamLink::query()
+            ->with('pop')
+            ->whereDate('contract_start', '<=', $to->toDateString())
+            ->where(fn (Builder $query): Builder => $query->whereNull('contract_end')->orWhereDate('contract_end', '>=', $from->toDateString()))
+            ->get()
+            ->each(function (UpstreamLink $link) use (&$costByPop, $from, $to): void {
+                $start = CarbonImmutable::parse($link->getAttribute('contract_start'))->max($from->startOfDay());
+                $end = CarbonImmutable::parse($link->getAttribute('contract_end') ?? $to->toDateString())->min($to->endOfDay());
+                if ($end->lessThan($start)) {
+                    return;
+                }
+                $days = $start->diffInDays($end) + 1;
+                $cost = (int) round($link->monthly_cost_amount * ($days / $start->daysInMonth));
+                $pop = (string) ($link->pop?->getAttribute('code') ?? 'unassigned');
+                $costByPop[$pop][$link->currency] = ($costByPop[$pop][$link->currency] ?? 0) + $cost;
+            });
+
+        $pops = array_unique([...array_keys($revenueByPop), ...array_keys($costByPop)]);
+        $report = [];
+        foreach ($pops as $pop) {
+            $revenue = $revenueByPop[$pop] ?? [];
+            $cost = $costByPop[$pop] ?? [];
+            $margin = [];
+            foreach (array_unique([...array_keys($revenue), ...array_keys($cost)]) as $currency) {
+                $margin[$currency] = ($revenue[$currency] ?? 0) - ($cost[$currency] ?? 0);
+            }
+            $report[$pop] = [
+                'revenue_by_currency' => $revenue,
+                'upstream_cost_by_currency' => $cost,
+                'margin_by_currency' => $margin,
+            ];
+        }
+
+        return $report;
+    }
+
+    /** @return array{active_at_period_start: int, terminated_services: int, retention_rate_percent: float|null} */
+    private function retention(CarbonImmutable $from, CarbonImmutable $to): array
+    {
+        $terminatedBeforeStart = ServiceEvent::query()
+            ->where('to_status', 'terminated')
+            ->where('created_at', '<=', $from->endOfDay())
+            ->pluck('service_id');
+        $activeAtPeriodStart = (int) Service::query()
+            ->where('created_at', '<=', $from->endOfDay())
+            ->whereNotIn('id', $terminatedBeforeStart)
+            ->count();
+        $terminated = (int) ServiceEvent::query()
+            ->where('to_status', 'terminated')
+            ->whereBetween('created_at', [$from->startOfDay(), $to->endOfDay()])
+            ->count();
+
+        return [
+            'active_at_period_start' => $activeAtPeriodStart,
+            'terminated_services' => $terminated,
+            'retention_rate_percent' => $activeAtPeriodStart === 0 ? null : round(max(0, $activeAtPeriodStart - $terminated) / $activeAtPeriodStart * 100, 2),
+        ];
+    }
+
+    /** @param Collection<int, Payment> $payments @return list<array{collector: string, payment_count: int, totals_by_currency: array<string, int>}> */
+    private function collectorPerformance(Collection $payments): array
+    {
+        /** @var array<string, array{collector: string, payment_count: int, totals_by_currency: array<string, int>}> $performance */
+        $performance = [];
+        foreach ($payments as $payment) {
+            $collector = $payment->cashShift?->user;
+            $key = $collector === null ? 'unassigned' : 'user:'.$collector->id;
+            $performance[$key] ??= ['collector' => $collector === null ? 'Unassigned' : $collector->name, 'payment_count' => 0, 'totals_by_currency' => []];
+            $performance[$key]['payment_count']++;
+            $performance[$key]['totals_by_currency'][$payment->currency] = ($performance[$key]['totals_by_currency'][$payment->currency] ?? 0) + $payment->amount;
+        }
+
+        return array_values($performance);
     }
 
     /** @return list<array{service_id: string|null, username: string|null, total_octets: int}> */

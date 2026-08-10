@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
+/** @property User $user */
 class CashShift extends Model
 {
     use Auditable, BelongsToTenant;

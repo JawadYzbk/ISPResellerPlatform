@@ -14,6 +14,7 @@ use Illuminate\Support\Str;
 /**
  * @property PaymentStatus $status
  * @property Carbon|null $received_at
+ * @property CashShift|null $cashShift
  */
 class Payment extends Model
 {

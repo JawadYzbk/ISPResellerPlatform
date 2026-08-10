@@ -28,4 +28,10 @@ class Pop extends Model
     {
         return $this->hasMany(Router::class);
     }
+
+    /** @return HasMany<UpstreamLink, $this> */
+    public function upstreamLinks(): HasMany
+    {
+        return $this->hasMany(UpstreamLink::class);
+    }
 }

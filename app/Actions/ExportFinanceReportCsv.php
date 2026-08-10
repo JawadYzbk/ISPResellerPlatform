@@ -42,6 +42,17 @@ final readonly class ExportFinanceReportCsv implements Action
                 }
             }
         }
+        foreach ($report['margin_by_pop'] as $pop => $amounts) {
+            foreach ($amounts['revenue_by_currency'] as $currency => $amount) {
+                fputcsv($stream, ['revenue_by_pop:'.$pop, $currency, $amount]);
+            }
+            foreach ($amounts['upstream_cost_by_currency'] as $currency => $amount) {
+                fputcsv($stream, ['upstream_cost_by_pop:'.$pop, $currency, $amount]);
+            }
+            foreach ($amounts['margin_by_currency'] as $currency => $amount) {
+                fputcsv($stream, ['margin_by_pop:'.$pop, $currency, $amount]);
+            }
+        }
         foreach ($report['tax_by_currency'] as $currency => $amount) {
             fputcsv($stream, ['tax_by_currency', $currency, $amount]);
         }
@@ -50,6 +61,15 @@ final readonly class ExportFinanceReportCsv implements Action
         }
         fputcsv($stream, ['active_customer_count', '', $report['active_customer_count']]);
         fputcsv($stream, ['churned_services', '', $report['churned_services']]);
+        foreach ($report['retention_by_period'] as $metric => $value) {
+            fputcsv($stream, ['retention:'.$metric, '', $value]);
+        }
+        foreach ($report['collector_performance'] as $collector) {
+            foreach ($collector['totals_by_currency'] as $currency => $amount) {
+                fputcsv($stream, ['collector:'.$collector['collector'], $currency, $amount]);
+            }
+            fputcsv($stream, ['collector_payment_count:'.$collector['collector'], '', $collector['payment_count']]);
+        }
         foreach ($report['top_usage'] as $usage) {
             fputcsv($stream, ['top_usage:'.($usage['username'] ?? 'unknown'), '', $usage['total_octets']]);
         }
