@@ -54,6 +54,10 @@ export default function FinanceReportPage({ report }: Props) {
                         <Download size={15} />
                         Download CSV
                     </a>
+                    <a href="/reports/finance?format=xlsx" className="button-quiet">
+                        <Download size={15} />
+                        Download XLSX
+                    </a>
                 </div>
             </div>
             <div className="mt-8 grid gap-4 md:grid-cols-4">
@@ -159,6 +163,80 @@ export default function FinanceReportPage({ report }: Props) {
                                 <span className="text-muted">{formatBytes(usage.total_octets)}</span>
                             </div>
                         ))}
+                    </div>
+                </div>
+            </div>
+            <div className="mt-6 grid gap-6 lg:grid-cols-2">
+                <div className="card p-6">
+                    <h2 className="section-title">Margin by POP</h2>
+                    <div className="mt-4 divide-y divide-line text-sm">
+                        {Object.entries(report.margin_by_pop).map(([pop, amounts]) => (
+                            <div key={pop} className="py-3">
+                                <div className="flex items-center justify-between">
+                                    <span className="font-semibold">{pop}</span>
+                                    <span className="font-semibold">
+                                        {Object.entries(amounts.margin_by_currency)
+                                            .map(([currency, amount]) => formatMoney(amount, currency))
+                                            .join(' · ')}
+                                    </span>
+                                </div>
+                                <p className="mt-1 text-xs text-muted">
+                                    Revenue{' '}
+                                    {Object.entries(amounts.revenue_by_currency)
+                                        .map(([currency, amount]) => formatMoney(amount, currency))
+                                        .join(' · ')}{' '}
+                                    · Upstream cost{' '}
+                                    {Object.entries(amounts.upstream_cost_by_currency)
+                                        .map(([currency, amount]) => formatMoney(amount, currency))
+                                        .join(' · ') || '—'}
+                                </p>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+                <div className="card p-6">
+                    <h2 className="section-title">Collector performance</h2>
+                    <div className="mt-4 divide-y divide-line text-sm">
+                        {report.collector_performance.map((collector) => (
+                            <div key={collector.collector} className="flex items-center justify-between py-3">
+                                <span>
+                                    <span className="block font-semibold">{collector.collector}</span>
+                                    <span className="text-xs text-muted">{collector.payment_count} payment(s)</span>
+                                </span>
+                                <span className="text-muted">
+                                    {Object.entries(collector.totals_by_currency)
+                                        .map(([currency, amount]) => formatMoney(amount, currency))
+                                        .join(' · ')}
+                                </span>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+            <div className="mt-6 card p-6">
+                <div className="grid gap-6 sm:grid-cols-3">
+                    <div>
+                        <p className="text-xs font-semibold uppercase tracking-wider text-muted">Retention</p>
+                        <p className="mt-2 font-display text-2xl font-semibold">
+                            {report.retention_by_period.retention_rate_percent === null
+                                ? '—'
+                                : `${report.retention_by_period.retention_rate_percent.toFixed(2)}%`}
+                        </p>
+                        <p className="mt-1 text-xs text-muted">Based on period-start services</p>
+                    </div>
+                    <div>
+                        <p className="text-xs font-semibold uppercase tracking-wider text-muted">Tax recorded</p>
+                        <p className="mt-2 font-display text-2xl font-semibold">
+                            {firstAmount(report.tax_by_currency)}
+                        </p>
+                        <p className="mt-1 text-xs text-muted">Issued invoices in the selected period</p>
+                    </div>
+                    <div>
+                        <p className="text-xs font-semibold uppercase tracking-wider text-muted">ARPU</p>
+                        <p className="mt-2 font-display text-2xl font-semibold">
+                            {firstAmount(report.arpu_by_currency as Record<string, number>)}
+                        </p>
+                        <p className="mt-1 text-xs text-muted">Posted collections per active customer</p>
                     </div>
                 </div>
             </div>

@@ -64,11 +64,29 @@ export type FinanceReport = {
     customer_balances_by_currency: Record<string, number>;
     revenue_by_plan: Record<string, Record<string, number>>;
     revenue_by_zone: Record<string, Record<string, number>>;
+    margin_by_pop: Record<
+        string,
+        {
+            revenue_by_currency: Record<string, number>;
+            upstream_cost_by_currency: Record<string, number>;
+            margin_by_currency: Record<string, number>;
+        }
+    >;
     tax_by_currency: Record<string, number>;
     churned_services: number;
+    retention_by_period: {
+        active_at_period_start: number;
+        terminated_services: number;
+        retention_rate_percent: number | null;
+    };
     active_customer_count: number;
     arpu_by_currency: Record<string, number | null>;
     top_usage: { service_id: string | null; username: string | null; total_octets: number }[];
+    collector_performance: {
+        collector: string;
+        payment_count: number;
+        totals_by_currency: Record<string, number>;
+    }[];
 };
 
 export type OperationsReport = {
