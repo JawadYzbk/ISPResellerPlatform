@@ -1,14 +1,14 @@
-import { Head, Link } from '@inertiajs/react';
-import { ArrowLeft, CalendarDays, CreditCard, MapPin, MessageCircle, Phone, Plus, RefreshCw, Wifi } from 'lucide-react';
+import { Head, Link, router } from '@inertiajs/react';
+import { ArrowLeft, CalendarDays, CreditCard, MapPin, MessageCircle, Phone, Plus, RefreshCw, ShieldOff, Wifi } from 'lucide-react';
 
 import { StatusBadge } from '@/components/StatusBadge';
 import AppLayout from '@/layouts/AppLayout';
 import { formatDate, formatMoney } from '@/lib/format';
 import type { Customer, PageProps } from '@/types';
 
-type Props = PageProps & { customer: Customer };
+type Props = PageProps & { customer: Customer; canAnonymize?: boolean };
 
-export default function CustomerShow({ customer }: Props) {
+export default function CustomerShow({ customer, canAnonymize = false }: Props) {
     const fullName = `${customer.first_name} ${customer.last_name ?? ''}`.trim();
     return (
         <AppLayout>
@@ -49,6 +49,20 @@ export default function CustomerShow({ customer }: Props) {
                         <CreditCard size={16} />
                         Take payment
                     </button>
+                    {canAnonymize && !customer.anonymized_at && (
+                        <button
+                            type="button"
+                            className="button-secondary text-coral"
+                            onClick={() => {
+                                if (window.confirm('Anonymize this customer record? Personal data cannot be recovered.')) {
+                                    router.post(`/customers/${customer.public_id}/anonymize`);
+                                }
+                            }}
+                        >
+                            <ShieldOff size={16} />
+                            Anonymize
+                        </button>
+                    )}
                 </div>
             </div>
             <div className="mt-8 grid gap-6 xl:grid-cols-[1.3fr_0.7fr]">

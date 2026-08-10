@@ -31,4 +31,9 @@ final class CustomerPolicy
     {
         return $user->can('customers.export');
     }
+
+    public function anonymize(User $user, Customer $customer): bool
+    {
+        return $user->tenant_id === $customer->tenant_id && $user->can('customers.anonymize');
+    }
 }

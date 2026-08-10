@@ -20,6 +20,7 @@ use Illuminate\Support\Str;
  * @property string $public_id
  * @property CustomerStatus $status
  * @property Carbon|null $deleted_at
+ * @property Carbon|null $anonymized_at
  * @property Zone|null $zone
  */
 class Customer extends Model
@@ -33,7 +34,7 @@ class Customer extends Model
 
     protected function casts(): array
     {
-        return ['status' => CustomerStatus::class, 'balance_amount' => 'integer', 'notification_preferences' => 'array'];
+        return ['status' => CustomerStatus::class, 'balance_amount' => 'integer', 'notification_preferences' => 'array', 'anonymized_at' => 'datetime'];
     }
 
     protected static function booted(): void

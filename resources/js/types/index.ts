@@ -191,6 +191,7 @@ export type Customer = {
     email: string | null;
     address: string | null;
     status: 'active' | 'inactive' | 'archived';
+    anonymized_at?: string | null;
     balance_amount: number;
     balance_currency: string;
     zone: Zone | null;

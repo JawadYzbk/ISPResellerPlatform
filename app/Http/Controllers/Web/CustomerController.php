@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Web;
 
+use App\Actions\AnonymizeCustomer;
 use App\Actions\CreateCustomer;
 use App\Actions\GetCustomerDetails;
 use App\Actions\ListCustomers;
@@ -9,6 +10,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\CustomerRequest;
 use App\Models\Customer;
 use App\Models\Tenant;
+use App\Models\User;
 use App\Models\Zone;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -46,10 +48,20 @@ final class CustomerController extends Controller
         ]);
     }
 
-    public function show(Customer $customer, GetCustomerDetails $getCustomerDetails): Response
+    public function show(Request $request, Customer $customer, GetCustomerDetails $getCustomerDetails): Response
     {
         $this->authorize('view', $customer);
 
-        return Inertia::render('Customers/Show', ['customer' => $getCustomerDetails->handle($customer)]);
+        return Inertia::render('Customers/Show', ['customer' => $getCustomerDetails->handle($customer), 'canAnonymize' => $request->user()?->can('customers.anonymize') === true]);
+    }
+
+    public function anonymize(Request $request, Customer $customer, AnonymizeCustomer $anonymize): RedirectResponse
+    {
+        $this->authorize('anonymize', $customer);
+        $user = $request->user();
+        abort_unless($user instanceof User, 401);
+        $anonymize->handle($customer, $user);
+
+        return redirect()->route('customers.show', $customer->public_id)->with('success', 'Customer data anonymized.');
     }
 }

@@ -8,7 +8,7 @@ final class PermissionCatalog
 {
     /** @var list<string> */
     public const ALL = [
-        'customers.view', 'customers.create', 'customers.update', 'customers.export',
+        'customers.view', 'customers.create', 'customers.update', 'customers.export', 'customers.anonymize',
         'services.view', 'services.create', 'services.activate', 'services.suspend',
         'services.change_plan', 'services.force_resume',
         'plans.manage',
