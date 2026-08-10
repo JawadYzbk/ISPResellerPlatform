@@ -50,4 +50,4 @@ Before approving a release, confirm:
 - `php artisan backup:list` shows a recent usable backup and the restore rehearsal record is current;
 - the deployment has a rollback plan that does not rewrite ledger or customer history.
 
-See [deployment](../runbooks/deployment.md), [backup and restore](../runbooks/backup-restore.md), and [observability](../runbooks/observability.md) for the operational procedures.
+See [tenant onboarding](../runbooks/tenant-onboarding.md), [deployment](../runbooks/deployment.md), [backup and restore](../runbooks/backup-restore.md), [mass reactivation](../runbooks/mass-reactivation.md), and [observability](../runbooks/observability.md) for the operational procedures.
