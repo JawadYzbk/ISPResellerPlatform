@@ -29,6 +29,7 @@ The current foundation is live:
 - Encrypted router RADIUS shared secrets, validated UDP CoA/Disconnect packets and radius driver wiring
 - Router/POP inventory and onboarding, encrypted connection tests and repeated-failure incidents
 - Tenant-safe POP administration, upstream-link records, and capability-gated IP pool/address inventory
+- Personal customer saved views for repeatable zone, status, and expiry queues
 - Scheduled RouterOS subscriber reconciliation with report-only defaults and explicit device-side healing
 - Supplier credential workflows with permission, re-authentication and audit controls
 - Cursor-paginated customer API, idempotent payment API, collector batches, customer portal OTP/session flow, OpenAPI slice and finance reporting
