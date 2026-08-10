@@ -57,6 +57,8 @@ Use **Plans** to create a catalog plan and its first effective price. Prices are
 
 Use **Operations -> Work orders** to complete assigned installations or repairs. Installation completion activates the linked service and queues network activation. Use **Operations -> Inventory** to trace serialized equipment and confirm whether a unit is still available or assigned to a service.
 
+Use **Operations -> Credentials** to review upstream identifiers, supplier batches, status, expiry, and service assignments. The encrypted secret is intentionally absent; use the separately authorized, recent-authenticated reveal action only when operationally necessary and never copy the result into notes or tickets.
+
 On a customer service card, **Re-sync service** queues an `activate` or `suspend` command from the current commercial state. It confirms that work was queued, not that a real device accepted it; inspect the resulting command and network state after the worker runs. Terminated services are not re-synced.
 
 ## End of shift
