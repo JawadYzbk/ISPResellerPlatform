@@ -36,6 +36,7 @@ type Props = PageProps & {
     canResyncServices?: boolean;
     canActivateServices?: boolean;
     canSuspendServices?: boolean;
+    canPauseServices?: boolean;
     canTerminateServices?: boolean;
     canDisconnectSessions?: boolean;
     canForceResumeServices?: boolean;
@@ -52,6 +53,7 @@ export default function CustomerShow({
     canResyncServices = false,
     canActivateServices = false,
     canSuspendServices = false,
+    canPauseServices = false,
     canTerminateServices = false,
     canDisconnectSessions = false,
     canForceResumeServices = false,
@@ -318,10 +320,24 @@ export default function CustomerShow({
                                                     <Pause size={14} /> Suspend
                                                 </button>
                                             )}
-                                            {service.status === 'suspended' &&
+                                            {service.status === 'active' && canPauseServices && (
+                                                <button
+                                                    type="button"
+                                                    className="inline-flex items-center gap-1.5 text-sm font-semibold text-violet-700"
+                                                    onClick={() =>
+                                                        window.confirm('Pause this service?') &&
+                                                        router.post(`/services/${service.public_id}/pause`, {
+                                                            reason: 'customer_requested',
+                                                        })
+                                                    }
+                                                >
+                                                    <Pause size={14} /> Pause
+                                                </button>
+                                            )}
+                                            {((service.status === 'suspended' &&
                                                 canActivateServices &&
-                                                (service.suspension_reason === 'auto_overdue' ||
-                                                    canForceResumeServices) && (
+                                                (service.suspension_reason === 'auto_overdue' || canForceResumeServices)) ||
+                                                (service.status === 'paused' && canActivateServices)) && (
                                                     <button
                                                         type="button"
                                                         className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand"

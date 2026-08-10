@@ -88,6 +88,7 @@ Route::middleware(['auth', 'tenant', '2fa'])->group(function (): void {
     Route::get('/services/{service:public_id}', [ServiceController::class, 'show'])->name('services.show');
     Route::post('/services/{service:public_id}/activate', [ServiceController::class, 'activate'])->name('services.activate');
     Route::post('/services/{service:public_id}/suspend', [ServiceController::class, 'suspend'])->name('services.suspend');
+    Route::post('/services/{service:public_id}/pause', [ServiceController::class, 'pause'])->name('services.pause');
     Route::post('/services/{service:public_id}/resume', [ServiceController::class, 'resume'])->name('services.resume');
     Route::post('/services/{service:public_id}/terminate', [ServiceController::class, 'terminate'])->name('services.terminate');
     Route::post('/services/{service:public_id}/disconnect-session', [ServiceController::class, 'disconnectSession'])->name('services.disconnect-session');

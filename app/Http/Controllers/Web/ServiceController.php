@@ -42,6 +42,8 @@ final class ServiceController extends Controller
                 'network_state' => $service->network_state->value,
                 'provisioning_mode' => $service->provisioning_mode->value,
                 'expires_at' => $service->expires_at?->toIso8601String(),
+                'suspension_reason' => $service->suspension_reason,
+                'paused_until' => $service->paused_until?->toIso8601String(),
                 'customer' => $service->customer?->only(['public_id', 'code', 'first_name', 'last_name']),
                 'plan' => $service->plan?->only(['id', 'public_id', 'name', 'download_kbps', 'upload_kbps', 'amount_minor', 'currency']),
                 'router' => $service->router?->only(['public_id', 'name', 'status']),
@@ -62,6 +64,7 @@ final class ServiceController extends Controller
             'recentCommands' => $diagnosticData['recent_commands'],
             'canActivate' => request()->user()?->can('services.activate') === true,
             'canSuspend' => request()->user()?->can('services.suspend') === true,
+            'canPause' => request()->user()?->can('services.pause') === true,
             'canTerminate' => request()->user()?->can('services.terminate') === true,
             'canChangePlan' => request()->user()?->can('services.change_plan') === true,
             'canDisconnectSession' => request()->user()?->can('network.disconnect') === true,
@@ -138,10 +141,26 @@ final class ServiceController extends Controller
         return $this->redirectToCustomer($service, 'Service suspension queued.');
     }
 
+    public function pause(Request $request, Service $service, TransitionService $transition, EnqueueNetworkCommand $enqueue): RedirectResponse
+    {
+        $this->authorize('pause', $service);
+        abort_unless($service->status === ServiceStatus::Active, 422, 'Only active services can be paused.');
+        $validated = $request->validate([
+            'reason' => ['required', 'string', 'max:64'],
+            'resume_at' => ['nullable', 'date', 'after:now'],
+        ]);
+        $user = $request->user();
+        abort_unless($user instanceof User, 401);
+        $updated = $transition->handle($service, ServiceStatus::Paused, $user, $validated);
+        $enqueue->handle($updated, 'pause', $validated);
+
+        return $this->redirectToCustomer($service, 'Service pause queued.');
+    }
+
     public function resume(Request $request, Service $service, TransitionService $transition, EnqueueNetworkCommand $enqueue): RedirectResponse
     {
         $this->authorize('activate', $service);
-        if ($service->suspension_reason !== 'auto_overdue') {
+        if ($service->status !== ServiceStatus::Paused && $service->suspension_reason !== 'auto_overdue') {
             abort_unless($request->user()?->can('services.force_resume') === true, 403);
         }
         $user = $request->user();
@@ -166,8 +185,12 @@ final class ServiceController extends Controller
 
     public function resync(Request $request, Service $service, EnqueueNetworkCommand $enqueue): RedirectResponse
     {
-        $action = $service->status === ServiceStatus::Suspended ? 'suspend' : 'activate';
-        $this->authorize($action === 'suspend' ? 'suspend' : 'activate', $service);
+        $action = match ($service->status) {
+            ServiceStatus::Suspended => 'suspend',
+            ServiceStatus::Paused => 'pause',
+            default => 'activate',
+        };
+        $this->authorize($action, $service);
         abort_if($service->status === ServiceStatus::Terminated, 422, 'Terminated services cannot be re-synced.');
 
         $enqueue->handle($service, $action, ['reason' => 'manual_resync']);

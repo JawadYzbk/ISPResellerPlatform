@@ -186,8 +186,9 @@ export type Service = {
     id: number;
     public_id: string;
     username: string;
-    status: 'pending' | 'active' | 'suspended' | 'terminated';
+    status: 'pending' | 'active' | 'suspended' | 'paused' | 'terminated';
     suspension_reason?: string | null;
+    paused_until?: string | null;
     network_state: 'unknown' | 'pending_sync' | 'in_sync' | 'drifted' | 'failed';
     provisioning_mode?: 'manual' | 'radius' | 'mikrotik' | 'external' | 'upstream_credential';
     expires_at: string | null;

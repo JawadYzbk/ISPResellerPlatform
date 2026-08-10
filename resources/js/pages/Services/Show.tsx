@@ -14,6 +14,8 @@ type ServiceDetails = {
     network_state: Status;
     provisioning_mode: string;
     expires_at: string | null;
+    suspension_reason: string | null;
+    paused_until: string | null;
     customer: { public_id: string; code: string; first_name: string; last_name: string | null } | null;
     plan: {
         id: number;
@@ -66,6 +68,7 @@ type Props = PageProps & {
     }[];
     canActivate?: boolean;
     canSuspend?: boolean;
+    canPause?: boolean;
     canTerminate?: boolean;
     canChangePlan?: boolean;
     canDisconnectSession?: boolean;
@@ -80,6 +83,7 @@ export default function ServiceShow({
     recentCommands,
     canActivate = false,
     canSuspend = false,
+    canPause = false,
     canTerminate = false,
     canChangePlan = false,
     canDisconnectSession = false,
@@ -148,12 +152,24 @@ export default function ServiceShow({
                             Suspend
                         </button>
                     )}
-                    {service.status === 'suspended' && canActivate && (
+                    {service.status === 'active' && canPause && (
+                        <button
+                            type="button"
+                            className="button-secondary text-violet-700"
+                            onClick={() =>
+                                window.confirm('Pause this service?') &&
+                                router.post(`/services/${service.public_id}/pause`, { reason: 'customer_requested' })
+                            }
+                        >
+                            Pause
+                        </button>
+                    )}
+                    {((service.status === 'suspended' && canActivate) || (service.status === 'paused' && canActivate)) && (
                         <button
                             type="button"
                             className="button-primary"
                             onClick={() =>
-                                window.confirm('Resume this service?') &&
+                                window.confirm(service.status === 'paused' ? 'Resume this service from pause?' : 'Resume this service?') &&
                                 router.post(`/services/${service.public_id}/resume`)
                             }
                         >
@@ -172,7 +188,7 @@ export default function ServiceShow({
                             Terminate
                         </button>
                     )}
-                    {service.status !== 'terminated' && (canActivate || canSuspend) && (
+                    {service.status !== 'terminated' && (canActivate || canSuspend || canPause) && (
                         <button
                             type="button"
                             className="button-secondary"

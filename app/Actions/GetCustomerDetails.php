@@ -78,6 +78,7 @@ final readonly class GetCustomerDetails implements Action
                 'network_state' => $service->network_state->value,
                 'provisioning_mode' => $service->provisioning_mode->value,
                 'suspension_reason' => $service->suspension_reason,
+                'paused_until' => $service->paused_until?->toIso8601String(),
                 'expires_at' => $service->expires_at?->toIso8601String(),
                 'plan' => $service->plan?->only(['id', 'public_id', 'name', 'download_kbps', 'upload_kbps', 'amount_minor', 'currency']),
                 'router' => $service->router?->only(['public_id', 'name']),

@@ -45,6 +45,32 @@ it('requires force-resume permission for a manually suspended service', function
     $this->actingAs($user)->post(route('services.resume', $service->public_id))->assertForbidden();
 });
 
+it('pauses and resumes a service from the operator web surface', function (): void {
+    Queue::fake();
+    $tenant = Tenant::create(['name' => 'Northline', 'slug' => 'northline', 'base_currency' => 'USD', 'collection_currency' => 'USD']);
+    $user = User::create(['tenant_id' => $tenant->id, 'name' => 'Operations', 'email' => 'service-pause-web@example.test', 'password' => Hash::make('password'), 'role' => 'operations_manager']);
+    app(CapabilitySeeder::class)->run();
+    app(Tenancy::class)->set($tenant);
+    $user->assignRole('operations_manager');
+    $service = Service::factory()->create(['status' => ServiceStatus::Active]);
+    $customerPublicId = $service->customer->public_id;
+
+    $this->actingAs($user)
+        ->post(route('services.pause', $service->public_id), ['reason' => 'customer_requested'])
+        ->assertRedirect(route('customers.show', $customerPublicId));
+
+    app(Tenancy::class)->set($tenant);
+    expect($service->refresh()->status)->toBe(ServiceStatus::Paused)
+        ->and(NetworkCommand::query()->where('service_id', $service->id)->where('action', 'pause')->count())->toBe(1);
+
+    $this->actingAs($user)
+        ->post(route('services.resume', $service->public_id))
+        ->assertRedirect(route('customers.show', $customerPublicId));
+
+    app(Tenancy::class)->set($tenant);
+    expect($service->refresh()->status)->toBe(ServiceStatus::Active);
+});
+
 it('terminates a service, returns assigned equipment, and queues a disconnect', function (): void {
     Queue::fake();
     $tenant = Tenant::create(['name' => 'Northline', 'slug' => 'northline', 'base_currency' => 'USD', 'collection_currency' => 'USD']);
