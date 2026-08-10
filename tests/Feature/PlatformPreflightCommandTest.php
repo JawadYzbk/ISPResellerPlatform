@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\Tenant;
+use App\Models\User;
 use Illuminate\Console\Command;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -51,4 +53,22 @@ it('rejects a placeholder application key', function (): void {
     $this->artisan('platform:preflight')
         ->assertExitCode(Command::FAILURE)
         ->expectsOutputToContain('Application key');
+});
+
+it('rejects a production tenant with an unassigned capability role', function (): void {
+    $tenant = Tenant::factory()->create();
+    User::factory()->create(['tenant_id' => $tenant->id, 'role' => 'tenant_owner']);
+    config()->set([
+        'app.key' => 'base64:'.base64_encode(str_repeat('a', 32)),
+        'app.env' => 'production',
+        'app.debug' => false,
+        'app.url' => 'https://portal.example.com',
+        'session.secure' => true,
+        'queue.default' => 'database',
+        'cache.default' => 'database',
+    ]);
+
+    $this->artisan('platform:preflight', ['--production' => true])
+        ->assertExitCode(Command::FAILURE)
+        ->expectsOutputToContain('Capability assignments');
 });

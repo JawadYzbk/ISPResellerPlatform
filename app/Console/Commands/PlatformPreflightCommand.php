@@ -2,6 +2,9 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Tenant;
+use App\Models\User;
+use App\Support\Tenancy;
 use Illuminate\Console\Command;
 use Illuminate\Database\Migrations\Migrator;
 use Illuminate\Encryption\Encrypter;
@@ -29,6 +32,7 @@ final class PlatformPreflightCommand extends Command
                 'Secure session cookies' => config('session.secure') === true,
                 'Asynchronous queue connection' => $this->usesAsynchronousQueue(),
                 'Persistent cache store' => $this->usesPersistentCache(),
+                'Capability assignments' => $this->capabilityAssignmentsAreReady(),
             ];
         }
 
@@ -114,5 +118,31 @@ final class PlatformPreflightCommand extends Command
     private function usesPersistentCache(): bool
     {
         return ! in_array(strtolower((string) config('cache.default')), ['array', 'null'], true);
+    }
+
+    private function capabilityAssignmentsAreReady(): bool
+    {
+        try {
+            $tenancy = app(Tenancy::class);
+            foreach (Tenant::query()->get(['id']) as $tenant) {
+                $ready = $tenancy->run($tenant, function (): bool {
+                    foreach (User::query()->whereNotNull('role')->get() as $user) {
+                        if (! $user->hasRole((string) $user->role)) {
+                            return false;
+                        }
+                    }
+
+                    return true;
+                });
+
+                if ($ready !== true) {
+                    return false;
+                }
+            }
+
+            return true;
+        } catch (\Throwable) {
+            return false;
+        }
     }
 }
