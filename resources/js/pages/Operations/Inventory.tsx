@@ -1,4 +1,4 @@
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link, router, useForm } from '@inertiajs/react';
 import { ChevronLeft, ChevronRight, Package, Search } from 'lucide-react';
 import { useState } from 'react';
 
@@ -23,17 +23,34 @@ type AssignableService = {
     customer: string | null;
 };
 
+type BulkBalance = {
+    inventory_item_id: number;
+    warehouse_id: number;
+    sku: string | null;
+    name: string | null;
+    warehouse: string | null;
+    quantity: string;
+};
+
+type BulkItem = { id: number; sku: string; name: string };
+type BulkWarehouse = { id: number; code: string; name: string };
+
 type Props = PageProps & {
     units: Paginator<InventoryUnit>;
     filters: { status?: string; search?: string };
     canAssign?: boolean;
+    canReceive?: boolean;
     assignableServices?: AssignableService[];
+    bulkBalances: BulkBalance[];
+    bulkItems: BulkItem[];
+    bulkWarehouses: BulkWarehouse[];
 };
 
-export default function InventoryPage({ units, filters, canAssign = false, assignableServices = [] }: Props) {
+export default function InventoryPage({ units, filters, canAssign = false, canReceive = false, assignableServices = [], bulkBalances, bulkItems, bulkWarehouses }: Props) {
     const [search, setSearch] = useState(filters.search ?? '');
     const [status, setStatus] = useState(filters.status ?? '');
     const [selectedServices, setSelectedServices] = useState<Record<number, string>>({});
+    const receiveForm = useForm({ inventory_item_id: '', warehouse_id: '', quantity: '', note: '' });
 
     const applyFilters = (event: React.FormEvent) => {
         event.preventDefault();
@@ -53,6 +70,11 @@ export default function InventoryPage({ units, filters, canAssign = false, assig
         if (window.confirm(`Assign unit ${unit.serial_number} to this service?`)) {
             router.post(`/operations/inventory/${unit.id}/assign`, { service_public_id: servicePublicId });
         }
+    };
+
+    const submitReceive = (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        receiveForm.post('/operations/inventory/bulk-receive', { onSuccess: () => receiveForm.reset() });
     };
 
     return (
@@ -91,6 +113,26 @@ export default function InventoryPage({ units, filters, canAssign = false, assig
                     Apply filters
                 </button>
             </form>
+
+            <section className="card mt-6 p-5">
+                <div className="flex items-center justify-between gap-4">
+                    <div><p className="section-title">Bulk stock</p><p className="mt-1 text-sm text-muted">Cable, connectors, and other quantity-tracked materials by warehouse.</p></div>
+                    <Package size={18} className="text-brand" />
+                </div>
+                <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                    {bulkBalances.map((balance) => <div key={`${balance.inventory_item_id}-${balance.warehouse_id}`} className="rounded-lg border border-line px-4 py-3 text-sm"><p className="font-semibold">{balance.name ?? balance.sku}</p><p className="mt-1 text-xs text-muted">{balance.sku} · {balance.warehouse}</p><p className="mt-2 text-lg font-semibold text-brand">{balance.quantity}</p></div>)}
+                    {bulkBalances.length === 0 && <p className="text-sm text-muted">No bulk stock balances have been recorded.</p>}
+                </div>
+                {canReceive && bulkItems.length > 0 && bulkWarehouses.length > 0 && (
+                    <form onSubmit={submitReceive} className="mt-5 grid gap-4 border-t border-line pt-5 sm:grid-cols-2 lg:grid-cols-4 lg:items-end">
+                        <label><span className="field-label">Material</span><select className="field" value={receiveForm.data.inventory_item_id} onChange={(event) => receiveForm.setData('inventory_item_id', event.target.value)}><option value="">Select item</option>{bulkItems.map((item) => <option key={item.id} value={item.id}>{item.sku} · {item.name}</option>)}</select></label>
+                        <label><span className="field-label">Warehouse</span><select className="field" value={receiveForm.data.warehouse_id} onChange={(event) => receiveForm.setData('warehouse_id', event.target.value)}><option value="">Select warehouse</option>{bulkWarehouses.map((warehouse) => <option key={warehouse.id} value={warehouse.id}>{warehouse.code} · {warehouse.name}</option>)}</select></label>
+                        <label><span className="field-label">Quantity received</span><input className="field" inputMode="decimal" value={receiveForm.data.quantity} onChange={(event) => receiveForm.setData('quantity', event.target.value)} placeholder="0.000" />{receiveForm.errors.quantity && <p className="field-error">{receiveForm.errors.quantity}</p>}</label>
+                        <button type="submit" className="button-secondary" disabled={receiveForm.processing}>Receive stock</button>
+                        <label className="sm:col-span-2 lg:col-span-4"><span className="field-label">Note</span><input className="field" value={receiveForm.data.note} onChange={(event) => receiveForm.setData('note', event.target.value)} placeholder="Optional receiving note" /></label>
+                    </form>
+                )}
+            </section>
 
             <div className="card mt-6 overflow-hidden">
                 <div className="flex items-center justify-between border-b border-line px-5 py-4">

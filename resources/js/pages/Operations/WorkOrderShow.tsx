@@ -1,5 +1,5 @@
 import { Head, Link, router, useForm } from '@inertiajs/react';
-import { ArrowLeft, CalendarClock, CheckCircle2, ClipboardCheck, Clock3, Download, Images, UserRound } from 'lucide-react';
+import { ArrowLeft, CalendarClock, CheckCircle2, ClipboardCheck, Clock3, Download, Images, PackageOpen, UserRound } from 'lucide-react';
 
 import StatusBadge from '@/components/StatusBadge';
 import SignaturePad from '@/components/SignaturePad';
@@ -24,6 +24,16 @@ type WorkOrder = {
     events: { id: number; event_type: string; from_status: string | null; to_status: string | null; actor: string | null; created_at: string | null }[];
     media: { id: string; filename: string; mime_type: string; size_bytes: number; purpose: string; created_at: string | null; download_url: string }[];
     signature: { id: number; signer_name: string; signed_at: string | null; download_url: string | null } | null;
+    materials: { id: number; sku: string | null; name: string | null; warehouse: string | null; quantity: string; note: string | null; consumed_at: string | null }[];
+};
+
+type BulkMaterial = {
+    inventory_item_id: number;
+    warehouse_id: number;
+    sku: string | null;
+    name: string | null;
+    warehouse: string | null;
+    quantity: string;
 };
 
 function checklistLabel(key: string): string {
@@ -51,15 +61,17 @@ function readingKeys(type: string): string[] {
 
 type Props = {
     workOrder: WorkOrder;
+    bulkMaterials: BulkMaterial[];
     scheduledAtLocal: string | null;
     timezone: string;
 };
 
-export default function WorkOrderShowPage({ workOrder, scheduledAtLocal, timezone }: Props) {
+export default function WorkOrderShowPage({ workOrder, bulkMaterials, scheduledAtLocal, timezone }: Props) {
     const canComplete = ['assigned', 'in_progress'].includes(workOrder.status);
     const scheduleForm = useForm({ scheduled_at: scheduledAtLocal ?? '' });
     const signatureForm = useForm<{ file: File | null; signer_name: string }>({ file: null, signer_name: '' });
     const readingsForm = useForm({ readings: Object.fromEntries([...readingKeys(workOrder.type), ...Object.keys(workOrder.readings)].map((key) => [key, workOrder.readings[key] ?? ''])) });
+    const materialForm = useForm({ inventory_item_id: '', warehouse_id: '', quantity: '', note: '' });
 
     const submitSchedule = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -72,6 +84,10 @@ export default function WorkOrderShowPage({ workOrder, scheduledAtLocal, timezon
     const submitReadings = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         readingsForm.post('/operations/work-orders/' + workOrder.public_id + '/readings');
+    };
+    const submitMaterial = (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        materialForm.post('/operations/work-orders/' + workOrder.public_id + '/materials', { onSuccess: () => materialForm.reset() });
     };
 
     return (
@@ -137,6 +153,32 @@ export default function WorkOrderShowPage({ workOrder, scheduledAtLocal, timezon
                             ))}
                             {Object.keys(workOrder.checklist).length === 0 && <p className="text-sm text-muted">No checklist items were recorded.</p>}
                         </div>
+                    </section>
+                    <section className="card p-6">
+                        <div className="flex items-center gap-2"><PackageOpen size={17} className="text-brand" /><h2 className="section-title">Materials consumed</h2></div>
+                        <div className="mt-5 space-y-3">
+                            {workOrder.materials.map((material) => (
+                                <div key={material.id} className="flex items-center justify-between gap-4 rounded-lg border border-line px-4 py-3 text-sm">
+                                    <div><p className="font-semibold">{material.name ?? material.sku ?? 'Material'}</p><p className="mt-1 text-xs text-muted">{material.sku ?? 'No SKU'} · {material.warehouse ?? 'Unknown warehouse'} · {formatDate(material.consumed_at)}</p></div>
+                                    <span className="font-semibold">{material.quantity}</span>
+                                </div>
+                            ))}
+                            {workOrder.materials.length === 0 && <p className="text-sm text-muted">No bulk materials have been recorded.</p>}
+                        </div>
+                        {canComplete && bulkMaterials.length > 0 && (
+                            <form onSubmit={submitMaterial} className="mt-5 space-y-3 border-t border-line pt-5">
+                                <p className="text-sm font-semibold">Record material use</p>
+                                <div className="grid gap-4 sm:grid-cols-2">
+                                    <label><span className="field-label">Material</span><select className="field" value={materialForm.data.inventory_item_id} onChange={(event) => materialForm.setData('inventory_item_id', event.target.value)}><option value="">Select material</option>{bulkMaterials.map((material) => <option key={`${material.inventory_item_id}-${material.warehouse_id}`} value={material.inventory_item_id}>{material.sku} · {material.name} · {material.quantity} available</option>)}</select></label>
+                                    <label><span className="field-label">Warehouse</span><select className="field" value={materialForm.data.warehouse_id} onChange={(event) => materialForm.setData('warehouse_id', event.target.value)}><option value="">Select warehouse</option>{bulkMaterials.filter((material, index, all) => all.findIndex((candidate) => candidate.warehouse_id === material.warehouse_id) === index).map((material) => <option key={material.warehouse_id} value={material.warehouse_id}>{material.warehouse}</option>)}</select></label>
+                                    <label><span className="field-label">Quantity</span><input className="field" inputMode="decimal" value={materialForm.data.quantity} onChange={(event) => materialForm.setData('quantity', event.target.value)} placeholder="0.000" />{materialForm.errors.quantity && <p className="field-error">{materialForm.errors.quantity}</p>}</label>
+                                    <label><span className="field-label">Note</span><input className="field" value={materialForm.data.note} onChange={(event) => materialForm.setData('note', event.target.value)} placeholder="Optional site note" /></label>
+                                </div>
+                                {materialForm.errors.inventory_item_id && <p className="field-error">{materialForm.errors.inventory_item_id}</p>}
+                                {materialForm.errors.warehouse_id && <p className="field-error">{materialForm.errors.warehouse_id}</p>}
+                                <button type="submit" className="button-secondary" disabled={materialForm.processing}>Record material</button>
+                            </form>
+                        )}
                     </section>
                     <section className="card p-6">
                         <h2 className="section-title">Technician readings</h2>
