@@ -7,6 +7,7 @@ use App\Actions\GetTechnicianServiceDiagnostics;
 use App\Actions\ListTechnicianInventory;
 use App\Enums\WorkOrderStatus;
 use App\Http\Controllers\Controller;
+use App\Models\MediaUpload;
 use App\Models\Service;
 use App\Models\WorkOrder;
 use Illuminate\Database\Eloquent\Builder;
@@ -55,7 +56,7 @@ final class TechnicianWorkOrderController extends Controller
     {
         $this->ensureTechnician($request);
         $order = $this->assignedQuery($request)
-            ->with(['customer', 'service.plan', 'events'])
+            ->with(['customer', 'service.plan', 'events', 'mediaUploads'])
             ->where('public_id', $workOrder)
             ->firstOrFail();
 
@@ -110,6 +111,14 @@ final class TechnicianWorkOrderController extends Controller
             'checklist' => $order->checklist ?? [],
             'metadata' => $order->metadata ?? [],
             'events' => $order->events->map(fn ($event): array => ['type' => $event->event_type, 'from' => $event->from_status, 'to' => $event->to_status, 'created_at' => $event->created_at?->toIso8601String()])->values(),
+            'media' => $order->mediaUploads->map(fn (MediaUpload $media): array => [
+                'id' => $media->public_id,
+                'filename' => $media->original_name,
+                'mime_type' => $media->mime_type,
+                'size_bytes' => $media->size_bytes,
+                'purpose' => $media->purpose,
+                'created_at' => $media->created_at?->toIso8601String(),
+            ])->values(),
         ];
     }
 }

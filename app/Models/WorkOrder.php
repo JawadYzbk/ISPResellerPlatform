@@ -67,4 +67,10 @@ class WorkOrder extends Model
     {
         return $this->hasMany(WorkOrderEvent::class);
     }
+
+    /** @return HasMany<MediaUpload, $this> */
+    public function mediaUploads(): HasMany
+    {
+        return $this->hasMany(MediaUpload::class);
+    }
 }
