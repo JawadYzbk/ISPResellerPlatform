@@ -101,7 +101,7 @@ final readonly class ImportBalancesCsv implements Action
     {
         $codes = array_values(array_filter(array_map(fn (array $row): string => trim($row['customer_code'] ?? ''), $rows)));
         $customers = Customer::query()->whereIn('code', $codes)->get()->keyBy('code');
-        $historyIds = $customers->isEmpty() ? [] : DB::table('ledger_entries')->whereIn('customer_id', $customers->pluck('id'))->pluck('customer_id')->all();
+        $historyIds = $customers->isEmpty() ? [] : DB::table('ledger_entries')->whereIn('customer_id', $customers->pluck('id'))->pluck('customer_id')->map(fn (mixed $id): int => (int) $id)->all();
         $seenCodes = [];
         $report = [];
 
