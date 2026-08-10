@@ -20,7 +20,7 @@ Last updated: 2026-08-10
 | ISP-041/043/044 | Driver boundary, post-commit network outbox, stale guards, retries, overdue suspension and reactivation | delivered with manual/fake drivers |
 | ISP-050/051/052 | Template rendering, idempotent message queueing, provider delivery boundary and tenant-local expiry reminders with opt-out/quiet-hour handling | delivered with null/fake providers |
 | ISP-060/061/062 | Ticket lifecycle, tenant-timezone business-hours SLA clock, scheduled resolved-ticket auto-close, work-order completion and serialized inventory assignment | delivered |
-| ISP-070/071/072 | Sanctum API with role-scoped abilities, cursor pagination, query whitelists, idempotency middleware, app version config, customer portal OTP/session and billing history, collector batches, service discovery/state actions and OpenAPI slice | delivered for current customer/payment/service scope |
+| ISP-070/071/072 | Sanctum API with role-scoped abilities, cursor pagination, query whitelists, idempotency middleware, app version config, customer portal OTP/session and billing history, collector batches, offline bootstrap/delta/push sync, service discovery/state actions and OpenAPI slice | delivered for current customer/payment/service/collector scope |
 | ISP-073 | Technician-assigned work-order list/detail endpoints, idempotent completion, service diagnostics and van inventory | delivered for current technician scope |
 | ISP-080/082/083 | FreeRADIUS sync, current sessions, scheduled stale-session cleanup, daily usage rollups, cycle quota/FUP command foundation, RouterOS FUP profile driver path and idempotent warning notifications | foundation delivered |
 | ISP-040/063 | POP/router inventory, encrypted connection tests, repeated-failure incidents and bounded router health observations | foundation delivered |
@@ -34,10 +34,10 @@ Last updated: 2026-08-10
 - Real RouterOS/CoA integration against a CHR lab, automatic reconciliation and device inventory healing.
 - Provider integrations (WhatsApp/SMS/email/FCM), callbacks, fallback policy and full notification automation coverage.
 - Customer self-service online payments through a real gateway and realtime events.
-- Full reseller price books/commissions/settlements, service/plan/balance/equipment import coverage, XLSX workflows and expanded reports beyond finance.
+- Full reseller price books/commissions/settlements, XLSX workflows, router subscriber import and expanded reports beyond the current finance/operations foundations.
 - Monitoring alerts and full deferred owner dashboard/panel streaming.
 - Security operations: key rotation, backup/restore rehearsal, dependency audit and Sentry wiring.
 
 ## Deliberately not claimed yet
 
-Production credentials, provider approvals, RouterOS CHR lab acceptance, mobile offline sync and pilot readiness remain external gates. The repository contains tested seams and fakes for these boundaries; it does not claim those external integrations are production-ready.
+Production credentials, provider approvals, RouterOS CHR lab acceptance, native mobile offline storage/sync integration and pilot readiness remain external gates. The repository contains tested API seams and fakes for these boundaries; it does not claim those external integrations are production-ready.

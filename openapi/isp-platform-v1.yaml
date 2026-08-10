@@ -195,6 +195,184 @@ paths:
       responses:
         '200': { description: Per-item success/error results }
         '409': { description: Idempotency key reused for a different request }
+  /collector/sync/bootstrap:
+    get:
+      summary: Bootstrap the collector's offline cache
+      parameters:
+        - in: query
+          name: zone
+          schema: { type: string, maxLength: 100 }
+          description: Optional zone code used to narrow customer and service rows.
+      responses:
+        '200': { description: Full customer, service, plan and message snapshot with a signed sync token }
+        '403': { description: Missing collector ability }
+  /collector/sync/delta:
+    get:
+      summary: Read collector changes since a signed sync token
+      parameters:
+        - in: query
+          name: since
+          required: true
+          schema: { type: string }
+        - in: query
+          name: zone
+          schema: { type: string, maxLength: 100 }
+      responses:
+        '200': { description: Changed rows, tombstones and a replacement sync token }
+        '403': { description: Missing collector ability }
+        '422': { description: Invalid or foreign sync token }
+  /collector/sync/push:
+    post:
+      summary: Push queued offline collector payments with partial success
+      parameters:
+        - in: header
+          name: X-Idempotency-Key
+          required: true
+          schema: { type: string, maxLength: 120 }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              minItems: 1
+              maxItems: 100
+              items: { $ref: '#/components/schemas/CollectorSyncPayment' }
+      responses:
+        '200': { description: Per-item created, replayed or rejected results }
+        '422': { description: Invalid batch envelope }
+        '409': { description: Idempotency key reused for a different request }
+  /imports/customers:
+    post:
+      summary: Preview or import customers from CSV
+      requestBody:
+        required: true
+        content:
+          application/json: { schema: { $ref: '#/components/schemas/ImportRequest' } }
+          multipart/form-data: { schema: { $ref: '#/components/schemas/ImportRequest' } }
+      responses:
+        '200': { description: Dry-run validation report }
+        '201': { description: Completed import report }
+        '403': { description: Missing customer capability }
+  /imports/plans:
+    post:
+      summary: Preview or import plans from CSV
+      requestBody:
+        required: true
+        content:
+          application/json: { schema: { $ref: '#/components/schemas/ImportRequest' } }
+          multipart/form-data: { schema: { $ref: '#/components/schemas/ImportRequest' } }
+      responses:
+        '200': { description: Dry-run validation report }
+        '201': { description: Completed import report }
+        '403': { description: Missing plan capability }
+  /imports/services:
+    post:
+      summary: Preview or import services from CSV
+      requestBody:
+        required: true
+        content:
+          application/json: { schema: { $ref: '#/components/schemas/ImportRequest' } }
+          multipart/form-data: { schema: { $ref: '#/components/schemas/ImportRequest' } }
+      responses:
+        '200': { description: Dry-run validation report }
+        '201': { description: Completed import report }
+        '403': { description: Missing service capability }
+  /imports/equipment:
+    post:
+      summary: Preview or import serialized equipment from CSV
+      requestBody:
+        required: true
+        content:
+          application/json: { schema: { $ref: '#/components/schemas/ImportRequest' } }
+          multipart/form-data: { schema: { $ref: '#/components/schemas/ImportRequest' } }
+      responses:
+        '200': { description: Dry-run validation report }
+        '201': { description: Completed import report }
+        '403': { description: Missing inventory capability }
+  /imports/balances:
+    post:
+      summary: Preview or import signed opening balances from CSV
+      requestBody:
+        required: true
+        content:
+          application/json: { schema: { $ref: '#/components/schemas/ImportRequest' } }
+          multipart/form-data: { schema: { $ref: '#/components/schemas/ImportRequest' } }
+      responses:
+        '200': { description: Dry-run validation report }
+        '201': { description: Completed journal-backed import report }
+        '403': { description: Missing billing adjustment capability }
+  /imports/{import}/rollback:
+    post:
+      summary: Roll back an imported customer batch
+      parameters:
+        - in: path
+          name: import
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: Rollback result }
+        '403': { description: Missing customer capability }
+        '409': { description: Import cannot be rolled back safely }
+  /imports/{type}/{import}/rollback:
+    post:
+      summary: Roll back an imported plan, service, equipment or balance batch
+      parameters:
+        - in: path
+          name: type
+          required: true
+          schema: { type: string, enum: [plans, services, equipment, balances] }
+        - in: path
+          name: import
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: Rollback result }
+        '403': { description: Missing capability for the imported resource }
+        '409': { description: Import cannot be rolled back safely }
+  /partners:
+    get:
+      summary: List partners visible to the authenticated operator
+      responses:
+        '200': { description: Descendant-scoped partner wallets }
+        '403': { description: Missing wallet view capability }
+  /partners/{partner}:
+    get:
+      summary: Read a visible partner and wallet statement
+      parameters:
+        - in: path
+          name: partner
+          required: true
+          schema: { type: integer }
+      responses:
+        '200': { description: Partner wallet and transactions }
+        '403': { description: Missing wallet view capability }
+        '404': { description: Partner not found }
+  /partners/{partner}/wallet-top-ups:
+    post:
+      summary: Fund a partner wallet
+      parameters:
+        - in: path
+          name: partner
+          required: true
+          schema: { type: integer }
+        - in: header
+          name: X-Idempotency-Key
+          required: true
+          schema: { type: string, maxLength: 120 }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [amount]
+              properties:
+                amount: { type: integer, minimum: 1 }
+      responses:
+        '201': { description: Wallet transaction created }
+        '403': { description: Missing wallet funding capability }
+        '409': { description: Idempotency key reused for a different request }
   /technician/inventory:
     get:
       summary: List equipment in the authenticated technician's van warehouse
@@ -230,3 +408,33 @@ components:
         currency: { type: string, minLength: 3, maxLength: 3 }
         method: { type: string, maxLength: 40 }
         idempotency_key: { type: string, description: Required for collector batch items }
+    CollectorSyncPayment:
+      type: object
+      required: [customer_uuid, amount, currency, method, idempotency_key]
+      properties:
+        customer_uuid: { type: string, description: Customer public ULID accepted by offline clients }
+        invoice_id: { type: string, nullable: true, description: Invoice public ULID }
+        amount: { type: integer, minimum: 1, description: Amount in minor currency units }
+        currency: { type: string, minLength: 3, maxLength: 3 }
+        method: { type: string, maxLength: 40 }
+        idempotency_key: { type: string, maxLength: 120 }
+    ImportRequest:
+      type: object
+      properties:
+        filename: { type: string, maxLength: 255 }
+        csv: { type: string, description: CSV text for JSON clients }
+        file: { type: string, format: binary, description: CSV upload for multipart clients }
+        dry_run: { type: boolean, default: false }
+      description: Provide either csv text or a file upload.
+    ImportResponse:
+      type: object
+      required: [id, type, status, total_rows, successful_rows, failed_rows, report]
+      properties:
+        id: { type: string }
+        type: { type: string }
+        filename: { type: string }
+        status: { type: string, enum: [preview, completed, rolled_back] }
+        total_rows: { type: integer }
+        successful_rows: { type: integer }
+        failed_rows: { type: integer }
+        report: { type: array, items: { type: object } }
