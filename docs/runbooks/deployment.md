@@ -9,6 +9,24 @@ Use this procedure for a production-shaped deployment. Keep the release artifact
 - Confirm a recent backup and a successful isolated restore rehearsal. A successful backup listing alone is not a restore test.
 - Announce the window to operations and support. Pause imports and planned network maintenance during schema changes.
 
+## Production-shaped Docker topology
+
+The repository includes `docker-compose.production.yml` for a self-hosted single-VPS deployment. It separates Nginx, PHP-FPM, queue workers, the scheduler, Reverb, PostgreSQL 17, Redis, and private MinIO object storage. Set deployment secrets and the public URL in the environment before starting it; the placeholder values are intentionally rejected by the production preflight.
+
+```powershell
+docker compose -f docker-compose.production.yml build
+docker compose -f docker-compose.production.yml up -d postgres redis minio minio-init
+docker compose -f docker-compose.production.yml run --rm app php artisan migrate --force
+docker compose -f docker-compose.production.yml run --rm app php artisan optimize:clear
+docker compose -f docker-compose.production.yml run --rm app php artisan config:cache
+docker compose -f docker-compose.production.yml run --rm app php artisan route:cache
+docker compose -f docker-compose.production.yml run --rm app php artisan event:cache
+docker compose -f docker-compose.production.yml up -d app worker scheduler reverb web
+docker compose -f docker-compose.production.yml exec app php artisan platform:preflight --production
+```
+
+The shared `bootstrap/cache` volume makes the cache commands visible to all PHP services. Do not expose PostgreSQL, Redis, or MinIO directly to the public internet. Put TLS termination and the public DNS name in front of the `web` service, and set `APP_URL`, `REVERB_HOST`, and `REVERB_ALLOWED_ORIGINS` to that public origin.
+
 ## Application release
 
 Run from the release directory with the intended PHP, Composer, Node, and npm versions:
