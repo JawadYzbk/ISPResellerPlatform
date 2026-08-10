@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Queue;
 
 final readonly class CheckApplicationHealth implements Action
 {
-    /** @return array{status: string, checks: array<string, string>} */
+    /** @return array{status: string, checks: array<string, string|int>} */
     public function handle(): array
     {
         $checks = [];
@@ -26,10 +26,12 @@ final readonly class CheckApplicationHealth implements Action
             $checks['cache'] = 'failed';
         }
         try {
-            Queue::size('default');
+            $queueDepth = Queue::size('default');
             $checks['queue'] = 'ok';
+            $checks['queue_depth'] = $queueDepth;
         } catch (\Throwable) {
             $checks['queue'] = 'failed';
+            $checks['queue_depth'] = -1;
         }
 
         return ['status' => in_array('failed', $checks, true) ? 'degraded' : 'ok', 'checks' => $checks];

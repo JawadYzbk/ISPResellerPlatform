@@ -10,5 +10,6 @@ it('reports dependency health without authentication', function (): void {
         ->assertJsonPath('status', 'ok')
         ->assertJsonPath('checks.database', 'ok')
         ->assertJsonPath('checks.cache', 'ok')
-        ->assertJsonPath('checks.queue', 'ok');
+        ->assertJsonPath('checks.queue', 'ok')
+        ->assertJsonPath('checks.queue_depth', 0);
 });
