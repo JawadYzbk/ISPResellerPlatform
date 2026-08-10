@@ -14,7 +14,9 @@ paths:
       summary: Readiness check
       responses:
         '200':
-          description: Application is ready
+          description: Application and dependencies are ready
+        '503':
+          description: One or more dependencies are degraded
   /customers:
     get:
       summary: List tenant customers
