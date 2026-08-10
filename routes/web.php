@@ -114,6 +114,7 @@ Route::middleware(['auth', 'tenant', '2fa'])->group(function (): void {
     Route::post('/operations/tickets/{ticket:public_id}/messages', [TicketOperationsController::class, 'reply'])->name('operations.tickets.messages');
     Route::post('/operations/tickets/{ticket:public_id}/assignee', [TicketOperationsController::class, 'assign'])->name('operations.tickets.assignee');
     Route::get('/operations/work-orders', [WorkOrderOperationsController::class, 'index'])->name('operations.work-orders');
+    Route::get('/operations/work-orders/calendar', [WorkOrderOperationsController::class, 'calendar'])->name('operations.work-orders.calendar');
     Route::get('/operations/work-orders/{workOrder:public_id}', [WorkOrderOperationsController::class, 'show'])->name('operations.work-orders.show');
     Route::get('/operations/media/{media}/download', MediaDownloadController::class)->name('operations.media.download');
     Route::post('/operations/work-orders/{workOrder:public_id}/complete', [WorkOrderOperationsController::class, 'complete'])->name('operations.work-orders.complete');

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Web;
 
 use App\Actions\CompleteWorkOrder;
 use App\Actions\GetWorkOrderDetails;
+use App\Actions\ListWorkOrderCalendar;
 use App\Actions\ListWorkOrders;
 use App\Actions\ScheduleWorkOrder;
 use App\Http\Controllers\Controller;
@@ -67,6 +68,31 @@ final class WorkOrderOperationsController extends Controller
         return Inertia::render('Operations/WorkOrders', [
             'workOrders' => $orders,
             'filters' => $request->only(['status', 'search']),
+        ]);
+    }
+
+    public function calendar(Request $request, ListWorkOrderCalendar $listWorkOrderCalendar): Response
+    {
+        $user = $request->user();
+        abort_unless($user instanceof User && $user->can('workorders.complete'), 403);
+        $validated = $request->validate(['week' => ['nullable', 'date_format:Y-m-d']]);
+        $timezone = $this->tenantTimezone($user);
+        $weekStart = CarbonImmutable::createFromFormat('Y-m-d', (string) ($validated['week'] ?? now($timezone)->toDateString()), $timezone)->startOfWeek();
+        $orders = $listWorkOrderCalendar->handle($weekStart, $timezone);
+
+        return Inertia::render('Operations/WorkOrderCalendar', [
+            'weekStart' => $weekStart->toDateString(),
+            'timezone' => $timezone,
+            'workOrders' => $orders->map(fn (WorkOrder $order): array => [
+                'public_id' => $order->public_id,
+                'number' => $order->number,
+                'type' => $order->type,
+                'status' => $order->status->value,
+                'scheduled_at' => $this->isoDate($order->scheduled_at),
+                'scheduled_at_local' => $order->scheduled_at?->setTimezone($timezone)->format('Y-m-d\TH:i'),
+                'customer' => $order->customer === null ? null : ['public_id' => $order->customer->public_id, 'name' => $order->customer->full_name],
+                'assignee' => $order->assignee?->name,
+            ])->values(),
         ]);
     }
 

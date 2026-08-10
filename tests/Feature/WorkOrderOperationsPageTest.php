@@ -124,3 +124,23 @@ it('reschedules an active work order and records the schedule change', function 
     expect($order->refresh()->scheduled_at?->toIso8601String())->toBe('2026-08-12T12:30:00+00:00')
         ->and(WorkOrderEvent::query()->where('work_order_id', $order->id)->where('event_type', 'rescheduled')->count())->toBe(1);
 });
+
+it('renders the work-order calendar in the tenant timezone', function (): void {
+    $tenant = Tenant::create(['name' => 'Northline', 'slug' => 'northline', 'base_currency' => 'USD', 'collection_currency' => 'USD', 'timezone' => 'Asia/Beirut']);
+    $user = User::create(['tenant_id' => $tenant->id, 'name' => 'Operations manager', 'email' => 'operations-calendar@example.test', 'password' => Hash::make('password'), 'role' => 'operations_manager']);
+    app(CapabilitySeeder::class)->run();
+    app(Tenancy::class)->set($tenant);
+    $user->assignRole('operations_manager');
+    $order = WorkOrder::create(['number' => 'WO-CALENDAR-001', 'type' => 'repair', 'status' => WorkOrderStatus::Assigned, 'scheduled_at' => '2026-08-12 12:30:00']);
+
+    $this->actingAs($user)
+        ->get(route('operations.work-orders.calendar', ['week' => '2026-08-10']))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->component('Operations/WorkOrderCalendar')
+            ->where('weekStart', '2026-08-10')
+            ->where('timezone', 'Asia/Beirut')
+            ->where('workOrders.0.number', 'WO-CALENDAR-001')
+            ->where('workOrders.0.scheduled_at_local', '2026-08-12T15:30')
+        );
+});
