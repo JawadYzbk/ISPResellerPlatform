@@ -18,7 +18,7 @@ The current foundation is live:
 - Operator directory with role-limited one-time invitations and a public invitation acceptance flow
 - Staff invoice and payment queues with allocation-backed balances, audited reversals, router health registry and network command operations screen
 - Tenant-safe invoice detail and payment receipt views with posted allocation trails and browser print layouts
-- Staff ticket conversation/status workflow, customer support history, work-order calendar/completion surface with readings, signatures and bulk materials, serialized inventory trace/assignment, and plan catalog/create workflow
+- Staff ticket conversation/status workflow, customer support history, work-order calendar/completion surface with readings, signatures and bulk materials, serialized inventory trace/assignment, and plan/add-on/promotion catalog workflow
 - Supplier credential inventory view with secret redaction, tenant-safe assignment and audited reveal boundary
 - Capability catalog, invitations, tenant isolation, audit events and API tokens
 - Historical FX conversion, double-entry ledger, invoices, payments, cash-shift reconciliation and billing runs
