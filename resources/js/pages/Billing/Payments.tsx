@@ -117,7 +117,12 @@ export default function PaymentsPage({ payments, filters, canReverse = false }: 
                             {payments.data.map((payment) => (
                                 <tr key={payment.public_id} className="hover:bg-sand/30">
                                     <td className="px-5 py-4">
-                                        <Link href={`/billing/payments/${payment.public_id}`} className="text-sm font-semibold hover:text-brand">{payment.number}</Link>
+                                        <Link
+                                            href={`/billing/payments/${payment.public_id}`}
+                                            className="text-sm font-semibold hover:text-brand"
+                                        >
+                                            {payment.number}
+                                        </Link>
                                         <p className="mt-1 text-xs text-muted">{payment.collector ?? 'System'}</p>
                                     </td>
                                     <td className="px-5 py-4">
@@ -184,7 +189,13 @@ export default function PaymentsPage({ payments, filters, canReverse = false }: 
                             if (!link.url) {
                                 return (
                                     <span key={index} className="grid size-8 place-items-center text-muted/40">
-                                        {isPrevious ? <ChevronLeft size={16} /> : isNext ? <ChevronRight size={16} /> : link.label}
+                                        {isPrevious ? (
+                                            <ChevronLeft size={16} />
+                                        ) : isNext ? (
+                                            <ChevronRight size={16} />
+                                        ) : (
+                                            link.label
+                                        )}
                                     </span>
                                 );
                             }
@@ -194,7 +205,13 @@ export default function PaymentsPage({ payments, filters, canReverse = false }: 
                                     href={link.url}
                                     className={`grid size-8 place-items-center rounded-lg text-xs ${link.active ? 'bg-brand text-white' : 'text-muted hover:bg-sand'}`}
                                 >
-                                    {isPrevious ? <ChevronLeft size={16} /> : isNext ? <ChevronRight size={16} /> : link.label}
+                                    {isPrevious ? (
+                                        <ChevronLeft size={16} />
+                                    ) : isNext ? (
+                                        <ChevronRight size={16} />
+                                    ) : (
+                                        link.label
+                                    )}
                                 </Link>
                             );
                         })}

@@ -43,12 +43,19 @@ export default function PaymentShowPage({ payment, canReverse }: Props) {
         <AppLayout>
             <Head title={payment.number} />
             <div className="flex items-center justify-between gap-4 print:hidden">
-                <Link href="/billing/payments" className="inline-flex items-center gap-2 text-sm font-semibold text-muted hover:text-brand">
+                <Link
+                    href="/billing/payments"
+                    className="inline-flex items-center gap-2 text-sm font-semibold text-muted hover:text-brand"
+                >
                     <ArrowLeft size={16} /> Back to payments
                 </Link>
                 <div className="flex gap-2">
-                    <a href={`/billing/payments/${payment.public_id}/pdf`} className="button-secondary"><Download size={16} /> Download PDF</a>
-                    <button type="button" className="button-secondary" onClick={() => window.print()}><Printer size={16} /> Print receipt</button>
+                    <a href={`/billing/payments/${payment.public_id}/pdf`} className="button-secondary">
+                        <Download size={16} /> Download PDF
+                    </a>
+                    <button type="button" className="button-secondary" onClick={() => window.print()}>
+                        <Printer size={16} /> Print receipt
+                    </button>
                 </div>
             </div>
 
@@ -56,7 +63,9 @@ export default function PaymentShowPage({ payment, canReverse }: Props) {
                 <div>
                     <p className="eyebrow">Collection receipt</p>
                     <h1 className="page-title">{payment.number}</h1>
-                    <p className="page-subtitle">Received {formatDate(payment.received_at)} · {payment.collector ?? 'System posted'}</p>
+                    <p className="page-subtitle">
+                        Received {formatDate(payment.received_at)} · {payment.collector ?? 'System posted'}
+                    </p>
                 </div>
                 <StatusBadge status={payment.status} />
             </div>
@@ -66,39 +75,145 @@ export default function PaymentShowPage({ payment, canReverse }: Props) {
                     <div className="flex items-start justify-between gap-5">
                         <div>
                             <p className="text-sm text-muted">Amount received</p>
-                            <p className="mt-2 text-3xl font-bold tracking-tight">{formatMoney(payment.amount, payment.currency)}</p>
+                            <p className="mt-2 text-3xl font-bold tracking-tight">
+                                {formatMoney(payment.amount, payment.currency)}
+                            </p>
                         </div>
-                        <div className="grid size-11 place-items-center rounded-xl bg-brand-soft text-brand"><CreditCard size={20} /></div>
+                        <div className="grid size-11 place-items-center rounded-xl bg-brand-soft text-brand">
+                            <CreditCard size={20} />
+                        </div>
                     </div>
                     <dl className="mt-8 grid gap-5 sm:grid-cols-2">
-                        <div><dt className="field-label">Customer</dt><dd className="mt-1 text-sm font-semibold"><Link href={`/customers/${payment.customer.public_id}`} className="hover:text-brand">{payment.customer.name}</Link><span className="mt-1 block text-xs font-normal text-muted">{payment.customer.code}</span></dd></div>
-                        <div><dt className="field-label">Method</dt><dd className="mt-1 text-sm font-semibold capitalize">{payment.method.replace('_', ' ')}</dd></div>
-                        <div><dt className="field-label">Invoice</dt><dd className="mt-1 text-sm font-semibold">{payment.invoice ? <Link href={`/billing/invoices/${payment.invoice.public_id}`} className="hover:text-brand">{payment.invoice.number}</Link> : 'Account credit'}</dd></div>
-                        <div><dt className="field-label">Cash shift</dt><dd className="mt-1 text-sm font-semibold">{payment.cash_shift ?? 'Not assigned'}</dd></div>
-                        {payment.ledger_amount !== null && payment.ledger_currency !== payment.currency && <div><dt className="field-label">Ledger equivalent</dt><dd className="mt-1 text-sm font-semibold">{formatMoney(payment.ledger_amount, payment.ledger_currency)}</dd></div>}
-                        {payment.base_amount !== null && <div><dt className="field-label">Base equivalent</dt><dd className="mt-1 text-sm font-semibold">{formatMoney(payment.base_amount, payment.base_currency)}</dd></div>}
-                        {payment.reference && <div><dt className="field-label">Reference</dt><dd className="mt-1 text-sm font-semibold break-all">{payment.reference}</dd></div>}
-                        {payment.fx_rate_overridden && <div><dt className="field-label">FX override</dt><dd className="mt-1 text-sm font-semibold">{payment.fx_rate_numerator}/{payment.fx_rate_denominator}<span className="mt-1 block text-xs font-normal text-muted">{payment.fx_override_reason}</span></dd></div>}
+                        <div>
+                            <dt className="field-label">Customer</dt>
+                            <dd className="mt-1 text-sm font-semibold">
+                                <Link href={`/customers/${payment.customer.public_id}`} className="hover:text-brand">
+                                    {payment.customer.name}
+                                </Link>
+                                <span className="mt-1 block text-xs font-normal text-muted">
+                                    {payment.customer.code}
+                                </span>
+                            </dd>
+                        </div>
+                        <div>
+                            <dt className="field-label">Method</dt>
+                            <dd className="mt-1 text-sm font-semibold capitalize">
+                                {payment.method.replace('_', ' ')}
+                            </dd>
+                        </div>
+                        <div>
+                            <dt className="field-label">Invoice</dt>
+                            <dd className="mt-1 text-sm font-semibold">
+                                {payment.invoice ? (
+                                    <Link
+                                        href={`/billing/invoices/${payment.invoice.public_id}`}
+                                        className="hover:text-brand"
+                                    >
+                                        {payment.invoice.number}
+                                    </Link>
+                                ) : (
+                                    'Account credit'
+                                )}
+                            </dd>
+                        </div>
+                        <div>
+                            <dt className="field-label">Cash shift</dt>
+                            <dd className="mt-1 text-sm font-semibold">{payment.cash_shift ?? 'Not assigned'}</dd>
+                        </div>
+                        {payment.ledger_amount !== null && payment.ledger_currency !== payment.currency && (
+                            <div>
+                                <dt className="field-label">Ledger equivalent</dt>
+                                <dd className="mt-1 text-sm font-semibold">
+                                    {formatMoney(payment.ledger_amount, payment.ledger_currency)}
+                                </dd>
+                            </div>
+                        )}
+                        {payment.base_amount !== null && (
+                            <div>
+                                <dt className="field-label">Base equivalent</dt>
+                                <dd className="mt-1 text-sm font-semibold">
+                                    {formatMoney(payment.base_amount, payment.base_currency)}
+                                </dd>
+                            </div>
+                        )}
+                        {payment.reference && (
+                            <div>
+                                <dt className="field-label">Reference</dt>
+                                <dd className="mt-1 text-sm font-semibold break-all">{payment.reference}</dd>
+                            </div>
+                        )}
+                        {payment.fx_rate_overridden && (
+                            <div>
+                                <dt className="field-label">FX override</dt>
+                                <dd className="mt-1 text-sm font-semibold">
+                                    {payment.fx_rate_numerator}/{payment.fx_rate_denominator}
+                                    <span className="mt-1 block text-xs font-normal text-muted">
+                                        {payment.fx_override_reason}
+                                    </span>
+                                </dd>
+                            </div>
+                        )}
                     </dl>
-                    {payment.reversed_at && <p className="mt-8 rounded-lg bg-rose-50 px-4 py-3 text-sm text-rose-700">Reversed on {formatDate(payment.reversed_at)}. This receipt no longer counts toward invoice balances.</p>}
+                    {payment.reversed_at && (
+                        <p className="mt-8 rounded-lg bg-rose-50 px-4 py-3 text-sm text-rose-700">
+                            Reversed on {formatDate(payment.reversed_at)}. This receipt no longer counts toward invoice
+                            balances.
+                        </p>
+                    )}
                 </div>
 
                 <div className="card h-fit p-5 print:hidden">
                     <p className="text-sm font-semibold">Receipt actions</p>
                     <div className="mt-5 space-y-3">
-                        <a href={`/billing/payments/${payment.public_id}/pdf`} className="button-secondary w-full justify-center"><Download size={16} /> Download PDF</a>
-                        <button type="button" className="button-secondary w-full justify-center" onClick={() => window.print()}><Printer size={16} /> Print receipt</button>
-                        {canReverse && payment.status === 'posted' && <button type="button" className="button-danger w-full justify-center" onClick={reverse}>Reverse posted payment</button>}
+                        <a
+                            href={`/billing/payments/${payment.public_id}/pdf`}
+                            className="button-secondary w-full justify-center"
+                        >
+                            <Download size={16} /> Download PDF
+                        </a>
+                        <button
+                            type="button"
+                            className="button-secondary w-full justify-center"
+                            onClick={() => window.print()}
+                        >
+                            <Printer size={16} /> Print receipt
+                        </button>
+                        {canReverse && payment.status === 'posted' && (
+                            <button type="button" className="button-danger w-full justify-center" onClick={reverse}>
+                                Reverse posted payment
+                            </button>
+                        )}
                     </div>
-                    <p className="mt-4 text-xs leading-5 text-muted">Reversal is append-only and requires recent authentication. The original receipt remains visible for audit.</p>
+                    <p className="mt-4 text-xs leading-5 text-muted">
+                        Reversal is append-only and requires recent authentication. The original receipt remains visible
+                        for audit.
+                    </p>
                 </div>
             </div>
 
             <div className="card mt-6 overflow-hidden">
-                <div className="border-b border-line px-5 py-4"><p className="text-sm font-semibold">Allocation trail</p><p className="mt-1 text-xs text-muted">Posted invoice allocations recorded with this receipt.</p></div>
+                <div className="border-b border-line px-5 py-4">
+                    <p className="text-sm font-semibold">Allocation trail</p>
+                    <p className="mt-1 text-xs text-muted">Posted invoice allocations recorded with this receipt.</p>
+                </div>
                 <div className="divide-y divide-line">
-                    {payment.allocations.map((allocation) => <Link key={allocation.id} href={`/billing/invoices/${allocation.invoice.public_id}`} className="flex items-center justify-between gap-4 px-5 py-4 hover:bg-sand/30"><p className="text-sm font-semibold">{allocation.invoice.number}</p><p className="text-sm font-semibold">{formatMoney(allocation.amount, allocation.currency)}</p></Link>)}
-                    {payment.allocations.length === 0 && <p className="px-5 py-10 text-center text-sm text-muted">No invoice allocation. This receipt is account credit.</p>}
+                    {payment.allocations.map((allocation) => (
+                        <Link
+                            key={allocation.id}
+                            href={`/billing/invoices/${allocation.invoice.public_id}`}
+                            className="flex items-center justify-between gap-4 px-5 py-4 hover:bg-sand/30"
+                        >
+                            <p className="text-sm font-semibold">{allocation.invoice.number}</p>
+                            <p className="text-sm font-semibold">
+                                {formatMoney(allocation.amount, allocation.currency)}
+                            </p>
+                        </Link>
+                    ))}
+                    {payment.allocations.length === 0 && (
+                        <p className="px-5 py-10 text-center text-sm text-muted">
+                            No invoice allocation. This receipt is account credit.
+                        </p>
+                    )}
                 </div>
             </div>
         </AppLayout>

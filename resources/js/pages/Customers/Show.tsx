@@ -60,11 +60,16 @@ export default function CustomerShow({
     canManageEquipment = false,
 }: Props) {
     const fullName = `${customer.first_name} ${customer.last_name ?? ''}`.trim();
-    const nextExpiry = customer.services
-        .map((service) => service.expires_at)
-        .filter((expiresAt): expiresAt is string => expiresAt !== null)
-        .sort((left, right) => new Date(left).getTime() - new Date(right).getTime())[0] ?? null;
-    const documentForm = useForm<{ file: File | null; document_type: string; retention_until: string }>({ file: null, document_type: 'contract', retention_until: '' });
+    const nextExpiry =
+        customer.services
+            .map((service) => service.expires_at)
+            .filter((expiresAt): expiresAt is string => expiresAt !== null)
+            .sort((left, right) => new Date(left).getTime() - new Date(right).getTime())[0] ?? null;
+    const documentForm = useForm<{ file: File | null; document_type: string; retention_until: string }>({
+        file: null,
+        document_type: 'contract',
+        retention_until: '',
+    });
     const submitDocument = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         documentForm.post('/customers/' + customer.public_id + '/documents', {
@@ -149,10 +154,14 @@ export default function CustomerShow({
                     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                         <div className="card p-5">
                             <p className="text-xs font-semibold uppercase tracking-wider text-muted">Balance</p>
-                            <p className={`mt-3 font-display text-2xl font-semibold ${customer.balance_amount > 0 ? 'text-coral' : ''}`}>
+                            <p
+                                className={`mt-3 font-display text-2xl font-semibold ${customer.balance_amount > 0 ? 'text-coral' : ''}`}
+                            >
                                 {formatMoney(customer.balance_amount, customer.balance_currency)}
                             </p>
-                            <p className="mt-1 text-xs text-muted">{customer.balance_amount > 0 ? 'Amount owing' : 'Account balance'}</p>
+                            <p className="mt-1 text-xs text-muted">
+                                {customer.balance_amount > 0 ? 'Amount owing' : 'Account balance'}
+                            </p>
                         </div>
                         <div className="card p-5">
                             <p className="text-xs font-semibold uppercase tracking-wider text-muted">Services</p>
@@ -166,7 +175,9 @@ export default function CustomerShow({
                         </div>
                         <div className="card p-5">
                             <p className="text-xs font-semibold uppercase tracking-wider text-muted">Expiry</p>
-                            <p className={`mt-3 text-sm font-semibold ${nextExpiry !== null && new Date(nextExpiry) < new Date() ? 'text-coral' : ''}`}>
+                            <p
+                                className={`mt-3 text-sm font-semibold ${nextExpiry !== null && new Date(nextExpiry) < new Date() ? 'text-coral' : ''}`}
+                            >
                                 {formatExpiryCountdown(nextExpiry)}
                             </p>
                             <p className="mt-1 text-xs text-muted">Earliest service expiry</p>
@@ -235,11 +246,17 @@ export default function CustomerShow({
                                                 {service.session ? 'Online' : 'Offline'}
                                             </p>
                                             <p className="mt-1 text-xs text-muted">
-                                                {service.session?.framed_ip ?? service.session?.nasname ?? 'No active session'}
+                                                {service.session?.framed_ip ??
+                                                    service.session?.nasname ??
+                                                    'No active session'}
                                             </p>
                                             {service.session && (
                                                 <p className="mt-1 text-xs text-muted">
-                                                    Uptime {formatDuration(service.session.started_at, service.session.last_seen_at)}
+                                                    Uptime{' '}
+                                                    {formatDuration(
+                                                        service.session.started_at,
+                                                        service.session.last_seen_at,
+                                                    )}
                                                 </p>
                                             )}
                                         </div>
@@ -250,11 +267,14 @@ export default function CustomerShow({
                                                     <div className="mt-2 h-2 overflow-hidden rounded-full bg-sand">
                                                         <div
                                                             className="h-full rounded-full bg-brand"
-                                                            style={{ width: `${Math.min(100, (service.usage.used_bytes / service.usage.quota_bytes) * 100)}%` }}
+                                                            style={{
+                                                                width: `${Math.min(100, (service.usage.used_bytes / service.usage.quota_bytes) * 100)}%`,
+                                                            }}
                                                         />
                                                     </div>
                                                     <p className="mt-1 text-xs text-muted">
-                                                        {formatBytes(service.usage.used_bytes)} of {formatBytes(service.usage.quota_bytes)}
+                                                        {formatBytes(service.usage.used_bytes)} of{' '}
+                                                        {formatBytes(service.usage.quota_bytes)}
                                                     </p>
                                                 </>
                                             ) : (
@@ -270,7 +290,8 @@ export default function CustomerShow({
                                                             key={unit.serial_number}
                                                             className="inline-flex items-center gap-2 rounded-full bg-sand px-3 py-1.5 text-xs font-semibold"
                                                         >
-                                                            {unit.item?.name ?? 'Serialized equipment'} · {unit.serial_number}
+                                                            {unit.item?.name ?? 'Serialized equipment'} ·{' '}
+                                                            {unit.serial_number}
                                                             <span className="font-normal text-muted">
                                                                 · Assigned {formatDate(unit.assigned_at)}
                                                             </span>
@@ -279,8 +300,12 @@ export default function CustomerShow({
                                                                     type="button"
                                                                     className="font-semibold text-coral hover:underline"
                                                                     onClick={() =>
-                                                                        window.confirm(`Mark ${unit.serial_number} as returned?`) &&
-                                                                        router.post(`/services/${service.public_id}/equipment/${unit.id}/return`)
+                                                                        window.confirm(
+                                                                            `Mark ${unit.serial_number} as returned?`,
+                                                                        ) &&
+                                                                        router.post(
+                                                                            `/services/${service.public_id}/equipment/${unit.id}/return`,
+                                                                        )
                                                                     }
                                                                 >
                                                                     Return
@@ -336,25 +361,28 @@ export default function CustomerShow({
                                             )}
                                             {((service.status === 'suspended' &&
                                                 canActivateServices &&
-                                                (service.suspension_reason === 'auto_overdue' || canForceResumeServices)) ||
+                                                (service.suspension_reason === 'auto_overdue' ||
+                                                    canForceResumeServices)) ||
                                                 (service.status === 'paused' && canActivateServices)) && (
-                                                    <button
-                                                        type="button"
-                                                        className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand"
-                                                        onClick={() =>
-                                                            window.confirm('Reactivate this service?') &&
-                                                            router.post(`/services/${service.public_id}/resume`)
-                                                        }
-                                                    >
-                                                        <Play size={14} /> Resume
-                                                    </button>
-                                                )}
+                                                <button
+                                                    type="button"
+                                                    className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand"
+                                                    onClick={() =>
+                                                        window.confirm('Reactivate this service?') &&
+                                                        router.post(`/services/${service.public_id}/resume`)
+                                                    }
+                                                >
+                                                    <Play size={14} /> Resume
+                                                </button>
+                                            )}
                                             {canTerminateServices && service.status !== 'terminated' && (
                                                 <button
                                                     type="button"
                                                     className="inline-flex items-center gap-1.5 text-sm font-semibold text-coral"
                                                     onClick={() =>
-                                                        window.confirm('Terminate this service? Equipment will be marked for recovery.') &&
+                                                        window.confirm(
+                                                            'Terminate this service? Equipment will be marked for recovery.',
+                                                        ) &&
                                                         router.post(`/services/${service.public_id}/terminate`, {
                                                             reason: 'manual_operator',
                                                         })
@@ -370,8 +398,8 @@ export default function CustomerShow({
                                                     onClick={() => router.post(`/services/${service.public_id}/resync`)}
                                                 >
                                                     <RefreshCw size={14} /> Re-sync
-                                                    </button>
-                                                )}
+                                                </button>
+                                            )}
                                             {canDisconnectSessions && service.session && (
                                                 <button
                                                     type="button"
@@ -430,8 +458,22 @@ export default function CustomerShow({
                                 <div>
                                     <dt className="text-xs text-muted">Coordinates</dt>
                                     <dd className="mt-1 flex items-center justify-between gap-3 text-sm font-medium">
-                                        <span>{customer.latitude.toFixed(7)}, {customer.longitude.toFixed(7)}</span>
-                                        <a href={'https://www.openstreetmap.org/?mlat=' + customer.latitude + '&mlon=' + customer.longitude} target="_blank" rel="noreferrer" className="text-brand hover:underline">Open map</a>
+                                        <span>
+                                            {customer.latitude.toFixed(7)}, {customer.longitude.toFixed(7)}
+                                        </span>
+                                        <a
+                                            href={
+                                                'https://www.openstreetmap.org/?mlat=' +
+                                                customer.latitude +
+                                                '&mlon=' +
+                                                customer.longitude
+                                            }
+                                            target="_blank"
+                                            rel="noreferrer"
+                                            className="text-brand hover:underline"
+                                        >
+                                            Open map
+                                        </a>
                                     </dd>
                                     <div className="mt-3">
                                         <MapView latitude={customer.latitude} longitude={customer.longitude} />
@@ -450,10 +492,57 @@ export default function CustomerShow({
                         </div>
                         {canEdit && (
                             <form onSubmit={submitDocument} className="space-y-3 border-b border-line px-6 py-5">
-                                <label><span className="field-label">Add PDF or image</span><input type="file" accept="application/pdf,image/jpeg,image/png,image/webp" className="field" onChange={(event) => documentForm.setData('file', event.target.files?.[0] ?? null)} />{documentForm.errors.file && <p className="field-error">{documentForm.errors.file}</p>}</label>
-                                <label><span className="field-label">Document type</span><select className="field" value={documentForm.data.document_type} onChange={(event) => documentForm.setData('document_type', event.target.value)}><option value="contract">Contract</option><option value="identity">Identity</option><option value="proof_of_address">Proof of address</option><option value="other">Other</option></select>{documentForm.errors.document_type && <p className="field-error">{documentForm.errors.document_type}</p>}</label>
-                                <label><span className="field-label">Retain until (optional)</span><input type="date" className="field" value={documentForm.data.retention_until} onChange={(event) => documentForm.setData('retention_until', event.target.value)} />{documentForm.errors.retention_until && <p className="field-error">{documentForm.errors.retention_until}</p>}</label>
-                                <button type="submit" className="button-secondary" disabled={documentForm.processing || !documentForm.data.file}><Upload size={15} /> Upload document</button>
+                                <label>
+                                    <span className="field-label">Add PDF or image</span>
+                                    <input
+                                        type="file"
+                                        accept="application/pdf,image/jpeg,image/png,image/webp"
+                                        className="field"
+                                        onChange={(event) =>
+                                            documentForm.setData('file', event.target.files?.[0] ?? null)
+                                        }
+                                    />
+                                    {documentForm.errors.file && (
+                                        <p className="field-error">{documentForm.errors.file}</p>
+                                    )}
+                                </label>
+                                <label>
+                                    <span className="field-label">Document type</span>
+                                    <select
+                                        className="field"
+                                        value={documentForm.data.document_type}
+                                        onChange={(event) => documentForm.setData('document_type', event.target.value)}
+                                    >
+                                        <option value="contract">Contract</option>
+                                        <option value="identity">Identity</option>
+                                        <option value="proof_of_address">Proof of address</option>
+                                        <option value="other">Other</option>
+                                    </select>
+                                    {documentForm.errors.document_type && (
+                                        <p className="field-error">{documentForm.errors.document_type}</p>
+                                    )}
+                                </label>
+                                <label>
+                                    <span className="field-label">Retain until (optional)</span>
+                                    <input
+                                        type="date"
+                                        className="field"
+                                        value={documentForm.data.retention_until}
+                                        onChange={(event) =>
+                                            documentForm.setData('retention_until', event.target.value)
+                                        }
+                                    />
+                                    {documentForm.errors.retention_until && (
+                                        <p className="field-error">{documentForm.errors.retention_until}</p>
+                                    )}
+                                </label>
+                                <button
+                                    type="submit"
+                                    className="button-secondary"
+                                    disabled={documentForm.processing || !documentForm.data.file}
+                                >
+                                    <Upload size={15} /> Upload document
+                                </button>
                             </form>
                         )}
                         <div className="divide-y divide-line">
@@ -461,13 +550,27 @@ export default function CustomerShow({
                                 <div key={document.id} className="flex items-center justify-between gap-4 px-6 py-4">
                                     <div className="min-w-0">
                                         <p className="truncate text-sm font-semibold">{document.filename}</p>
-                                        <p className="mt-1 text-xs capitalize text-muted">{document.document_type?.replace('_', ' ') ?? 'other'} · {document.mime_type} · {document.size_bytes} bytes · {formatDate(document.created_at)}</p>
-                                        {document.retention_until && <p className="mt-1 text-xs text-muted">Retained until {formatDate(document.retention_until)}</p>}
+                                        <p className="mt-1 text-xs capitalize text-muted">
+                                            {document.document_type?.replace('_', ' ') ?? 'other'} ·{' '}
+                                            {document.mime_type} · {document.size_bytes} bytes ·{' '}
+                                            {formatDate(document.created_at)}
+                                        </p>
+                                        {document.retention_until && (
+                                            <p className="mt-1 text-xs text-muted">
+                                                Retained until {formatDate(document.retention_until)}
+                                            </p>
+                                        )}
                                     </div>
-                                    <a href={document.download_url} className="button-secondary shrink-0" download><Download size={15} /> Download</a>
+                                    <a href={document.download_url} className="button-secondary shrink-0" download>
+                                        <Download size={15} /> Download
+                                    </a>
                                 </div>
                             ))}
-                            {customer.documents.length === 0 && <p className="px-6 py-8 text-sm text-muted">No customer documents have been uploaded.</p>}
+                            {customer.documents.length === 0 && (
+                                <p className="px-6 py-8 text-sm text-muted">
+                                    No customer documents have been uploaded.
+                                </p>
+                            )}
                         </div>
                     </div>
                     <div className="card overflow-hidden">

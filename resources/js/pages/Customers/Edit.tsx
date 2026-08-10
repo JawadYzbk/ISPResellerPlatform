@@ -48,36 +48,83 @@ export default function CustomersEdit({ customer, zones }: Props) {
                 >
                     <div className="grid gap-5 sm:grid-cols-2">
                         <div>
-                            <label className="field-label" htmlFor="first_name">First name</label>
-                            <input id="first_name" className="field" value={form.data.first_name} onChange={(event) => form.setData('first_name', event.target.value)} />
+                            <label className="field-label" htmlFor="first_name">
+                                First name
+                            </label>
+                            <input
+                                id="first_name"
+                                className="field"
+                                value={form.data.first_name}
+                                onChange={(event) => form.setData('first_name', event.target.value)}
+                            />
                             {form.errors.first_name && <p className="field-error">{form.errors.first_name}</p>}
                         </div>
                         <div>
-                            <label className="field-label" htmlFor="last_name">Last name</label>
-                            <input id="last_name" className="field" value={form.data.last_name} onChange={(event) => form.setData('last_name', event.target.value)} />
+                            <label className="field-label" htmlFor="last_name">
+                                Last name
+                            </label>
+                            <input
+                                id="last_name"
+                                className="field"
+                                value={form.data.last_name}
+                                onChange={(event) => form.setData('last_name', event.target.value)}
+                            />
                             {form.errors.last_name && <p className="field-error">{form.errors.last_name}</p>}
                         </div>
                         <div>
-                            <label className="field-label" htmlFor="phone">Phone</label>
-                            <input id="phone" className="field" value={form.data.phone} onChange={(event) => form.setData('phone', event.target.value)} />
+                            <label className="field-label" htmlFor="phone">
+                                Phone
+                            </label>
+                            <input
+                                id="phone"
+                                className="field"
+                                value={form.data.phone}
+                                onChange={(event) => form.setData('phone', event.target.value)}
+                            />
                             {form.errors.phone && <p className="field-error">{form.errors.phone}</p>}
                         </div>
                         <div>
-                            <label className="field-label" htmlFor="email">Email</label>
-                            <input id="email" type="email" className="field" value={form.data.email} onChange={(event) => form.setData('email', event.target.value)} />
+                            <label className="field-label" htmlFor="email">
+                                Email
+                            </label>
+                            <input
+                                id="email"
+                                type="email"
+                                className="field"
+                                value={form.data.email}
+                                onChange={(event) => form.setData('email', event.target.value)}
+                            />
                             {form.errors.email && <p className="field-error">{form.errors.email}</p>}
                         </div>
                         <div>
-                            <label className="field-label" htmlFor="zone_id">Zone</label>
-                            <select id="zone_id" className="field" value={form.data.zone_id} onChange={(event) => form.setData('zone_id', event.target.value)}>
+                            <label className="field-label" htmlFor="zone_id">
+                                Zone
+                            </label>
+                            <select
+                                id="zone_id"
+                                className="field"
+                                value={form.data.zone_id}
+                                onChange={(event) => form.setData('zone_id', event.target.value)}
+                            >
                                 <option value="">Select a zone</option>
-                                {zones.map((zone) => <option key={zone.id} value={zone.id}>{zone.name}</option>)}
+                                {zones.map((zone) => (
+                                    <option key={zone.id} value={zone.id}>
+                                        {zone.name}
+                                    </option>
+                                ))}
                             </select>
                             {form.errors.zone_id && <p className="field-error">{form.errors.zone_id}</p>}
                         </div>
                         <div>
-                            <label className="field-label" htmlFor="address">Address</label>
-                            <input id="address" className="field" value={form.data.address} onChange={(event) => form.setData('address', event.target.value)} />
+                            <label className="field-label" htmlFor="address">
+                                Address
+                            </label>
+                            <input
+                                id="address"
+                                className="field"
+                                value={form.data.address}
+                                onChange={(event) => form.setData('address', event.target.value)}
+                            />
                             {form.errors.address && <p className="field-error">{form.errors.address}</p>}
                         </div>
                     </div>
@@ -88,7 +135,9 @@ export default function CustomersEdit({ customer, zones }: Props) {
                         onLongitudeChange={(value) => form.setData('longitude', value)}
                     />
                     <div className="flex justify-end gap-3 border-t border-line pt-5">
-                        <Link href={`/customers/${customer.public_id}`} className="button-secondary">Cancel</Link>
+                        <Link href={`/customers/${customer.public_id}`} className="button-secondary">
+                            Cancel
+                        </Link>
                         <button className="button-primary" disabled={form.processing}>
                             <Save size={16} /> Save changes
                         </button>

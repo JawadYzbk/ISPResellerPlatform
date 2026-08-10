@@ -107,8 +107,15 @@ export default function InvoicesPage({ invoices, filters, canIssue = false }: Pr
                             {invoices.data.map((invoice) => (
                                 <tr key={invoice.public_id} className="hover:bg-sand/30">
                                     <td className="px-5 py-4">
-                                        <Link href={`/billing/invoices/${invoice.public_id}`} className="text-sm font-semibold hover:text-brand">{invoice.number}</Link>
-                                        <p className="mt-1 text-xs text-muted">Issued {formatDate(invoice.issued_at)}</p>
+                                        <Link
+                                            href={`/billing/invoices/${invoice.public_id}`}
+                                            className="text-sm font-semibold hover:text-brand"
+                                        >
+                                            {invoice.number}
+                                        </Link>
+                                        <p className="mt-1 text-xs text-muted">
+                                            Issued {formatDate(invoice.issued_at)}
+                                        </p>
                                     </td>
                                     <td className="px-5 py-4">
                                         <Link
@@ -128,7 +135,9 @@ export default function InvoicesPage({ invoices, filters, canIssue = false }: Pr
                                     <td className="px-5 py-4 text-sm">
                                         <span
                                             className={
-                                                invoice.outstanding_amount > 0 ? 'font-semibold text-coral' : 'text-muted'
+                                                invoice.outstanding_amount > 0
+                                                    ? 'font-semibold text-coral'
+                                                    : 'text-muted'
                                             }
                                         >
                                             {formatMoney(invoice.outstanding_amount, invoice.currency)}
@@ -140,7 +149,9 @@ export default function InvoicesPage({ invoices, filters, canIssue = false }: Pr
                                             <button
                                                 type="button"
                                                 className="text-sm font-semibold text-brand"
-                                                onClick={() => router.post(`/billing/invoices/${invoice.public_id}/issue`)}
+                                                onClick={() =>
+                                                    router.post(`/billing/invoices/${invoice.public_id}/issue`)
+                                                }
                                             >
                                                 Issue invoice
                                             </button>
@@ -178,7 +189,13 @@ export default function InvoicesPage({ invoices, filters, canIssue = false }: Pr
                             if (!link.url) {
                                 return (
                                     <span key={index} className="grid size-8 place-items-center text-muted/40">
-                                        {isPrevious ? <ChevronLeft size={16} /> : isNext ? <ChevronRight size={16} /> : link.label}
+                                        {isPrevious ? (
+                                            <ChevronLeft size={16} />
+                                        ) : isNext ? (
+                                            <ChevronRight size={16} />
+                                        ) : (
+                                            link.label
+                                        )}
                                     </span>
                                 );
                             }
@@ -188,7 +205,13 @@ export default function InvoicesPage({ invoices, filters, canIssue = false }: Pr
                                     href={link.url}
                                     className={`grid size-8 place-items-center rounded-lg text-xs ${link.active ? 'bg-brand text-white' : 'text-muted hover:bg-sand'}`}
                                 >
-                                    {isPrevious ? <ChevronLeft size={16} /> : isNext ? <ChevronRight size={16} /> : link.label}
+                                    {isPrevious ? (
+                                        <ChevronLeft size={16} />
+                                    ) : isNext ? (
+                                        <ChevronRight size={16} />
+                                    ) : (
+                                        link.label
+                                    )}
                                 </Link>
                             );
                         })}

@@ -1,5 +1,15 @@
 import { Head, Link, router, useForm } from '@inertiajs/react';
-import { CalendarClock, CheckSquare, ChevronLeft, ChevronRight, Download, Filter, Search, SlidersHorizontal, Users } from 'lucide-react';
+import {
+    CalendarClock,
+    CheckSquare,
+    ChevronLeft,
+    ChevronRight,
+    Download,
+    Filter,
+    Search,
+    SlidersHorizontal,
+    Users,
+} from 'lucide-react';
 import { useState } from 'react';
 
 import { StatusBadge } from '@/components/StatusBadge';
@@ -9,8 +19,19 @@ import type { Customer, PageProps, Paginator } from '@/types';
 
 type Zone = { id: number; name: string; code: string };
 type ColumnKey = 'zone' | 'services' | 'balance' | 'expiry' | 'status';
-type SavedView = { id: number; name: string; filters: { search?: string; status?: string; zone_id?: string; expires_from?: string; expires_to?: string }; columns: ColumnKey[] };
-type Props = PageProps & { customers: Paginator<Customer>; filters: { search?: string; status?: string; zone_id?: string; expires_from?: string; expires_to?: string }; zones: Zone[]; savedViews: SavedView[]; canExport?: boolean };
+type SavedView = {
+    id: number;
+    name: string;
+    filters: { search?: string; status?: string; zone_id?: string; expires_from?: string; expires_to?: string };
+    columns: ColumnKey[];
+};
+type Props = PageProps & {
+    customers: Paginator<Customer>;
+    filters: { search?: string; status?: string; zone_id?: string; expires_from?: string; expires_to?: string };
+    zones: Zone[];
+    savedViews: SavedView[];
+    canExport?: boolean;
+};
 
 const columnOptions: { key: ColumnKey; label: string }[] = [
     { key: 'zone', label: 'Zone' },
@@ -21,10 +42,12 @@ const columnOptions: { key: ColumnKey; label: string }[] = [
 ];
 
 function getNextExpiry(customer: Customer): string | null {
-    return customer.services
-        .filter((service) => service.status !== 'terminated' && service.expires_at)
-        .map((service) => service.expires_at as string)
-        .sort()[0] ?? null;
+    return (
+        customer.services
+            .filter((service) => service.status !== 'terminated' && service.expires_at)
+            .map((service) => service.expires_at as string)
+            .sort()[0] ?? null
+    );
 }
 
 export default function CustomersIndex({ customers, filters, zones, savedViews, canExport = false }: Props) {
@@ -43,7 +66,13 @@ export default function CustomersIndex({ customers, filters, zones, savedViews, 
     const applyFilters = () => {
         router.get(
             '/customers',
-            { search: search || undefined, status: status || undefined, zone_id: zoneId || undefined, expires_from: expiresFrom || undefined, expires_to: expiresTo || undefined },
+            {
+                search: search || undefined,
+                status: status || undefined,
+                zone_id: zoneId || undefined,
+                expires_from: expiresFrom || undefined,
+                expires_to: expiresTo || undefined,
+            },
             { preserveState: true, replace: true },
         );
     };
@@ -88,12 +117,19 @@ export default function CustomersIndex({ customers, filters, zones, savedViews, 
     };
 
     const pageCustomerIds = customers.data.map((customer) => customer.public_id);
-    const allPageSelected = pageCustomerIds.length > 0 && pageCustomerIds.every((id) => selectedCustomerIds.includes(id));
+    const allPageSelected =
+        pageCustomerIds.length > 0 && pageCustomerIds.every((id) => selectedCustomerIds.includes(id));
     const toggleCustomer = (publicId: string) => {
-        setSelectedCustomerIds((current) => current.includes(publicId) ? current.filter((id) => id !== publicId) : [...current, publicId]);
+        setSelectedCustomerIds((current) =>
+            current.includes(publicId) ? current.filter((id) => id !== publicId) : [...current, publicId],
+        );
     };
     const togglePage = () => {
-        setSelectedCustomerIds((current) => allPageSelected ? current.filter((id) => !pageCustomerIds.includes(id)) : [...new Set([...current, ...pageCustomerIds])]);
+        setSelectedCustomerIds((current) =>
+            allPageSelected
+                ? current.filter((id) => !pageCustomerIds.includes(id))
+                : [...new Set([...current, ...pageCustomerIds])],
+        );
     };
     const exportCustomers = () => {
         const params = new URLSearchParams();
@@ -124,17 +160,55 @@ export default function CustomersIndex({ customers, filters, zones, savedViews, 
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
                     <label className="block min-w-56">
                         <span className="field-label">Saved view</span>
-                        <select className="field" value={selectedViewId} onChange={(event) => setSelectedViewId(event.target.value)}>
+                        <select
+                            className="field"
+                            value={selectedViewId}
+                            onChange={(event) => setSelectedViewId(event.target.value)}
+                        >
                             <option value="">Choose a saved view</option>
-                            {savedViews.map((view) => <option key={view.id} value={view.id}>{view.name}</option>)}
+                            {savedViews.map((view) => (
+                                <option key={view.id} value={view.id}>
+                                    {view.name}
+                                </option>
+                            ))}
                         </select>
                     </label>
-                    <button type="button" className="button-secondary" onClick={applySavedView} disabled={!selectedViewId}>Apply view</button>
-                    <button type="button" className="button-secondary text-coral" onClick={() => { if (selectedViewId) router.delete('/customers/saved-views/' + selectedViewId, { onSuccess: () => setSelectedViewId('') }); }} disabled={!selectedViewId}>Delete</button>
+                    <button
+                        type="button"
+                        className="button-secondary"
+                        onClick={applySavedView}
+                        disabled={!selectedViewId}
+                    >
+                        Apply view
+                    </button>
+                    <button
+                        type="button"
+                        className="button-secondary text-coral"
+                        onClick={() => {
+                            if (selectedViewId)
+                                router.delete('/customers/saved-views/' + selectedViewId, {
+                                    onSuccess: () => setSelectedViewId(''),
+                                });
+                        }}
+                        disabled={!selectedViewId}
+                    >
+                        Delete
+                    </button>
                 </div>
                 <form onSubmit={submitSavedView} className="flex flex-col gap-3 sm:flex-row sm:items-end">
-                    <label className="block sm:min-w-56"><span className="field-label">Save current filters and columns</span><input className="field" value={saveViewForm.data.name} onChange={(event) => saveViewForm.setData('name', event.target.value)} placeholder="Renewal queue" />{saveViewForm.errors.name && <p className="field-error">{saveViewForm.errors.name}</p>}</label>
-                    <button type="submit" className="button-secondary" disabled={saveViewForm.processing}>Save view</button>
+                    <label className="block sm:min-w-56">
+                        <span className="field-label">Save current filters and columns</span>
+                        <input
+                            className="field"
+                            value={saveViewForm.data.name}
+                            onChange={(event) => saveViewForm.setData('name', event.target.value)}
+                            placeholder="Renewal queue"
+                        />
+                        {saveViewForm.errors.name && <p className="field-error">{saveViewForm.errors.name}</p>}
+                    </label>
+                    <button type="submit" className="button-secondary" disabled={saveViewForm.processing}>
+                        Save view
+                    </button>
                 </form>
             </div>
             <div className="mt-8 card overflow-hidden">
@@ -171,8 +245,14 @@ export default function CustomersIndex({ customers, filters, zones, savedViews, 
                 </div>
                 {canExport && (
                     <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line bg-sand/20 px-5 py-3">
-                        <p className="text-sm text-muted">{selectedCustomerIds.length ? `${selectedCustomerIds.length} customer(s) selected across pages` : 'Export all customers matching the current filters'}</p>
-                        <button type="button" className="button-secondary" onClick={exportCustomers}><Download size={16} /> Export CSV</button>
+                        <p className="text-sm text-muted">
+                            {selectedCustomerIds.length
+                                ? `${selectedCustomerIds.length} customer(s) selected across pages`
+                                : 'Export all customers matching the current filters'}
+                        </p>
+                        <button type="button" className="button-secondary" onClick={exportCustomers}>
+                            <Download size={16} /> Export CSV
+                        </button>
                     </div>
                 )}
                 {(showFilters || showColumns) && (
@@ -194,18 +274,36 @@ export default function CustomersIndex({ customers, filters, zones, savedViews, 
                                 </label>
                                 <label className="block min-w-48">
                                     <span className="field-label">Zone</span>
-                                    <select className="field" value={zoneId} onChange={(event) => setZoneId(event.target.value)}>
+                                    <select
+                                        className="field"
+                                        value={zoneId}
+                                        onChange={(event) => setZoneId(event.target.value)}
+                                    >
                                         <option value="">All zones</option>
-                                        {zones.map((zone) => <option key={zone.id} value={zone.id}>{zone.name}</option>)}
+                                        {zones.map((zone) => (
+                                            <option key={zone.id} value={zone.id}>
+                                                {zone.name}
+                                            </option>
+                                        ))}
                                     </select>
                                 </label>
                                 <label className="block min-w-40">
                                     <span className="field-label">Expiry from</span>
-                                    <input className="field" type="date" value={expiresFrom} onChange={(event) => setExpiresFrom(event.target.value)} />
+                                    <input
+                                        className="field"
+                                        type="date"
+                                        value={expiresFrom}
+                                        onChange={(event) => setExpiresFrom(event.target.value)}
+                                    />
                                 </label>
                                 <label className="block min-w-40">
                                     <span className="field-label">Expiry to</span>
-                                    <input className="field" type="date" value={expiresTo} onChange={(event) => setExpiresTo(event.target.value)} />
+                                    <input
+                                        className="field"
+                                        type="date"
+                                        value={expiresTo}
+                                        onChange={(event) => setExpiresTo(event.target.value)}
+                                    />
                                 </label>
                                 <button type="button" className="button-primary" onClick={applyFilters}>
                                     Apply
@@ -233,7 +331,20 @@ export default function CustomersIndex({ customers, filters, zones, savedViews, 
                     <table className="w-full min-w-[760px] text-start">
                         <thead>
                             <tr className="border-b border-line bg-sand/50 text-xs font-semibold uppercase tracking-wider text-muted">
-                                <th className="w-12 px-5 py-3.5 text-start"><button type="button" onClick={togglePage} aria-label={allPageSelected ? 'Clear current page selection' : 'Select current page'}><CheckSquare size={16} className={allPageSelected ? 'text-brand' : 'text-muted'} /></button></th>
+                                <th className="w-12 px-5 py-3.5 text-start">
+                                    <button
+                                        type="button"
+                                        onClick={togglePage}
+                                        aria-label={
+                                            allPageSelected ? 'Clear current page selection' : 'Select current page'
+                                        }
+                                    >
+                                        <CheckSquare
+                                            size={16}
+                                            className={allPageSelected ? 'text-brand' : 'text-muted'}
+                                        />
+                                    </button>
+                                </th>
                                 <th className="px-5 py-3.5 text-start">Customer</th>
                                 {visibleColumns.includes('zone') && <th className="px-5 py-3.5 text-start">Zone</th>}
                                 {visibleColumns.includes('services') && (
@@ -242,7 +353,9 @@ export default function CustomersIndex({ customers, filters, zones, savedViews, 
                                 {visibleColumns.includes('balance') && (
                                     <th className="px-5 py-3.5 text-start">Balance</th>
                                 )}
-                                {visibleColumns.includes('expiry') && <th className="px-5 py-3.5 text-start">Next expiry</th>}
+                                {visibleColumns.includes('expiry') && (
+                                    <th className="px-5 py-3.5 text-start">Next expiry</th>
+                                )}
                                 {visibleColumns.includes('status') && (
                                     <th className="px-5 py-3.5 text-start">Status</th>
                                 )}
@@ -255,25 +368,32 @@ export default function CustomersIndex({ customers, filters, zones, savedViews, 
 
                                 return (
                                     <tr key={customer.public_id} className="group transition hover:bg-sand/30">
-                                        <td className="px-5 py-4"><input type="checkbox" aria-label={`Select ${customer.first_name} ${customer.last_name}`} checked={selectedCustomerIds.includes(customer.public_id)} onChange={() => toggleCustomer(customer.public_id)} /></td>
                                         <td className="px-5 py-4">
-                                        <Link
-                                            href={`/customers/${customer.public_id}`}
-                                            className="flex items-center gap-3"
-                                        >
-                                            <span className="grid size-9 place-items-center rounded-full bg-brand-soft text-xs font-bold text-brand">
-                                                {customer.first_name.slice(0, 1)}
-                                                {customer.last_name?.slice(0, 1) ?? ''}
-                                            </span>
-                                            <span>
-                                                <span className="block text-sm font-semibold group-hover:text-brand">
-                                                    {customer.first_name} {customer.last_name}
+                                            <input
+                                                type="checkbox"
+                                                aria-label={`Select ${customer.first_name} ${customer.last_name}`}
+                                                checked={selectedCustomerIds.includes(customer.public_id)}
+                                                onChange={() => toggleCustomer(customer.public_id)}
+                                            />
+                                        </td>
+                                        <td className="px-5 py-4">
+                                            <Link
+                                                href={`/customers/${customer.public_id}`}
+                                                className="flex items-center gap-3"
+                                            >
+                                                <span className="grid size-9 place-items-center rounded-full bg-brand-soft text-xs font-bold text-brand">
+                                                    {customer.first_name.slice(0, 1)}
+                                                    {customer.last_name?.slice(0, 1) ?? ''}
                                                 </span>
-                                                <span className="mt-0.5 block text-xs text-muted">
-                                                    {customer.code} · {customer.phone}
+                                                <span>
+                                                    <span className="block text-sm font-semibold group-hover:text-brand">
+                                                        {customer.first_name} {customer.last_name}
+                                                    </span>
+                                                    <span className="mt-0.5 block text-xs text-muted">
+                                                        {customer.code} · {customer.phone}
+                                                    </span>
                                                 </span>
-                                            </span>
-                                        </Link>
+                                            </Link>
                                         </td>
                                         {visibleColumns.includes('zone') && (
                                             <td className="px-5 py-4 text-sm text-muted">

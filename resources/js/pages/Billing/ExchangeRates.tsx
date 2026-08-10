@@ -44,7 +44,13 @@ function Pagination({ rates }: { rates: Paginator<ExchangeRate> }) {
                     if (!link.url) {
                         return (
                             <span key={index} className="grid size-8 place-items-center text-muted/40">
-                                {isPrevious ? <ChevronLeft size={16} /> : isNext ? <ChevronRight size={16} /> : link.label}
+                                {isPrevious ? (
+                                    <ChevronLeft size={16} />
+                                ) : isNext ? (
+                                    <ChevronRight size={16} />
+                                ) : (
+                                    link.label
+                                )}
                             </span>
                         );
                     }
@@ -90,17 +96,25 @@ export default function ExchangeRatesPage({ rates, filters }: Props) {
 
     const submit = (event: React.FormEvent) => {
         event.preventDefault();
-        form.transform((data) => ({ ...data, base_currency: data.base_currency.toUpperCase(), quote_currency: data.quote_currency.toUpperCase() }));
+        form.transform((data) => ({
+            ...data,
+            base_currency: data.base_currency.toUpperCase(),
+            quote_currency: data.quote_currency.toUpperCase(),
+        }));
         form.post('/billing/exchange-rates', {
             preserveScroll: true,
-            onSuccess: () => form.reset('base_currency', 'quote_currency', 'rate_numerator', 'rate_denominator', 'source'),
+            onSuccess: () =>
+                form.reset('base_currency', 'quote_currency', 'rate_numerator', 'rate_denominator', 'source'),
         });
     };
 
     return (
         <AppLayout>
             <Head title="Exchange rates" />
-            <Link href="/settings/general" className="mb-6 inline-flex items-center gap-2 text-sm font-semibold text-muted hover:text-brand">
+            <Link
+                href="/settings/general"
+                className="mb-6 inline-flex items-center gap-2 text-sm font-semibold text-muted hover:text-brand"
+            >
                 <ArrowLeft size={16} /> Back to settings
             </Link>
 
@@ -108,7 +122,9 @@ export default function ExchangeRatesPage({ rates, filters }: Props) {
                 <div>
                     <p className="eyebrow">Billing configuration</p>
                     <h1 className="page-title">Exchange rates</h1>
-                    <p className="page-subtitle">Maintain exact, effective-dated currency ratios for billing and collection.</p>
+                    <p className="page-subtitle">
+                        Maintain exact, effective-dated currency ratios for billing and collection.
+                    </p>
                 </div>
                 <div className="rounded-xl border border-line bg-white px-4 py-3 text-sm text-muted">
                     <span className="font-semibold text-ink">Fraction based</span> · No rounding in the rate history
@@ -120,36 +136,75 @@ export default function ExchangeRatesPage({ rates, filters }: Props) {
                     <Plus size={17} className="text-brand" />
                     <h2 className="section-title">Add a rate</h2>
                 </div>
-                <p className="mt-1 text-sm text-muted">Add a new effective time instead of editing a rate already used by a transaction.</p>
+                <p className="mt-1 text-sm text-muted">
+                    Add a new effective time instead of editing a rate already used by a transaction.
+                </p>
                 <div className="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
                     <label>
                         <span className="field-label">Base currency</span>
-                        <input className="field" maxLength={3} value={form.data.base_currency} onChange={(event) => form.setData('base_currency', event.target.value.toUpperCase())} placeholder="USD" />
+                        <input
+                            className="field"
+                            maxLength={3}
+                            value={form.data.base_currency}
+                            onChange={(event) => form.setData('base_currency', event.target.value.toUpperCase())}
+                            placeholder="USD"
+                        />
                         {form.errors.base_currency && <p className="field-error">{form.errors.base_currency}</p>}
                     </label>
                     <label>
                         <span className="field-label">Quote currency</span>
-                        <input className="field" maxLength={3} value={form.data.quote_currency} onChange={(event) => form.setData('quote_currency', event.target.value.toUpperCase())} placeholder="LBP" />
+                        <input
+                            className="field"
+                            maxLength={3}
+                            value={form.data.quote_currency}
+                            onChange={(event) => form.setData('quote_currency', event.target.value.toUpperCase())}
+                            placeholder="LBP"
+                        />
                         {form.errors.quote_currency && <p className="field-error">{form.errors.quote_currency}</p>}
                     </label>
                     <label>
                         <span className="field-label">Effective from</span>
-                        <input className="field" type="date" value={form.data.effective_from} onChange={(event) => form.setData('effective_from', event.target.value)} />
+                        <input
+                            className="field"
+                            type="date"
+                            value={form.data.effective_from}
+                            onChange={(event) => form.setData('effective_from', event.target.value)}
+                        />
                         {form.errors.effective_from && <p className="field-error">{form.errors.effective_from}</p>}
                     </label>
                     <label>
                         <span className="field-label">Numerator</span>
-                        <input className="field" type="number" min={1} step={1} value={form.data.rate_numerator} onChange={(event) => form.setData('rate_numerator', Number(event.target.value))} />
+                        <input
+                            className="field"
+                            type="number"
+                            min={1}
+                            step={1}
+                            value={form.data.rate_numerator}
+                            onChange={(event) => form.setData('rate_numerator', Number(event.target.value))}
+                        />
                         {form.errors.rate_numerator && <p className="field-error">{form.errors.rate_numerator}</p>}
                     </label>
                     <label>
                         <span className="field-label">Denominator</span>
-                        <input className="field" type="number" min={1} step={1} value={form.data.rate_denominator} onChange={(event) => form.setData('rate_denominator', Number(event.target.value))} />
+                        <input
+                            className="field"
+                            type="number"
+                            min={1}
+                            step={1}
+                            value={form.data.rate_denominator}
+                            onChange={(event) => form.setData('rate_denominator', Number(event.target.value))}
+                        />
                         {form.errors.rate_denominator && <p className="field-error">{form.errors.rate_denominator}</p>}
                     </label>
                     <label>
                         <span className="field-label">Source</span>
-                        <input className="field" maxLength={80} value={form.data.source} onChange={(event) => form.setData('source', event.target.value)} placeholder="Treasury desk" />
+                        <input
+                            className="field"
+                            maxLength={80}
+                            value={form.data.source}
+                            onChange={(event) => form.setData('source', event.target.value)}
+                            placeholder="Treasury desk"
+                        />
                         {form.errors.source && <p className="field-error">{form.errors.source}</p>}
                     </label>
                 </div>
@@ -163,13 +218,27 @@ export default function ExchangeRatesPage({ rates, filters }: Props) {
             <form onSubmit={applyFilters} className="card mt-6 flex flex-col gap-4 p-5 sm:flex-row sm:items-end">
                 <label className="block sm:min-w-48">
                     <span className="field-label">Base currency</span>
-                    <input className="field" maxLength={3} value={baseCurrency} onChange={(event) => setBaseCurrency(event.target.value)} placeholder="All" />
+                    <input
+                        className="field"
+                        maxLength={3}
+                        value={baseCurrency}
+                        onChange={(event) => setBaseCurrency(event.target.value)}
+                        placeholder="All"
+                    />
                 </label>
                 <label className="block sm:min-w-48">
                     <span className="field-label">Quote currency</span>
-                    <input className="field" maxLength={3} value={quoteCurrency} onChange={(event) => setQuoteCurrency(event.target.value)} placeholder="All" />
+                    <input
+                        className="field"
+                        maxLength={3}
+                        value={quoteCurrency}
+                        onChange={(event) => setQuoteCurrency(event.target.value)}
+                        placeholder="All"
+                    />
                 </label>
-                <button type="submit" className="button-secondary">Apply filters</button>
+                <button type="submit" className="button-secondary">
+                    Apply filters
+                </button>
             </form>
 
             <div className="card mt-6 overflow-hidden">
@@ -193,8 +262,13 @@ export default function ExchangeRatesPage({ rates, filters }: Props) {
                         <tbody className="divide-y divide-line">
                             {rates.data.map((rate) => (
                                 <tr key={rate.id} className="hover:bg-sand/30">
-                                    <td className="px-5 py-4 text-sm font-semibold">{rate.base_currency} <span className="text-muted">→</span> {rate.quote_currency}</td>
-                                    <td className="px-5 py-4 font-mono text-sm text-muted">{rate.rate_numerator.toLocaleString()} / {rate.rate_denominator.toLocaleString()}</td>
+                                    <td className="px-5 py-4 text-sm font-semibold">
+                                        {rate.base_currency} <span className="text-muted">→</span> {rate.quote_currency}
+                                    </td>
+                                    <td className="px-5 py-4 font-mono text-sm text-muted">
+                                        {rate.rate_numerator.toLocaleString()} /{' '}
+                                        {rate.rate_denominator.toLocaleString()}
+                                    </td>
                                     <td className="px-5 py-4 text-sm text-muted">{formatDate(rate.effective_from)}</td>
                                     <td className="px-5 py-4 text-sm text-muted">{rate.source}</td>
                                 </tr>
@@ -204,7 +278,9 @@ export default function ExchangeRatesPage({ rates, filters }: Props) {
                                     <td colSpan={4} className="px-5 py-16 text-center">
                                         <Scale className="mx-auto text-muted" size={28} />
                                         <p className="mt-3 font-semibold">No rates match these filters</p>
-                                        <p className="mt-1 text-sm text-muted">Add the first effective-dated ratio above.</p>
+                                        <p className="mt-1 text-sm text-muted">
+                                            Add the first effective-dated ratio above.
+                                        </p>
                                     </td>
                                 </tr>
                             )}
