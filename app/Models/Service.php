@@ -9,6 +9,7 @@ use App\Models\Concerns\Auditable;
 use App\Models\Concerns\BelongsToTenant;
 use Carbon\Carbon;
 use Database\Factories\ServiceFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -18,6 +19,7 @@ use Illuminate\Support\Str;
 
 /**
  * @property ServiceStatus $status
+ * @property NetworkState $network_state
  * @property ProvisioningMode $provisioning_mode
  * @property Carbon|null $expires_at
  */
@@ -75,5 +77,19 @@ class Service extends Model
     public function invoiceLines(): HasMany
     {
         return $this->hasMany(InvoiceLine::class);
+    }
+
+    /** @param Builder<Service> $query */
+    public function scopeSearch(Builder $query, ?string $search): Builder
+    {
+        if (blank($search)) {
+            return $query;
+        }
+        $term = trim($search);
+
+        return $query->where(function (Builder $query) use ($term): void {
+            $query->where('username', 'like', "%{$term}%")
+                ->orWhereHas('customer', fn (Builder $customer): Builder => $customer->where('first_name', 'like', "%{$term}%")->orWhere('last_name', 'like', "%{$term}%")->orWhere('phone_normalized', 'like', "%{$term}%"));
+        });
     }
 }
