@@ -49,6 +49,8 @@ Router incidents can broadcast notices only to customers affected by the router,
 
 Use **Operations -> Routers** to filter devices by online/offline state and run a bounded health check. The page shows the last successful observation, consecutive failures, assigned service count and TLS verification state; it never renders router credentials. Use **Operations -> Network queue** to follow the resulting command and its retry history.
 
+Use **Operations -> Credentials** to review supplier inventory without exposing secrets. Staff with the credential-assignment capability can select an unassigned service for an available credential; the action requires recent authentication and prevents a service from receiving a second credential. Secret reveal and bulk import remain controlled workflows until their rollout approval is complete.
+
 Network changes are queued through the outbox and executed by the queue worker. Inspect the command state and retry only after checking the router connection and the desired service state. `routers:reconcile-subscribers` is report-only by default; `--heal` is an explicit change and requires an approved incident or maintenance record.
 
 For RouterOS/RADIUS/CoA behavior, use the lab acceptance procedure before enabling a new device driver in production. A platform state of `active` is not proof that the router has accepted the command.
