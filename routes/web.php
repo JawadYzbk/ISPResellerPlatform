@@ -136,6 +136,12 @@ Route::middleware(['auth', 'tenant', '2fa'])->group(function (): void {
     Route::get('/plans', [PlanOperationsController::class, 'index'])->name('plans.index');
     Route::get('/plans/create', [PlanOperationsController::class, 'create'])->name('plans.create');
     Route::post('/plans', [PlanOperationsController::class, 'store'])->name('plans.store');
+    Route::post('/plans/addons', [PlanOperationsController::class, 'storeAddon'])->middleware('recent-auth')->name('plans.addons.store');
+    Route::put('/plans/addons/{addon:public_id}', [PlanOperationsController::class, 'updateAddon'])->middleware('recent-auth')->name('plans.addons.update');
+    Route::delete('/plans/addons/{addon:public_id}', [PlanOperationsController::class, 'archiveAddon'])->middleware('recent-auth')->name('plans.addons.archive');
+    Route::post('/plans/promotions', [PlanOperationsController::class, 'storePromotion'])->middleware('recent-auth')->name('plans.promotions.store');
+    Route::put('/plans/promotions/{promotion:public_id}', [PlanOperationsController::class, 'updatePromotion'])->middleware('recent-auth')->name('plans.promotions.update');
+    Route::delete('/plans/promotions/{promotion:public_id}', [PlanOperationsController::class, 'archivePromotion'])->middleware('recent-auth')->name('plans.promotions.archive');
     Route::get('/customers/{customer:public_id}/services/create', [ServiceController::class, 'create'])->name('services.create');
     Route::post('/customers/{customer:public_id}/services', [ServiceController::class, 'store'])->name('services.store');
     Route::get('/partners/commercial', [PartnerController::class, 'commercial'])->name('partners.commercial');

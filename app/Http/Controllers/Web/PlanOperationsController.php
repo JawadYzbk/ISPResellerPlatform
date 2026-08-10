@@ -2,10 +2,16 @@
 
 namespace App\Http\Controllers\Web;
 
+use App\Actions\CreateAddon;
 use App\Actions\CreatePlan;
+use App\Actions\CreatePromotion;
 use App\Actions\ListPlans;
+use App\Actions\UpdateAddon;
+use App\Actions\UpdatePromotion;
 use App\Http\Controllers\Controller;
+use App\Models\Addon;
 use App\Models\Plan;
+use App\Models\Promotion;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -52,7 +58,90 @@ final class PlanOperationsController extends Controller
             ['path' => $request->url(), 'query' => $request->query()],
         );
 
-        return Inertia::render('Plans/Index', ['plans' => $plans, 'filters' => $request->only(['status', 'search'])]);
+        return Inertia::render('Plans/Index', [
+            'plans' => $plans,
+            'filters' => $request->only(['status', 'search']),
+            'addons' => Addon::query()->orderBy('status')->orderBy('name')->get()->map(fn (Addon $addon): array => [
+                'public_id' => $addon->public_id,
+                'name' => $addon->name,
+                'slug' => $addon->slug,
+                'description' => $addon->description,
+                'amount_minor' => $addon->amount_minor,
+                'currency' => $addon->currency,
+                'billing_period_days' => $addon->billing_period_days,
+                'status' => $addon->status,
+            ])->values(),
+            'promotions' => Promotion::query()->orderByDesc('starts_at')->get()->map(fn (Promotion $promotion): array => [
+                'public_id' => $promotion->public_id,
+                'name' => $promotion->name,
+                'code' => $promotion->code,
+                'type' => $promotion->type,
+                'value' => $promotion->value,
+                'applies_to' => $promotion->applies_to ?? [],
+                'starts_at' => $promotion->starts_at->toIso8601String(),
+                'ends_at' => $promotion->ends_at?->toIso8601String(),
+                'max_redemptions' => $promotion->max_redemptions,
+                'redemptions_count' => $promotion->redemptions_count,
+                'is_active' => $promotion->is_active,
+            ])->values(),
+            'availablePlans' => Plan::query()->where('status', 'active')->orderBy('name')->get(['public_id', 'name'])->values(),
+        ]);
+    }
+
+    public function storeAddon(Request $request, CreateAddon $create): RedirectResponse
+    {
+        $this->ensureManager($request);
+        $data = $this->addonData($request);
+        $this->ensureUniqueAddonSlug((string) $data['slug']);
+        $create->handle($data);
+
+        return redirect()->route('plans.index')->with('success', 'Addon created.');
+    }
+
+    public function updateAddon(Request $request, Addon $addon, UpdateAddon $update): RedirectResponse
+    {
+        $this->ensureManager($request);
+        $data = $this->addonData($request);
+        $this->ensureUniqueAddonSlug((string) $data['slug'], $addon);
+        $update->handle($addon, $data);
+
+        return redirect()->route('plans.index')->with('success', 'Addon updated.');
+    }
+
+    public function archiveAddon(Request $request, Addon $addon): RedirectResponse
+    {
+        $this->ensureManager($request);
+        $addon->forceFill(['status' => 'inactive'])->save();
+
+        return redirect()->route('plans.index')->with('success', 'Addon archived.');
+    }
+
+    public function storePromotion(Request $request, CreatePromotion $create): RedirectResponse
+    {
+        $this->ensureManager($request);
+        $data = $this->promotionData($request);
+        $this->ensureUniquePromotionCode((string) $data['code']);
+        $create->handle($data);
+
+        return redirect()->route('plans.index')->with('success', 'Promotion created.');
+    }
+
+    public function updatePromotion(Request $request, Promotion $promotion, UpdatePromotion $update): RedirectResponse
+    {
+        $this->ensureManager($request);
+        $data = $this->promotionData($request);
+        $this->ensureUniquePromotionCode((string) $data['code'], $promotion);
+        $update->handle($promotion, $data);
+
+        return redirect()->route('plans.index')->with('success', 'Promotion updated.');
+    }
+
+    public function archivePromotion(Request $request, Promotion $promotion): RedirectResponse
+    {
+        $this->ensureManager($request);
+        $promotion->forceFill(['is_active' => false])->save();
+
+        return redirect()->route('plans.index')->with('success', 'Promotion archived.');
     }
 
     public function create(Request $request): Response
@@ -85,5 +174,73 @@ final class PlanOperationsController extends Controller
         $plan = $createPlan->handle($validated);
 
         return redirect()->route('plans.index')->with('success', "Plan {$plan->name} created.");
+    }
+
+    private function ensureManager(Request $request): void
+    {
+        abort_unless($request->user() instanceof User && $request->user()->can('plans.manage'), 403);
+    }
+
+    /** @return array<string, mixed> */
+    private function addonData(Request $request): array
+    {
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'slug' => ['nullable', 'string', 'max:255'],
+            'description' => ['nullable', 'string', 'max:2000'],
+            'amount_minor' => ['required', 'integer', 'min:0'],
+            'currency' => ['required', 'string', 'size:3'],
+            'billing_period_days' => ['nullable', 'integer', 'min:1'],
+            'status' => ['required', Rule::in(['active', 'inactive'])],
+        ]);
+        $data['slug'] = Str::slug((string) ($data['slug'] ?: $data['name']));
+        $data['currency'] = strtoupper((string) $data['currency']);
+
+        return $data;
+    }
+
+    /** @return array<string, mixed> */
+    private function promotionData(Request $request): array
+    {
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'code' => ['required', 'string', 'max:64'],
+            'type' => ['required', Rule::in(['percent', 'fixed', 'free_days'])],
+            'value' => ['required', 'integer', 'min:1'],
+            'applies_to' => ['nullable', 'array', 'max:50'],
+            'applies_to.*' => ['string', 'max:26'],
+            'starts_at' => ['required', 'date'],
+            'ends_at' => ['nullable', 'date', 'after:starts_at'],
+            'max_redemptions' => ['nullable', 'integer', 'min:1'],
+            'is_active' => ['required', 'boolean'],
+        ]);
+        if ($data['type'] === 'percent' && (int) $data['value'] > 10000) {
+            throw ValidationException::withMessages(['value' => 'Percent promotions use basis points and cannot exceed 10000 (100%).']);
+        }
+        $data['code'] = strtoupper(trim((string) $data['code']));
+
+        return $data;
+    }
+
+    private function ensureUniqueAddonSlug(string $slug, ?Addon $except = null): void
+    {
+        $query = Addon::query()->where('slug', $slug);
+        if ($except !== null) {
+            $query->where('id', '!=', $except->id);
+        }
+        if ($query->exists()) {
+            throw ValidationException::withMessages(['slug' => 'An addon with this slug already exists.']);
+        }
+    }
+
+    private function ensureUniquePromotionCode(string $code, ?Promotion $except = null): void
+    {
+        $query = Promotion::query()->whereRaw('UPPER(code) = ?', [$code]);
+        if ($except !== null) {
+            $query->where('id', '!=', $except->id);
+        }
+        if ($query->exists()) {
+            throw ValidationException::withMessages(['code' => 'A promotion with this code already exists.']);
+        }
     }
 }
