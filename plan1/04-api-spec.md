@@ -211,8 +211,12 @@ GET/POST   /partners                         GET /partners/{uuid}/wallets
 GET        /partners/{uuid}/wallet-transactions
 POST       /partners/{uuid}/wallet-top-ups   (Idempotency-Key; approval per policy)
 GET        /partners/{uuid}/settlements
+POST       /partners/{uuid}/settlements
+POST       /settlements/{uuid}/approve
+POST       /settlements/{uuid}/pay
 GET        /partners/{uuid}/catalog
 POST       /imports/routers/{router}/subscribers
+POST       /webhooks/gateways/{gateway}            (HMAC signature; idempotent delivery callback)
 GET/POST   /suppliers                        GET/POST /supplier-contracts
 GET/POST   /credential-batches               (import upstream accounts/vouchers)
 GET        /upstream-credentials             ?filter[state]=available
