@@ -6,6 +6,7 @@ use App\Contracts\Action;
 use App\Models\Customer;
 use App\Models\ImportBatch;
 use App\Models\Plan;
+use App\Models\Service;
 use DomainException;
 use Illuminate\Support\Facades\DB;
 
@@ -13,8 +14,8 @@ final readonly class RollbackImport implements Action
 {
     public function handle(ImportBatch $batch): int
     {
-        if (! in_array($batch->type, ['customers', 'plans'], true) || $batch->status !== 'completed') {
-            throw new DomainException('Only completed customer or plan imports can be rolled back.');
+        if (! in_array($batch->type, ['customers', 'plans', 'services'], true) || $batch->status !== 'completed') {
+            throw new DomainException('Only completed customer, plan or service imports can be rolled back.');
         }
 
         return DB::transaction(function () use ($batch): int {
@@ -26,6 +27,13 @@ final readonly class RollbackImport implements Action
                     throw new DomainException('An imported plan is already assigned to a service and cannot be rolled back.');
                 }
                 $deleted = $ids === [] ? 0 : Plan::query()->whereKey($ids)->delete();
+            } elseif ($batch->type === 'services') {
+                $ids = collect($batch->report ?? [])->pluck('service_id')->filter()->map(fn (mixed $id): int => (int) $id)->all();
+                $servicesInUse = $ids === [] ? false : Service::query()->whereKey($ids)->whereHas('invoiceLines')->exists();
+                if ($servicesInUse) {
+                    throw new DomainException('An imported service is already referenced by billing history and cannot be rolled back.');
+                }
+                $deleted = $ids === [] ? 0 : Service::query()->whereKey($ids)->delete();
             } else {
                 $deleted = $ids === [] ? 0 : Customer::query()->whereKey($ids)->delete();
             }
