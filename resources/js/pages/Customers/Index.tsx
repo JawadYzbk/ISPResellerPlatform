@@ -8,15 +8,38 @@ import { formatMoney } from '@/lib/format';
 import type { Customer, PageProps, Paginator } from '@/types';
 
 type Props = PageProps & { customers: Paginator<Customer>; filters: { search?: string; status?: string } };
+type ColumnKey = 'zone' | 'services' | 'balance' | 'status';
+
+const columnOptions: { key: ColumnKey; label: string }[] = [
+    { key: 'zone', label: 'Zone' },
+    { key: 'services', label: 'Services' },
+    { key: 'balance', label: 'Balance' },
+    { key: 'status', label: 'Status' },
+];
 
 export default function CustomersIndex({ customers, filters }: Props) {
     const [search, setSearch] = useState(filters.search ?? '');
-    const submitSearch = (event: React.FormEvent) => {
-        event.preventDefault();
+    const [status, setStatus] = useState(filters.status ?? '');
+    const [showFilters, setShowFilters] = useState(false);
+    const [showColumns, setShowColumns] = useState(false);
+    const [visibleColumns, setVisibleColumns] = useState<ColumnKey[]>(columnOptions.map(({ key }) => key));
+
+    const applyFilters = () => {
         router.get(
             '/customers',
-            { search: search || undefined, status: filters.status || undefined },
+            { search: search || undefined, status: status || undefined },
             { preserveState: true, replace: true },
+        );
+    };
+
+    const submitSearch = (event: React.FormEvent) => {
+        event.preventDefault();
+        applyFilters();
+    };
+
+    const toggleColumn = (column: ColumnKey) => {
+        setVisibleColumns((current) =>
+            current.includes(column) ? current.filter((item) => item !== column) : [...current, column],
         );
     };
 
@@ -46,25 +69,80 @@ export default function CustomersIndex({ customers, filters }: Props) {
                         />
                     </form>
                     <div className="flex items-center gap-2">
-                        <button className="button-secondary">
+                        <button
+                            type="button"
+                            className={`button-secondary ${showFilters ? 'bg-sand' : ''}`}
+                            onClick={() => setShowFilters((open) => !open)}
+                            aria-expanded={showFilters}
+                        >
                             <Filter size={16} />
                             Filters
                         </button>
-                        <button className="button-secondary">
+                        <button
+                            type="button"
+                            className={`button-secondary ${showColumns ? 'bg-sand' : ''}`}
+                            onClick={() => setShowColumns((open) => !open)}
+                            aria-expanded={showColumns}
+                        >
                             <SlidersHorizontal size={16} />
                             Columns
                         </button>
                     </div>
                 </div>
+                {(showFilters || showColumns) && (
+                    <div className="flex flex-col gap-5 border-b border-line bg-sand/30 px-5 py-4 sm:flex-row sm:items-end">
+                        {showFilters && (
+                            <div className="flex items-end gap-3">
+                                <label className="block min-w-44">
+                                    <span className="field-label">Customer status</span>
+                                    <select
+                                        className="field"
+                                        value={status}
+                                        onChange={(event) => setStatus(event.target.value)}
+                                    >
+                                        <option value="">All statuses</option>
+                                        <option value="active">Active</option>
+                                        <option value="inactive">Inactive</option>
+                                        <option value="archived">Archived</option>
+                                    </select>
+                                </label>
+                                <button type="button" className="button-primary" onClick={applyFilters}>
+                                    Apply
+                                </button>
+                            </div>
+                        )}
+                        {showColumns && (
+                            <fieldset className="flex flex-wrap gap-x-4 gap-y-2">
+                                <legend className="field-label w-full">Visible columns</legend>
+                                {columnOptions.map(({ key, label }) => (
+                                    <label key={key} className="inline-flex items-center gap-2 text-sm text-muted">
+                                        <input
+                                            type="checkbox"
+                                            checked={visibleColumns.includes(key)}
+                                            onChange={() => toggleColumn(key)}
+                                        />
+                                        {label}
+                                    </label>
+                                ))}
+                            </fieldset>
+                        )}
+                    </div>
+                )}
                 <div className="overflow-x-auto">
                     <table className="w-full min-w-[760px] text-start">
                         <thead>
                             <tr className="border-b border-line bg-sand/50 text-xs font-semibold uppercase tracking-wider text-muted">
                                 <th className="px-5 py-3.5 text-start">Customer</th>
-                                <th className="px-5 py-3.5 text-start">Zone</th>
-                                <th className="px-5 py-3.5 text-start">Services</th>
-                                <th className="px-5 py-3.5 text-start">Balance</th>
-                                <th className="px-5 py-3.5 text-start">Status</th>
+                                {visibleColumns.includes('zone') && <th className="px-5 py-3.5 text-start">Zone</th>}
+                                {visibleColumns.includes('services') && (
+                                    <th className="px-5 py-3.5 text-start">Services</th>
+                                )}
+                                {visibleColumns.includes('balance') && (
+                                    <th className="px-5 py-3.5 text-start">Balance</th>
+                                )}
+                                {visibleColumns.includes('status') && (
+                                    <th className="px-5 py-3.5 text-start">Status</th>
+                                )}
                                 <th className="px-5 py-3.5" />
                             </tr>
                         </thead>
@@ -90,19 +168,27 @@ export default function CustomersIndex({ customers, filters }: Props) {
                                             </span>
                                         </Link>
                                     </td>
-                                    <td className="px-5 py-4 text-sm text-muted">
-                                        {customer.zone?.name ?? 'Unassigned'}
-                                    </td>
-                                    <td className="px-5 py-4 text-sm text-muted">
-                                        {customer.services.length}{' '}
-                                        {customer.services.length === 1 ? 'service' : 'services'}
-                                    </td>
-                                    <td className="px-5 py-4 text-sm font-semibold">
-                                        {formatMoney(customer.balance_amount, customer.balance_currency)}
-                                    </td>
-                                    <td className="px-5 py-4">
-                                        <StatusBadge status={customer.status} />
-                                    </td>
+                                    {visibleColumns.includes('zone') && (
+                                        <td className="px-5 py-4 text-sm text-muted">
+                                            {customer.zone?.name ?? 'Unassigned'}
+                                        </td>
+                                    )}
+                                    {visibleColumns.includes('services') && (
+                                        <td className="px-5 py-4 text-sm text-muted">
+                                            {customer.services.length}{' '}
+                                            {customer.services.length === 1 ? 'service' : 'services'}
+                                        </td>
+                                    )}
+                                    {visibleColumns.includes('balance') && (
+                                        <td className="px-5 py-4 text-sm font-semibold">
+                                            {formatMoney(customer.balance_amount, customer.balance_currency)}
+                                        </td>
+                                    )}
+                                    {visibleColumns.includes('status') && (
+                                        <td className="px-5 py-4">
+                                            <StatusBadge status={customer.status} />
+                                        </td>
+                                    )}
                                     <td className="px-5 py-4 text-end">
                                         <Link
                                             href={`/customers/${customer.public_id}`}
@@ -115,7 +201,7 @@ export default function CustomersIndex({ customers, filters }: Props) {
                             ))}
                             {customers.data.length === 0 && (
                                 <tr>
-                                    <td colSpan={6} className="px-5 py-16 text-center">
+                                    <td colSpan={visibleColumns.length + 2} className="px-5 py-16 text-center">
                                         <Users className="mx-auto text-muted" size={28} />
                                         <p className="mt-3 font-semibold">No customers found</p>
                                         <p className="mt-1 text-sm text-muted">
