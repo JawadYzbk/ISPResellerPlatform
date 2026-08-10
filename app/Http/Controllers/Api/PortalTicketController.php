@@ -40,6 +40,16 @@ final class PortalTicketController extends Controller
 
     public function show(Request $request, Tenant $tenant, string $ticket, GetPortalTicket $get): JsonResponse
     {
+        return $this->showForCustomer($request, $ticket, $get);
+    }
+
+    public function showRoot(Request $request, string $ticket, GetPortalTicket $get): JsonResponse
+    {
+        return $this->showForCustomer($request, $ticket, $get);
+    }
+
+    private function showForCustomer(Request $request, string $ticket, GetPortalTicket $get): JsonResponse
+    {
         $customer = $request->attributes->get('portal_customer');
         abort_unless($customer instanceof Customer, 401);
 
@@ -47,6 +57,16 @@ final class PortalTicketController extends Controller
     }
 
     public function message(Request $request, Tenant $tenant, string $ticket, ReplyPortalTicket $reply): JsonResponse
+    {
+        return $this->messageForCustomer($request, $ticket, $reply);
+    }
+
+    public function messageRoot(Request $request, string $ticket, ReplyPortalTicket $reply): JsonResponse
+    {
+        return $this->messageForCustomer($request, $ticket, $reply);
+    }
+
+    private function messageForCustomer(Request $request, string $ticket, ReplyPortalTicket $reply): JsonResponse
     {
         $customer = $request->attributes->get('portal_customer');
         abort_unless($customer instanceof Customer, 401);

@@ -7,6 +7,7 @@ use App\Actions\VerifyPortalOtp;
 use App\Http\Controllers\Controller;
 use App\Models\Tenant;
 use Carbon\CarbonImmutable;
+use DomainException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -26,5 +27,34 @@ final class PortalAuthController extends Controller
         $result = $verifyOtp->handle($tenant, $validated['challenge_id'], $validated['code'], $request->userAgent(), $request->ip());
 
         return response()->json($result);
+    }
+
+    public function requestCustomerOtp(Request $request, RequestPortalOtp $requestOtp): JsonResponse
+    {
+        $tenant = $request->attributes->get('portal_tenant');
+        abort_unless($tenant instanceof Tenant, 400, 'A tenant context is required for customer authentication.');
+        $validated = $request->validate(['phone' => ['required', 'string', 'max:40']]);
+        $requestOtp->handle($tenant, $validated['phone'], $request->ip());
+
+        return response()->json(['expires_in' => 300, 'resend_after' => 60]);
+    }
+
+    public function verifyCustomerOtp(Request $request, VerifyPortalOtp $verifyOtp): JsonResponse
+    {
+        $tenant = $request->attributes->get('portal_tenant');
+        abort_unless($tenant instanceof Tenant, 400, 'A tenant context is required for customer authentication.');
+        $validated = $request->validate([
+            'phone' => ['required', 'string', 'max:40'],
+            'code' => ['required', 'digits:6'],
+            'device_id' => ['required', 'string', 'max:100'],
+        ]);
+
+        try {
+            $result = $verifyOtp->handleByPhone($tenant, $validated['phone'], $validated['code'], $request->userAgent(), $request->ip(), $validated['device_id']);
+        } catch (DomainException $exception) {
+            return response()->json(['message' => $exception->getMessage()], 422);
+        }
+
+        return response()->json([...$result, 'type' => 'Bearer']);
     }
 }

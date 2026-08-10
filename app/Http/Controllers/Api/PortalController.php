@@ -75,6 +75,16 @@ final class PortalController extends Controller
 
     public function usage(Request $request, Tenant $tenant, string $service, GetPortalUsage $usage): JsonResponse
     {
+        return $this->usageForCustomer($request, $service, $usage);
+    }
+
+    public function usageRoot(Request $request, string $service, GetPortalUsage $usage): JsonResponse
+    {
+        return $this->usageForCustomer($request, $service, $usage);
+    }
+
+    private function usageForCustomer(Request $request, string $service, GetPortalUsage $usage): JsonResponse
+    {
         $customer = $request->attributes->get('portal_customer');
         abort_unless($customer instanceof Customer, 401);
         $serviceModel = Service::query()->where('public_id', $service)->firstOrFail();
@@ -97,6 +107,16 @@ final class PortalController extends Controller
     }
 
     public function restartSession(Request $request, Tenant $tenant, string $service, RestartPortalSession $restart): JsonResponse
+    {
+        return $this->restartSessionForCustomer($request, $service, $restart);
+    }
+
+    public function restartSessionRoot(Request $request, string $service, RestartPortalSession $restart): JsonResponse
+    {
+        return $this->restartSessionForCustomer($request, $service, $restart);
+    }
+
+    private function restartSessionForCustomer(Request $request, string $service, RestartPortalSession $restart): JsonResponse
     {
         $customer = $request->attributes->get('portal_customer');
         abort_unless($customer instanceof Customer, 401);

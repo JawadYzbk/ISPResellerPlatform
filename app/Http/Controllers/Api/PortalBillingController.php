@@ -76,10 +76,23 @@ final class PortalBillingController extends Controller
 
     public function invoice(Request $request, Tenant $tenant, string $invoice): JsonResponse
     {
+        return $this->invoiceForCustomer($request, $tenant->id, $invoice);
+    }
+
+    public function invoiceRoot(Request $request, string $invoice): JsonResponse
+    {
+        $customer = $request->attributes->get('portal_customer');
+        abort_unless($customer instanceof Customer, 401);
+
+        return $this->invoiceForCustomer($request, $customer->tenant_id, $invoice);
+    }
+
+    private function invoiceForCustomer(Request $request, int $tenantId, string $invoice): JsonResponse
+    {
         $customer = $request->attributes->get('portal_customer');
         abort_unless($customer instanceof Customer, 401);
         $model = Invoice::query()
-            ->where('tenant_id', $tenant->id)
+            ->where('tenant_id', $tenantId)
             ->where('customer_id', $customer->id)
             ->where('public_id', $invoice)
             ->with(['lines.plan', 'lines.service', 'payments.allocations', 'creditNotes'])
@@ -90,9 +103,22 @@ final class PortalBillingController extends Controller
 
     public function invoicePdf(Request $request, Tenant $tenant, string $invoice, GenerateInvoicePdf $generate): Response
     {
+        return $this->invoicePdfForCustomer($request, $tenant->id, $invoice, $generate);
+    }
+
+    public function invoicePdfRoot(Request $request, string $invoice, GenerateInvoicePdf $generate): Response
+    {
         $customer = $request->attributes->get('portal_customer');
         abort_unless($customer instanceof Customer, 401);
-        $model = Invoice::query()->where('tenant_id', $tenant->id)->where('customer_id', $customer->id)->where('public_id', $invoice)->firstOrFail();
+
+        return $this->invoicePdfForCustomer($request, $customer->tenant_id, $invoice, $generate);
+    }
+
+    private function invoicePdfForCustomer(Request $request, int $tenantId, string $invoice, GenerateInvoicePdf $generate): Response
+    {
+        $customer = $request->attributes->get('portal_customer');
+        abort_unless($customer instanceof Customer, 401);
+        $model = Invoice::query()->where('tenant_id', $tenantId)->where('customer_id', $customer->id)->where('public_id', $invoice)->firstOrFail();
 
         return $generate->handle($model);
     }

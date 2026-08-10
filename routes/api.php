@@ -41,8 +41,12 @@ Route::prefix('v1')->group(function (): void {
     Route::post('/tokens', [ApiTokenController::class, 'store'])->middleware('throttle:login')->name('api.tokens.store');
     Route::post('/auth/staff/login', [ApiTokenController::class, 'staffLogin'])->middleware('throttle:login')->name('api.auth.staff.login');
     Route::post('/auth/staff/two-factor', [ApiTokenController::class, 'staffTwoFactor'])->middleware('throttle:login')->name('api.auth.staff.two-factor');
+    Route::prefix('auth/customer')->middleware('portal.tenant.request')->group(function (): void {
+        Route::post('/otp/request', [PortalAuthController::class, 'requestCustomerOtp'])->middleware('throttle:customer-otp')->name('api.auth.customer.otp.request');
+        Route::post('/otp/verify', [PortalAuthController::class, 'verifyCustomerOtp'])->middleware('throttle:login')->name('api.auth.customer.otp.verify');
+    });
     Route::prefix('portal/{tenant:slug}')->middleware('portal.tenant')->group(function (): void {
-        Route::post('/otp/request', [PortalAuthController::class, 'requestOtp'])->middleware('throttle:login')->name('api.portal.otp.request');
+        Route::post('/otp/request', [PortalAuthController::class, 'requestOtp'])->middleware('throttle:customer-otp')->name('api.portal.otp.request');
         Route::post('/otp/verify', [PortalAuthController::class, 'verifyOtp'])->middleware('throttle:login')->name('api.portal.otp.verify');
         Route::get('/me', [PortalController::class, 'me'])->middleware('portal.auth')->name('api.portal.me');
         Route::get('/me/profile', [PortalController::class, 'me'])->middleware('portal.auth')->name('api.portal.profile');
@@ -61,8 +65,27 @@ Route::prefix('v1')->group(function (): void {
         Route::get('/me/invoices/{invoice}/pdf', [PortalBillingController::class, 'invoicePdf'])->middleware('portal.auth')->name('api.portal.invoices.pdf');
         Route::get('/me/invoices/{invoice}', [PortalBillingController::class, 'invoice'])->middleware('portal.auth')->name('api.portal.invoices.show');
         Route::get('/me/payments', [PortalBillingController::class, 'payments'])->middleware('portal.auth')->name('api.portal.payments');
-        Route::post('/payments/intent', [PortalBillingController::class, 'intent'])->middleware('portal.auth')->name('api.portal.payments.intent');
-        Route::post('/me/payments/intent', [PortalBillingController::class, 'intent'])->middleware('portal.auth')->name('api.portal.me.payments.intent');
+        Route::post('/payments/intent', [PortalBillingController::class, 'intent'])->middleware(['portal.auth', 'idempotency'])->name('api.portal.payments.intent');
+        Route::post('/me/payments/intent', [PortalBillingController::class, 'intent'])->middleware(['portal.auth', 'idempotency'])->name('api.portal.me.payments.intent');
+    });
+
+    Route::middleware('portal.auth')->group(function (): void {
+        Route::get('/me/profile', [PortalController::class, 'me'])->name('api.customer.profile');
+        Route::patch('/me/profile', [PortalController::class, 'updateProfile'])->name('api.customer.profile.update');
+        Route::get('/me/services', [PortalController::class, 'services'])->name('api.customer.services');
+        Route::get('/me/services/{service}/usage', [PortalController::class, 'usageRoot'])->name('api.customer.services.usage');
+        Route::post('/me/services/{service}/restart-session', [PortalController::class, 'restartSessionRoot'])->middleware('idempotency')->name('api.customer.services.restart');
+        Route::get('/me/notices', [PortalController::class, 'notices'])->name('api.customer.notices');
+        Route::get('/me/tickets', [PortalTicketController::class, 'index'])->name('api.customer.tickets.index');
+        Route::post('/me/tickets', [PortalTicketController::class, 'store'])->name('api.customer.tickets.store');
+        Route::get('/me/tickets/{ticket}', [PortalTicketController::class, 'showRoot'])->name('api.customer.tickets.show');
+        Route::post('/me/tickets/{ticket}/messages', [PortalTicketController::class, 'messageRoot'])->name('api.customer.tickets.messages');
+        Route::get('/me/balance', [PortalBillingController::class, 'balance'])->name('api.customer.balance');
+        Route::get('/me/invoices', [PortalBillingController::class, 'invoices'])->name('api.customer.invoices');
+        Route::get('/me/invoices/{invoice}/pdf', [PortalBillingController::class, 'invoicePdfRoot'])->name('api.customer.invoices.pdf');
+        Route::get('/me/invoices/{invoice}', [PortalBillingController::class, 'invoiceRoot'])->name('api.customer.invoices.show');
+        Route::get('/me/payments', [PortalBillingController::class, 'payments'])->name('api.customer.payments');
+        Route::post('/me/payments/intent', [PortalBillingController::class, 'intent'])->middleware('idempotency')->name('api.customer.payments.intent');
     });
 
     Route::middleware(['auth:sanctum', 'tenant'])->group(function (): void {

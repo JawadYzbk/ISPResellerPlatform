@@ -7,6 +7,7 @@ use App\Http\Middleware\EnsureRecentAuthentication;
 use App\Http\Middleware\EnsureTwoFactorVerified;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\IdentifyPortalTenant;
+use App\Http\Middleware\IdentifyPortalTenantFromRequest;
 use App\Http\Middleware\IdentifyTenant;
 use App\Http\Middleware\SecurityHeaders;
 use App\Http\Responses\ProblemDetails;
@@ -67,6 +68,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'recent-auth' => EnsureRecentAuthentication::class,
             'idempotency' => EnsureApiIdempotency::class,
             'portal.tenant' => IdentifyPortalTenant::class,
+            'portal.tenant.request' => IdentifyPortalTenantFromRequest::class,
             'portal.auth' => AuthenticatePortalSession::class,
             'abilities' => CheckAbilities::class,
             'any-abilities' => CheckForAnyAbility::class,

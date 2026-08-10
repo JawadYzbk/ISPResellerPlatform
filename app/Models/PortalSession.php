@@ -10,7 +10,7 @@ class PortalSession extends Model
 {
     use BelongsToTenant;
 
-    protected $fillable = ['tenant_id', 'customer_id', 'token_hash', 'expires_at', 'last_used_at', 'revoked_at', 'user_agent', 'ip_address'];
+    protected $fillable = ['tenant_id', 'customer_id', 'device_id', 'token_hash', 'expires_at', 'last_used_at', 'revoked_at', 'user_agent', 'ip_address'];
 
     protected $hidden = ['token_hash'];
 
