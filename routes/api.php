@@ -63,6 +63,7 @@ Route::prefix('v1')->group(function (): void {
             Route::get('/services', [ServiceApiController::class, 'index'])->name('api.services.index');
             Route::get('/services/{service}', [ServiceApiController::class, 'show'])->name('api.services.show');
             Route::get('/services/{service}/network-commands', [ServiceApiController::class, 'networkCommands'])->name('api.services.network-commands');
+            Route::post('/services/{service}/plan-change-previews', [ServiceApiController::class, 'planChangePreview'])->name('api.services.plan-change-previews');
             Route::post('/payments', [PaymentApiController::class, 'store'])->middleware('idempotency')->name('api.payments.store');
         });
         Route::middleware('abilities:staff:operator')->group(function (): void {
@@ -70,6 +71,7 @@ Route::prefix('v1')->group(function (): void {
             Route::post('/services/{service}/suspend', [ServiceApiController::class, 'suspend'])->middleware('idempotency')->name('api.services.suspend');
             Route::post('/services/{service}/resume', [ServiceApiController::class, 'resume'])->middleware('idempotency')->name('api.services.resume');
             Route::post('/services/{service}/terminate', [ServiceApiController::class, 'terminate'])->middleware('idempotency')->name('api.services.terminate');
+            Route::post('/services/{service}/change-plan', [ServiceApiController::class, 'changePlan'])->middleware('idempotency')->name('api.services.change-plan');
             Route::post('/services/{service}/disconnect-session', [ServiceApiController::class, 'disconnectSession'])->middleware('idempotency')->name('api.services.disconnect-session');
             Route::post('/imports/customers', [CustomerImportController::class, 'store'])->name('api.imports.customers.store');
             Route::post('/imports/plans', [PlanImportController::class, 'store'])->name('api.imports.plans.store');

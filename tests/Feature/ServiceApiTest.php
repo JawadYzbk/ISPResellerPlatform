@@ -2,7 +2,9 @@
 
 use App\Enums\ServiceStatus;
 use App\Models\CurrentSession;
+use App\Models\Customer;
 use App\Models\NetworkCommand;
+use App\Models\Plan;
 use App\Models\Service;
 use App\Models\Tenant;
 use App\Models\User;
@@ -83,4 +85,43 @@ it('queues an idempotent current-session disconnect with the live session id', f
     app(Tenancy::class)->set($tenant);
     expect(NetworkCommand::query()->where('service_id', $service->id)->where('action', 'disconnect')->count())->toBe(1)
         ->and(NetworkCommand::query()->where('service_id', $service->id)->firstOrFail()->payload['session_id'])->toBe('live-session-001');
+});
+
+it('previews and idempotently applies a service plan change through the operator API', function (): void {
+    Queue::fake();
+    $tenant = Tenant::create(['name' => 'Northline', 'slug' => 'northline', 'base_currency' => 'USD', 'collection_currency' => 'USD']);
+    app(Tenancy::class)->set($tenant);
+    $user = User::create(['tenant_id' => $tenant->id, 'name' => 'Operations', 'email' => 'service-plan-api@example.test', 'password' => Hash::make('password'), 'role' => 'operations_manager']);
+    app(CapabilitySeeder::class)->run();
+    $user->assignRole('operations_manager');
+    $customer = Customer::factory()->create(['balance_currency' => 'USD']);
+    $oldPlan = Plan::factory()->create(['amount_minor' => 100, 'currency' => 'USD']);
+    $newPlan = Plan::factory()->create(['amount_minor' => 200, 'currency' => 'USD']);
+    $oldPlan->prices()->create(['currency' => 'USD', 'amount_minor' => 100, 'effective_from' => now()->subDay()]);
+    $newPlan->prices()->create(['currency' => 'USD', 'amount_minor' => 200, 'effective_from' => now()->subDay()]);
+    $service = Service::factory()->for($customer)->for($oldPlan)->create([
+        'status' => ServiceStatus::Active,
+        'activated_at' => now()->subDays(10),
+        'expires_at' => now()->addDays(20),
+    ]);
+    $token = $user->createToken('service-plan-api', ['api', 'staff:operator'])->plainTextToken;
+
+    $this->withToken($token)
+        ->postJson('/api/v1/services/'.$service->public_id.'/plan-change-previews', ['plan_uuid' => $newPlan->public_id, 'effective' => 'immediate'])
+        ->assertOk()
+        ->assertJsonPath('from_plan_id', $oldPlan->id)
+        ->assertJsonPath('to_plan_id', $newPlan->id)
+        ->assertJsonPath('old_credit_amount', 67)
+        ->assertJsonPath('new_charge_amount', 133)
+        ->assertJsonPath('net_amount', 66);
+
+    $headers = ['X-Idempotency-Key' => 'service-plan-change-001'];
+    $first = $this->withToken($token)->withHeaders($headers)->postJson('/api/v1/services/'.$service->public_id.'/change-plan', ['plan_uuid' => $newPlan->public_id, 'effective' => 'immediate']);
+    $second = $this->withToken($token)->withHeaders($headers)->postJson('/api/v1/services/'.$service->public_id.'/change-plan', ['plan_uuid' => $newPlan->public_id, 'effective' => 'immediate']);
+
+    $first->assertStatus(202)->assertJsonPath('plan_id', $newPlan->public_id);
+    $second->assertStatus(202)->assertJsonPath('command_id', $first->json('command_id'));
+    app(Tenancy::class)->set($tenant);
+    expect($service->refresh()->plan_id)->toBe($newPlan->id)
+        ->and(NetworkCommand::query()->where('service_id', $service->id)->where('action', 'change_plan')->count())->toBe(1);
 });
