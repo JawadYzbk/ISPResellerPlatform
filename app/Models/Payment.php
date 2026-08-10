@@ -5,12 +5,16 @@ namespace App\Models;
 use App\Enums\PaymentStatus;
 use App\Models\Concerns\Auditable;
 use App\Models\Concerns\BelongsToTenant;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
-/** @property PaymentStatus $status */
+/**
+ * @property PaymentStatus $status
+ * @property Carbon|null $received_at
+ */
 class Payment extends Model
 {
     use Auditable, BelongsToTenant;

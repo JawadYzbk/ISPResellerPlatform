@@ -5,11 +5,17 @@ namespace App\Models;
 use App\Enums\InvoiceStatus;
 use App\Models\Concerns\Auditable;
 use App\Models\Concerns\BelongsToTenant;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
+/**
+ * @property InvoiceStatus $status
+ * @property Carbon|null $due_at
+ * @property Carbon|null $issued_at
+ */
 class Invoice extends Model
 {
     use Auditable, BelongsToTenant;
