@@ -23,7 +23,7 @@ The current foundation is live:
 - Idempotent customer welcome, payment receipt, expiry, suspension and reactivation notifications with channel selection, opt-out handling, provider fallback and scoped outage broadcasts
 - FreeRADIUS sync, live-session accounting and daily usage rollups
 - Encrypted router RADIUS shared secrets, validated UDP CoA/Disconnect packets and radius driver wiring
-- Router/POP inventory, encrypted connection tests and repeated-failure incidents
+- Router/POP inventory and onboarding, encrypted connection tests and repeated-failure incidents
 - Scheduled RouterOS subscriber reconciliation with report-only defaults and explicit device-side healing
 - Supplier credential workflows with permission, re-authentication and audit controls
 - Cursor-paginated customer API, idempotent payment API, collector batches, customer portal OTP/session flow, OpenAPI slice and finance reporting
