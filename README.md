@@ -88,6 +88,7 @@ The app is at [http://localhost:8000](http://localhost:8000), Mailpit at [http:/
 vendor/bin/pint --test
 vendor/bin/phpstan analyse --no-progress
 php artisan test
+npm run format:check
 npm run typecheck
 npm run build
 ```
