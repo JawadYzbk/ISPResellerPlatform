@@ -1,10 +1,12 @@
 <?php
 
+use App\Http\Middleware\AuthenticatePortalSession;
 use App\Http\Middleware\CaptureRequestContext;
 use App\Http\Middleware\EnsureApiIdempotency;
 use App\Http\Middleware\EnsureRecentAuthentication;
 use App\Http\Middleware\EnsureTwoFactorVerified;
 use App\Http\Middleware\HandleInertiaRequests;
+use App\Http\Middleware\IdentifyPortalTenant;
 use App\Http\Middleware\IdentifyTenant;
 use App\Http\Middleware\SecurityHeaders;
 use App\Http\Responses\ProblemDetails;
@@ -39,6 +41,8 @@ return Application::configure(basePath: dirname(__DIR__))
             '2fa' => EnsureTwoFactorVerified::class,
             'recent-auth' => EnsureRecentAuthentication::class,
             'idempotency' => EnsureApiIdempotency::class,
+            'portal.tenant' => IdentifyPortalTenant::class,
+            'portal.auth' => AuthenticatePortalSession::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
