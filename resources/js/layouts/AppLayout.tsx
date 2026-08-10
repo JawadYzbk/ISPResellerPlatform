@@ -1,18 +1,5 @@
 import { Form, Link, usePage } from '@inertiajs/react';
-import {
-    Activity,
-    Bell,
-    ChevronDown,
-    CircleDollarSign,
-    Command,
-    LayoutDashboard,
-    LogOut,
-    Network,
-    Search,
-    Settings2,
-    Users,
-    Wifi,
-} from 'lucide-react';
+import { Activity, Bell, ChevronDown, Command, LayoutDashboard, LogOut, Search, Users, Wifi } from 'lucide-react';
 import type { PropsWithChildren } from 'react';
 
 import type { PageProps } from '@/types';
@@ -24,8 +11,6 @@ export default function AppLayout({ children }: PropsWithChildren) {
         { label: 'Overview', href: '/dashboard', icon: LayoutDashboard },
         { label: 'Customers', href: '/customers', icon: Users },
         { label: 'Services', href: '/services', icon: Wifi },
-        { label: 'Billing', href: '/billing', icon: CircleDollarSign },
-        { label: 'Network', href: '/network', icon: Network },
     ];
 
     return (
@@ -58,15 +43,7 @@ export default function AppLayout({ children }: PropsWithChildren) {
                         ))}
                     </nav>
                 </div>
-                <div className="mt-auto border-t border-line p-4">
-                    <Link
-                        href="/settings"
-                        className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-muted hover:bg-sand hover:text-ink"
-                    >
-                        <Settings2 size={18} strokeWidth={1.8} />
-                        Settings
-                    </Link>
-                </div>
+                <div className="mt-auto border-t border-line p-4"></div>
             </aside>
 
             <div className="lg:ps-64">

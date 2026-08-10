@@ -51,6 +51,7 @@ export type Service = {
     network_state: 'unknown' | 'pending_sync' | 'in_sync' | 'drifted' | 'failed';
     expires_at: string | null;
     plan: Plan;
+    customer?: Customer;
 };
 
 export type ServiceEvent = {

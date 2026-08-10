@@ -127,13 +127,13 @@ export default function Dashboard({ metrics }: Props) {
                             </span>
                             <ArrowUpRight size={16} className="ms-auto text-muted" />
                         </Link>
-                        <Link href="/billing/payments/create" className="quick-action">
+                        <Link href="/customers" className="quick-action">
                             <span className="grid size-8 place-items-center rounded-lg bg-sand text-ink">
                                 <CreditCard size={16} />
                             </span>
                             <span>
-                                <b>Record a payment</b>
-                                <small>Renew a service in seconds</small>
+                                <b>Open a customer</b>
+                                <small>Review services and billing history</small>
                             </span>
                             <ArrowUpRight size={16} className="ms-auto text-muted" />
                         </Link>
