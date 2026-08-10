@@ -38,6 +38,16 @@ export type DashboardMetrics = {
     openWorkOrders: number;
 };
 
+export type FinanceReport = {
+    from: string;
+    to: string;
+    invoice_count: number;
+    payment_count: number;
+    invoiced_by_currency: Record<string, number>;
+    collected_by_currency: Record<string, number>;
+    customer_balances_by_currency: Record<string, number>;
+};
+
 export type Zone = {
     id: number;
     name: string;

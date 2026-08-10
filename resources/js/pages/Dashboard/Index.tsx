@@ -83,10 +83,10 @@ export default function Dashboard({ metrics }: Props) {
                             <h2 className="section-title">Today’s operating rhythm</h2>
                             <p className="mt-1 text-sm text-muted">The few signals worth checking first.</p>
                         </div>
-                        <button className="button-quiet">
+                        <Link href="/reports/finance" className="button-quiet">
                             View report
                             <ArrowUpRight size={15} />
-                        </button>
+                        </Link>
                     </div>
                     <div className="grid divide-y divide-line sm:grid-cols-3 sm:divide-x sm:divide-y-0">
                         <div className="p-6">

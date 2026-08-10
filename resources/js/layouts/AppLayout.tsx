@@ -1,5 +1,16 @@
 import { Form, Link, usePage } from '@inertiajs/react';
-import { Activity, Bell, ChevronDown, Command, LayoutDashboard, LogOut, Search, Users, Wifi } from 'lucide-react';
+import {
+    Activity,
+    BarChart3,
+    Bell,
+    ChevronDown,
+    Command,
+    LayoutDashboard,
+    LogOut,
+    Search,
+    Users,
+    Wifi,
+} from 'lucide-react';
 import type { PropsWithChildren } from 'react';
 
 import type { PageProps } from '@/types';
@@ -11,6 +22,7 @@ export default function AppLayout({ children }: PropsWithChildren) {
         { label: 'Overview', href: '/dashboard', icon: LayoutDashboard },
         { label: 'Customers', href: '/customers', icon: Users },
         { label: 'Services', href: '/services', icon: Wifi },
+        { label: 'Reports', href: '/reports/finance', icon: BarChart3 },
     ];
 
     return (
