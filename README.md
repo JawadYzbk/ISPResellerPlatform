@@ -20,6 +20,7 @@ The current foundation is live:
 - FreeRADIUS sync, live-session accounting and daily usage rollups
 - Encrypted router RADIUS shared secrets, validated UDP CoA/Disconnect packets and radius driver wiring
 - Router/POP inventory, encrypted connection tests and repeated-failure incidents
+- Scheduled RouterOS subscriber reconciliation with report-only defaults and explicit device-side healing
 - Supplier credential workflows with permission, re-authentication and audit controls
 - Cursor-paginated customer API, idempotent payment API, collector batches, customer portal OTP/session flow, OpenAPI slice and finance reporting
 - Role-scoped Sanctum abilities, app version/maintenance config, technician diagnostics, van inventory and private media upload APIs

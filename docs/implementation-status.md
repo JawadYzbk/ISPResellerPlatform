@@ -34,7 +34,7 @@ Last updated: 2026-08-10
 
 ## In progress
 
-- Real RouterOS/CoA integration against a CHR lab and device inventory healing; scheduled subscriber reconciliation now reports drift without mutation.
+- Real RouterOS/CoA integration against a CHR lab remains an acceptance gate; scheduled subscriber reconciliation reports drift, while device-side disablement has an explicit opt-in healing command.
 - Provider integrations (WhatsApp/SMS/email/FCM), callbacks, fallback policy and full notification automation coverage.
 - Customer self-service online payments through a real gateway and realtime transport deployment.
 - Monitoring alert routing and external dashboard signal delivery.
