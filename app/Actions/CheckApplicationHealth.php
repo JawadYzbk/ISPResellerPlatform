@@ -3,6 +3,7 @@
 namespace App\Actions;
 
 use App\Contracts\Action;
+use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Queue;
@@ -33,7 +34,23 @@ final readonly class CheckApplicationHealth implements Action
             $checks['queue'] = 'failed';
             $checks['queue_depth'] = -1;
         }
+        $checks['scheduler'] = $this->heartbeat('scheduler_heartbeat');
+        $checks['queue_worker'] = $this->heartbeat('queue_worker_heartbeat');
 
-        return ['status' => in_array('failed', $checks, true) ? 'degraded' : 'ok', 'checks' => $checks];
+        return ['status' => count(array_intersect(['failed', 'stale'], $checks)) > 0 ? 'degraded' : 'ok', 'checks' => $checks];
+    }
+
+    private function heartbeat(string $key): string
+    {
+        $value = Cache::get($key);
+        if (! is_string($value)) {
+            return 'stale';
+        }
+
+        try {
+            return CarbonImmutable::parse($value)->greaterThan(now()->subMinutes(5)) ? 'ok' : 'stale';
+        } catch (\Throwable) {
+            return 'stale';
+        }
     }
 }

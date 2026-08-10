@@ -29,6 +29,7 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withSchedule(function (Schedule $schedule): void {
+        $schedule->command('platform:heartbeat')->everyMinute();
         $schedule->command('services:suspend-overdue')->hourlyAt(5);
         $schedule->command('metrics:prune')->dailyAt('02:10');
         $schedule->command('notifications:expiry-reminders')->hourlyAt(10);
