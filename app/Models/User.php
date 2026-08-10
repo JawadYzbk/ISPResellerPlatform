@@ -13,9 +13,12 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 
-#[Fillable(['tenant_id', 'name', 'email', 'password', 'role', 'locale', 'timezone'])]
+#[Fillable(['tenant_id', 'partner_id', 'name', 'email', 'password', 'role', 'locale', 'timezone'])]
 #[Hidden(['password', 'remember_token', 'two_factor_secret', 'two_factor_recovery_codes'])]
-/** @property Carbon|null $last_authenticated_at */
+/**
+ * @property Carbon|null $last_authenticated_at
+ * @property int|null $partner_id
+ */
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
@@ -43,6 +46,12 @@ class User extends Authenticatable
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);
+    }
+
+    /** @return BelongsTo<Partner, $this> */
+    public function partner(): BelongsTo
+    {
+        return $this->belongsTo(Partner::class);
     }
 
     public function isPlatformOperator(): bool
