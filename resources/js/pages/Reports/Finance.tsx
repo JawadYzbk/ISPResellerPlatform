@@ -1,5 +1,5 @@
 import { Head, Link } from '@inertiajs/react';
-import { ArrowLeft, BarChart3, Receipt, Wallet } from 'lucide-react';
+import { ArrowLeft, BarChart3, Download, Receipt, Wallet } from 'lucide-react';
 
 import AppLayout from '@/layouts/AppLayout';
 import { formatMoney } from '@/lib/format';
@@ -23,12 +23,18 @@ export default function FinanceReportPage({ report }: Props) {
                 <ArrowLeft size={16} />
                 Back to overview
             </Link>
-            <div>
-                <p className="eyebrow">Finance</p>
-                <h1 className="page-title">Collections and revenue</h1>
-                <p className="page-subtitle">
-                    Issued invoices and posted payments for {report.from} through {report.to}.
-                </p>
+            <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+                <div>
+                    <p className="eyebrow">Finance</p>
+                    <h1 className="page-title">Collections and revenue</h1>
+                    <p className="page-subtitle">
+                        Issued invoices and posted payments for {report.from} through {report.to}.
+                    </p>
+                </div>
+                <a href="/reports/finance?format=csv" className="button-quiet">
+                    <Download size={15} />
+                    Download CSV
+                </a>
             </div>
             <div className="mt-8 grid gap-4 md:grid-cols-3">
                 <div className="card p-5">
