@@ -24,6 +24,7 @@ type Props = PageProps & {
     canCreateService?: boolean;
     canEdit?: boolean;
     canCollectPayment?: boolean;
+    canResyncServices?: boolean;
 };
 
 export default function CustomerShow({
@@ -32,6 +33,7 @@ export default function CustomerShow({
     canCreateService = false,
     canEdit = false,
     canCollectPayment = false,
+    canResyncServices = false,
 }: Props) {
     const fullName = `${customer.first_name} ${customer.last_name ?? ''}`.trim();
     return (
@@ -163,10 +165,16 @@ export default function CustomerShow({
                                             <p className="text-xs text-muted">Provisioning</p>
                                             <p className="mt-1 text-sm font-semibold capitalize">Manual handoff</p>
                                         </div>
-                                        <button className="flex items-center gap-1.5 text-sm font-semibold text-brand sm:justify-end">
-                                            <RefreshCw size={14} />
-                                            Re-sync service
-                                        </button>
+                                        {canResyncServices && service.status !== 'terminated' && (
+                                            <button
+                                                type="button"
+                                                className="flex items-center gap-1.5 text-sm font-semibold text-brand sm:justify-end"
+                                                onClick={() => router.post(`/services/${service.public_id}/resync`)}
+                                            >
+                                                <RefreshCw size={14} />
+                                                Re-sync service
+                                            </button>
+                                        )}
                                     </div>
                                 </div>
                             ))}

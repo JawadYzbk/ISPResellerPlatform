@@ -50,6 +50,7 @@ Route::middleware(['auth', 'tenant', '2fa'])->group(function (): void {
     Route::get('/customers/{customer:public_id}', [CustomerController::class, 'show'])->name('customers.show');
     Route::post('/customers/{customer:public_id}/anonymize', [CustomerController::class, 'anonymize'])->middleware('recent-auth')->name('customers.anonymize');
     Route::get('/services', [ServiceController::class, 'index'])->name('services.index');
+    Route::post('/services/{service:public_id}/resync', [ServiceController::class, 'resync'])->name('services.resync');
     Route::get('/customers/{customer:public_id}/services/create', [ServiceController::class, 'create'])->name('services.create');
     Route::post('/customers/{customer:public_id}/services', [ServiceController::class, 'store'])->name('services.store');
     Route::get('/partners/commercial', [PartnerController::class, 'commercial'])->name('partners.commercial');

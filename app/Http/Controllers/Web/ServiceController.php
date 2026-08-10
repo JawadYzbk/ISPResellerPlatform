@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Web;
 
 use App\Actions\CreateService;
+use App\Actions\EnqueueNetworkCommand;
 use App\Actions\ListServices;
+use App\Enums\ServiceStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\CreateServiceRequest;
 use App\Models\Customer;
@@ -35,6 +37,17 @@ final class ServiceController extends Controller
         $service = $createService->handle($customer, $request->validated(), $request->user());
 
         return redirect()->route('customers.show', $customer->public_id)->with('success', "Service {$service->username} created and awaiting activation.");
+    }
+
+    public function resync(Request $request, Service $service, EnqueueNetworkCommand $enqueue): RedirectResponse
+    {
+        $action = $service->status === ServiceStatus::Suspended ? 'suspend' : 'activate';
+        $this->authorize($action === 'suspend' ? 'suspend' : 'activate', $service);
+        abort_if($service->status === ServiceStatus::Terminated, 422, 'Terminated services cannot be re-synced.');
+
+        $enqueue->handle($service, $action, ['reason' => 'manual_resync']);
+
+        return redirect()->route('customers.show', $service->customer->public_id)->with('success', "Service {$service->username} queued for network re-sync.");
     }
 
     public function index(Request $request, ListServices $listServices): Response
