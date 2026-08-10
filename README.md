@@ -20,7 +20,7 @@ The current foundation is live:
 - FreeRADIUS sync, live-session accounting and daily usage rollups
 - Router/POP inventory, encrypted connection tests and repeated-failure incidents
 - Supplier credential workflows with permission, re-authentication and audit controls
-- Cursor-paginated customer API, idempotent payment API, OpenAPI slice and finance reporting
+- Cursor-paginated customer API, idempotent payment API, collector batches, customer portal OTP/session flow, OpenAPI slice and finance reporting
 - Basic reseller hierarchy and journal-linked wallet funding/debiting with credit limits
 - Demo tenant seed with customers, plans and services
 - Money value object backed by `brick/money`

@@ -20,7 +20,7 @@ Last updated: 2026-08-10
 | ISP-041/043/044 | Driver boundary, post-commit network outbox, stale guards, retries, overdue suspension and reactivation | delivered with manual/fake drivers |
 | ISP-050/051 | Template rendering, idempotent message queueing and provider delivery boundary | delivered with null/fake providers |
 | ISP-060/061/062 | Ticket lifecycle, work-order completion and serialized inventory assignment | delivered |
-| ISP-070 | Sanctum API, cursor pagination, query whitelists, idempotency middleware and OpenAPI slice | delivered for customers/payments |
+| ISP-070/071/072 | Sanctum API, cursor pagination, query whitelists, idempotency middleware, customer portal OTP/session flow, collector batches and OpenAPI slice | delivered for current customer/payment scope |
 | ISP-080/082/083 | FreeRADIUS sync, current sessions, stale-session handling and daily usage rollups | delivered |
 | ISP-040/063 | POP/router inventory, encrypted connection tests and repeated-failure incidents | foundation delivered |
 | ISP-090/091 | Basic partner hierarchy/wallets and tenant finance report | foundation delivered |
@@ -30,7 +30,7 @@ Last updated: 2026-08-10
 
 - Real RouterOS/CoA integration against a CHR lab, automatic reconciliation and device inventory healing.
 - Provider integrations (WhatsApp/SMS/email/FCM), callbacks, fallback policy and notification automations.
-- Customer portal OTP/session flow, collector/technician sync APIs and realtime events.
+- Technician sync APIs, customer self-service payments and realtime events.
 - Full reseller price books/commissions/settlements, XLSX/import workflows and expanded reports.
 - SLA/business-hours ticketing, monitoring retention/alerts and dashboard attention queues.
 - Security operations: key rotation, backup/restore rehearsal, dependency audit and Sentry wiring.
