@@ -8,8 +8,10 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Str;
 
 /**
+ * @property string $public_id
  * @property string $path
  * @property int $depth
  * @property int $credit_limit
@@ -18,7 +20,7 @@ class Partner extends Model
 {
     use BelongsToTenant;
 
-    protected $fillable = ['tenant_id', 'parent_id', 'name', 'code', 'path', 'depth', 'status', 'currency', 'credit_limit', 'low_balance_threshold'];
+    protected $fillable = ['tenant_id', 'public_id', 'parent_id', 'name', 'code', 'path', 'depth', 'status', 'currency', 'credit_limit', 'low_balance_threshold'];
 
     protected function casts(): array
     {
@@ -27,6 +29,10 @@ class Partner extends Model
 
     protected static function booted(): void
     {
+        static::creating(function (self $partner): void {
+            $partner->public_id ??= (string) Str::ulid();
+        });
+
         static::created(function (self $partner): void {
             $path = $partner->parent_id === null ? '/' : $partner->parent->path;
             $depth = $partner->parent_id === null ? 0 : $partner->parent->depth + 1;

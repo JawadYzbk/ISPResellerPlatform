@@ -17,6 +17,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 
 /**
+ * @property string $public_id
  * @property CustomerStatus $status
  * @property Carbon|null $deleted_at
  * @property Zone|null $zone
@@ -58,6 +59,7 @@ class Customer extends Model
         return $this->belongsTo(Zone::class);
     }
 
+    /** @return HasMany<Service, $this> */
     public function services(): HasMany
     {
         return $this->hasMany(Service::class);

@@ -627,7 +627,7 @@ paths:
         - in: path
           name: router
           required: true
-          schema: { type: integer }
+          schema: { type: string, description: Router public ULID }
       requestBody:
         required: false
         content:
@@ -647,7 +647,7 @@ paths:
         - in: path
           name: partner
           required: true
-          schema: { type: integer }
+          schema: { type: string, description: Partner public ULID }
       responses:
         '200': { description: Partner-scoped sell prices and permitted commercial fields }
         '403': { description: Missing service view capability }
@@ -659,7 +659,7 @@ paths:
         - in: path
           name: partner
           required: true
-          schema: { type: integer }
+          schema: { type: string, description: Partner public ULID }
       responses:
         '200': { description: Partner settlement statements }
         '403': { description: Missing wallet view capability }
@@ -670,7 +670,7 @@ paths:
         - in: path
           name: partner
           required: true
-          schema: { type: integer }
+          schema: { type: string, description: Partner public ULID }
       requestBody:
         required: true
         content:
@@ -693,7 +693,7 @@ paths:
         - in: path
           name: settlement
           required: true
-          schema: { type: integer }
+          schema: { type: string, description: Settlement public ULID }
       responses:
         '200': { description: Approved settlement statement }
         '403': { description: Missing settlement approval capability }
@@ -705,7 +705,7 @@ paths:
         - in: path
           name: settlement
           required: true
-          schema: { type: integer }
+          schema: { type: string, description: Settlement public ULID }
         - in: header
           name: X-Idempotency-Key
           required: true
@@ -715,7 +715,6 @@ paths:
         '403': { description: Missing settlement approval capability }
         '404': { description: Settlement not found or not visible }
         '409': { description: Idempotency key reused for a different request }
-        '409': { description: Import cannot be rolled back safely }
   /partners:
     get:
       summary: List partners visible to the authenticated operator
@@ -729,7 +728,7 @@ paths:
         - in: path
           name: partner
           required: true
-          schema: { type: integer }
+          schema: { type: string, description: Partner public ULID }
       responses:
         '200': { description: Partner wallet and transactions }
         '403': { description: Missing wallet view capability }
@@ -741,7 +740,7 @@ paths:
         - in: path
           name: partner
           required: true
-          schema: { type: integer }
+          schema: { type: string, description: Partner public ULID }
         - in: header
           name: X-Idempotency-Key
           required: true
@@ -766,7 +765,7 @@ paths:
         - in: path
           name: command
           required: true
-          schema: { type: integer }
+          schema: { type: string, description: Network command public ULID }
         - in: header
           name: X-Idempotency-Key
           required: true

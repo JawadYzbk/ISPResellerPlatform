@@ -21,7 +21,9 @@ use Illuminate\Support\Str;
  * @property ServiceStatus $status
  * @property NetworkState $network_state
  * @property ProvisioningMode $provisioning_mode
+ * @property string $public_id
  * @property int $current_period_bytes
+ * @property Carbon|null $activated_at
  * @property Carbon|null $fup_applied_at
  * @property Carbon|null $expires_at
  */
@@ -70,6 +72,7 @@ class Service extends Model
         return $this->belongsTo(Router::class);
     }
 
+    /** @return HasMany<ServiceEvent, $this> */
     public function events(): HasMany
     {
         return $this->hasMany(ServiceEvent::class);

@@ -21,8 +21,9 @@ final class PartnerController extends Controller
         $user = $request->user();
         abort_unless($user instanceof User && $user->can('wallets.view'), 403);
         $partners = $this->visible($user)->orderBy('path')->get();
-        $selectedId = (int) ($request->integer('partner') ?: ($user->partner_id ?? $partners->first()?->id));
-        $partner = $partners->firstWhere('id', $selectedId);
+        $userPartnerId = $user->partner_id === null ? null : $user->partner->public_id;
+        $selectedId = $request->string('partner')->toString() ?: (string) ($userPartnerId ?? $partners->first()?->public_id);
+        $partner = $partners->firstWhere('public_id', $selectedId);
         abort_unless($partner instanceof Partner, 404);
         $showCost = $user->partner_id === null && $user->can('settlements.approve');
         $catalog = [];
@@ -46,7 +47,7 @@ final class PartnerController extends Controller
         }
 
         $settlements = Settlement::query()->where('partner_id', $partner->id)->latest('period_end')->get()->map(fn (Settlement $settlement): array => [
-            'id' => $settlement->id,
+            'id' => $settlement->public_id,
             'period_start' => $settlement->period_start->toDateString(),
             'period_end' => $settlement->period_end->toDateString(),
             'currency' => $settlement->currency,
@@ -58,8 +59,8 @@ final class PartnerController extends Controller
         ])->values();
 
         return Inertia::render('Partners/Commercial', [
-            'partners' => $partners->map(fn (Partner $item): array => ['id' => $item->id, 'name' => $item->name, 'code' => $item->code])->values(),
-            'selectedPartner' => ['id' => $partner->id, 'name' => $partner->name, 'code' => $partner->code, 'currency' => $partner->currency],
+            'partners' => $partners->map(fn (Partner $item): array => ['id' => $item->public_id, 'name' => $item->name, 'code' => $item->code])->values(),
+            'selectedPartner' => ['id' => $partner->public_id, 'name' => $partner->name, 'code' => $partner->code, 'currency' => $partner->currency],
             'catalog' => $catalog,
             'settlements' => $settlements,
             'showCost' => $showCost,

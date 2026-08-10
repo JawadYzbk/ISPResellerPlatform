@@ -53,7 +53,7 @@ final readonly class GetTechnicianServiceDiagnostics implements Action
                 'observed_at' => $metric->observed_at->toIso8601String(),
             ])->values()->all(),
             'recent_commands' => $commands->map(fn (NetworkCommand $command): array => [
-                'id' => $command->id,
+                'id' => $command->public_id,
                 'action' => $command->action,
                 'status' => $command->status,
                 'attempts' => $command->attempts,

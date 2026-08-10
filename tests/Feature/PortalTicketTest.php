@@ -18,7 +18,7 @@ it('creates, lists and replies to a customer-owned portal ticket', function (): 
     $customer = Customer::factory()->create(['phone' => '+96170333333']);
     $service = Service::factory()->create(['customer_id' => $customer->id, 'status' => ServiceStatus::Active]);
     $result = app(RequestPortalOtp::class)->handle($tenant, $customer->phone);
-    $session = app(VerifyPortalOtp::class)->handle($tenant, $result['challenge']->id, $result['code']);
+    $session = app(VerifyPortalOtp::class)->handle($tenant, $result['challenge']->public_id, $result['code']);
     $headers = ['Authorization' => 'Bearer '.$session['token']];
 
     $created = $this->withHeaders($headers)->postJson('/api/v1/portal/northline/me/tickets', [
@@ -47,7 +47,7 @@ it('does not disclose another customer ticket through the portal', function (): 
     $other = Customer::factory()->create(['phone' => '+96170555555']);
     $ticket = Ticket::create(['customer_id' => $other->id, 'number' => 'TCK-OTHER', 'subject' => 'Private', 'description' => 'Private ticket', 'status' => 'open']);
     $result = app(RequestPortalOtp::class)->handle($tenant, $customer->phone);
-    $session = app(VerifyPortalOtp::class)->handle($tenant, $result['challenge']->id, $result['code']);
+    $session = app(VerifyPortalOtp::class)->handle($tenant, $result['challenge']->public_id, $result['code']);
 
     $this->withToken($session['token'])->getJson('/api/v1/portal/southline/me/tickets/'.$ticket->public_id)->assertNotFound();
 });

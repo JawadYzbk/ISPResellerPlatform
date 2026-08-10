@@ -11,11 +11,11 @@ use Illuminate\Http\Request;
 
 final class RouterSubscriberImportController extends Controller
 {
-    public function store(Request $request, int $router, ImportRouterSubscribers $import): JsonResponse
+    public function store(Request $request, string $router, ImportRouterSubscribers $import): JsonResponse
     {
         abort_unless($request->user()?->can('network.view'), 403);
         $validated = $request->validate(['dry_run' => ['sometimes', 'boolean']]);
-        $model = Router::query()->whereKey($router)->firstOrFail();
+        $model = Router::query()->where('public_id', $router)->firstOrFail();
         $batch = $import->handle($model, (bool) ($validated['dry_run'] ?? false));
 
         return response()->json($this->payload($batch), $batch->status === 'completed' ? 201 : 200);

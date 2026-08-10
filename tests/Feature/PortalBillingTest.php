@@ -20,7 +20,7 @@ it('returns only the authenticated portal customer billing history', function ()
     $plan->prices()->create(['currency' => 'USD', 'amount_minor' => 3500, 'effective_from' => now()->subDay()]);
     $invoice = app(IssueInvoice::class)->handle(app(CreateInvoice::class)->handle($customer, $plan));
     $result = app(RequestPortalOtp::class)->handle($tenant, $customer->phone);
-    $session = app(VerifyPortalOtp::class)->handle($tenant, $result['challenge']->id, $result['code']);
+    $session = app(VerifyPortalOtp::class)->handle($tenant, $result['challenge']->public_id, $result['code']);
 
     $this->withToken($session['token'])->getJson('/api/v1/portal/northline/billing')
         ->assertOk()

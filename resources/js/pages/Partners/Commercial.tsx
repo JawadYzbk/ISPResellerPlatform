@@ -5,7 +5,7 @@ import AppLayout from '@/layouts/AppLayout';
 import { formatDate, formatMoney } from '@/lib/format';
 import type { PageProps } from '@/types';
 
-type Partner = { id: number; name: string; code: string; currency?: string };
+type Partner = { id: string; name: string; code: string; currency?: string };
 type CatalogItem = {
     id: string;
     name: string;
@@ -16,7 +16,7 @@ type CatalogItem = {
     price_book: string | null;
 };
 type Settlement = {
-    id: number;
+    id: string;
     period_start: string;
     period_end: string;
     currency: string;

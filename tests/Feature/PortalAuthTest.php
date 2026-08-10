@@ -26,7 +26,7 @@ it('hashes the OTP and issues a separate portal session after verification', fun
     app(Tenancy::class)->set($tenant);
     Customer::factory()->create(['phone' => '+96170456789']);
     $result = app(RequestPortalOtp::class)->handle($tenant, '+961 70 456 789');
-    $session = app(VerifyPortalOtp::class)->handle($tenant, $result['challenge']->id, $result['code']);
+    $session = app(VerifyPortalOtp::class)->handle($tenant, $result['challenge']->public_id, $result['code']);
 
     expect($session['token'])->toStartWith('portal_')
         ->and($result['challenge']->refresh()->code_hash)->not->toBe($result['code'])

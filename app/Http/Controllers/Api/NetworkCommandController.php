@@ -10,11 +10,11 @@ use Illuminate\Http\Request;
 
 final class NetworkCommandController extends Controller
 {
-    public function retry(Request $request, int $command, RetryNetworkCommand $retry): JsonResponse
+    public function retry(Request $request, string $command, RetryNetworkCommand $retry): JsonResponse
     {
         abort_unless($request->user()?->can('network.provision'), 403);
-        $newCommand = $retry->handle(NetworkCommand::query()->findOrFail($command));
+        $newCommand = $retry->handle(NetworkCommand::query()->where('public_id', $command)->firstOrFail());
 
-        return response()->json(['id' => $newCommand->id, 'status' => $newCommand->status, 'desired_state_version' => $newCommand->desired_state_version], 202);
+        return response()->json(['id' => $newCommand->public_id, 'status' => $newCommand->status, 'desired_state_version' => $newCommand->desired_state_version], 202);
     }
 }

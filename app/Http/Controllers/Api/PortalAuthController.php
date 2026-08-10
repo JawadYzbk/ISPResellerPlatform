@@ -17,12 +17,12 @@ final class PortalAuthController extends Controller
         $validated = $request->validate(['phone' => ['required', 'string', 'max:40']]);
         $result = $requestOtp->handle($tenant, $validated['phone'], $request->ip());
 
-        return response()->json(['challenge_id' => $result['challenge']->id, 'expires_at' => CarbonImmutable::parse((string) $result['challenge']->expires_at)->toIso8601String()]);
+        return response()->json(['challenge_id' => $result['challenge']->public_id, 'expires_at' => CarbonImmutable::parse((string) $result['challenge']->expires_at)->toIso8601String()]);
     }
 
     public function verifyOtp(Request $request, Tenant $tenant, VerifyPortalOtp $verifyOtp): JsonResponse
     {
-        $validated = $request->validate(['challenge_id' => ['required', 'integer'], 'code' => ['required', 'digits:6']]);
+        $validated = $request->validate(['challenge_id' => ['required', 'string', 'max:26'], 'code' => ['required', 'digits:6']]);
         $result = $verifyOtp->handle($tenant, $validated['challenge_id'], $validated['code'], $request->userAgent(), $request->ip());
 
         return response()->json($result);

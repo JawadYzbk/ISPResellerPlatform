@@ -30,7 +30,7 @@ it('imports RouterOS subscribers into a redacted discovery report', function ():
     $user->assignRole('tenant_owner');
     $token = $user->createToken('router-importer', ['api', 'staff:operator'])->plainTextToken;
 
-    $response = $this->withToken($token)->postJson('/api/v1/imports/routers/'.$router->id.'/subscribers');
+    $response = $this->withToken($token)->postJson('/api/v1/imports/routers/'.$router->public_id.'/subscribers');
 
     $response->assertCreated()
         ->assertJsonPath('type', 'router_subscribers')

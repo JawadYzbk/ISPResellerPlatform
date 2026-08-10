@@ -15,11 +15,11 @@ use Illuminate\Support\Str;
 final readonly class VerifyPortalOtp implements Action
 {
     /** @return array{token: string, expires_at: string} */
-    public function handle(Tenant $tenant, int $challengeId, string $code, ?string $userAgent = null, ?string $ip = null): array
+    public function handle(Tenant $tenant, string $challengeId, string $code, ?string $userAgent = null, ?string $ip = null): array
     {
         return app(Tenancy::class)->run($tenant, function () use ($challengeId, $code, $userAgent, $ip): array {
             return DB::transaction(function () use ($challengeId, $code, $userAgent, $ip): array {
-                $challenge = PortalOtpChallenge::query()->lockForUpdate()->find($challengeId);
+                $challenge = PortalOtpChallenge::query()->lockForUpdate()->where('public_id', $challengeId)->first();
                 if ($challenge === null || $challenge->consumed_at !== null || CarbonImmutable::parse((string) $challenge->expires_at)->isPast() || $challenge->attempts >= 5) {
                     throw new DomainException('The portal verification code is invalid or expired.');
                 }

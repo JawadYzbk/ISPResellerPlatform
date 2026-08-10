@@ -29,7 +29,7 @@ it('serves an ownership-safe portal profile, services, usage and notices surface
     Incident::create(['type' => 'zone_outage', 'severity' => 'warning', 'status' => IncidentStatus::Open, 'title' => 'North interruption', 'description' => 'Maintenance in progress.', 'opened_at' => now(), 'metadata' => ['zone_id' => $zone->id]]);
 
     $result = app(RequestPortalOtp::class)->handle($tenant, $customer->phone);
-    $session = app(VerifyPortalOtp::class)->handle($tenant, $result['challenge']->id, $result['code']);
+    $session = app(VerifyPortalOtp::class)->handle($tenant, $result['challenge']->public_id, $result['code']);
     $headers = ['Authorization' => 'Bearer '.$session['token']];
 
     $this->withHeaders($headers)->getJson('/api/v1/portal/northline/me')
@@ -61,7 +61,7 @@ it('does not allow a portal customer to read another customer service usage', fu
     $other = Customer::factory()->create(['phone' => '+96170222222']);
     $service = Service::factory()->create(['customer_id' => $other->id]);
     $result = app(RequestPortalOtp::class)->handle($tenant, $customer->phone);
-    $session = app(VerifyPortalOtp::class)->handle($tenant, $result['challenge']->id, $result['code']);
+    $session = app(VerifyPortalOtp::class)->handle($tenant, $result['challenge']->public_id, $result['code']);
 
     $this->withToken($session['token'])->getJson('/api/v1/portal/southline/me/services/'.$service->public_id.'/usage')->assertNotFound();
 });

@@ -27,8 +27,8 @@ it('limits reseller partner APIs to descendants and funds a visible wallet idemp
 
     $this->withToken($token)->getJson('/api/v1/partners')->assertOk()->assertJsonCount(2, 'data')->assertJsonMissing(['code' => $sibling->code]);
     $headers = ['X-Idempotency-Key' => 'partner-top-up-001'];
-    $first = $this->withToken($token)->withHeaders($headers)->postJson('/api/v1/partners/'.$child->id.'/wallet-top-ups', ['amount' => 1000]);
-    $second = $this->withToken($token)->withHeaders($headers)->postJson('/api/v1/partners/'.$child->id.'/wallet-top-ups', ['amount' => 1000]);
+    $first = $this->withToken($token)->withHeaders($headers)->postJson('/api/v1/partners/'.$child->public_id.'/wallet-top-ups', ['amount' => 1000]);
+    $second = $this->withToken($token)->withHeaders($headers)->postJson('/api/v1/partners/'.$child->public_id.'/wallet-top-ups', ['amount' => 1000]);
 
     $first->assertCreated()->assertJsonPath('balance_after', 1000);
     $second->assertCreated()->assertJsonPath('wallet_transaction_id', $first->json('wallet_transaction_id'));
@@ -48,10 +48,10 @@ it('returns a reseller catalog without exposing buy prices', function (): void {
     $user->assignRole('reseller_owner');
     $token = $user->createToken('catalog-api', ['api', 'staff:operator'])->plainTextToken;
 
-    $response = $this->withToken($token)->getJson('/api/v1/partners/'.$partner->id.'/catalog');
+    $response = $this->withToken($token)->getJson('/api/v1/partners/'.$partner->public_id.'/catalog');
 
     $response->assertOk()
-        ->assertJsonPath('partner_id', $partner->id)
+        ->assertJsonPath('partner_id', $partner->public_id)
         ->assertJsonPath('data.0.sell_amount_minor', 3500)
         ->assertJsonMissing(['buy_amount_minor' => 2500]);
 });
@@ -65,7 +65,7 @@ it('exposes the operator settlement lifecycle through the API', function (): voi
     $user->assignRole('billing_manager');
     $token = $user->createToken('settlement-api', ['api', 'staff:operator'])->plainTextToken;
 
-    $created = $this->withToken($token)->postJson('/api/v1/partners/'.$partner->id.'/settlements', ['period_start' => '2026-08-01', 'period_end' => '2026-08-10', 'currency' => 'usd']);
+    $created = $this->withToken($token)->postJson('/api/v1/partners/'.$partner->public_id.'/settlements', ['period_start' => '2026-08-01', 'period_end' => '2026-08-10', 'currency' => 'usd']);
     $created->assertCreated()->assertJsonPath('status', 'draft');
     $id = $created->json('id');
 

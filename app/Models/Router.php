@@ -6,12 +6,14 @@ use App\Models\Concerns\BelongsToTenant;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Str;
 
+/** @property string $public_id */
 class Router extends Model
 {
     use BelongsToTenant;
 
-    protected $fillable = ['tenant_id', 'pop_id', 'name', 'host', 'api_port', 'username', 'password_encrypted', 'radius_secret_encrypted', 'coa_port', 'tls_verify', 'status', 'last_seen_at', 'metadata'];
+    protected $fillable = ['tenant_id', 'public_id', 'pop_id', 'name', 'host', 'api_port', 'username', 'password_encrypted', 'radius_secret_encrypted', 'coa_port', 'tls_verify', 'status', 'last_seen_at', 'metadata'];
 
     protected $hidden = ['password_encrypted', 'radius_secret_encrypted'];
 
@@ -20,6 +22,13 @@ class Router extends Model
     protected function casts(): array
     {
         return ['api_port' => 'integer', 'password_encrypted' => 'encrypted', 'radius_secret_encrypted' => 'encrypted', 'coa_port' => 'integer', 'tls_verify' => 'boolean', 'last_seen_at' => 'datetime', 'metadata' => 'array'];
+    }
+
+    protected static function booted(): void
+    {
+        static::creating(function (self $router): void {
+            $router->public_id ??= (string) Str::ulid();
+        });
     }
 
     public function tenant(): BelongsTo
