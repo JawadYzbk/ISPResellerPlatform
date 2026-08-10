@@ -108,7 +108,7 @@ export default function WorkOrdersPage({ workOrders, filters }: Props) {
                             {workOrders.data.map((order) => (
                                 <tr key={order.public_id} className="hover:bg-sand/30">
                                     <td className="px-5 py-4">
-                                        <p className="text-sm font-semibold">{order.number}</p>
+                                        <Link href={`/operations/work-orders/${order.public_id}`} className="text-sm font-semibold hover:text-brand">{order.number}</Link>
                                         <p className="mt-1 text-xs capitalize text-muted">{order.type.replace('_', ' ')}</p>
                                         <p className="mt-1 text-xs text-muted">{order.service?.username ?? 'No service linked'}</p>
                                     </td>
