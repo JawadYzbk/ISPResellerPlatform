@@ -38,6 +38,7 @@ final class HandleInertiaRequests extends Middleware
                     'email' => $user->email,
                     'role' => $user->role,
                 ] : null,
+                'permissions' => $user?->getAllPermissions()->pluck('name')->values()->all() ?? [],
                 'tenant' => $tenant ? [
                     'id' => $tenant->public_id,
                     'name' => $tenant->name,
