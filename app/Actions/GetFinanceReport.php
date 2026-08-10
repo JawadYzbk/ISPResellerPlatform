@@ -9,8 +9,12 @@ use App\Models\Customer;
 use App\Models\Invoice;
 use App\Models\Payment;
 use App\Models\PaymentAllocation;
+use App\Models\Service;
+use App\Models\ServiceEvent;
+use App\Models\UsageDaily;
 use Carbon\Carbon;
 use Carbon\CarbonImmutable;
+use Illuminate\Database\Eloquent\Collection;
 
 final readonly class GetFinanceReport implements Action
 {
@@ -28,6 +32,7 @@ final readonly class GetFinanceReport implements Action
             $collectionRates[$currency] = $invoiced === 0 ? null : round(($collected / $invoiced) * 100, 2);
         }
         $aging = $this->aging($to);
+        $breakdowns = $this->breakdowns($invoices->clone()->with(['customer.zone', 'lines.plan'])->get(), $from, $to, $collectedByCurrency);
 
         return [
             'from' => $from->toDateString(),
@@ -40,7 +45,61 @@ final readonly class GetFinanceReport implements Action
             'aging_by_currency' => $aging['aging_by_currency'],
             'outstanding_by_currency' => $aging['outstanding_by_currency'],
             'customer_balances_by_currency' => Customer::query()->selectRaw('balance_currency, SUM(balance_amount) as total')->groupBy('balance_currency')->pluck('total', 'balance_currency')->map(fn ($value): int => (int) $value)->all(),
+            ...$breakdowns,
         ];
+    }
+
+    /** @param Collection<int, Invoice> $invoices @param array<string, int> $collectedByCurrency @return array<string, mixed> */
+    private function breakdowns(Collection $invoices, CarbonImmutable $from, CarbonImmutable $to, array $collectedByCurrency): array
+    {
+        $revenueByPlan = [];
+        $revenueByZone = [];
+        $taxByCurrency = [];
+        foreach ($invoices as $invoice) {
+            $currency = $invoice->currency;
+            $taxByCurrency[$currency] = ($taxByCurrency[$currency] ?? 0) + $invoice->tax_amount;
+            $zone = (string) ($invoice->customer?->zone?->getAttribute('code') ?? 'unassigned');
+            $revenueByZone[$zone][$currency] = ($revenueByZone[$zone][$currency] ?? 0) + $invoice->total_amount;
+            foreach ($invoice->lines as $line) {
+                $plan = (string) ($line->plan?->getAttribute('slug') ?? 'unassigned');
+                $revenueByPlan[$plan][$currency] = ($revenueByPlan[$plan][$currency] ?? 0) + $line->total_amount;
+            }
+        }
+
+        $activeCustomerCount = (int) Service::query()->where('status', 'active')->distinct()->count('customer_id');
+        $arpu = [];
+        foreach ($collectedByCurrency as $currency => $amount) {
+            $arpu[$currency] = $activeCustomerCount === 0 ? null : round($amount / $activeCustomerCount, 2);
+        }
+
+        return [
+            'revenue_by_plan' => $revenueByPlan,
+            'revenue_by_zone' => $revenueByZone,
+            'tax_by_currency' => $taxByCurrency,
+            'churned_services' => ServiceEvent::query()->where('to_status', 'terminated')->whereBetween('created_at', [$from->startOfDay(), $to->endOfDay()])->count(),
+            'active_customer_count' => $activeCustomerCount,
+            'arpu_by_currency' => $arpu,
+            'top_usage' => $this->topUsage($from, $to),
+        ];
+    }
+
+    /** @return list<array{service_id: string|null, username: string|null, total_octets: int}> */
+    private function topUsage(CarbonImmutable $from, CarbonImmutable $to): array
+    {
+        $usage = UsageDaily::query()
+            ->whereBetween('usage_date', [$from->toDateString(), $to->toDateString()])
+            ->selectRaw('service_id, SUM(total_octets) as total_octets')
+            ->groupBy('service_id')
+            ->orderByDesc('total_octets')
+            ->limit(10)
+            ->get();
+        $services = Service::query()->whereIn('id', $usage->pluck('service_id'))->get()->keyBy('id');
+
+        return $usage->map(fn ($row): array => [
+            'service_id' => $services->get($row->service_id)?->public_id,
+            'username' => $services->get($row->service_id)?->username,
+            'total_octets' => (int) $row->total_octets,
+        ])->values()->all();
     }
 
     /** @return array{aging_by_currency: array<string, array<string, int>>, outstanding_by_currency: array<string, int>} */

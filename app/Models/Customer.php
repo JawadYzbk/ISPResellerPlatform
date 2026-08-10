@@ -19,6 +19,7 @@ use Illuminate\Support\Str;
 /**
  * @property CustomerStatus $status
  * @property Carbon|null $deleted_at
+ * @property Zone|null $zone
  */
 class Customer extends Model
 {

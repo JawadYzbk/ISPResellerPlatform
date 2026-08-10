@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $description
  * @property int $total_amount
  * @property string $currency
+ * @property Plan|null $plan
  */
 class InvoiceLine extends Model
 {
@@ -33,6 +34,7 @@ class InvoiceLine extends Model
         return $this->belongsTo(Invoice::class);
     }
 
+    /** @return BelongsTo<Plan, $this> */
     public function plan(): BelongsTo
     {
         return $this->belongsTo(Plan::class);
