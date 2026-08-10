@@ -33,6 +33,10 @@ Route::prefix('v1')->group(function (): void {
         Route::post('/otp/request', [PortalAuthController::class, 'requestOtp'])->middleware('throttle:login')->name('api.portal.otp.request');
         Route::post('/otp/verify', [PortalAuthController::class, 'verifyOtp'])->middleware('throttle:login')->name('api.portal.otp.verify');
         Route::get('/me', [PortalController::class, 'me'])->middleware('portal.auth')->name('api.portal.me');
+        Route::patch('/me/profile', [PortalController::class, 'updateProfile'])->middleware('portal.auth')->name('api.portal.profile.update');
+        Route::get('/me/services', [PortalController::class, 'services'])->middleware('portal.auth')->name('api.portal.services');
+        Route::get('/me/services/{service}/usage', [PortalController::class, 'usage'])->middleware('portal.auth')->name('api.portal.services.usage');
+        Route::get('/me/notices', [PortalController::class, 'notices'])->middleware('portal.auth')->name('api.portal.notices');
         Route::get('/billing', [PortalBillingController::class, 'show'])->middleware('portal.auth')->name('api.portal.billing');
         Route::post('/payments/intent', [PortalBillingController::class, 'intent'])->middleware('portal.auth')->name('api.portal.payments.intent');
     });

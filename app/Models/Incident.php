@@ -5,10 +5,17 @@ namespace App\Models;
 use App\Enums\IncidentStatus;
 use App\Models\Concerns\Auditable;
 use App\Models\Concerns\BelongsToTenant;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Str;
 
-/** @property IncidentStatus $status */
+/**
+ * @property IncidentStatus $status
+ * @property string $public_id
+ * @property Carbon $opened_at
+ * @property Carbon|null $resolved_at
+ */
 class Incident extends Model
 {
     use Auditable, BelongsToTenant;
@@ -18,6 +25,13 @@ class Incident extends Model
     protected function casts(): array
     {
         return ['status' => IncidentStatus::class, 'opened_at' => 'datetime', 'resolved_at' => 'datetime', 'metadata' => 'array'];
+    }
+
+    protected static function booted(): void
+    {
+        static::creating(function (self $incident): void {
+            $incident->public_id ??= (string) Str::ulid();
+        });
     }
 
     public function tenant(): BelongsTo

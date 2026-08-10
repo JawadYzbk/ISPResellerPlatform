@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property string $username
+ * @property Carbon|null $acct_start_time
  * @property Carbon|null $last_seen_at
  */
 class CurrentSession extends Model

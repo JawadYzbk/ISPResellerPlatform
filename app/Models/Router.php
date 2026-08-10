@@ -27,6 +27,7 @@ class Router extends Model
         return $this->belongsTo(Tenant::class);
     }
 
+    /** @return BelongsTo<Pop, $this> */
     public function pop(): BelongsTo
     {
         return $this->belongsTo(Pop::class);

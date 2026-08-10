@@ -45,7 +45,7 @@ final class PortalBillingController extends Controller
         $customer = $request->attributes->get('portal_customer');
         abort_unless($customer instanceof Customer, 401);
         $validated = $request->validate(['invoice_id' => ['required', 'string'], 'amount' => ['required', 'integer', 'min:1']]);
-        $invoice = Invoice::query()->where('public_id', $validated['invoice_id'])->firstOrFail();
+        $invoice = Invoice::query()->where('customer_id', $customer->id)->where('public_id', $validated['invoice_id'])->firstOrFail();
         $intent = $createIntent->handle($customer, $invoice, $validated['amount'], (string) $request->header('X-Idempotency-Key'));
 
         return response()->json(['id' => $intent->id, 'status' => $intent->status, 'amount' => $intent->amount, 'currency' => $intent->currency, 'payload' => $intent->payload], 201);
