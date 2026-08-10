@@ -107,6 +107,7 @@ Route::prefix('v1')->group(function (): void {
             Route::post('/settlements/{settlement}/pay', [PartnerApiController::class, 'paySettlement'])->middleware('idempotency')->name('api.settlements.pay');
             Route::post('/partners/{partner}/wallet-top-ups', [PartnerApiController::class, 'topUp'])->middleware(['idempotency', 'recent-auth'])->name('api.partners.wallet-top-ups');
             Route::post('/network/commands/{command}/retry', [NetworkCommandController::class, 'retry'])->middleware('idempotency')->name('api.network.commands.retry');
+            Route::post('/provisioning-commands/{command}/retries', [NetworkCommandController::class, 'retry'])->middleware('idempotency')->name('api.provisioning-commands.retries');
             Route::get('/network-commands/{command}', [NetworkCommandController::class, 'show'])->name('api.network-commands.show');
         });
         Route::middleware('abilities:staff:collector')->group(function (): void {
