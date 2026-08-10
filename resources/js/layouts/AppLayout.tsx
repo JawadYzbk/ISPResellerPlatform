@@ -14,6 +14,7 @@ import {
     Store,
     Search,
     Router,
+    Tags,
     Users,
     Wifi,
     Wrench,
@@ -29,6 +30,7 @@ export default function AppLayout({ children }: PropsWithChildren) {
     const nav = [
         { label: 'Overview', href: '/dashboard', icon: LayoutDashboard },
         { label: 'Customers', href: '/customers', icon: Users },
+        { label: 'Plans', href: '/plans', icon: Tags },
         { label: 'Services', href: '/services', icon: Wifi },
         { label: 'Billing', href: '/billing/invoices', icon: ReceiptText },
         { label: 'Tickets', href: '/operations/tickets', icon: MessageSquare },
