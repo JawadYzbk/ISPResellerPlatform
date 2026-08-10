@@ -9,6 +9,7 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Str;
 
 /**
@@ -72,5 +73,11 @@ class WorkOrder extends Model
     public function mediaUploads(): HasMany
     {
         return $this->hasMany(MediaUpload::class);
+    }
+
+    /** @return HasOne<WorkOrderSignature, $this> */
+    public function signature(): HasOne
+    {
+        return $this->hasOne(WorkOrderSignature::class);
     }
 }

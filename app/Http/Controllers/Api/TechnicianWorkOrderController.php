@@ -56,7 +56,7 @@ final class TechnicianWorkOrderController extends Controller
     {
         $this->ensureTechnician($request);
         $order = $this->assignedQuery($request)
-            ->with(['customer', 'service.plan', 'events', 'mediaUploads'])
+            ->with(['customer', 'service.plan', 'events', 'mediaUploads', 'signature.media'])
             ->where('public_id', $workOrder)
             ->firstOrFail();
 
@@ -119,6 +119,12 @@ final class TechnicianWorkOrderController extends Controller
                 'purpose' => $media->purpose,
                 'created_at' => $media->created_at?->toIso8601String(),
             ])->values(),
+            'signature' => $order->signature === null ? null : [
+                'id' => $order->signature->id,
+                'signer_name' => $order->signature->signer_name,
+                'signed_at' => $order->signature->signed_at?->toIso8601String(),
+                'media_id' => $order->signature->media?->public_id,
+            ],
         ];
     }
 }

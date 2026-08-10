@@ -160,6 +160,12 @@ final class WorkOrderOperationsController extends Controller
                     'created_at' => $media->created_at?->toIso8601String(),
                     'download_url' => route('operations.media.download', $media->public_id),
                 ])->values(),
+                'signature' => $workOrder->signature === null ? null : [
+                    'id' => $workOrder->signature->id,
+                    'signer_name' => $workOrder->signature->signer_name,
+                    'signed_at' => $workOrder->signature->signed_at?->toIso8601String(),
+                    'download_url' => $workOrder->signature->media === null ? null : route('operations.media.download', $workOrder->signature->media->public_id),
+                ],
             ],
             'scheduledAtLocal' => $this->localDate($workOrder->scheduled_at, $timezone),
             'timezone' => $timezone,
