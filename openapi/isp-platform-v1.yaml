@@ -310,6 +310,27 @@ paths:
         '200': { description: Cursor-paginated service list }
         '401': { description: Unauthenticated }
         '403': { description: Missing staff ability }
+    post:
+      summary: Create a pending tenant service
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [customer_id, plan_id, username, password, provisioning_mode]
+              properties:
+                customer_id: { type: string, description: Customer public ULID }
+                plan_id: { type: string, description: Active plan public ULID }
+                username: { type: string, maxLength: 64 }
+                password: { type: string, format: password, minLength: 12, maxLength: 128 }
+                provisioning_mode: { type: string, enum: [manual, upstream_credential, mikrotik, radius, external] }
+                router_id: { type: string, description: Router public ULID, nullable: true }
+      responses:
+        '201': { description: Created pending service resource }
+        '401': { description: Unauthenticated }
+        '403': { description: Missing service creation capability }
+        '422': { description: Validation failure }
   /services/{service}:
     get:
       summary: Read one tenant service with plan, customer and network history
