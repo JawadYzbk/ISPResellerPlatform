@@ -26,7 +26,7 @@ class Service extends Model
     /** @use HasFactory<ServiceFactory> */
     use Auditable, BelongsToTenant, HasFactory, SoftDeletes;
 
-    protected $fillable = ['tenant_id', 'customer_id', 'plan_id', 'username', 'password_encrypted', 'status', 'provisioning_mode', 'network_state', 'desired_state_version', 'activated_at', 'expires_at', 'suspension_reason'];
+    protected $fillable = ['tenant_id', 'customer_id', 'plan_id', 'router_id', 'username', 'password_encrypted', 'status', 'provisioning_mode', 'network_state', 'desired_state_version', 'activated_at', 'expires_at', 'suspension_reason'];
 
     protected $hidden = ['password_encrypted'];
 
@@ -58,6 +58,12 @@ class Service extends Model
     public function plan(): BelongsTo
     {
         return $this->belongsTo(Plan::class);
+    }
+
+    /** @return BelongsTo<Router, $this> */
+    public function router(): BelongsTo
+    {
+        return $this->belongsTo(Router::class);
     }
 
     public function events(): HasMany
