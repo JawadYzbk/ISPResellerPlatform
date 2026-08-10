@@ -30,7 +30,7 @@ Last updated: 2026-08-10
 | ISP-093 | Customer, plan, service, serialized-equipment and journal-backed balance CSV/XLSX import preview, row-level validation, partial-success commit and guarded/reversing rollback API, plus RouterOS PPP subscriber discovery import with redacted reports | delivered for current tabular/router-discovery scope |
 | ISP-P1-01 | Supplier credential inventory, import, assignment and audited reveal | foundation delivered |
 | ISP-100 | Security headers, dependency audits, session hardening and transactional APP_KEY credential re-encryption command | key rotation delivered; remaining launch controls in progress |
-| ISP-103 | Dependency health, scheduler/queue-worker heartbeats, and daily ledger invariant checks | delivered for application-level checks; external alert routing and Sentry remain |
+| ISP-102/103 | Encrypted backup package configuration, dependency health, scheduler/queue-worker heartbeats, daily ledger invariant checks and privacy-safe Sentry wiring | repository wiring delivered; off-site storage, restore rehearsal and external alert routing remain |
 
 ## In progress
 
@@ -38,7 +38,7 @@ Last updated: 2026-08-10
 - Real provider credentials/approvals.
 - Customer self-service online payments through a real gateway and realtime transport deployment.
 - Monitoring alert routing and external dashboard signal delivery.
-- Security operations: backup/restore rehearsal and Sentry wiring.
+- Security operations: backup/restore rehearsal and Sentry project validation.
 
 ## Deliberately not claimed yet
 

@@ -15,6 +15,8 @@
 - The root app is invite-oriented; no public registration route exists.
 - Money is represented as integer minor units and not floating point.
 - CI runs tests, formatting, static analysis, typecheck and a production frontend build.
+- Sentry is opt-in, disabled by an empty DSN, and strips user identity and request payload data before sending events.
+- Backup archives are configured for encryption, verification and failure/health notifications.
 
 ## Required controls before pilot
 
