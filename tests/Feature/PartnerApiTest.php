@@ -27,6 +27,8 @@ it('limits reseller partner APIs to descendants and funds a visible wallet idemp
     $token = $user->createToken('partner-api', ['api', 'staff:operator'])->plainTextToken;
 
     $this->withToken($token)->getJson('/api/v1/partners')->assertOk()->assertJsonCount(2, 'data')->assertJsonMissing(['code' => $sibling->code]);
+    $created = $this->withToken($token)->postJson('/api/v1/partners', ['name' => 'Grandchild', 'code' => 'grandchild', 'currency' => 'usd', 'parent_id' => $child->public_id, 'credit_limit' => 2500]);
+    $created->assertCreated()->assertJsonPath('code', 'GRANDCHILD')->assertJsonPath('parent_id', $child->public_id)->assertJsonPath('balance_amount', 0);
     $headers = ['X-Idempotency-Key' => 'partner-top-up-001'];
     $first = $this->withToken($token)->withHeaders($headers)->postJson('/api/v1/partners/'.$child->public_id.'/wallet-top-ups', ['amount' => 1000]);
     $second = $this->withToken($token)->withHeaders($headers)->postJson('/api/v1/partners/'.$child->public_id.'/wallet-top-ups', ['amount' => 1000]);

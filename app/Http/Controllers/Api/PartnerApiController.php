@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Actions\ApprovePartnerSettlement;
+use App\Actions\CreatePartner;
 use App\Actions\FundPartnerWallet;
 use App\Actions\GeneratePartnerSettlement;
 use App\Actions\PayPartnerSettlement;
@@ -19,9 +20,42 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 
 final class PartnerApiController extends Controller
 {
+    public function store(Request $request, CreatePartner $create): JsonResponse
+    {
+        $user = $this->user($request);
+        abort_unless($user->can('partners.manage'), 403);
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'code' => ['required', 'string', 'max:32', 'regex:/^[A-Za-z0-9_-]+$/'],
+            'currency' => ['required', 'string', 'size:3', 'regex:/^[A-Za-z]{3}$/'],
+            'parent_id' => ['nullable', 'string', 'max:26'],
+            'credit_limit' => ['nullable', 'integer', 'min:0'],
+            'low_balance_threshold' => ['nullable', 'integer', 'min:0'],
+        ]);
+        $data['code'] = strtoupper(trim((string) $data['code']));
+        $data['currency'] = strtoupper((string) $data['currency']);
+        if (Partner::query()->whereRaw('UPPER(code) = ?', [$data['code']])->exists()) {
+            throw ValidationException::withMessages(['code' => 'A partner with this code already exists.']);
+        }
+
+        $parentId = ($data['parent_id'] ?? null) ?: ($user->partner_id === null ? null : $user->partner->public_id);
+        $parent = $parentId === null ? null : $this->visible($user)->where('public_id', $parentId)->firstOrFail();
+        $partner = $create->handle(
+            (string) $data['name'],
+            $data['code'],
+            $data['currency'],
+            $parent,
+            (int) ($data['credit_limit'] ?? 0),
+            (int) ($data['low_balance_threshold'] ?? 0),
+        )->load('wallet');
+
+        return response()->json($this->summary($partner), 201);
+    }
+
     public function index(Request $request): JsonResponse
     {
         $user = $this->user($request);

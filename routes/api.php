@@ -96,6 +96,7 @@ Route::prefix('v1')->group(function (): void {
             Route::post('/imports/routers/{router}/subscribers', [RouterSubscriberImportController::class, 'store'])->name('api.imports.routers.subscribers.store');
             Route::post('/imports/{import}/rollback', [CustomerImportController::class, 'rollback'])->name('api.imports.rollback');
             Route::get('/partners', [PartnerApiController::class, 'index'])->name('api.partners.index');
+            Route::post('/partners', [PartnerApiController::class, 'store'])->name('api.partners.store');
             Route::get('/partners/{partner}', [PartnerApiController::class, 'show'])->name('api.partners.show');
             Route::get('/partners/{partner}/wallets', [PartnerApiController::class, 'wallet'])->name('api.partners.wallets');
             Route::get('/partners/{partner}/wallet-transactions', [PartnerApiController::class, 'transactions'])->name('api.partners.wallet-transactions');
