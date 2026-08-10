@@ -17,6 +17,7 @@ type WorkOrder = {
     failure_reason: string | null;
     checklist: Record<string, boolean | string>;
     metadata: Record<string, unknown>;
+    readings: Record<string, string>;
     customer: { public_id: string; code: string; name: string } | null;
     service: { public_id: string; username: string } | null;
     assignee: { name: string } | null;
@@ -41,6 +42,13 @@ function formatBytes(bytes: number): string {
     return (bytes / 1024 ** 3).toFixed(1) + ' GB';
 }
 
+function readingKeys(type: string): string[] {
+    if (type === 'fiber') return ['optical_rx_dbm', 'optical_tx_dbm', 'ont_serial', 'splitter_port'];
+    if (type === 'installation' || type === 'repair') return ['signal_dbm', 'ccq', 'tx_rate', 'rx_rate', 'distance_m', 'ap_name'];
+
+    return ['note'];
+}
+
 type Props = {
     workOrder: WorkOrder;
     scheduledAtLocal: string | null;
@@ -51,6 +59,7 @@ export default function WorkOrderShowPage({ workOrder, scheduledAtLocal, timezon
     const canComplete = ['assigned', 'in_progress'].includes(workOrder.status);
     const scheduleForm = useForm({ scheduled_at: scheduledAtLocal ?? '' });
     const signatureForm = useForm<{ file: File | null; signer_name: string }>({ file: null, signer_name: '' });
+    const readingsForm = useForm({ readings: Object.fromEntries([...readingKeys(workOrder.type), ...Object.keys(workOrder.readings)].map((key) => [key, workOrder.readings[key] ?? ''])) });
 
     const submitSchedule = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -59,6 +68,10 @@ export default function WorkOrderShowPage({ workOrder, scheduledAtLocal, timezon
     const submitSignature = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         signatureForm.post('/operations/work-orders/' + workOrder.public_id + '/signature', { forceFormData: true, onSuccess: () => signatureForm.reset() });
+    };
+    const submitReadings = (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        readingsForm.post('/operations/work-orders/' + workOrder.public_id + '/readings');
     };
 
     return (
@@ -124,6 +137,19 @@ export default function WorkOrderShowPage({ workOrder, scheduledAtLocal, timezon
                             ))}
                             {Object.keys(workOrder.checklist).length === 0 && <p className="text-sm text-muted">No checklist items were recorded.</p>}
                         </div>
+                    </section>
+                    <section className="card p-6">
+                        <h2 className="section-title">Technician readings</h2>
+                        <p className="mt-1 text-sm text-muted">Record the measurements captured at the customer site.</p>
+                        <form onSubmit={submitReadings} className="mt-5 space-y-4">
+                            <div className="grid gap-4 sm:grid-cols-2">
+                                {Object.keys(readingsForm.data.readings).map((key) => (
+                                    <label key={key}><span className="field-label capitalize">{key.replaceAll('_', ' ')}</span><input className="field" value={readingsForm.data.readings[key]} onChange={(event) => readingsForm.setData('readings', { ...readingsForm.data.readings, [key]: event.target.value })} /></label>
+                                ))}
+                            </div>
+                            {readingsForm.errors.readings && <p className="field-error">{readingsForm.errors.readings}</p>}
+                            <button type="submit" className="button-secondary" disabled={readingsForm.processing}>Save readings</button>
+                        </form>
                     </section>
                     <section className="card p-6">
                         <h2 className="section-title">Customer signature</h2>
