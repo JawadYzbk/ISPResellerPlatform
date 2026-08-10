@@ -1,6 +1,7 @@
 import { Head, Link, useForm } from '@inertiajs/react';
 import { ArrowLeft, Save } from 'lucide-react';
 
+import CustomerLocationFields from '@/components/CustomerLocationFields';
 import AppLayout from '@/layouts/AppLayout';
 import type { Customer, Zone } from '@/types';
 
@@ -80,6 +81,12 @@ export default function CustomersEdit({ customer, zones }: Props) {
                             {form.errors.address && <p className="field-error">{form.errors.address}</p>}
                         </div>
                     </div>
+                    <CustomerLocationFields
+                        latitude={form.data.latitude}
+                        longitude={form.data.longitude}
+                        onLatitudeChange={(value) => form.setData('latitude', value)}
+                        onLongitudeChange={(value) => form.setData('longitude', value)}
+                    />
                     <div className="flex justify-end gap-3 border-t border-line pt-5">
                         <Link href={`/customers/${customer.public_id}`} className="button-secondary">Cancel</Link>
                         <button className="button-primary" disabled={form.processing}>

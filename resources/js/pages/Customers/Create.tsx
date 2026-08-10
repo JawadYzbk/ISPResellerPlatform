@@ -1,6 +1,7 @@
 import { Head, Link, useForm } from '@inertiajs/react';
 import { ArrowLeft, Save } from 'lucide-react';
 
+import CustomerLocationFields from '@/components/CustomerLocationFields';
 import AppLayout from '@/layouts/AppLayout';
 
 type Zone = { id: number; name: string; code: string };
@@ -122,6 +123,12 @@ export default function CustomersCreate({ zones }: Props) {
                             />
                         </div>
                     </div>
+                    <CustomerLocationFields
+                        latitude={form.data.latitude}
+                        longitude={form.data.longitude}
+                        onLatitudeChange={(value) => form.setData('latitude', value)}
+                        onLongitudeChange={(value) => form.setData('longitude', value)}
+                    />
                     <div className="flex justify-end gap-3 border-t border-line pt-5">
                         <Link href="/customers" className="button-secondary">
                             Cancel

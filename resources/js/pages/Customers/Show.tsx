@@ -272,6 +272,15 @@ export default function CustomerShow({
                                     {customer.address ?? 'No address on file'}
                                 </dd>
                             </div>
+                            {customer.latitude !== null && customer.longitude !== null && (
+                                <div>
+                                    <dt className="text-xs text-muted">Coordinates</dt>
+                                    <dd className="mt-1 flex items-center justify-between gap-3 text-sm font-medium">
+                                        <span>{customer.latitude.toFixed(7)}, {customer.longitude.toFixed(7)}</span>
+                                        <a href={'https://www.openstreetmap.org/?mlat=' + customer.latitude + '&mlon=' + customer.longitude} target="_blank" rel="noreferrer" className="text-brand hover:underline">Open map</a>
+                                    </dd>
+                                </div>
+                            )}
                         </dl>
                     </div>
                     <div className="card overflow-hidden">

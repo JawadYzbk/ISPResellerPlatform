@@ -213,6 +213,8 @@ export type Customer = {
     phone: string;
     email: string | null;
     address: string | null;
+    latitude: number | null;
+    longitude: number | null;
     status: 'active' | 'inactive' | 'archived';
     anonymized_at?: string | null;
     balance_amount: number;
