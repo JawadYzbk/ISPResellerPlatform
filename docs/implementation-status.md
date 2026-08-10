@@ -6,7 +6,7 @@ Last updated: 2026-08-10
 
 | Ticket | Slice | Status |
 |---|---|---|
-| ISP-001 | Laravel 13 runtime, React/Inertia frontend, Docker, CI | foundation delivered |
+| ISP-001 | Laravel 13 runtime, React/Inertia frontend, Docker, CI with dependency audits, PCOV coverage output and API-contract artifacts | foundation delivered |
 | ISP-002 | Tenant context and integer money primitive | foundation delivered |
 | ISP-003 | Initial architecture conventions and tests | foundation delivered |
 | ISP-010 | Tenant, branch, zone and document-sequence schema | foundation delivered |
