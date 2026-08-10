@@ -2,7 +2,7 @@ openapi: 3.1.0
 info:
   title: ISP Manager API
   version: 1.0.0
-  description: Versioned mobile and portal contract for tenant-scoped customer reads and idempotent collection writes.
+  description: Versioned mobile and portal contract for tenant-scoped reads, scoped Sanctum abilities, idempotent collection writes, imports and technician operations.
 servers:
   - url: /api/v1
 security:
@@ -17,6 +17,48 @@ paths:
           description: Application and dependencies are ready
         '503':
           description: One or more dependencies are degraded
+  /tokens:
+    post:
+      security: []
+      summary: Issue a scoped Sanctum API token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password, device_name]
+              properties:
+                email: { type: string, format: email }
+                password: { type: string, format: password }
+                device_name: { type: string, maxLength: 100 }
+                abilities:
+                  type: array
+                  items: { type: string, enum: [customer, staff:collector, staff:technician, staff:operator] }
+                  description: Optional narrowing of the role-derived ability.
+                otp: { type: string, minLength: 6, maxLength: 16 }
+      responses:
+        '200': { description: Bearer token and granted abilities }
+        '401': { description: Invalid credentials }
+        '403': { description: Requested ability is outside the user's role }
+        '423': { description: Two-factor verification required }
+  /app/config:
+    get:
+      summary: Read mobile version and maintenance configuration
+      responses:
+        '200':
+          description: Client launch configuration
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [min_supported_version, latest_version, maintenance, force_update]
+                properties:
+                  min_supported_version: { type: string }
+                  latest_version: { type: string }
+                  maintenance: { type: boolean }
+                  message: { type: string, nullable: true }
+                  force_update: { type: boolean }
   /customers:
     get:
       summary: List tenant customers
@@ -49,6 +91,23 @@ paths:
         '200': { description: Customer resource }
         '401': { description: Unauthenticated }
         '404': { description: Customer not found }
+  /services:
+    get:
+      summary: List tenant services
+      parameters:
+        - in: query
+          name: filter[status]
+          schema: { type: string, enum: [pending, active, suspended, terminated] }
+        - in: query
+          name: filter[search]
+          schema: { type: string }
+        - in: query
+          name: cursor
+          schema: { type: string }
+      responses:
+        '200': { description: Cursor-paginated service list }
+        '401': { description: Unauthenticated }
+        '403': { description: Missing staff ability }
   /payments:
     post:
       summary: Record a customer payment
@@ -136,6 +195,24 @@ paths:
       responses:
         '200': { description: Per-item success/error results }
         '409': { description: Idempotency key reused for a different request }
+  /technician/inventory:
+    get:
+      summary: List equipment in the authenticated technician's van warehouse
+      responses:
+        '200': { description: Warehouse and serialized unit list }
+        '403': { description: Missing technician ability }
+  /technician/services/{public_id}/diagnostics:
+    get:
+      summary: Read tenant-scoped service diagnostics
+      parameters:
+        - in: path
+          name: public_id
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: Service state, live session, usage and recent command outcomes }
+        '403': { description: Missing technician ability }
+        '404': { description: Service not found }
 components:
   securitySchemes:
     bearerAuth:
