@@ -42,6 +42,12 @@ paths:
         '401': { description: Invalid credentials }
         '403': { description: Requested ability is outside the user's role }
         '423': { description: Two-factor verification required }
+  /tokens/current:
+    delete:
+      summary: Revoke the current API token
+      responses:
+        '204': { description: Token revoked }
+        '401': { description: Unauthenticated }
   /app/config:
     get:
       summary: Read mobile version and maintenance configuration
@@ -59,6 +65,12 @@ paths:
                   maintenance: { type: boolean }
                   message: { type: string, nullable: true }
                   force_update: { type: boolean }
+  /me:
+    get:
+      summary: Read the authenticated staff identity
+      responses:
+        '200': { description: Current user and role data }
+        '401': { description: Unauthenticated }
   /customers:
     get:
       summary: List tenant customers
@@ -108,6 +120,73 @@ paths:
         '200': { description: Cursor-paginated service list }
         '401': { description: Unauthenticated }
         '403': { description: Missing staff ability }
+  /services/{service}:
+    get:
+      summary: Read one tenant service with plan, customer and network history
+      parameters:
+        - in: path
+          name: service
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: Service resource }
+        '403': { description: Missing service view capability }
+        '404': { description: Service not found }
+  /services/{service}/activate:
+    post:
+      summary: Activate a service and enqueue network provisioning
+      parameters:
+        - in: path
+          name: service
+          required: true
+          schema: { type: string }
+        - in: header
+          name: X-Idempotency-Key
+          required: true
+          schema: { type: string, maxLength: 120 }
+      responses:
+        '202': { description: Commercial state changed and network command queued }
+        '403': { description: Missing activation capability }
+  /services/{service}/suspend:
+    post:
+      summary: Suspend a service and enqueue network enforcement
+      parameters:
+        - in: path
+          name: service
+          required: true
+          schema: { type: string }
+        - in: header
+          name: X-Idempotency-Key
+          required: true
+          schema: { type: string, maxLength: 120 }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [reason]
+              properties:
+                reason: { type: string, maxLength: 64 }
+                note: { type: string, maxLength: 5000 }
+      responses:
+        '202': { description: Commercial state changed and network command queued }
+        '403': { description: Missing suspension capability }
+  /services/{service}/resume:
+    post:
+      summary: Resume a suspended service and enqueue network enforcement
+      parameters:
+        - in: path
+          name: service
+          required: true
+          schema: { type: string }
+        - in: header
+          name: X-Idempotency-Key
+          required: true
+          schema: { type: string, maxLength: 120 }
+      responses:
+        '202': { description: Commercial state changed and network command queued }
+        '403': { description: Missing activation or force-resume capability }
   /payments:
     post:
       summary: Record a customer payment
@@ -171,6 +250,17 @@ paths:
           schema: { type: string }
       responses:
         '200': { description: Customer profile and services }
+        '401': { description: Invalid portal session }
+  /portal/{tenant}/billing:
+    get:
+      summary: Read the authenticated customer's invoice and payment history
+      parameters:
+        - in: path
+          name: tenant
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: Recent invoices, lines and payments }
         '401': { description: Invalid portal session }
   /collector/payments/batch:
     post:
@@ -373,6 +463,21 @@ paths:
         '201': { description: Wallet transaction created }
         '403': { description: Missing wallet funding capability }
         '409': { description: Idempotency key reused for a different request }
+  /network/commands/{command}/retry:
+    post:
+      summary: Retry a failed network command
+      parameters:
+        - in: path
+          name: command
+          required: true
+          schema: { type: integer }
+        - in: header
+          name: X-Idempotency-Key
+          required: true
+          schema: { type: string, maxLength: 120 }
+      responses:
+        '202': { description: Replacement network command queued }
+        '403': { description: Missing network provision capability }
   /technician/uploads:
     post:
       summary: Upload a technician work-order image separately from completion
@@ -389,6 +494,47 @@ paths:
         '201': { description: Public media ID and non-sensitive file metadata }
         '403': { description: Missing work-order capability }
         '422': { description: Invalid media type or size }
+  /technician/work-orders:
+    get:
+      summary: List work orders assigned to the authenticated technician
+      parameters:
+        - in: query
+          name: date
+          schema: { type: string, format: date }
+        - in: query
+          name: status
+          schema: { type: string, enum: [scheduled, assigned, en_route, in_progress, completed, cancelled, failed] }
+      responses:
+        '200': { description: Assigned work-order summaries }
+        '403': { description: Missing work-order capability }
+  /technician/work-orders/{workOrder}:
+    get:
+      summary: Read an assigned work-order detail
+      parameters:
+        - in: path
+          name: workOrder
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: Work-order detail with checklist and event history }
+        '403': { description: Missing work-order capability }
+        '404': { description: Work order not found }
+  /technician/work-orders/{workOrder}/complete:
+    post:
+      summary: Complete an assigned work order idempotently
+      parameters:
+        - in: path
+          name: workOrder
+          required: true
+          schema: { type: string }
+        - in: header
+          name: X-Idempotency-Key
+          required: true
+          schema: { type: string, maxLength: 120 }
+      responses:
+        '200': { description: Work order completion and resulting service state }
+        '403': { description: Missing work-order capability }
+        '409': { description: Completion key conflicts with another work order }
   /technician/inventory:
     get:
       summary: List equipment in the authenticated technician's van warehouse
