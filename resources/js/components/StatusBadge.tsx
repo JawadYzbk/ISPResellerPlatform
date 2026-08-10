@@ -1,4 +1,4 @@
-type Status =
+export type Status =
     | 'active'
     | 'inactive'
     | 'archived'
@@ -33,7 +33,9 @@ type Status =
     | 'damaged'
     | 'reserved'
     | 'expired'
-    | 'revoked';
+    | 'revoked'
+    | 'free'
+    | 'conflict';
 
 const styles: Record<Status, string> = {
     active: 'bg-emerald-50 text-emerald-700 ring-emerald-600/20',
@@ -71,6 +73,8 @@ const styles: Record<Status, string> = {
     reserved: 'bg-amber-50 text-amber-700 ring-amber-600/20',
     expired: 'bg-slate-100 text-slate-500 ring-slate-500/20',
     revoked: 'bg-rose-50 text-rose-700 ring-rose-600/20',
+    free: 'bg-emerald-50 text-emerald-700 ring-emerald-600/20',
+    conflict: 'bg-rose-50 text-rose-700 ring-rose-600/20',
 };
 
 export function StatusBadge({ status }: { status: Status }) {

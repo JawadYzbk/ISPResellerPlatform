@@ -54,6 +54,7 @@ export default function AppLayout({ children }: PropsWithChildren) {
         { label: 'Network queue', href: '/operations/network-commands', icon: Wrench },
     { label: 'Routers', href: '/operations/routers', icon: Router },
         { label: 'POPs', href: '/operations/pops', icon: Network },
+        { label: 'IP pools', href: '/operations/ip-pools', icon: Network },
         ...(auth.permissions.includes('settings.manage')
             ? [{ label: 'Settings', href: '/settings/general', icon: Wrench }]
             : []),
