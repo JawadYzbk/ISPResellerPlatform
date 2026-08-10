@@ -1,5 +1,5 @@
 import { Head, Link, router } from '@inertiajs/react';
-import { CheckCircle2, ChevronLeft, ChevronRight, ClipboardList, Search } from 'lucide-react';
+import { CalendarDays, CheckCircle2, ChevronLeft, ChevronRight, ClipboardList, Search } from 'lucide-react';
 import { useState } from 'react';
 
 import StatusBadge from '@/components/StatusBadge';
@@ -52,6 +52,7 @@ export default function WorkOrdersPage({ workOrders, filters }: Props) {
                 <p className="eyebrow">Field operations</p>
                 <h1 className="page-title">Work orders</h1>
                 <p className="page-subtitle">Coordinate installations and repairs, then complete the service transition from one controlled action.</p>
+                <Link href="/operations/work-orders/calendar" className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-brand"><CalendarDays size={15} /> Open calendar</Link>
             </div>
 
             <form onSubmit={applyFilters} className="card mt-8 flex flex-col gap-4 p-5 sm:flex-row sm:items-end">
