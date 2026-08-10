@@ -14,6 +14,6 @@ it('adds baseline browser security headers to web responses', function (): void 
         ->assertHeader('Permissions-Policy', 'camera=(), geolocation=(), microphone=()');
 
     expect($response->headers->get('Content-Security-Policy'))
-        ->toContain('http://[::1]:5173')
-        ->toContain('ws://[::1]:5173');
+        ->toContain('http://127.0.0.1:5173')
+        ->toContain('ws://127.0.0.1:5173');
 });
