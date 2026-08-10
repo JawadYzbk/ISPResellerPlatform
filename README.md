@@ -21,7 +21,10 @@ The current foundation is live:
 - Router/POP inventory, encrypted connection tests and repeated-failure incidents
 - Supplier credential workflows with permission, re-authentication and audit controls
 - Cursor-paginated customer API, idempotent payment API, collector batches, customer portal OTP/session flow, OpenAPI slice and finance reporting
+- Role-scoped Sanctum abilities, app version/maintenance config, technician diagnostics and van inventory APIs
+- Customer, plan, service and serialized-equipment CSV imports with preview, partial success and guarded rollback
 - Basic reseller hierarchy and journal-linked wallet funding/debiting with credit limits
+- Operations report with service/network/work-order/incident status, low-stock signals and CSV export
 - Demo tenant seed with customers, plans and services
 - Money value object backed by `brick/money`
 - Pest tests for money arithmetic, authentication and tenant isolation
