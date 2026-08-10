@@ -127,7 +127,7 @@ export default function WorkOrderShowPage({ workOrder, scheduledAtLocal, timezon
                                         <p className="truncate text-sm font-semibold">{media.filename}</p>
                                         <p className="mt-1 text-xs capitalize text-muted">{media.purpose.replace('_', ' ')} · {formatBytes(media.size_bytes)} · {formatDate(media.created_at)}</p>
                                     </div>
-                                    <a href={media.download_url} className="button-ghost shrink-0" download>
+                                    <a href={media.download_url} className="button-secondary shrink-0" download>
                                         <Download size={15} /> Download
                                     </a>
                                 </div>
