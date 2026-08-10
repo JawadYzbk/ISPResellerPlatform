@@ -36,6 +36,9 @@ jobs:
       - name: JavaScript dependency audit
         run: npm audit --audit-level=high
 
+      - name: JavaScript formatting
+        run: npm run format:check
+
       - name: PHP formatting
         run: vendor/bin/pint --test
 
