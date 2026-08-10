@@ -20,6 +20,10 @@ it('records collector batches with per-item success and error results', function
     $first = Customer::factory()->create();
     $second = Customer::factory()->create();
     $token = $user->createToken('collector', ['api', 'staff:collector'])->plainTextToken;
+    $this->withToken($token)
+        ->withHeader('X-Idempotency-Key', 'collector-shift-open-001')
+        ->postJson('/api/v1/collector/shift/open', ['opening_float' => ['USD' => 0]])
+        ->assertCreated();
     $items = [
         ['customer_id' => $first->public_id, 'amount' => 100, 'currency' => 'USD', 'method' => 'cash', 'idempotency_key' => 'batch-001'],
         ['customer_id' => $first->public_id, 'amount' => 100, 'currency' => 'USD', 'method' => 'cash', 'idempotency_key' => 'batch-001'],

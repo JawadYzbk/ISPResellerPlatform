@@ -3,9 +3,12 @@
 namespace App\Actions;
 
 use App\Contracts\Action;
+use App\Models\CashShift;
 use App\Models\Customer;
 use App\Models\Invoice;
+use App\Models\Payment;
 use App\Models\User;
+use DomainException;
 
 final readonly class RecordCollectorPaymentBatch implements Action
 {
@@ -28,6 +31,13 @@ final readonly class RecordCollectorPaymentBatch implements Action
                 if (($item['fx_override'] ?? false) && (! is_int($item['fx_rate_numerator'] ?? null) || ! is_int($item['fx_rate_denominator'] ?? null) || ! is_string($item['fx_override_reason'] ?? null))) {
                     throw new \InvalidArgumentException('The FX override payload is malformed.');
                 }
+                $existing = Payment::query()->where('idempotency_key', $item['idempotency_key'])->first();
+                $cashShift = $existing instanceof Payment
+                    ? null
+                    : CashShift::query()->where('user_id', $actor->id)->where('status', 'open')->latest('opened_at')->first();
+                if (! $existing instanceof Payment && ! $cashShift instanceof CashShift) {
+                    throw new DomainException('An open cash shift is required before recording collector payments.');
+                }
                 $customer = Customer::query()->where('public_id', $item['customer_id'])->firstOrFail();
                 $invoice = isset($item['invoice_id']) ? Invoice::query()->where('public_id', $item['invoice_id'])->firstOrFail() : null;
                 $payment = $this->recordPayment->handle(
@@ -38,7 +48,7 @@ final readonly class RecordCollectorPaymentBatch implements Action
                     $item['idempotency_key'],
                     $invoice,
                     $actor,
-                    null,
+                    $cashShift,
                     ($item['fx_override'] ?? false) ? $item['fx_rate_numerator'] : null,
                     ($item['fx_override'] ?? false) ? $item['fx_rate_denominator'] : null,
                     ($item['fx_override'] ?? false) ? $item['fx_override_reason'] : null,

@@ -54,6 +54,10 @@ it('pushes queued payments with created, replayed and rejected item results', fu
     $tenant = Tenant::create(['name' => 'Northline', 'slug' => 'northline', 'base_currency' => 'USD', 'collection_currency' => 'USD']);
     $token = collectorSyncToken($tenant, 'sync-push@example.test');
     $customer = Customer::factory()->create(['balance_currency' => 'USD']);
+    $this->withToken($token)
+        ->withHeader('X-Idempotency-Key', 'sync-shift-open-001')
+        ->postJson('/api/v1/collector/shift/open', ['opening_float' => ['USD' => 0]])
+        ->assertCreated();
     $items = [
         ['customer_uuid' => $customer->public_id, 'amount' => 100, 'currency' => 'USD', 'method' => 'cash', 'idempotency_key' => 'sync-payment-001'],
         ['customer_uuid' => $customer->public_id, 'amount' => 100, 'currency' => 'USD', 'method' => 'cash', 'idempotency_key' => 'sync-payment-001'],

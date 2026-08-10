@@ -4,9 +4,11 @@ namespace App\Http\Controllers\Api;
 
 use App\Actions\RecordPayment;
 use App\Http\Controllers\Controller;
+use App\Models\CashShift;
 use App\Models\Currency;
 use App\Models\Customer;
 use App\Models\Invoice;
+use App\Models\Payment;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -32,6 +34,14 @@ final class PaymentApiController extends Controller
         $invoice = isset($validated['invoice_id'])
             ? Invoice::query()->where('public_id', $validated['invoice_id'])->firstOrFail()
             : null;
+        $cashShift = null;
+        if ($request->user()?->tokenCan('staff:collector')) {
+            $cashShift = CashShift::query()->where('user_id', $request->user()->id)->where('status', 'open')->latest('opened_at')->first();
+            if (! $cashShift instanceof CashShift) {
+                $replayed = Payment::query()->where('idempotency_key', $request->header('X-Idempotency-Key'))->first();
+                abort_unless($replayed instanceof Payment, 423, 'An open cash shift is required before recording collector payments.');
+            }
+        }
         $payment = $recordPayment->handle(
             $customer,
             $validated['amount'],
@@ -40,7 +50,7 @@ final class PaymentApiController extends Controller
             $request->header('X-Idempotency-Key'),
             $invoice,
             $request->user(),
-            null,
+            $cashShift,
             ($validated['fx_override'] ?? false) ? (int) $validated['fx_rate_numerator'] : null,
             ($validated['fx_override'] ?? false) ? (int) $validated['fx_rate_denominator'] : null,
             ($validated['fx_override'] ?? false) ? (string) $validated['fx_override_reason'] : null,
