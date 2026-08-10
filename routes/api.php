@@ -28,6 +28,7 @@ use App\Http\Controllers\Api\ServiceImportController;
 use App\Http\Controllers\Api\TechnicianMediaController;
 use App\Http\Controllers\Api\TechnicianWorkOrderController;
 use App\Http\Controllers\Api\TicketApiController;
+use App\Http\Controllers\Api\WorkOrderApiController;
 use App\Models\User;
 use App\Support\Api\UserApiResource;
 use Illuminate\Http\Request;
@@ -91,6 +92,8 @@ Route::prefix('v1')->group(function (): void {
             Route::get('/routers/{router}', [RouterApiController::class, 'show'])->name('api.routers.show');
             Route::get('/payments', [PaymentApiController::class, 'index'])->name('api.payments.index');
             Route::get('/payments/{payment}', [PaymentApiController::class, 'show'])->name('api.payments.show');
+            Route::get('/work-orders', [WorkOrderApiController::class, 'index'])->name('api.work-orders.index');
+            Route::get('/work-orders/{workOrder}', [WorkOrderApiController::class, 'show'])->name('api.work-orders.show');
             Route::get('/services/{service}/network-commands', [ServiceApiController::class, 'networkCommands'])->name('api.services.network-commands');
             Route::post('/services/{service}/plan-change-previews', [ServiceApiController::class, 'planChangePreview'])->name('api.services.plan-change-previews');
             Route::post('/payments', [PaymentApiController::class, 'store'])->middleware('idempotency')->name('api.payments.store');
