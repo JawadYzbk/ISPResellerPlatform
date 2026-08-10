@@ -7,6 +7,7 @@ use App\Actions\GetWorkOrderDetails;
 use App\Actions\ListWorkOrders;
 use App\Actions\ScheduleWorkOrder;
 use App\Http\Controllers\Controller;
+use App\Models\MediaUpload;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Models\WorkOrder;
@@ -123,6 +124,15 @@ final class WorkOrderOperationsController extends Controller
                     'to_status' => $event->to_status,
                     'actor' => $event->actor?->name,
                     'created_at' => $event->created_at?->toIso8601String(),
+                ])->values(),
+                'media' => $workOrder->mediaUploads->map(fn (MediaUpload $media): array => [
+                    'id' => $media->public_id,
+                    'filename' => $media->original_name,
+                    'mime_type' => $media->mime_type,
+                    'size_bytes' => $media->size_bytes,
+                    'purpose' => $media->purpose,
+                    'created_at' => $media->created_at?->toIso8601String(),
+                    'download_url' => route('operations.media.download', $media->public_id),
                 ])->values(),
             ],
             'scheduledAtLocal' => $this->localDate($workOrder->scheduled_at, $timezone),

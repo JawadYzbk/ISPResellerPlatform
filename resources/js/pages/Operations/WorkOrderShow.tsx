@@ -1,5 +1,5 @@
 import { Head, Link, router, useForm } from '@inertiajs/react';
-import { ArrowLeft, CalendarClock, CheckCircle2, ClipboardCheck, Clock3, UserRound } from 'lucide-react';
+import { ArrowLeft, CalendarClock, CheckCircle2, ClipboardCheck, Clock3, Download, Images, UserRound } from 'lucide-react';
 
 import StatusBadge from '@/components/StatusBadge';
 import AppLayout from '@/layouts/AppLayout';
@@ -20,6 +20,7 @@ type WorkOrder = {
     service: { public_id: string; username: string } | null;
     assignee: { name: string } | null;
     events: { id: number; event_type: string; from_status: string | null; to_status: string | null; actor: string | null; created_at: string | null }[];
+    media: { id: string; filename: string; mime_type: string; size_bytes: number; purpose: string; created_at: string | null; download_url: string }[];
 };
 
 function checklistLabel(key: string): string {
@@ -28,6 +29,14 @@ function checklistLabel(key: string): string {
 
 function isChecked(value: boolean | string): boolean {
     return value === true || value === 'true';
+}
+
+function formatBytes(bytes: number): string {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 ** 2) return (bytes / 1024).toFixed(1) + ' KB';
+    if (bytes < 1024 ** 3) return (bytes / 1024 ** 2).toFixed(1) + ' MB';
+
+    return (bytes / 1024 ** 3).toFixed(1) + ' GB';
 }
 
 type Props = {
@@ -107,6 +116,23 @@ export default function WorkOrderShowPage({ workOrder, scheduledAtLocal, timezon
                                 </div>
                             ))}
                             {Object.keys(workOrder.checklist).length === 0 && <p className="text-sm text-muted">No checklist items were recorded.</p>}
+                        </div>
+                    </section>
+                    <section className="card p-6">
+                        <div className="flex items-center gap-2"><Images size={17} className="text-brand" /><h2 className="section-title">Site evidence</h2></div>
+                        <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                            {workOrder.media.map((media) => (
+                                <div key={media.id} className="flex items-center justify-between gap-4 rounded-lg border border-line px-4 py-3">
+                                    <div className="min-w-0">
+                                        <p className="truncate text-sm font-semibold">{media.filename}</p>
+                                        <p className="mt-1 text-xs capitalize text-muted">{media.purpose.replace('_', ' ')} · {formatBytes(media.size_bytes)} · {formatDate(media.created_at)}</p>
+                                    </div>
+                                    <a href={media.download_url} className="button-ghost shrink-0" download>
+                                        <Download size={15} /> Download
+                                    </a>
+                                </div>
+                            ))}
+                            {workOrder.media.length === 0 && <p className="text-sm text-muted">No site evidence has been uploaded.</p>}
                         </div>
                     </section>
                     <section className="card p-6">

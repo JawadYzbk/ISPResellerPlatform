@@ -3,6 +3,7 @@
 use App\Enums\ServiceStatus;
 use App\Enums\WorkOrderStatus;
 use App\Models\Customer;
+use App\Models\MediaUpload;
 use App\Models\Service;
 use App\Models\Tenant;
 use App\Models\User;
@@ -13,11 +14,13 @@ use Database\Seeders\CapabilitySeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Queue;
+use Illuminate\Support\Facades\Storage;
 
 uses(RefreshDatabase::class);
 
 it('renders work orders and completes an installation through the existing action', function (): void {
     Queue::fake();
+    Storage::fake('local');
     $tenant = Tenant::create(['name' => 'Northline', 'slug' => 'northline', 'base_currency' => 'USD', 'collection_currency' => 'USD']);
     $user = User::create(['tenant_id' => $tenant->id, 'name' => 'Operations manager', 'email' => 'operations@example.test', 'password' => Hash::make('password'), 'role' => 'operations_manager']);
     app(CapabilitySeeder::class)->run();
@@ -34,6 +37,19 @@ it('renders work orders and completes an installation through the existing actio
         'status' => WorkOrderStatus::Assigned,
         'scheduled_at' => now()->addHour(),
         'checklist' => ['ont_installed' => false, 'signal_verified' => true],
+    ]);
+    $mediaPath = 'media/'.$tenant->id.'/router-rack.jpg';
+    Storage::disk('local')->put($mediaPath, 'fake-image');
+    $media = MediaUpload::create([
+        'work_order_id' => $order->id,
+        'uploaded_by_id' => $user->id,
+        'disk' => 'local',
+        'path' => $mediaPath,
+        'original_name' => 'router-rack.jpg',
+        'mime_type' => 'image/jpeg',
+        'size_bytes' => 10,
+        'sha256' => str_repeat('a', 64),
+        'purpose' => 'evidence',
     ]);
 
     $this->actingAs($user)
@@ -55,7 +71,15 @@ it('renders work orders and completes an installation through the existing actio
             ->where('workOrder.number', 'WO-00001')
             ->where('workOrder.checklist.ont_installed', false)
             ->where('workOrder.customer.public_id', $customer->public_id)
+            ->where('workOrder.media.0.id', $media->public_id)
+            ->where('workOrder.media.0.filename', 'router-rack.jpg')
         );
+
+    app(Tenancy::class)->set($tenant);
+    $this->actingAs($user)
+        ->get(route('operations.media.download', $media->public_id))
+        ->assertOk()
+        ->assertHeader('Content-Type', 'image/jpeg');
 
     app(Tenancy::class)->set($tenant);
     $this->actingAs($user)

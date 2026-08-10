@@ -14,6 +14,7 @@ use App\Http\Controllers\Web\InventoryOperationsController;
 use App\Http\Controllers\Web\ImportOperationsController;
 use App\Http\Controllers\Web\InvitationController;
 use App\Http\Controllers\Web\IpPoolOperationsController;
+use App\Http\Controllers\Web\MediaDownloadController;
 use App\Http\Controllers\Web\NetworkOperationsController;
 use App\Http\Controllers\Web\PartnerController;
 use App\Http\Controllers\Web\PlanOperationsController;
@@ -113,6 +114,7 @@ Route::middleware(['auth', 'tenant', '2fa'])->group(function (): void {
     Route::post('/operations/tickets/{ticket:public_id}/assignee', [TicketOperationsController::class, 'assign'])->name('operations.tickets.assignee');
     Route::get('/operations/work-orders', [WorkOrderOperationsController::class, 'index'])->name('operations.work-orders');
     Route::get('/operations/work-orders/{workOrder:public_id}', [WorkOrderOperationsController::class, 'show'])->name('operations.work-orders.show');
+    Route::get('/operations/media/{media}/download', MediaDownloadController::class)->name('operations.media.download');
     Route::post('/operations/work-orders/{workOrder:public_id}/complete', [WorkOrderOperationsController::class, 'complete'])->name('operations.work-orders.complete');
     Route::post('/operations/work-orders/{workOrder:public_id}/schedule', [WorkOrderOperationsController::class, 'schedule'])->middleware('recent-auth')->name('operations.work-orders.schedule');
     Route::get('/operations/inventory', [InventoryOperationsController::class, 'index'])->name('operations.inventory');
