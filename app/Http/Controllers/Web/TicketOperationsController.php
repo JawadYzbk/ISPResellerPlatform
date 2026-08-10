@@ -3,11 +3,14 @@
 namespace App\Http\Controllers\Web;
 
 use App\Actions\AssignTicket;
+use App\Actions\CreateStaffTicket;
 use App\Actions\ListTickets;
 use App\Actions\ReplyStaffTicket;
 use App\Domain\Support\TicketStateMachine;
 use App\Enums\TicketStatus;
 use App\Http\Controllers\Controller;
+use App\Models\Customer;
+use App\Models\Service;
 use App\Models\Ticket;
 use App\Models\TicketMessage;
 use App\Models\User;
@@ -21,6 +24,47 @@ use Inertia\Response;
 
 final class TicketOperationsController extends Controller
 {
+    public function create(Request $request, Customer $customer): Response
+    {
+        $user = $request->user();
+        abort_unless($user instanceof User && $user->can('tickets.create'), 403);
+        $customer->load('services.plan');
+
+        return Inertia::render('Operations/TicketCreate', [
+            'customer' => $customer->only(['public_id', 'code', 'first_name', 'last_name']),
+            'services' => $customer->services->map(fn (Service $service): array => [
+                'public_id' => $service->public_id,
+                'username' => $service->username,
+                'plan' => $service->plan?->name,
+            ])->values()->all(),
+        ]);
+    }
+
+    public function store(Request $request, Customer $customer, CreateStaffTicket $create): RedirectResponse
+    {
+        $user = $request->user();
+        abort_unless($user instanceof User && $user->can('tickets.create'), 403);
+        $validated = $request->validate([
+            'subject' => ['required', 'string', 'max:160'],
+            'description' => ['required', 'string', 'max:10000'],
+            'category' => ['required', 'string', 'max:64'],
+            'priority' => ['required', Rule::in(['critical', 'high', 'normal', 'low'])],
+            'service_public_id' => ['nullable', 'string'],
+        ]);
+
+        $ticket = $create->handle(
+            $customer,
+            $user,
+            (string) $validated['subject'],
+            (string) $validated['description'],
+            (string) $validated['priority'],
+            (string) $validated['category'],
+            filled($validated['service_public_id'] ?? null) ? (string) $validated['service_public_id'] : null,
+        );
+
+        return redirect()->route('operations.tickets.show', $ticket->public_id)->with('success', "Ticket {$ticket->number} created.");
+    }
+
     public function index(Request $request, ListTickets $listTickets): Response
     {
         $user = $request->user();

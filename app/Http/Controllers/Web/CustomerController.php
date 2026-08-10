@@ -241,6 +241,7 @@ final class CustomerController extends Controller
             'canCreateService' => $request->user()?->can('services.create') === true,
             'canEdit' => $request->user()?->can('customers.update') === true,
             'canCollectPayment' => $request->user()?->can('payments.collect') === true,
+            'canCreateTicket' => $request->user()?->can('tickets.create') === true,
             'canResyncServices' => $request->user()?->can('services.activate') === true || $request->user()?->can('services.suspend') === true,
             'canActivateServices' => $request->user()?->can('services.activate') === true,
             'canSuspendServices' => $request->user()?->can('services.suspend') === true,

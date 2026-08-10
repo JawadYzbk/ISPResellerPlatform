@@ -32,6 +32,7 @@ type Props = PageProps & {
     canCreateService?: boolean;
     canEdit?: boolean;
     canCollectPayment?: boolean;
+    canCreateTicket?: boolean;
     canResyncServices?: boolean;
     canActivateServices?: boolean;
     canSuspendServices?: boolean;
@@ -46,6 +47,7 @@ export default function CustomerShow({
     canCreateService = false,
     canEdit = false,
     canCollectPayment = false,
+    canCreateTicket = false,
     canResyncServices = false,
     canActivateServices = false,
     canSuspendServices = false,
@@ -102,6 +104,12 @@ export default function CustomerShow({
                         <Link href={`/customers/${customer.public_id}/payments/create`} className="button-primary">
                             <CreditCard size={16} />
                             Take payment
+                        </Link>
+                    )}
+                    {canCreateTicket && (
+                        <Link href={`/customers/${customer.public_id}/tickets/create`} className="button-secondary">
+                            <MessageSquare size={16} />
+                            Open ticket
                         </Link>
                     )}
                     {canAnonymize && !customer.anonymized_at && (
