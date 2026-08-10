@@ -33,7 +33,9 @@ Content-Type: application/json
 }
 ```
 
-`amount` is an integer minor-unit amount. Currency must match the customer ledger currency. Do not retry with a new key after a network timeout.
+`amount` is an integer minor-unit amount in the selected payment currency. When collecting in a different currency, use the current rate from the collector snapshot or send an approved `fx_override` with positive numerator/denominator values and an `fx_override_reason`; an optional `reference` is stored on the receipt. The response includes source, ledger, and base equivalents. Do not retry with a new key after a network timeout.
+
+Operator clients can preview and apply service plan changes with `POST /api/v1/services/{service}/plan-change-previews` and `POST /api/v1/services/{service}/change-plan`. Send the target public plan ID and `effective` as `immediate` or `next_cycle`; the latter changes the plan during renewal without altering the current period. Immediate changes return the proration amounts and a queued network command.
 
 ## Technician flow
 

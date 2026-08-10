@@ -253,6 +253,47 @@ paths:
       responses:
         '202': { description: Network disconnect queued with the latest live session identifier when available }
         '403': { description: Missing network disconnect capability }
+  /services/{service}/plan-change-previews:
+    post:
+      summary: Preview an immediate or next-cycle service plan change
+      parameters:
+        - in: path
+          name: service
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PlanChangeRequest'
+      responses:
+        '200': { description: Proration amounts and effective date preview }
+        '403': { description: Missing service plan-change capability }
+        '422': { description: Plan change cannot be applied }
+  /services/{service}/change-plan:
+    post:
+      summary: Change a service plan and queue network synchronization
+      parameters:
+        - in: path
+          name: service
+          required: true
+          schema: { type: string }
+        - in: header
+          name: X-Idempotency-Key
+          required: true
+          schema: { type: string, maxLength: 120 }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PlanChangeRequest'
+      responses:
+        '202': { description: Plan changed or scheduled and network synchronization queued when applicable }
+        '403': { description: Missing service plan-change capability }
+        '409': { description: Idempotency key reused for a different request }
+        '422': { description: Plan change cannot be applied }
   /payments:
     post:
       summary: Record a customer payment
@@ -1047,8 +1088,19 @@ components:
         invoice_id: { type: string, nullable: true, description: Invoice public ULID }
         amount: { type: integer, minimum: 1, description: Amount in minor currency units }
         currency: { type: string, minLength: 3, maxLength: 3 }
-        method: { type: string, maxLength: 40 }
+        method: { type: string, enum: [cash, bank_transfer, card, mobile_wallet] }
+        fx_override: { type: boolean, default: false }
+        fx_rate_numerator: { type: integer, minimum: 1, nullable: true }
+        fx_rate_denominator: { type: integer, minimum: 1, nullable: true }
+        fx_override_reason: { type: string, maxLength: 500, nullable: true }
+        reference: { type: string, maxLength: 128, nullable: true }
         idempotency_key: { type: string, description: Required for collector batch items }
+    PlanChangeRequest:
+      type: object
+      required: [plan_uuid, effective]
+      properties:
+        plan_uuid: { type: string, description: Target plan public ULID }
+        effective: { type: string, enum: [immediate, next_cycle] }
     CollectorSyncPayment:
       type: object
       required: [customer_uuid, amount, currency, method, idempotency_key]
@@ -1057,7 +1109,12 @@ components:
         invoice_id: { type: string, nullable: true, description: Invoice public ULID }
         amount: { type: integer, minimum: 1, description: Amount in minor currency units }
         currency: { type: string, minLength: 3, maxLength: 3 }
-        method: { type: string, maxLength: 40 }
+        method: { type: string, enum: [cash, bank_transfer, card, mobile_wallet] }
+        fx_override: { type: boolean, default: false }
+        fx_rate_numerator: { type: integer, minimum: 1, nullable: true }
+        fx_rate_denominator: { type: integer, minimum: 1, nullable: true }
+        fx_override_reason: { type: string, maxLength: 500, nullable: true }
+        reference: { type: string, maxLength: 128, nullable: true }
         idempotency_key: { type: string, maxLength: 120 }
     ImportRequest:
       type: object
