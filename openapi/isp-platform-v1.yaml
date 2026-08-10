@@ -66,6 +66,51 @@ paths:
         '400': { description: Missing or invalid idempotency key }
         '409': { description: Idempotency key reused for a different request }
         '422': { description: Validation failed }
+  /portal/{tenant}/otp/request:
+    post:
+      security: []
+      summary: Request a customer portal OTP
+      description: Always returns the same response shape for known and unknown phone numbers.
+      parameters:
+        - in: path
+          name: tenant
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [phone]
+              properties:
+                phone: { type: string }
+      responses:
+        '200': { description: OTP challenge created }
+        '429': { description: Rate limited }
+  /portal/{tenant}/otp/verify:
+    post:
+      security: []
+      summary: Verify a customer portal OTP
+      parameters:
+        - in: path
+          name: tenant
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: Portal bearer session issued }
+        '422': { description: Invalid or expired code }
+  /portal/{tenant}/me:
+    get:
+      summary: Read the authenticated customer portal profile
+      parameters:
+        - in: path
+          name: tenant
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: Customer profile and services }
+        '401': { description: Invalid portal session }
 components:
   securitySchemes:
     bearerAuth:
