@@ -33,6 +33,8 @@ Route::prefix('v1')->group(function (): void {
     Route::get('/health', [HealthController::class, 'show'])->name('api.health');
     Route::post('/webhooks/gateways/{gateway}', MessageWebhookController::class)->name('api.webhooks.gateways');
     Route::post('/tokens', [ApiTokenController::class, 'store'])->middleware('throttle:login')->name('api.tokens.store');
+    Route::post('/auth/staff/login', [ApiTokenController::class, 'staffLogin'])->middleware('throttle:login')->name('api.auth.staff.login');
+    Route::post('/auth/staff/two-factor', [ApiTokenController::class, 'staffTwoFactor'])->middleware('throttle:login')->name('api.auth.staff.two-factor');
     Route::prefix('portal/{tenant:slug}')->middleware('portal.tenant')->group(function (): void {
         Route::post('/otp/request', [PortalAuthController::class, 'requestOtp'])->middleware('throttle:login')->name('api.portal.otp.request');
         Route::post('/otp/verify', [PortalAuthController::class, 'verifyOtp'])->middleware('throttle:login')->name('api.portal.otp.verify');
@@ -59,6 +61,8 @@ Route::prefix('v1')->group(function (): void {
 
     Route::middleware(['auth:sanctum', 'tenant'])->group(function (): void {
         Route::delete('/tokens/current', [ApiTokenController::class, 'destroy'])->name('api.tokens.destroy');
+        Route::post('/auth/logout', [ApiTokenController::class, 'destroy'])->name('api.auth.logout');
+        Route::get('/auth/me', [ApiTokenController::class, 'me'])->name('api.auth.me');
         Route::get('/app/config', [AppConfigController::class, 'show'])->name('api.app.config');
         Route::get('/me', function (Request $request, UserApiResource $resource) {
             $user = $request->user();

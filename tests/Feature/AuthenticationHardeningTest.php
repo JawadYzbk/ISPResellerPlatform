@@ -2,9 +2,12 @@
 
 use App\Models\Tenant;
 use App\Models\User;
+use App\Security\TwoFactorService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
+use Laravel\Sanctum\PersonalAccessToken;
+use OTPHP\TOTP;
 
 uses(RefreshDatabase::class);
 
@@ -45,4 +48,35 @@ it('throttles repeated login attempts by account and IP', function (): void {
     }
 
     $this->post(route('login.store'), ['email' => 'unknown@example.test', 'password' => 'wrong'])->assertStatus(429);
+});
+
+it('supports the staff authentication contract with a separate two-factor exchange', function (): void {
+    $tenant = Tenant::create(['name' => 'Northline', 'slug' => 'northline', 'base_currency' => 'USD', 'collection_currency' => 'USD']);
+    $user = User::create(['tenant_id' => $tenant->id, 'name' => 'Owner', 'email' => 'staff-auth-owner@example.test', 'password' => Hash::make('password'), 'role' => 'tenant_owner']);
+    $setup = app(TwoFactorService::class)->begin($user);
+    $user->forceFill(['two_factor_confirmed_at' => now()])->save();
+
+    $challenge = $this->postJson('/api/v1/auth/staff/login', [
+        'email' => $user->email,
+        'password' => 'password',
+        'device_name' => 'operations-tablet',
+        'device_id' => 'device-001',
+    ])->assertStatus(422)
+        ->assertJsonPath('two_factor_required', true)
+        ->json('challenge_id');
+
+    $token = $this->postJson('/api/v1/auth/staff/two-factor', [
+        'challenge_id' => $challenge,
+        'code' => TOTP::createFromSecret($setup['secret'])->now(),
+    ])->assertOk()
+        ->assertJsonPath('user.email', $user->email)
+        ->json('token');
+
+    $this->withToken($token)->getJson('/api/v1/auth/me')
+        ->assertOk()
+        ->assertJsonPath('email', $user->email)
+        ->assertJsonPath('abilities.0', 'api');
+
+    $this->withToken($token)->postJson('/api/v1/auth/logout')->assertNoContent();
+    expect(PersonalAccessToken::findToken($token))->toBeNull();
 });
