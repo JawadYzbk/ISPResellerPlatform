@@ -63,6 +63,8 @@ Use **Operations -> POPs** to review tenant locations, assigned routers, upstrea
 
 Use **Operations -> Credentials** to review supplier inventory without exposing secrets. Staff with the credential-assignment capability can select an unassigned service for an available credential; the action requires recent authentication and prevents a service from receiving a second credential. Secret reveal and bulk import remain controlled workflows until their rollout approval is complete.
 
+Use **Operations -> Imports** for customer, plan, service, serialized-equipment, and opening-balance CSV/XLSX files. Select **Preview only** first; the report shows accepted and rejected rows without writing records. Correct the source file, upload it again with preview disabled, and review the resulting batch in import history. Completed batches can be rolled back when their records are not already referenced by later billing or inventory history; balance imports are reversed through the journal. The router subscriber discovery option reads a selected RouterOS device and records a redacted match report without changing services or the router.
+
 Network changes are queued through the outbox and executed by the queue worker. Inspect the command state and retry only after checking the router connection and the desired service state. `routers:reconcile-subscribers` is report-only by default; `--heal` is an explicit change and requires an approved incident or maintenance record.
 
 For RouterOS/RADIUS/CoA behavior, use the lab acceptance procedure before enabling a new device driver in production. A platform state of `active` is not proof that the router has accepted the command.

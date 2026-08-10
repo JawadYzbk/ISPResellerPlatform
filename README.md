@@ -34,6 +34,7 @@ The current foundation is live:
 - Role-scoped Sanctum abilities, app version/maintenance config, technician diagnostics, van inventory and private media upload APIs
 - Collector offline bootstrap/delta sync with signed cursors and per-payment created/replayed/rejected results
 - Customer, plan, service and serialized-equipment CSV imports with preview, partial success and guarded rollback
+- Staff import workspace with CSV/XLSX preview, row-level reports, tenant-scoped history and controlled rollback
 - Basic reseller hierarchy and journal-linked wallet funding/debiting with credit limits
 - Operations report with service/network/work-order/incident status, low-stock signals and CSV export
 - Finance report with collection rate, allocation-based aging, plan/zone/POP revenue, upstream cost and margin, collector performance, retention, ARPU and top-usage breakdowns
