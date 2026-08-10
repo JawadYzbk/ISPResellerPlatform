@@ -63,3 +63,44 @@ it('does not expose tenant settings to a user without settings capability', func
 
     $this->actingAs($user)->get(route('settings.general'))->assertForbidden();
 });
+
+it('uses the tenant RTL setting in shared app props for an English-speaking owner', function (): void {
+    $tenant = Tenant::create(['name' => 'Northline', 'slug' => 'northline', 'base_currency' => 'USD', 'collection_currency' => 'USD']);
+    $user = User::create([
+        'tenant_id' => $tenant->id,
+        'name' => 'Owner',
+        'email' => 'settings-rtl@example.test',
+        'password' => Hash::make('password'),
+        'role' => 'tenant_owner',
+        'locale' => 'en',
+    ]);
+    app(CapabilitySeeder::class)->run();
+    app(Tenancy::class)->set($tenant);
+    $user->assignRole('tenant_owner');
+    $user->forceFill(['last_authenticated_at' => now()])->save();
+
+    $this->actingAs($user)
+        ->put(route('settings.general.update'), [
+            'name' => 'Northline',
+            'locale' => 'en',
+            'timezone' => 'UTC',
+            'base_currency' => 'USD',
+            'collection_currency' => 'USD',
+            'date_format' => 'Y-m-d',
+            'time_format' => 'H:i',
+            'rtl' => true,
+            'grace_extends_period' => false,
+            'notification_quiet_start' => '22:00',
+            'notification_quiet_end' => '07:00',
+            'resolved_ticket_auto_close_hours' => 72,
+            'radius_interim_interval_seconds' => 300,
+        ])
+        ->assertRedirect(route('settings.general'));
+
+    $tenant->refresh();
+    $user->unsetRelation('tenant')->refresh();
+
+    $this->actingAs($user)
+        ->get(route('dashboard'))
+        ->assertInertia(fn ($page) => $page->where('app.direction', 'rtl'));
+});

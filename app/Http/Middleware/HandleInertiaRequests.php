@@ -17,19 +17,18 @@ final class HandleInertiaRequests extends Middleware
         $user = $user instanceof User ? $user : null;
         $tenant = $user?->tenant;
         $tenant = $tenant instanceof Tenant ? $tenant : null;
-        $locale = 'en';
-        if ($user !== null && $user->locale !== null) {
-            $locale = $user->locale;
-        } elseif ($tenant !== null) {
-            $locale = $tenant->locale;
-        }
+        $settings = $tenant?->settingsData();
+        $tenantLocale = $settings?->locale ?? 'en';
+        $locale = $user?->locale ?? $tenantLocale;
+        $rtlLocales = ['ar', 'fa', 'he', 'ur'];
+        $direction = $settings?->rtl === true || in_array($tenantLocale, $rtlLocales, true) || in_array($locale, $rtlLocales, true) ? 'rtl' : 'ltr';
 
         return [
             ...parent::share($request),
             'app' => [
                 'name' => config('app.name'),
                 'locale' => $locale,
-                'direction' => $locale === 'ar' ? 'rtl' : 'ltr',
+                'direction' => $direction,
             ],
             'auth' => [
                 'user' => $user ? [
