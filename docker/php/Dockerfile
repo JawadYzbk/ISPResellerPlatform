@@ -7,7 +7,7 @@ RUN apk add --no-cache \
         libzip-dev \
         postgresql-dev \
         unzip \
-    && docker-php-ext-install -j"$(nproc)" intl pdo_pgsql pcntl \
+    && docker-php-ext-install -j"$(nproc)" intl pdo_pgsql pcntl zip \
     && rm -rf /var/cache/apk/*
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
