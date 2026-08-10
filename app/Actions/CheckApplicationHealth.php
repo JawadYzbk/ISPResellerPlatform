@@ -4,6 +4,7 @@ namespace App\Actions;
 
 use App\Contracts\Action;
 use Carbon\CarbonImmutable;
+use Illuminate\Database\Migrations\Migrator;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Queue;
@@ -19,6 +20,18 @@ final readonly class CheckApplicationHealth implements Action
             $checks['database'] = 'ok';
         } catch (\Throwable) {
             $checks['database'] = 'failed';
+        }
+        try {
+            $migrator = app(Migrator::class);
+            $pendingMigrations = count(array_diff(
+                array_keys($migrator->getMigrationFiles($migrator->paths())),
+                $migrator->getRepository()->getRan(),
+            ));
+            $checks['migrations'] = $pendingMigrations === 0 ? 'ok' : 'pending';
+            $checks['migration_pending'] = $pendingMigrations;
+        } catch (\Throwable) {
+            $checks['migrations'] = 'failed';
+            $checks['migration_pending'] = -1;
         }
         try {
             Cache::put('healthcheck', 'ok', 5);
@@ -37,7 +50,7 @@ final readonly class CheckApplicationHealth implements Action
         $checks['scheduler'] = $this->heartbeat('scheduler_heartbeat');
         $checks['queue_worker'] = $this->heartbeat('queue_worker_heartbeat');
 
-        return ['status' => count(array_intersect(['failed', 'stale'], $checks)) > 0 ? 'degraded' : 'ok', 'checks' => $checks];
+        return ['status' => count(array_intersect(['failed', 'pending', 'stale'], $checks)) > 0 ? 'degraded' : 'ok', 'checks' => $checks];
     }
 
     private function heartbeat(string $key): string
