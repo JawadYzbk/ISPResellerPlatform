@@ -4,6 +4,7 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\LogoutController;
 use App\Http\Controllers\Auth\ReauthenticateController;
 use App\Http\Controllers\Auth\TwoFactorController;
+use App\Http\Controllers\Web\BillingController;
 use App\Http\Controllers\Web\CustomerController;
 use App\Http\Controllers\Web\DashboardController;
 use App\Http\Controllers\Web\NetworkOperationsController;
@@ -60,6 +61,8 @@ Route::middleware(['auth', 'tenant', '2fa'])->group(function (): void {
     Route::post('/operations/network-commands/{command:public_id}/retry', [NetworkOperationsController::class, 'retry'])->name('operations.network-commands.retry');
     Route::get('/operations/routers', [RouterOperationsController::class, 'index'])->name('operations.routers');
     Route::post('/operations/routers/{router:public_id}/health', [RouterOperationsController::class, 'health'])->name('operations.routers.health');
+    Route::get('/billing/invoices', [BillingController::class, 'invoices'])->name('billing.invoices');
+    Route::post('/billing/invoices/{invoice:public_id}/issue', [BillingController::class, 'issue'])->name('billing.invoices.issue');
     Route::get('/customers/{customer:public_id}/services/create', [ServiceController::class, 'create'])->name('services.create');
     Route::post('/customers/{customer:public_id}/services', [ServiceController::class, 'store'])->name('services.store');
     Route::get('/partners/commercial', [PartnerController::class, 'commercial'])->name('partners.commercial');
