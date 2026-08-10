@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Actions\CompleteWorkOrder;
 use App\Actions\GetTechnicianServiceDiagnostics;
+use App\Actions\ListTechnicianInventory;
 use App\Enums\WorkOrderStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Service;
@@ -15,6 +16,13 @@ use Illuminate\Validation\Rule;
 
 final class TechnicianWorkOrderController extends Controller
 {
+    public function inventory(Request $request, ListTechnicianInventory $inventory): JsonResponse
+    {
+        abort_unless($request->user()?->can('inventory.view'), 403);
+
+        return response()->json(['data' => $inventory->handle($request->user())]);
+    }
+
     public function diagnostics(Request $request, string $service, GetTechnicianServiceDiagnostics $diagnostics): JsonResponse
     {
         abort_unless($request->user()?->can('services.view'), 403);

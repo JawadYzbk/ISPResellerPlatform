@@ -24,6 +24,7 @@ class Warehouse extends Model
         return $this->belongsTo(Tenant::class);
     }
 
+    /** @return HasMany<InventoryUnit, $this> */
     public function units(): HasMany
     {
         return $this->hasMany(InventoryUnit::class);

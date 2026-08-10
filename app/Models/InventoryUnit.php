@@ -22,6 +22,7 @@ class InventoryUnit extends Model
         return $this->belongsTo(Tenant::class);
     }
 
+    /** @return BelongsTo<InventoryItem, $this> */
     public function item(): BelongsTo
     {
         return $this->belongsTo(InventoryItem::class, 'inventory_item_id');
