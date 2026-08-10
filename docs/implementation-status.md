@@ -18,7 +18,7 @@ Last updated: 2026-08-10
 | ISP-030/031/032/033 | Historical FX, append-only double-entry ledger, invoice lifecycle, idempotent payments and reversals | delivered |
 | ISP-034/035/036 | Payment renewal, cash shifts and scheduled tenant-aware idempotent billing runs | delivered |
 | ISP-041/043/044 | Driver boundary, post-commit network outbox, stale guards, retries, overdue suspension and reactivation | delivered with manual/fake drivers |
-| ISP-050/051/052 | Template rendering, idempotent message queueing, configured WhatsApp/SMS/FCM/email adapter seams, signed delivery callbacks and tenant-local expiry reminders with opt-out/quiet-hour handling | delivered at adapter level; provider credentials/approvals remain external |
+| ISP-050/051/052 | Template rendering, idempotent message queueing, configured WhatsApp/SMS/FCM/email adapter seams, signed delivery callbacks, tenant-local expiry reminders, customer welcome, payment receipt, and service suspension/reactivation notices with opt-out/channel selection | delivered at adapter/automation level; provider credentials, cross-channel failure fallback and outage broadcasts remain external/in progress |
 | ISP-060/061/062 | Ticket lifecycle, tenant-timezone business-hours SLA clock, scheduled resolved-ticket auto-close, work-order completion and serialized inventory assignment | delivered |
 | ISP-070/071/072 | Sanctum API with role-scoped abilities, cursor pagination, query whitelists, idempotency middleware, app version config, customer portal OTP/session and billing history, collector batches, offline bootstrap/delta/push sync, service discovery/state actions and OpenAPI slice | delivered for current customer/payment/service/collector scope |
 | ISP-073 | Technician-assigned work-order list/detail endpoints, idempotent completion, separate image upload, service diagnostics and van inventory | delivered for current technician scope |
@@ -35,7 +35,7 @@ Last updated: 2026-08-10
 ## In progress
 
 - Real RouterOS/CoA integration against a CHR lab remains an acceptance gate; scheduled subscriber reconciliation reports drift, while device-side disablement has an explicit opt-in healing command.
-- Provider integrations (WhatsApp/SMS/email/FCM), callbacks, fallback policy and full notification automation coverage.
+- Real provider credentials/approvals, cross-channel failure fallback and zone/POP outage broadcasts.
 - Customer self-service online payments through a real gateway and realtime transport deployment.
 - Monitoring alert routing and external dashboard signal delivery.
 - Security operations: backup/restore rehearsal and Sentry wiring.

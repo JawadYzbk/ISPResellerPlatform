@@ -17,6 +17,7 @@ The current foundation is live:
 - Historical FX conversion, double-entry ledger, invoices, payments, cash shifts and billing runs
 - Payment-driven renewal, scheduled overdue suspension and post-commit network command outbox
 - Message templates, provider delivery jobs, tickets, work orders and serialized inventory
+- Idempotent customer welcome, payment receipt, expiry, suspension and reactivation notifications with channel selection and opt-out handling
 - FreeRADIUS sync, live-session accounting and daily usage rollups
 - Encrypted router RADIUS shared secrets, validated UDP CoA/Disconnect packets and radius driver wiring
 - Router/POP inventory, encrypted connection tests and repeated-failure incidents
