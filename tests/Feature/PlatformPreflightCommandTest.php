@@ -110,3 +110,24 @@ it('requires the private Web.js bridge and callback secret when selected', funct
         ->assertExitCode(Command::FAILURE)
         ->expectsOutputToContain('WhatsApp configuration');
 });
+
+it('requires Stripe credentials and a webhook secret when selected', function (): void {
+    config()->set([
+        'app.key' => 'base64:'.base64_encode(str_repeat('a', 32)),
+        'app.env' => 'production',
+        'app.debug' => false,
+        'app.url' => 'https://portal.example.com',
+        'session.secure' => true,
+        'queue.default' => 'database',
+        'cache.default' => 'database',
+        'services.payments.driver' => 'stripe',
+        'services.stripe.secret' => 'sk_test_123',
+        'services.stripe.publishable_key' => '',
+        'services.stripe.endpoint' => 'https://api.stripe.com',
+        'services.stripe.webhook_secret' => '',
+    ]);
+
+    $this->artisan('platform:preflight', ['--production' => true])
+        ->assertExitCode(Command::FAILURE)
+        ->expectsOutputToContain('Payment gateway configuration');
+});

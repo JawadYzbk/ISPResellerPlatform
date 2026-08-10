@@ -47,6 +47,19 @@ return [
         ],
     ],
 
+    'payments' => [
+        'driver' => env('PAYMENT_GATEWAY', 'null'),
+    ],
+
+    'stripe' => [
+        'secret' => env('STRIPE_SECRET'),
+        'publishable_key' => env('STRIPE_PUBLISHABLE_KEY'),
+        'endpoint' => env('STRIPE_ENDPOINT', 'https://api.stripe.com'),
+        'webhook_secret' => env('STRIPE_WEBHOOK_SECRET'),
+        'webhook_tolerance' => max(1, (int) env('STRIPE_WEBHOOK_TOLERANCE', 300)),
+        'timeout' => max(1, (int) env('STRIPE_TIMEOUT', 15)),
+    ],
+
     'fx' => [
         'rounding_mode' => env('FX_ROUNDING_MODE', 'half_up'),
     ],

@@ -9,6 +9,7 @@ use App\Domain\Network\SubscriberReader;
 use App\Domain\Network\SubscriberWriter;
 use App\Domain\Payments\NullPaymentGateway;
 use App\Domain\Payments\PaymentGateway;
+use App\Domain\Payments\StripePaymentGateway;
 use App\Domain\Radius\RadiusTransport;
 use App\Domain\Radius\UdpRadiusTransport;
 use App\Models\Customer;
@@ -39,7 +40,11 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(RadiusTransport::class, UdpRadiusTransport::class);
         $this->app->bind(SubscriberReader::class, MikrotikSubscriberReader::class);
         $this->app->bind(SubscriberWriter::class, MikrotikSubscriberReader::class);
-        $this->app->bind(PaymentGateway::class, NullPaymentGateway::class);
+        $this->app->bind(PaymentGateway::class, function (): PaymentGateway {
+            return (string) config('services.payments.driver', 'null') === 'stripe'
+                ? app(StripePaymentGateway::class)
+                : app(NullPaymentGateway::class);
+        });
         $this->app->bind(ExchangeRateProvider::class, FrankfurterExchangeRateProvider::class);
     }
 

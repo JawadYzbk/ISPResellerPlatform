@@ -38,6 +38,7 @@ final class PlatformPreflightCommand extends Command
                 'Private object storage' => $this->objectStorageIsConfigured(),
                 'Reverb configuration' => $this->reverbIsConfigured(),
                 'WhatsApp configuration' => $this->whatsappIsConfigured(),
+                'Payment gateway configuration' => $this->paymentGatewayIsConfigured(),
             ];
         }
 
@@ -207,6 +208,16 @@ final class PlatformPreflightCommand extends Command
             && $this->hasConfiguredValue(config('services.whatsapp.web.token'))
             && $this->hasConfiguredValue(config('services.whatsapp.web.webhook_url'))
             && $this->hasConfiguredValue(config('services.webhooks.secrets.whatsapp_web'));
+    }
+
+    private function paymentGatewayIsConfigured(): bool
+    {
+        if ((string) config('services.payments.driver', 'null') !== 'stripe') {
+            return true;
+        }
+
+        return collect(['secret', 'publishable_key', 'endpoint', 'webhook_secret'])
+            ->every(fn (string $key): bool => $this->hasConfiguredValue(config('services.stripe.'.$key)));
     }
 
     private function hasConfiguredValue(mixed $value): bool
