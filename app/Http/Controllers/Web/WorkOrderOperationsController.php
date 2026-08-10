@@ -7,6 +7,7 @@ use App\Actions\CompleteWorkOrder;
 use App\Actions\GetWorkOrderDetails;
 use App\Actions\ListWorkOrderCalendar;
 use App\Actions\ListWorkOrders;
+use App\Actions\RecordWorkOrderReadings;
 use App\Actions\ScheduleWorkOrder;
 use App\Http\Controllers\Controller;
 use App\Models\MediaUpload;
@@ -142,6 +143,23 @@ final class WorkOrderOperationsController extends Controller
         return redirect()->route('operations.work-orders.show', $workOrder->public_id)->with('success', 'Work-order signature captured.');
     }
 
+    public function readings(Request $request, WorkOrder $workOrder, RecordWorkOrderReadings $record): RedirectResponse
+    {
+        $user = $request->user();
+        abort_unless($user instanceof User && $user->can('workorders.complete'), 403);
+        $validated = $request->validate([
+            'readings' => ['required', 'array', 'max:20'],
+            'readings.*' => ['nullable', 'string', 'max:120'],
+        ]);
+        try {
+            $record->handle($workOrder, $user, array_map('strval', $validated['readings']));
+        } catch (DomainException $exception) {
+            throw ValidationException::withMessages(['readings' => $exception->getMessage()]);
+        }
+
+        return redirect()->route('operations.work-orders.show', $workOrder->public_id)->with('success', 'Work-order readings saved.');
+    }
+
     public function show(Request $request, WorkOrder $workOrder, GetWorkOrderDetails $getDetails): Response
     {
         $user = $request->user();
@@ -161,6 +179,7 @@ final class WorkOrderOperationsController extends Controller
                 'failure_reason' => $workOrder->failure_reason,
                 'checklist' => $workOrder->checklist ?? [],
                 'metadata' => $workOrder->metadata ?? [],
+                'readings' => $workOrder->readings ?? [],
                 'customer' => $workOrder->customer === null ? null : ['public_id' => $workOrder->customer->public_id, 'code' => $workOrder->customer->code, 'name' => $workOrder->customer->full_name],
                 'service' => $workOrder->service === null ? null : ['public_id' => $workOrder->service->public_id, 'username' => $workOrder->service->username],
                 'assignee' => $workOrder->assignee === null ? null : ['name' => $workOrder->assignee->name],

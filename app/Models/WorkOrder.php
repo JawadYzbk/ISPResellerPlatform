@@ -24,11 +24,11 @@ class WorkOrder extends Model
 {
     use Auditable, BelongsToTenant;
 
-    protected $fillable = ['tenant_id', 'public_id', 'number', 'type', 'customer_id', 'service_id', 'assigned_to', 'status', 'scheduled_at', 'started_at', 'completed_at', 'completion_idempotency_key', 'failure_reason', 'checklist', 'metadata'];
+    protected $fillable = ['tenant_id', 'public_id', 'number', 'type', 'customer_id', 'service_id', 'assigned_to', 'status', 'scheduled_at', 'started_at', 'completed_at', 'completion_idempotency_key', 'failure_reason', 'checklist', 'readings', 'completion_notes', 'metadata'];
 
     protected function casts(): array
     {
-        return ['status' => WorkOrderStatus::class, 'scheduled_at' => 'datetime', 'started_at' => 'datetime', 'completed_at' => 'datetime', 'checklist' => 'array', 'metadata' => 'array'];
+        return ['status' => WorkOrderStatus::class, 'scheduled_at' => 'datetime', 'started_at' => 'datetime', 'completed_at' => 'datetime', 'checklist' => 'array', 'readings' => 'array', 'metadata' => 'array'];
     }
 
     protected static function booted(): void

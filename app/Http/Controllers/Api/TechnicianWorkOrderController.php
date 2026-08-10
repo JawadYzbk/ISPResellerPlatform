@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Actions\CompleteWorkOrder;
 use App\Actions\GetTechnicianServiceDiagnostics;
 use App\Actions\ListTechnicianInventory;
+use App\Actions\RecordWorkOrderReadings;
 use App\Enums\WorkOrderStatus;
 use App\Http\Controllers\Controller;
 use App\Models\MediaUpload;
@@ -76,6 +77,23 @@ final class TechnicianWorkOrderController extends Controller
         return response()->json(['id' => $completed->public_id, 'status' => $completed->status->value, 'service_id' => $completed->service?->public_id], 200);
     }
 
+    public function readings(Request $request, string $workOrder, RecordWorkOrderReadings $record): JsonResponse
+    {
+        $this->ensureTechnician($request);
+        $validated = $request->validate([
+            'readings' => ['required', 'array', 'max:20'],
+            'readings.*' => ['nullable', 'string', 'max:120'],
+        ]);
+        $order = $this->assignedQuery($request)->where('public_id', $workOrder)->firstOrFail();
+        try {
+            $updated = $record->handle($order, $request->user(), array_map('strval', $validated['readings']));
+        } catch (\DomainException $exception) {
+            return response()->json(['message' => $exception->getMessage()], 409);
+        }
+
+        return response()->json(['id' => $updated->public_id, 'readings' => $updated->readings ?? []]);
+    }
+
     private function ensureTechnician(Request $request): void
     {
         abort_unless($request->user()?->can('workorders.complete'), 403);
@@ -110,6 +128,7 @@ final class TechnicianWorkOrderController extends Controller
             'completed_at' => $order->completed_at?->toIso8601String(),
             'checklist' => $order->checklist ?? [],
             'metadata' => $order->metadata ?? [],
+            'readings' => $order->readings ?? [],
             'events' => $order->events->map(fn ($event): array => ['type' => $event->event_type, 'from' => $event->from_status, 'to' => $event->to_status, 'created_at' => $event->created_at?->toIso8601String()])->values(),
             'media' => $order->mediaUploads->map(fn (MediaUpload $media): array => [
                 'id' => $media->public_id,
