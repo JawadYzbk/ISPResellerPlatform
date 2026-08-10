@@ -32,6 +32,7 @@ class PriceBookItem extends Model
         return $this->belongsTo(Plan::class);
     }
 
+    /** @return BelongsTo<CommissionRule, $this> */
     public function commissionRule(): BelongsTo
     {
         return $this->belongsTo(CommissionRule::class);
