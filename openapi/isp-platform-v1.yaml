@@ -157,6 +157,39 @@ paths:
         '200': { description: Plan resource }
         '403': { description: Missing plan management capability }
         '404': { description: Plan not found }
+  /invoices:
+    get:
+      summary: List tenant invoices with balances and line items
+      parameters:
+        - in: query
+          name: filter[status]
+          schema: { type: string, enum: [draft, issued, void] }
+        - in: query
+          name: filter[search]
+          schema: { type: string }
+        - in: query
+          name: sort
+          schema: { type: string, enum: [created_at, -created_at, issued_at, -issued_at, due_at, -due_at, total_amount, -total_amount], default: -created_at }
+        - in: query
+          name: cursor
+          schema: { type: string }
+      responses:
+        '200': { description: Cursor-paginated invoice resources }
+        '401': { description: Unauthenticated }
+        '403': { description: Missing invoice view capability }
+  /invoices/{invoice}:
+    get:
+      summary: Read one tenant invoice with payments and credit notes
+      parameters:
+        - in: path
+          name: invoice
+          required: true
+          schema: { type: string, description: Invoice public ULID }
+      responses:
+        '200': { description: Invoice resource }
+        '401': { description: Unauthenticated }
+        '403': { description: Missing invoice view capability }
+        '404': { description: Invoice not found }
   /me:
     get:
       summary: Read the authenticated staff identity
