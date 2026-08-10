@@ -1202,6 +1202,7 @@ paths:
                 amount: { type: integer, minimum: 1 }
       responses:
         '201': { description: Wallet transaction created }
+        '401': { description: Recent authentication is required for wallet funding }
         '403': { description: Missing wallet funding capability }
         '409': { description: Idempotency key reused for a different request }
   /network/commands/{command}/retry:
