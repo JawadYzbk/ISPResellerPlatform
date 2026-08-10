@@ -60,7 +60,7 @@ final readonly class PreviewServiceRenewal implements Action
             'amount' => $price->amount_minor * $periods,
             'currency' => $price->currency,
             'current_expires_at' => $service->expires_at?->toIso8601String(),
-            'new_expires_at' => $renewedUntil?->toIso8601String(),
+            'new_expires_at' => $renewedUntil->toIso8601String(),
             'preview_expires_at' => $previewExpiresAt->toIso8601String(),
         ];
     }
