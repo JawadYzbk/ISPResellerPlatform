@@ -145,6 +145,31 @@ export default function Dashboard({ metrics, attentionQueue }: Props) {
                 </div>
             </div>
             <div className="card mt-6 overflow-hidden">
+                <div className="border-b border-line px-6 py-5">
+                    <h2 className="section-title">NOC signals</h2>
+                    <p className="mt-1 text-sm text-muted">
+                        Network health from the latest router, session, command, and incident state.
+                    </p>
+                </div>
+                <div className="grid divide-y divide-line sm:grid-cols-2 sm:divide-x sm:divide-y-0 xl:grid-cols-5">
+                    {[
+                        ['Offline routers', metrics.offlineRouters, 'bg-rose-50 text-rose-700'],
+                        ['Open incidents', metrics.openIncidents, 'bg-rose-50 text-rose-700'],
+                        ['Failed commands', metrics.failedCommands, 'bg-amber-50 text-amber-700'],
+                        ['Drifted services', metrics.driftedServices, 'bg-amber-50 text-amber-700'],
+                        ['Live sessions', metrics.activeSessions, 'bg-emerald-50 text-emerald-700'],
+                    ].map(([label, value, tint]) => (
+                        <div key={label} className="p-5">
+                            <div className={`grid size-9 place-items-center rounded-xl ${tint}`}>
+                                <Wifi size={16} />
+                            </div>
+                            <p className="mt-4 text-xs font-semibold uppercase tracking-wider text-muted">{label}</p>
+                            <p className="mt-1 font-display text-2xl font-semibold">{value}</p>
+                        </div>
+                    ))}
+                </div>
+            </div>
+            <div className="card mt-6 overflow-hidden">
                 <div className="flex items-center justify-between border-b border-line px-6 py-5">
                     <div>
                         <h2 className="section-title">Manager attention queue</h2>

@@ -35,6 +35,11 @@ export type DashboardMetrics = {
     collectionsToday: number;
     collectionsCurrency: string;
     networkPending: number;
+    failedCommands: number;
+    offlineRouters: number;
+    activeSessions: number;
+    driftedServices: number;
+    openIncidents: number;
     openWorkOrders: number;
 };
 
