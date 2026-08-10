@@ -1,5 +1,5 @@
-import { Head, Link, router } from '@inertiajs/react';
-import { ChevronLeft, ChevronRight, KeyRound, Search } from 'lucide-react';
+import { Head, Link, router, useForm } from '@inertiajs/react';
+import { ChevronLeft, ChevronRight, KeyRound, Search, Upload } from 'lucide-react';
 import { useState } from 'react';
 
 import StatusBadge from '@/components/StatusBadge';
@@ -28,11 +28,16 @@ type AssignableService = {
     customer: string | null;
 };
 
+type Supplier = { id: number; name: string; code: string };
+
 type Props = PageProps & {
     credentials: Paginator<Credential>;
     filters: { status?: string; search?: string };
     canAssign?: boolean;
     assignableServices?: AssignableService[];
+    canImport?: boolean;
+    canReveal?: boolean;
+    suppliers?: Supplier[];
 };
 
 export default function CredentialsPage({
@@ -40,10 +45,21 @@ export default function CredentialsPage({
     filters,
     canAssign = false,
     assignableServices = [],
+    canImport = false,
+    canReveal = false,
+    suppliers = [],
 }: Props) {
     const [search, setSearch] = useState(filters.search ?? '');
     const [status, setStatus] = useState(filters.status ?? '');
     const [selectedServices, setSelectedServices] = useState<Record<number, string>>({});
+    const [revealedSecrets, setRevealedSecrets] = useState<Record<number, string>>({});
+    const [revealError, setRevealError] = useState<string | null>(null);
+    const importForm = useForm({
+        supplier_id: suppliers[0]?.id.toString() ?? '',
+        reference: '',
+        expires_at: '',
+        file: null as File | null,
+    });
 
     const applyFilters = (event: React.FormEvent) => {
         event.preventDefault();
@@ -67,6 +83,29 @@ export default function CredentialsPage({
         }
     };
 
+    const importCredentials = (event: React.FormEvent) => {
+        event.preventDefault();
+        importForm.post('/operations/credentials/import', {
+            forceFormData: true,
+            onSuccess: () => importForm.reset('reference', 'expires_at', 'file'),
+        });
+    };
+
+    const revealCredential = async (credentialId: number) => {
+        setRevealError(null);
+        const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ?? '';
+        const response = await fetch(`/operations/credentials/${credentialId}/reveal`, {
+            method: 'POST',
+            headers: { Accept: 'application/json', 'X-CSRF-TOKEN': token, 'X-Requested-With': 'XMLHttpRequest' },
+        });
+        if (!response.ok) {
+            setRevealError('The credential could not be revealed. Re-authenticate and try again.');
+            return;
+        }
+        const data = (await response.json()) as { secret: string };
+        setRevealedSecrets((current) => ({ ...current, [credentialId]: data.secret }));
+    };
+
     return (
         <AppLayout>
             <Head title="Credentials" />
@@ -77,6 +116,43 @@ export default function CredentialsPage({
                     Track imported credential inventory and assignments without exposing secrets.
                 </p>
             </div>
+            {canImport && (
+                <form onSubmit={importCredentials} className="card mt-8 space-y-5 p-5">
+                    <div>
+                        <h2 className="text-lg font-semibold">Import credential batch</h2>
+                        <p className="mt-1 text-sm text-muted">CSV columns: <code>identifier,secret</code>. Plaintext secrets are encrypted immediately and never included in the inventory response.</p>
+                    </div>
+                    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+                        <label>
+                            <span className="field-label">Supplier</span>
+                            <select className="field" value={importForm.data.supplier_id} onChange={(event) => importForm.setData('supplier_id', event.target.value)}>
+                                <option value="">Select supplier</option>
+                                {suppliers.map((supplier) => <option key={supplier.id} value={supplier.id}>{supplier.name} ({supplier.code})</option>)}
+                            </select>
+                            {importForm.errors.supplier_id && <p className="field-error">{importForm.errors.supplier_id}</p>}
+                        </label>
+                        <label>
+                            <span className="field-label">Batch reference</span>
+                            <input className="field" value={importForm.data.reference} onChange={(event) => importForm.setData('reference', event.target.value)} placeholder="SUP-2026-08" />
+                            {importForm.errors.reference && <p className="field-error">{importForm.errors.reference}</p>}
+                        </label>
+                        <label>
+                            <span className="field-label">Expiry (optional)</span>
+                            <input className="field" type="date" value={importForm.data.expires_at} onChange={(event) => importForm.setData('expires_at', event.target.value)} />
+                            {importForm.errors.expires_at && <p className="field-error">{importForm.errors.expires_at}</p>}
+                        </label>
+                        <label>
+                            <span className="field-label">CSV file</span>
+                            <input className="field file:me-3 file:rounded-md file:border-0 file:bg-brand-soft file:px-3 file:py-1.5 file:font-semibold file:text-brand" type="file" accept=".csv,.txt" onChange={(event) => importForm.setData('file', event.target.files?.[0] ?? null)} />
+                            {importForm.errors.file && <p className="field-error">{importForm.errors.file}</p>}
+                        </label>
+                    </div>
+                    <div className="flex justify-end">
+                        <button type="submit" className="button-primary" disabled={importForm.processing || importForm.data.file === null || importForm.data.supplier_id === ''}><Upload size={16} /> Import batch</button>
+                    </div>
+                </form>
+            )}
+            {revealError && <p className="mt-4 rounded-lg bg-rose-50 px-4 py-3 text-sm text-rose-700">{revealError}</p>}
             <form onSubmit={applyFilters} className="card mt-8 flex flex-col gap-4 p-5 sm:flex-row sm:items-end">
                 <label className="block sm:min-w-80">
                     <span className="field-label">Search credential inventory</span>
@@ -131,6 +207,7 @@ export default function CredentialsPage({
                                     <td className="px-5 py-4">
                                         <p className="text-sm font-semibold">{credential.identifier}</p>
                                         <p className="mt-1 text-xs text-muted">Inventory #{credential.id}</p>
+                                        {revealedSecrets[credential.id] && <p className="mt-2 break-all rounded bg-amber-50 px-2 py-1 font-mono text-xs text-amber-900">{revealedSecrets[credential.id]}</p>}
                                     </td>
                                     <td className="px-5 py-4">
                                         <p className="text-sm font-semibold">{credential.supplier?.name ?? 'No supplier'}</p>
@@ -170,6 +247,7 @@ export default function CredentialsPage({
                                         )}
                                     </td>
                                     <td className="px-5 py-4 text-end">
+                                        {canReveal && !revealedSecrets[credential.id] && <button type="button" className="mb-2 block ms-auto text-sm font-semibold text-coral hover:underline" onClick={() => revealCredential(credential.id)}>Reveal secret</button>}
                                         {canAssign && credential.status === 'available' && assignableServices.length > 0 && (
                                             <div className="flex items-center justify-end gap-2">
                                                 <select
