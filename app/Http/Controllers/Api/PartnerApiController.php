@@ -36,9 +36,51 @@ final class PartnerApiController extends Controller
     {
         $user = $this->user($request);
         abort_unless($user->can('wallets.view'), 403);
-        $model = $this->visible($user)->with(['wallet.transactions'])->where('public_id', $partner)->firstOrFail();
+        $model = $this->visible($user)->with(['wallet.transactions.journalEntry'])->where('public_id', $partner)->firstOrFail();
 
-        return response()->json([...$this->summary($model), 'transactions' => $model->wallet->transactions->sortByDesc('created_at')->values()->map(fn (WalletTransaction $transaction): array => ['id' => $transaction->public_id, 'type' => $transaction->type, 'direction' => $transaction->direction, 'amount' => $transaction->amount, 'balance_after' => $transaction->balance_after, 'created_at' => $transaction->created_at?->toIso8601String()])->values()]);
+        return response()->json([...$this->summary($model), 'transactions' => $model->wallet->transactions->sortByDesc('created_at')->values()->map(fn (WalletTransaction $transaction): array => $this->transactionPayload($transaction))->values()]);
+    }
+
+    public function wallet(Request $request, string $partner): JsonResponse
+    {
+        $user = $this->user($request);
+        abort_unless($user->can('wallets.view'), 403);
+        $model = $this->visible($user)->with('wallet')->where('public_id', $partner)->firstOrFail();
+        $wallet = $model->wallet;
+        abort_unless($wallet instanceof PartnerWallet, 422, 'The partner wallet is not available.');
+
+        return response()->json(['partner_id' => $model->public_id, 'data' => $this->walletPayload($model, $wallet)]);
+    }
+
+    public function transactions(Request $request, string $partner): JsonResponse
+    {
+        $user = $this->user($request);
+        abort_unless($user->can('wallets.view'), 403);
+        $validated = $request->validate([
+            'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],
+            'type' => ['nullable', 'in:top_up,renewal'],
+            'direction' => ['nullable', 'in:credit,debit'],
+        ]);
+        $model = $this->visible($user)->with('wallet')->where('public_id', $partner)->firstOrFail();
+        $wallet = $model->wallet;
+        abort_unless($wallet instanceof PartnerWallet, 422, 'The partner wallet is not available.');
+        $transactions = $wallet->transactions()
+            ->with('journalEntry')
+            ->when(isset($validated['type']), fn ($query) => $query->where('type', $validated['type']))
+            ->when(isset($validated['direction']), fn ($query) => $query->where('direction', $validated['direction']))
+            ->orderByDesc('created_at')
+            ->orderByDesc('id')
+            ->cursorPaginate((int) ($validated['per_page'] ?? 25));
+
+        return response()->json([
+            'partner_id' => $model->public_id,
+            'data' => $transactions->getCollection()->map(fn (WalletTransaction $transaction): array => $this->transactionPayload($transaction))->values(),
+            'meta' => [
+                'next_cursor' => $transactions->nextCursor()?->encode(),
+                'prev_cursor' => $transactions->previousCursor()?->encode(),
+                'per_page' => $transactions->perPage(),
+            ],
+        ]);
     }
 
     public function topUp(Request $request, string $partner, FundPartnerWallet $fund): JsonResponse
@@ -165,6 +207,32 @@ final class PartnerApiController extends Controller
     private function summary(Partner $partner): array
     {
         return ['id' => $partner->public_id, 'name' => $partner->name, 'code' => $partner->code, 'parent_id' => $partner->parent?->public_id, 'depth' => $partner->depth, 'currency' => $partner->currency, 'balance_amount' => $partner->wallet->balance_amount, 'low_balance_threshold' => $partner->low_balance_threshold];
+    }
+
+    /** @return array<string, mixed> */
+    private function walletPayload(Partner $partner, PartnerWallet $wallet): array
+    {
+        return [
+            'currency' => $wallet->currency,
+            'balance_amount' => $wallet->balance_amount,
+            'credit_limit' => $partner->credit_limit,
+            'available_amount' => $wallet->balance_amount + $partner->credit_limit,
+            'low_balance_threshold' => $partner->low_balance_threshold,
+        ];
+    }
+
+    /** @return array<string, mixed> */
+    private function transactionPayload(WalletTransaction $transaction): array
+    {
+        return [
+            'id' => $transaction->public_id,
+            'type' => $transaction->type,
+            'direction' => $transaction->direction,
+            'amount' => $transaction->amount,
+            'balance_after' => $transaction->balance_after,
+            'journal_entry_id' => $transaction->journalEntry?->public_id,
+            'created_at' => $transaction->created_at?->toIso8601String(),
+        ];
     }
 
     /** @return array<string, mixed> */

@@ -32,6 +32,17 @@ it('limits reseller partner APIs to descendants and funds a visible wallet idemp
 
     $first->assertCreated()->assertJsonPath('balance_after', 1000);
     $second->assertCreated()->assertJsonPath('wallet_transaction_id', $first->json('wallet_transaction_id'));
+    $this->withToken($token)->getJson('/api/v1/partners/'.$child->public_id.'/wallets')
+        ->assertOk()
+        ->assertJsonPath('partner_id', $child->public_id)
+        ->assertJsonPath('data.balance_amount', 1000)
+        ->assertJsonPath('data.available_amount', 1000);
+    $this->withToken($token)->getJson('/api/v1/partners/'.$child->public_id.'/wallet-transactions?per_page=1')
+        ->assertOk()
+        ->assertJsonPath('partner_id', $child->public_id)
+        ->assertJsonPath('data.0.id', $first->json('wallet_transaction_id'))
+        ->assertJsonPath('data.0.type', 'top_up');
+    $this->withToken($token)->getJson('/api/v1/partners/'.$sibling->public_id.'/wallets')->assertNotFound();
     app(Tenancy::class)->set($tenant);
     expect(Partner::findOrFail($child->id)->wallet->balance_amount)->toBe(1000);
 });

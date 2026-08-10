@@ -97,6 +97,8 @@ Route::prefix('v1')->group(function (): void {
             Route::post('/imports/{import}/rollback', [CustomerImportController::class, 'rollback'])->name('api.imports.rollback');
             Route::get('/partners', [PartnerApiController::class, 'index'])->name('api.partners.index');
             Route::get('/partners/{partner}', [PartnerApiController::class, 'show'])->name('api.partners.show');
+            Route::get('/partners/{partner}/wallets', [PartnerApiController::class, 'wallet'])->name('api.partners.wallets');
+            Route::get('/partners/{partner}/wallet-transactions', [PartnerApiController::class, 'transactions'])->name('api.partners.wallet-transactions');
             Route::get('/partners/{partner}/catalog', [PartnerApiController::class, 'catalog'])->name('api.partners.catalog');
             Route::get('/partners/{partner}/settlements', [PartnerApiController::class, 'settlements'])->name('api.partners.settlements');
             Route::post('/partners/{partner}/settlements', [PartnerApiController::class, 'createSettlement'])->name('api.partners.settlements.create');
