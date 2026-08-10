@@ -66,4 +66,11 @@ it('streams the finance report as CSV for an authorised operator', function (): 
         ->assertStreamed();
 
     expect($response->streamedContent())->toContain('metric,currency,value');
+
+    $xlsx = $this->actingAs($user)->get('/reports/finance?format=xlsx&from=2026-08-01&to=2026-08-10')
+        ->assertOk()
+        ->assertHeader('content-type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        ->assertStreamed();
+
+    expect(substr($xlsx->streamedContent(), 0, 2))->toBe('PK');
 });
