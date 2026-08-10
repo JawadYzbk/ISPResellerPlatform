@@ -29,7 +29,7 @@ import {
     Wrench,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
-import type { PropsWithChildren } from 'react';
+import { useEffect, useRef, useState, type PropsWithChildren } from 'react';
 
 import RealtimeBridge from '@/components/RealtimeBridge';
 import type { PageProps } from '@/types';
@@ -41,10 +41,63 @@ type NavigationItem = {
     permission?: string | string[];
 };
 
+type SearchResult = { type: string; label: string; detail: string; href: string };
+
 export default function AppLayout({ children }: PropsWithChildren) {
     const { auth, app } = usePage<PageProps>().props;
+    const [searchOpen, setSearchOpen] = useState(false);
+    const [search, setSearch] = useState('');
+    const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
+    const [searching, setSearching] = useState(false);
+    const searchInput = useRef<HTMLInputElement>(null);
     const can = (permission: string | string[]) =>
         Array.isArray(permission) ? permission.some((item) => auth.permissions.includes(item)) : auth.permissions.includes(permission);
+
+    useEffect(() => {
+        const handleShortcut = (event: KeyboardEvent) => {
+            if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
+                event.preventDefault();
+                setSearchOpen(true);
+            }
+            if (event.key === 'Escape') setSearchOpen(false);
+        };
+        window.addEventListener('keydown', handleShortcut);
+
+        return () => window.removeEventListener('keydown', handleShortcut);
+    }, []);
+
+    useEffect(() => {
+        if (searchOpen) window.setTimeout(() => searchInput.current?.focus(), 0);
+    }, [searchOpen]);
+
+    useEffect(() => {
+        const value = search.trim();
+        if (!searchOpen || value.length < 2) {
+            return;
+        }
+
+        const controller = new AbortController();
+        const timeout = window.setTimeout(() => {
+            setSearching(true);
+            fetch(`/search?q=${encodeURIComponent(value)}`, {
+                headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                signal: controller.signal,
+            })
+                .then((response) => (response.ok ? response.json() : { results: [] }))
+                .then((payload: { results?: SearchResult[] }) => setSearchResults(payload.results ?? []))
+                .catch(() => {
+                    if (!controller.signal.aborted) setSearchResults([]);
+                })
+                .finally(() => {
+                    if (!controller.signal.aborted) setSearching(false);
+                });
+        }, 180);
+
+        return () => {
+            window.clearTimeout(timeout);
+            controller.abort();
+        };
+    }, [search, searchOpen]);
 
     const nav: NavigationItem[] = [
         { label: 'Overview', href: '/dashboard', icon: LayoutDashboard },
@@ -109,21 +162,22 @@ export default function AppLayout({ children }: PropsWithChildren) {
             <div className="lg:ps-64">
                 <header className="sticky top-0 z-10 flex h-20 items-center justify-between border-b border-line bg-canvas/90 px-5 backdrop-blur lg:px-8">
                     <div className="flex items-center gap-3">
-                        <Link
-                            href="/customers"
+                        <button
+                            type="button"
+                            onClick={() => setSearchOpen(true)}
                             className="hidden rounded-lg border border-line bg-white p-2 text-muted hover:text-brand lg:block"
                             title="Search customers"
                             aria-label="Search customers"
                         >
                             <Command size={17} />
-                        </Link>
-                        <div className="hidden items-center gap-2 text-sm text-muted sm:flex">
+                        </button>
+                        <button type="button" onClick={() => setSearchOpen(true)} className="hidden items-center gap-2 text-sm text-muted hover:text-ink sm:flex">
                             <Search size={16} />
                             <span>Search customers, services…</span>
                             <kbd className="ms-2 rounded border border-line bg-white px-1.5 py-0.5 text-[10px]">
                                 ⌘ K
                             </kbd>
-                        </div>
+                        </button>
                     </div>
                     <div className="flex items-center gap-3">
                         <Link
@@ -156,6 +210,40 @@ export default function AppLayout({ children }: PropsWithChildren) {
                         </Form>
                     </div>
                 </header>
+                {searchOpen && (
+                    <div
+                        className="fixed inset-0 z-50 bg-ink/20 p-4 sm:p-8"
+                        role="presentation"
+                        onMouseDown={(event) => event.target === event.currentTarget && setSearchOpen(false)}
+                    >
+                        <div className="mx-auto max-w-2xl overflow-hidden rounded-2xl border border-line bg-white shadow-2xl" role="dialog" aria-modal="true" aria-label="Global search">
+                            <div className="flex items-center gap-3 border-b border-line px-5 py-4">
+                                <Search size={19} className="text-brand" />
+                                <input
+                                    ref={searchInput}
+                                    value={search}
+                                    onChange={(event) => setSearch(event.target.value)}
+                                    onKeyDown={(event) => event.key === 'Escape' && setSearchOpen(false)}
+                                    className="min-w-0 flex-1 border-0 bg-transparent text-base outline-none placeholder:text-muted"
+                                    placeholder="Search customer, service, IP, invoice, ticket…"
+                                    aria-label="Search workspace"
+                                />
+                                <kbd className="rounded border border-line px-1.5 py-0.5 text-[10px] text-muted">ESC</kbd>
+                            </div>
+                            <div className="max-h-[min(60vh,32rem)] overflow-y-auto p-2">
+                                {searching && <p className="px-3 py-8 text-center text-sm text-muted">Searching workspace…</p>}
+                                {!searching && search.trim().length < 2 && <p className="px-3 py-8 text-center text-sm text-muted">Type at least two characters to search.</p>}
+                                {!searching && search.trim().length >= 2 && searchResults.length === 0 && <p className="px-3 py-8 text-center text-sm text-muted">No matching records found.</p>}
+                                {!searching && search.trim().length >= 2 && searchResults.map((result) => (
+                                    <Link key={`${result.type}-${result.href}`} href={result.href} onClick={() => setSearchOpen(false)} className="flex items-center gap-3 rounded-xl px-3 py-3 hover:bg-sand">
+                                        <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-brand-soft text-xs font-bold uppercase text-brand">{result.type.slice(0, 2)}</span>
+                                        <span className="min-w-0 flex-1"><span className="block truncate text-sm font-semibold">{result.label}</span><span className="mt-0.5 block truncate text-xs capitalize text-muted">{result.detail} · {result.type}</span></span>
+                                    </Link>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                )}
                 <main className="mx-auto max-w-[1440px] px-5 py-8 lg:px-8">{children}</main>
             </div>
         </div>

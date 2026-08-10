@@ -30,6 +30,7 @@ use App\Http\Controllers\Web\SettingsController;
 use App\Http\Controllers\Web\TicketOperationsController;
 use App\Http\Controllers\Web\UserOperationsController;
 use App\Http\Controllers\Web\WorkOrderOperationsController;
+use App\Http\Controllers\Web\WorkspaceSearchController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', fn () => redirect()->route(auth()->check() ? 'dashboard' : 'login'));
@@ -61,6 +62,7 @@ Route::middleware(['auth', 'tenant'])->group(function (): void {
 
 Route::middleware(['auth', 'tenant', '2fa'])->group(function (): void {
     Route::get('/dashboard', DashboardController::class)->name('dashboard');
+    Route::get('/search', WorkspaceSearchController::class)->name('workspace.search');
     Route::get('/settings/general', [SettingsController::class, 'general'])->name('settings.general');
     Route::put('/settings/general', [SettingsController::class, 'updateGeneral'])->middleware('recent-auth')->name('settings.general.update');
     Route::get('/settings/users', [UserOperationsController::class, 'index'])->name('settings.users');
