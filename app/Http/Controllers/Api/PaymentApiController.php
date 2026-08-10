@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Actions\GetPaymentDetails;
+use App\Actions\ListPaymentsApi;
 use App\Actions\RecordPayment;
 use App\Http\Controllers\Controller;
 use App\Models\CashShift;
@@ -10,12 +12,28 @@ use App\Models\Customer;
 use App\Models\Invoice;
 use App\Models\Payment;
 use App\Models\User;
+use App\Support\Api\PaymentApiResource;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
 final class PaymentApiController extends Controller
 {
+    public function index(Request $request, ListPaymentsApi $listPayments): JsonResponse
+    {
+        abort_unless($request->user()?->can('payments.collect'), 403);
+
+        return response()->json($listPayments->handle($request, $request->integer('per_page', 20)));
+    }
+
+    public function show(Request $request, string $payment, GetPaymentDetails $getDetails, PaymentApiResource $resource): JsonResponse
+    {
+        abort_unless($request->user()?->can('payments.collect'), 403);
+        $model = Payment::query()->where('public_id', $payment)->firstOrFail();
+
+        return response()->json($resource->make($getDetails->handle($model)));
+    }
+
     public function store(Request $request, RecordPayment $recordPayment): JsonResponse
     {
         $user = $request->user();

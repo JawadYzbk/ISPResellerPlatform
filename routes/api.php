@@ -89,6 +89,8 @@ Route::prefix('v1')->group(function (): void {
             Route::get('/tickets/{ticket}', [TicketApiController::class, 'show'])->name('api.tickets.show');
             Route::get('/routers', [RouterApiController::class, 'index'])->name('api.routers.index');
             Route::get('/routers/{router}', [RouterApiController::class, 'show'])->name('api.routers.show');
+            Route::get('/payments', [PaymentApiController::class, 'index'])->name('api.payments.index');
+            Route::get('/payments/{payment}', [PaymentApiController::class, 'show'])->name('api.payments.show');
             Route::get('/services/{service}/network-commands', [ServiceApiController::class, 'networkCommands'])->name('api.services.network-commands');
             Route::post('/services/{service}/plan-change-previews', [ServiceApiController::class, 'planChangePreview'])->name('api.services.plan-change-previews');
             Route::post('/payments', [PaymentApiController::class, 'store'])->middleware('idempotency')->name('api.payments.store');
