@@ -6,6 +6,7 @@ use App\Actions\AnonymizeCustomer;
 use App\Actions\CreateCustomer;
 use App\Actions\GetCustomerDetails;
 use App\Actions\ListCustomers;
+use App\Actions\UpdateCustomer;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\CustomerRequest;
 use App\Models\Customer;
@@ -38,6 +39,24 @@ final class CustomerController extends Controller
         return redirect()->route('customers.show', $customer->public_id)->with('success', 'Customer created.');
     }
 
+    public function edit(Request $request, Customer $customer): Response
+    {
+        $this->authorize('update', $customer);
+
+        return Inertia::render('Customers/Edit', [
+            'customer' => $customer->only(['public_id', 'code', 'first_name', 'last_name', 'phone', 'email', 'zone_id', 'address', 'latitude', 'longitude', 'anonymized_at']),
+            'zones' => Zone::query()->orderBy('name')->get(['id', 'name', 'code']),
+        ]);
+    }
+
+    public function update(CustomerRequest $request, Customer $customer, UpdateCustomer $updateCustomer): RedirectResponse
+    {
+        $this->authorize('update', $customer);
+        $updateCustomer->handle($customer, $request);
+
+        return redirect()->route('customers.show', $customer->public_id)->with('success', 'Customer updated.');
+    }
+
     public function index(Request $request, ListCustomers $listCustomers): Response
     {
         $this->authorize('viewAny', Customer::class);
@@ -56,6 +75,7 @@ final class CustomerController extends Controller
             'customer' => $getCustomerDetails->handle($customer),
             'canAnonymize' => $request->user()?->can('customers.anonymize') === true,
             'canCreateService' => $request->user()?->can('services.create') === true,
+            'canEdit' => $request->user()?->can('customers.update') === true,
         ]);
     }
 

@@ -1,14 +1,14 @@
 import { Head, Link, router } from '@inertiajs/react';
-import { ArrowLeft, CalendarDays, CreditCard, MapPin, MessageCircle, Phone, Plus, RefreshCw, ShieldOff, Wifi } from 'lucide-react';
+import { ArrowLeft, CalendarDays, CreditCard, Edit3, MapPin, MessageCircle, Phone, Plus, RefreshCw, ShieldOff, Wifi } from 'lucide-react';
 
 import { StatusBadge } from '@/components/StatusBadge';
 import AppLayout from '@/layouts/AppLayout';
 import { formatDate, formatMoney } from '@/lib/format';
 import type { Customer, PageProps } from '@/types';
 
-type Props = PageProps & { customer: Customer; canAnonymize?: boolean; canCreateService?: boolean };
+type Props = PageProps & { customer: Customer; canAnonymize?: boolean; canCreateService?: boolean; canEdit?: boolean };
 
-export default function CustomerShow({ customer, canAnonymize = false, canCreateService = false }: Props) {
+export default function CustomerShow({ customer, canAnonymize = false, canCreateService = false, canEdit = false }: Props) {
     const fullName = `${customer.first_name} ${customer.last_name ?? ''}`.trim();
     return (
         <AppLayout>
@@ -45,7 +45,7 @@ export default function CustomerShow({ customer, canAnonymize = false, canCreate
                         <MessageCircle size={16} />
                         WhatsApp
                     </a>
-                    <button className="button-primary">
+                    <button type="button" className="button-primary" disabled title="Payment collection is available through the billing workflow.">
                         <CreditCard size={16} />
                         Take payment
                     </button>
@@ -152,7 +152,11 @@ export default function CustomerShow({ customer, canAnonymize = false, canCreate
                     <div className="card p-6">
                         <div className="flex items-center justify-between">
                             <h2 className="section-title">Customer details</h2>
-                            <button className="text-sm font-semibold text-brand">Edit</button>
+                            {canEdit && (
+                                <Link href={`/customers/${customer.public_id}/edit`} className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand">
+                                    <Edit3 size={14} /> Edit
+                                </Link>
+                            )}
                         </div>
                         <dl className="mt-5 space-y-4">
                             <div>
