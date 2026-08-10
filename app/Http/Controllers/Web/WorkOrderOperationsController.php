@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Web;
 
+use App\Actions\CaptureWorkOrderSignature;
 use App\Actions\CompleteWorkOrder;
 use App\Actions\GetWorkOrderDetails;
 use App\Actions\ListWorkOrderCalendar;
@@ -16,6 +17,7 @@ use Carbon\CarbonImmutable;
 use DomainException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
@@ -119,6 +121,25 @@ final class WorkOrderOperationsController extends Controller
         }
 
         return redirect()->route('operations.work-orders.show', $workOrder->public_id)->with('success', "Work order {$workOrder->number} scheduled.");
+    }
+
+    public function storeSignature(Request $request, WorkOrder $workOrder, CaptureWorkOrderSignature $capture): RedirectResponse
+    {
+        $user = $request->user();
+        abort_unless($user instanceof User && $user->can('workorders.complete'), 403);
+        $validated = $request->validate([
+            'file' => ['required', 'file', 'max:5120', 'mimetypes:image/png'],
+            'signer_name' => ['required', 'string', 'max:120'],
+        ]);
+        $file = $request->file('file');
+        abort_unless($file instanceof UploadedFile, 422, 'A signature file is required.');
+        try {
+            $capture->handle($workOrder, $user, $file, (string) $validated['signer_name']);
+        } catch (DomainException $exception) {
+            throw ValidationException::withMessages(['signer_name' => $exception->getMessage()]);
+        }
+
+        return redirect()->route('operations.work-orders.show', $workOrder->public_id)->with('success', 'Work-order signature captured.');
     }
 
     public function show(Request $request, WorkOrder $workOrder, GetWorkOrderDetails $getDetails): Response

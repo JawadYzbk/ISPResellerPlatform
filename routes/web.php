@@ -119,6 +119,7 @@ Route::middleware(['auth', 'tenant', '2fa'])->group(function (): void {
     Route::get('/operations/media/{media}/download', MediaDownloadController::class)->name('operations.media.download');
     Route::post('/operations/work-orders/{workOrder:public_id}/complete', [WorkOrderOperationsController::class, 'complete'])->name('operations.work-orders.complete');
     Route::post('/operations/work-orders/{workOrder:public_id}/schedule', [WorkOrderOperationsController::class, 'schedule'])->middleware('recent-auth')->name('operations.work-orders.schedule');
+    Route::post('/operations/work-orders/{workOrder:public_id}/signature', [WorkOrderOperationsController::class, 'storeSignature'])->middleware('recent-auth')->name('operations.work-orders.signature.store');
     Route::get('/operations/inventory', [InventoryOperationsController::class, 'index'])->name('operations.inventory');
     Route::post('/operations/inventory/{unit}/assign', [InventoryOperationsController::class, 'assign'])->middleware('recent-auth')->name('operations.inventory.assign');
     Route::get('/operations/imports', [ImportOperationsController::class, 'index'])->name('operations.imports');
