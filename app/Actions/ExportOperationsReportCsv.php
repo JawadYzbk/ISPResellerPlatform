@@ -24,6 +24,9 @@ final readonly class ExportOperationsReportCsv implements Action
                 fputcsv($stream, [$metric, $status, $total]);
             }
         }
+        foreach ($report['low_stock_items'] as $item) {
+            fputcsv($stream, ['low_stock_items', $item['sku'], $item['available_units']]);
+        }
         foreach (['expiring_services', 'active_sessions', 'offline_routers', 'network_drift', 'failed_commands'] as $metric) {
             fputcsv($stream, [$metric, '', $report[$metric]]);
         }

@@ -5,10 +5,12 @@ namespace App\Actions;
 use App\Contracts\Action;
 use App\Models\CurrentSession;
 use App\Models\Incident;
+use App\Models\InventoryItem;
 use App\Models\NetworkCommand;
 use App\Models\Router;
 use App\Models\Service;
 use App\Models\WorkOrder;
+use Illuminate\Database\Eloquent\Builder;
 
 final readonly class GetOperationsReport implements Action
 {
@@ -25,6 +27,16 @@ final readonly class GetOperationsReport implements Action
             'offline_routers' => Router::query()->where('status', 'offline')->count(),
             'network_drift' => Service::query()->whereIn('network_state', ['drifted', 'failed'])->count(),
             'failed_commands' => NetworkCommand::query()->where('status', 'failed')->count(),
+            'low_stock_items' => InventoryItem::query()
+                ->where('is_active', true)
+                ->withCount(['units as available_units' => fn (Builder $query): Builder => $query->where('status', 'available')])
+                ->get()
+                ->filter(fn (InventoryItem $item): bool => $item->available_units <= $item->reorder_level)
+                ->sortBy('available_units')
+                ->take(10)
+                ->map(fn (InventoryItem $item): array => ['sku' => $item->sku, 'name' => $item->name, 'available_units' => $item->available_units, 'reorder_level' => $item->reorder_level])
+                ->values()
+                ->all(),
         ];
     }
 

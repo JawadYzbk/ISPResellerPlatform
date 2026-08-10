@@ -90,6 +90,25 @@ export default function OperationsReportPage({ report }: Props) {
                     <StatusList values={report.incident_counts_by_status} />
                 </div>
             </div>
+            <div className="card mt-6 p-6">
+                <h2 className="section-title">Low stock</h2>
+                <div className="mt-4 divide-y divide-line text-sm">
+                    {report.low_stock_items.map((item) => (
+                        <div key={item.sku} className="flex items-center justify-between py-3">
+                            <span>
+                                <b>{item.sku}</b>
+                                <span className="ms-2 text-muted">{item.name}</span>
+                            </span>
+                            <span className="text-muted">
+                                {item.available_units} available / reorder at {item.reorder_level}
+                            </span>
+                        </div>
+                    ))}
+                    {report.low_stock_items.length === 0 && (
+                        <p className="py-3 text-sm text-muted">No low-stock items.</p>
+                    )}
+                </div>
+            </div>
         </AppLayout>
     );
 }

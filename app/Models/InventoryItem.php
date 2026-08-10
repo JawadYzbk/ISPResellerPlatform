@@ -8,7 +8,12 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-/** @property string $sku @property string $name */
+/**
+ * @property string $sku
+ * @property string $name
+ * @property int $reorder_level
+ * @property int $available_units
+ */
 class InventoryItem extends Model
 {
     use Auditable, BelongsToTenant;
@@ -25,6 +30,7 @@ class InventoryItem extends Model
         return $this->belongsTo(Tenant::class);
     }
 
+    /** @return HasMany<InventoryUnit, $this> */
     public function units(): HasMany
     {
         return $this->hasMany(InventoryUnit::class);

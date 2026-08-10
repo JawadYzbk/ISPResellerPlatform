@@ -3,9 +3,12 @@
 use App\Actions\GetOperationsReport;
 use App\Enums\NetworkState;
 use App\Enums\ServiceStatus;
+use App\Models\InventoryItem;
+use App\Models\InventoryUnit;
 use App\Models\Service;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Models\Warehouse;
 use App\Support\Tenancy;
 use Database\Seeders\CapabilitySeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -19,6 +22,9 @@ it('summarizes live service and network operations by status', function (): void
     Service::factory()->create(['status' => ServiceStatus::Active, 'network_state' => NetworkState::InSync, 'expires_at' => now()->addDays(3)]);
     Service::factory()->create(['status' => ServiceStatus::Suspended, 'network_state' => NetworkState::Drifted, 'expires_at' => now()->addDays(20)]);
     Service::factory()->create(['status' => ServiceStatus::Pending, 'network_state' => NetworkState::Failed, 'expires_at' => now()->addDays(2)]);
+    $item = InventoryItem::create(['sku' => 'ONT-001', 'name' => 'Optical terminal', 'category' => 'cpe', 'is_serialized' => true, 'reorder_level' => 2]);
+    $warehouse = Warehouse::create(['name' => 'Main', 'code' => 'MAIN', 'type' => 'warehouse']);
+    InventoryUnit::create(['inventory_item_id' => $item->id, 'warehouse_id' => $warehouse->id, 'serial_number' => 'SN-001', 'status' => 'available']);
 
     $report = app(GetOperationsReport::class)->handle();
 
@@ -28,6 +34,7 @@ it('summarizes live service and network operations by status', function (): void
         ->and($report['active_sessions'])->toBe(0)
         ->and($report['offline_routers'])->toBe(0)
         ->and($report['failed_commands'])->toBe(0);
+    expect($report['low_stock_items'])->toMatchArray([['sku' => 'ONT-001', 'name' => 'Optical terminal', 'available_units' => 1, 'reorder_level' => 2]]);
 });
 
 it('streams the operations report for an authorised operator', function (): void {
