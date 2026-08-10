@@ -609,6 +609,37 @@ paths:
       responses:
         '200': { description: Open shift, opening float, running totals and payment count; data is null when no shift is open }
         '403': { description: Missing collector ability }
+  /collector/customers:
+    get:
+      summary: List collector customers by search, zone, due state, or overdue state
+      parameters:
+        - in: query
+          name: q
+          schema: { type: string, maxLength: 120 }
+        - in: query
+          name: zone
+          schema: { type: string, maxLength: 100 }
+        - in: query
+          name: status
+          schema: { type: string, example: due,overdue }
+        - in: query
+          name: per_page
+          schema: { type: integer, minimum: 1, maximum: 100, default: 50 }
+      responses:
+        '200': { description: Cursor-paginated collector-safe customer summaries }
+        '403': { description: Missing collector ability }
+  /collector/customers/{customer}:
+    get:
+      summary: Read one collector customer with service, balance, location, and last payment
+      parameters:
+        - in: path
+          name: customer
+          required: true
+          schema: { type: string, description: Customer public ULID }
+      responses:
+        '200': { description: Collector-safe customer detail }
+        '403': { description: Missing customer view capability }
+        '404': { description: Customer not found }
   /collector/shift/open:
     post:
       summary: Open the authenticated collector's cash shift
@@ -679,6 +710,31 @@ paths:
       responses:
         '200': { description: Payment count and totals by currency }
         '403': { description: Missing collector ability }
+  /collector/payments/{payment}/receipt:
+    post:
+      summary: Queue a payment receipt for resend through one channel
+      parameters:
+        - in: path
+          name: payment
+          required: true
+          schema: { type: string, description: Payment public ULID }
+        - in: header
+          name: X-Idempotency-Key
+          required: true
+          schema: { type: string, maxLength: 120 }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [channel]
+              properties:
+                channel: { type: string, enum: [whatsapp, sms, email] }
+      responses:
+        '202': { description: Receipt queued or not queued because the channel is unavailable }
+        '403': { description: Payment is not owned by the collector }
+        '422': { description: Receipt cannot be resent }
   /collector/sync/bootstrap:
     get:
       summary: Bootstrap the collector's offline cache

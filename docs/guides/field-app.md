@@ -18,6 +18,8 @@ Supported token abilities are `staff:collector`, `staff:technician`, `staff:oper
 6. Persist each item’s `created`, `replayed`, or `rejected` result. A replay is not a new payment; surface a rejected item for operator resolution.
 7. Read `GET /api/v1/collector/shift`, `GET /api/v1/collector/payments?date=YYYY-MM-DD`, and `GET /api/v1/collector/summary?date=YYYY-MM-DD` for reconciliation. Close with `POST /api/v1/collector/shift/close`; a variance requires `variance_note`.
 
+Use `GET /api/v1/collector/customers?q=&zone=&status=due,overdue` for the field collection queue, then open `GET /api/v1/collector/customers/{customer}` for balance, location, service expiry, and last-payment context. Receipt resend is `POST /api/v1/collector/payments/{payment}/receipt` with `channel` set to `whatsapp`, `sms`, or `email`; keep the idempotency key when retrying.
+
 The online single-payment contract is:
 
 ```http
