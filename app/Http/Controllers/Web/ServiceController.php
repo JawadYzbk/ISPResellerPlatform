@@ -9,6 +9,7 @@ use App\Actions\TransitionService;
 use App\Enums\ServiceStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\CreateServiceRequest;
+use App\Models\CurrentSession;
 use App\Models\Customer;
 use App\Models\Plan;
 use App\Models\Router;
@@ -99,6 +100,23 @@ final class ServiceController extends Controller
         $enqueue->handle($service, $action, ['reason' => 'manual_resync']);
 
         return redirect()->route('customers.show', $service->customer->public_id)->with('success', "Service {$service->username} queued for network re-sync.");
+    }
+
+    public function disconnectSession(Service $service, EnqueueNetworkCommand $enqueue): RedirectResponse
+    {
+        $this->authorize('disconnect', $service);
+        $session = CurrentSession::query()
+            ->where('service_id', $service->id)
+            ->whereNull('stopped_at')
+            ->latest('last_seen_at')
+            ->first();
+        $payload = array_filter([
+            'reason' => 'operator_disconnect',
+            'session_id' => $session?->acct_session_id,
+        ], static fn (mixed $value): bool => $value !== null && $value !== '');
+        $enqueue->handle($service, 'disconnect', $payload);
+
+        return $this->redirectToCustomer($service, 'Current network session disconnect queued.');
     }
 
     private function redirectToCustomer(Service $service, string $message): RedirectResponse

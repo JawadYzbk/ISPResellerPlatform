@@ -81,6 +81,7 @@ Route::middleware(['auth', 'tenant', '2fa'])->group(function (): void {
     Route::post('/services/{service:public_id}/suspend', [ServiceController::class, 'suspend'])->name('services.suspend');
     Route::post('/services/{service:public_id}/resume', [ServiceController::class, 'resume'])->name('services.resume');
     Route::post('/services/{service:public_id}/terminate', [ServiceController::class, 'terminate'])->name('services.terminate');
+    Route::post('/services/{service:public_id}/disconnect-session', [ServiceController::class, 'disconnectSession'])->name('services.disconnect-session');
     Route::post('/services/{service:public_id}/resync', [ServiceController::class, 'resync'])->name('services.resync');
     Route::get('/operations/network-commands', [NetworkOperationsController::class, 'index'])->name('operations.network-commands');
     Route::post('/operations/network-commands/{command:public_id}/retry', [NetworkOperationsController::class, 'retry'])->name('operations.network-commands.retry');

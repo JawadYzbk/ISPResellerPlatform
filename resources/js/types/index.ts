@@ -192,6 +192,15 @@ export type Service = {
     provisioning_mode?: 'manual' | 'radius' | 'mikrotik' | 'external' | 'upstream_credential';
     expires_at: string | null;
     router?: { public_id: string; name: string } | null;
+    session?: {
+        acct_session_id: string;
+        nasname: string | null;
+        framed_ip: string | null;
+        started_at: string | null;
+        last_seen_at: string | null;
+        input_octets: number;
+        output_octets: number;
+    } | null;
     plan: Plan;
     customer?: Customer;
 };

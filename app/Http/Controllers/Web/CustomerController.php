@@ -245,6 +245,7 @@ final class CustomerController extends Controller
             'canActivateServices' => $request->user()?->can('services.activate') === true,
             'canSuspendServices' => $request->user()?->can('services.suspend') === true,
             'canTerminateServices' => $request->user()?->can('services.terminate') === true,
+            'canDisconnectSessions' => $request->user()?->can('network.disconnect') === true,
             'canForceResumeServices' => $request->user()?->can('services.force_resume') === true,
         ]);
     }

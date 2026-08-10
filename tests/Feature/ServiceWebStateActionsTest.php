@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\ServiceStatus;
+use App\Models\CurrentSession;
 use App\Models\NetworkCommand;
 use App\Models\Service;
 use App\Models\Tenant;
@@ -60,4 +61,23 @@ it('terminates a service, returns assigned equipment, and queues a disconnect', 
     app(Tenancy::class)->set($tenant);
     expect($service->refresh()->status)->toBe(ServiceStatus::Terminated)
         ->and(NetworkCommand::query()->where('service_id', $service->id)->where('action', 'disconnect')->count())->toBe(1);
+});
+
+it('queues a web disconnect for the latest active session', function (): void {
+    Queue::fake();
+    $tenant = Tenant::create(['name' => 'Northline', 'slug' => 'northline', 'base_currency' => 'USD', 'collection_currency' => 'USD']);
+    $user = User::create(['tenant_id' => $tenant->id, 'name' => 'Network', 'email' => 'service-disconnect@example.test', 'password' => Hash::make('password'), 'role' => 'network_administrator']);
+    app(CapabilitySeeder::class)->run();
+    app(Tenancy::class)->set($tenant);
+    $user->assignRole('network_administrator');
+    $service = Service::factory()->create(['status' => ServiceStatus::Active]);
+    $customerPublicId = $service->customer->public_id;
+    CurrentSession::create(['service_id' => $service->id, 'username' => $service->username, 'acct_session_id' => 'web-session-001', 'nasname' => 'router-01', 'last_seen_at' => now()]);
+
+    $this->actingAs($user)->post(route('services.disconnect-session', $service->public_id))
+        ->assertRedirect(route('customers.show', $customerPublicId));
+
+    app(Tenancy::class)->set($tenant);
+    expect(NetworkCommand::query()->where('service_id', $service->id)->where('action', 'disconnect')->firstOrFail()->payload)
+        ->toMatchArray(['reason' => 'operator_disconnect', 'session_id' => 'web-session-001']);
 });

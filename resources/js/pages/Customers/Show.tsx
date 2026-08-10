@@ -17,6 +17,7 @@ import {
     ShieldOff,
     Upload,
     Wifi,
+    WifiOff,
 } from 'lucide-react';
 
 import { StatusBadge } from '@/components/StatusBadge';
@@ -35,6 +36,7 @@ type Props = PageProps & {
     canActivateServices?: boolean;
     canSuspendServices?: boolean;
     canTerminateServices?: boolean;
+    canDisconnectSessions?: boolean;
     canForceResumeServices?: boolean;
 };
 
@@ -48,6 +50,7 @@ export default function CustomerShow({
     canActivateServices = false,
     canSuspendServices = false,
     canTerminateServices = false,
+    canDisconnectSessions = false,
     canForceResumeServices = false,
 }: Props) {
     const fullName = `${customer.first_name} ${customer.last_name ?? ''}`.trim();
@@ -177,7 +180,7 @@ export default function CustomerShow({
                                             <StatusBadge status={service.network_state} />
                                         </div>
                                     </div>
-                                    <div className="mt-5 grid gap-4 border-t border-line pt-4 sm:grid-cols-3">
+                                    <div className="mt-5 grid gap-4 border-t border-line pt-4 sm:grid-cols-2 lg:grid-cols-4">
                                         <div>
                                             <p className="text-xs text-muted">Expires</p>
                                             <p className="mt-1 flex items-center gap-1.5 text-sm font-semibold">
@@ -192,6 +195,18 @@ export default function CustomerShow({
                                             </p>
                                             <p className="mt-1 text-xs text-muted">
                                                 {service.router?.name ?? 'No router assigned'}
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <p className="text-xs text-muted">Session</p>
+                                            <p className="mt-1 flex items-center gap-1.5 text-sm font-semibold">
+                                                <span
+                                                    className={`size-2 rounded-full ${service.session ? 'bg-emerald-500' : 'bg-slate-300'}`}
+                                                />
+                                                {service.session ? 'Online' : 'Offline'}
+                                            </p>
+                                            <p className="mt-1 text-xs text-muted">
+                                                {service.session?.framed_ip ?? service.session?.nasname ?? 'No active session'}
                                             </p>
                                         </div>
                                         <div className="flex flex-wrap items-center gap-3 sm:justify-end">
@@ -257,6 +272,18 @@ export default function CustomerShow({
                                                     onClick={() => router.post(`/services/${service.public_id}/resync`)}
                                                 >
                                                     <RefreshCw size={14} /> Re-sync
+                                                    </button>
+                                                )}
+                                            {canDisconnectSessions && service.session && (
+                                                <button
+                                                    type="button"
+                                                    className="inline-flex items-center gap-1.5 text-sm font-semibold text-coral"
+                                                    onClick={() =>
+                                                        window.confirm('Disconnect the current network session?') &&
+                                                        router.post(`/services/${service.public_id}/disconnect-session`)
+                                                    }
+                                                >
+                                                    <WifiOff size={14} /> Disconnect
                                                 </button>
                                             )}
                                         </div>

@@ -86,6 +86,12 @@ class Service extends Model
         return $this->hasMany(InvoiceLine::class);
     }
 
+    /** @return HasMany<CurrentSession, $this> */
+    public function currentSessions(): HasMany
+    {
+        return $this->hasMany(CurrentSession::class);
+    }
+
     /** @param Builder<Service> $query */
     public function scopeSearch(Builder $query, ?string $search): Builder
     {
