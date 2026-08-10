@@ -22,24 +22,98 @@ type InvoiceOption = {
     due_at: string | null;
 };
 
-type Props = { customer: CustomerSummary; invoices: InvoiceOption[] };
+type FxRateSnapshot = {
+    source_currency: string;
+    target_currency: string;
+    numerator: number;
+    denominator: number;
+    source: string;
+    overridden: boolean;
+};
 
-export default function PaymentCreate({ customer, invoices }: Props) {
+type PaymentCurrency = {
+    code: string;
+    name: string;
+    decimal_digits: number;
+    rate: FxRateSnapshot | null;
+};
+
+type Props = {
+    customer: CustomerSummary;
+    invoices: InvoiceOption[];
+    defaultCurrency?: string;
+    paymentCurrencies: PaymentCurrency[];
+};
+
+export default function PaymentCreate({ customer, invoices, defaultCurrency, paymentCurrencies }: Props) {
     const form = useForm({
         amount: '',
-        currency: customer.balance_currency,
+        currency: defaultCurrency ?? customer.balance_currency,
         method: 'cash',
         invoice_id: '',
         idempotency_key: crypto.randomUUID(),
+        fx_override: false,
+        fx_rate_numerator: '',
+        fx_rate_denominator: '',
+        fx_override_reason: '',
+        reference: '',
     });
-    const fractionDigits = currencyFractionDigits(customer.balance_currency);
+    const selectedCurrency = paymentCurrencies.find((item) => item.code === form.data.currency);
+    const selectedRate = selectedCurrency?.rate ?? null;
+    const fractionDigits = selectedCurrency?.decimal_digits ?? currencyFractionDigits(form.data.currency);
+    const needsFx = form.data.currency !== customer.balance_currency;
 
-    const selectInvoice = (invoiceId: string) => {
+    const formatRate = (rate: FxRateSnapshot) => {
+        const targetPerSource = rate.numerator / rate.denominator;
+
+        return `1 ${rate.source_currency} = ${targetPerSource.toLocaleString(undefined, { maximumFractionDigits: 6 })} ${rate.target_currency}`;
+    };
+
+    const selectCurrency = (currency: string) => {
+        form.setData('currency', currency);
+        form.setData('amount', '');
+        form.setData('fx_override', false);
+        form.setData('fx_rate_numerator', '');
+        form.setData('fx_rate_denominator', '');
+        form.setData('fx_override_reason', '');
+
+        if (form.data.invoice_id) {
+            selectInvoice(form.data.invoice_id, currency);
+        }
+    };
+
+    const selectInvoice = (invoiceId: string, currency = form.data.currency) => {
         form.setData('invoice_id', invoiceId);
         const invoice = invoices.find((item) => item.public_id === invoiceId);
-        if (invoice) {
-            form.setData('amount', (invoice.outstanding_amount / 10 ** fractionDigits).toFixed(fractionDigits));
+        if (!invoice) {
+            form.setData('amount', '');
+            return;
         }
+
+        if (invoice.currency === currency) {
+            const digits = currencyFractionDigits(invoice.currency);
+            form.setData('amount', (invoice.outstanding_amount / 10 ** digits).toFixed(digits));
+            return;
+        }
+
+        const rate = paymentCurrencies.find((item) => item.code === currency)?.rate;
+        if (rate?.target_currency === invoice.currency) {
+            const amountMinor = Math.ceil((invoice.outstanding_amount * rate.denominator) / rate.numerator);
+            const digits =
+                paymentCurrencies.find((item) => item.code === currency)?.decimal_digits ??
+                currencyFractionDigits(currency);
+            form.setData('amount', (amountMinor / 10 ** digits).toFixed(digits));
+            return;
+        }
+
+        form.setData('amount', '');
+    };
+
+    const toggleFxOverride = (enabled: boolean) => {
+        form.setData('fx_override', enabled);
+        form.setData('fx_rate_numerator', enabled && selectedRate ? String(selectedRate.numerator) : '');
+        form.setData('fx_rate_denominator', enabled && selectedRate ? String(selectedRate.denominator) : '');
+        form.setData('fx_override_reason', enabled ? form.data.fx_override_reason : '');
     };
 
     const submit = (event: React.FormEvent) => {
@@ -81,7 +155,7 @@ export default function PaymentCreate({ customer, invoices }: Props) {
                 <form onSubmit={submit} className="card mt-6 space-y-6 p-6">
                     <div>
                         <label className="field-label" htmlFor="amount">
-                            Amount ({customer.balance_currency})
+                            Amount ({form.data.currency})
                         </label>
                         <input
                             id="amount"
@@ -95,9 +169,35 @@ export default function PaymentCreate({ customer, invoices }: Props) {
                             onChange={(event) => form.setData('amount', event.target.value)}
                         />
                         <p className="mt-1 text-xs text-muted">
-                            The ledger stores this as {customer.balance_currency} minor units.
+                            Enter the amount in {form.data.currency}. The ledger stores the converted value in{' '}
+                            {customer.balance_currency}.
                         </p>
                         {form.errors.amount && <p className="field-error">{form.errors.amount}</p>}
+                    </div>
+                    <div>
+                        <label className="field-label" htmlFor="currency">
+                            Payment currency
+                        </label>
+                        <select
+                            id="currency"
+                            className="field"
+                            value={form.data.currency}
+                            onChange={(event) => selectCurrency(event.target.value)}
+                        >
+                            {paymentCurrencies.map((currency) => (
+                                <option key={currency.code} value={currency.code}>
+                                    {currency.code} · {currency.name}
+                                </option>
+                            ))}
+                        </select>
+                        {selectedRate ? (
+                            <p className="mt-1 text-xs text-muted">Current rate: {formatRate(selectedRate)}</p>
+                        ) : needsFx ? (
+                            <p className="mt-1 text-xs text-amber-700">
+                                No current rate is configured. Enter an approved override before saving.
+                            </p>
+                        ) : null}
+                        {form.errors.currency && <p className="field-error">{form.errors.currency}</p>}
                     </div>
                     <div>
                         <label className="field-label" htmlFor="invoice_id">
@@ -136,6 +236,97 @@ export default function PaymentCreate({ customer, invoices }: Props) {
                         </select>
                         {form.errors.method && <p className="field-error">{form.errors.method}</p>}
                     </div>
+                    {needsFx && (
+                        <div className="space-y-4 rounded-xl border border-line bg-sand px-4 py-4">
+                            <label className="flex items-start gap-3 text-sm">
+                                <input
+                                    type="checkbox"
+                                    className="mt-1"
+                                    checked={form.data.fx_override}
+                                    onChange={(event) => toggleFxOverride(event.target.checked)}
+                                />
+                                <span>
+                                    <span className="font-semibold text-ink">Use an approved FX override</span>
+                                    <span className="mt-1 block text-xs text-muted">
+                                        The ratio and reason are stored with this receipt for audit review.
+                                    </span>
+                                </span>
+                            </label>
+                            {form.data.fx_override && (
+                                <div className="grid gap-4 sm:grid-cols-2">
+                                    <div>
+                                        <label className="field-label" htmlFor="fx_rate_numerator">
+                                            FX numerator
+                                        </label>
+                                        <input
+                                            id="fx_rate_numerator"
+                                            type="number"
+                                            min="1"
+                                            className="field"
+                                            value={form.data.fx_rate_numerator}
+                                            onChange={(event) => form.setData('fx_rate_numerator', event.target.value)}
+                                        />
+                                        {form.errors.fx_rate_numerator && (
+                                            <p className="field-error">{form.errors.fx_rate_numerator}</p>
+                                        )}
+                                    </div>
+                                    <div>
+                                        <label className="field-label" htmlFor="fx_rate_denominator">
+                                            FX denominator
+                                        </label>
+                                        <input
+                                            id="fx_rate_denominator"
+                                            type="number"
+                                            min="1"
+                                            className="field"
+                                            value={form.data.fx_rate_denominator}
+                                            onChange={(event) =>
+                                                form.setData('fx_rate_denominator', event.target.value)
+                                            }
+                                        />
+                                        {form.errors.fx_rate_denominator && (
+                                            <p className="field-error">{form.errors.fx_rate_denominator}</p>
+                                        )}
+                                    </div>
+                                    <div className="sm:col-span-2">
+                                        <label className="field-label" htmlFor="fx_override_reason">
+                                            Override reason
+                                        </label>
+                                        <input
+                                            id="fx_override_reason"
+                                            type="text"
+                                            className="field"
+                                            placeholder="Approved counter rate"
+                                            value={form.data.fx_override_reason}
+                                            onChange={(event) => form.setData('fx_override_reason', event.target.value)}
+                                        />
+                                        {form.errors.fx_override_reason && (
+                                            <p className="field-error">{form.errors.fx_override_reason}</p>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    )}
+                    <div>
+                        <label className="field-label" htmlFor="reference">
+                            Payment reference (optional)
+                        </label>
+                        <input
+                            id="reference"
+                            type="text"
+                            className="field"
+                            placeholder="Receipt or transfer reference"
+                            value={form.data.reference}
+                            onChange={(event) => form.setData('reference', event.target.value)}
+                        />
+                        {form.errors.reference && <p className="field-error">{form.errors.reference}</p>}
+                    </div>
+                    {form.data.invoice_id && form.data.currency !== customer.balance_currency && (
+                        <p className="text-xs text-muted">
+                            Any amount above the invoice balance stays as customer credit after conversion.
+                        </p>
+                    )}
                     <div className="flex justify-end gap-3 border-t border-line pt-5">
                         <Link href={`/customers/${customer.public_id}`} className="button-secondary">
                             Cancel
