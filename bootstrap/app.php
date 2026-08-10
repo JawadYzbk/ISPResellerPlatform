@@ -29,6 +29,7 @@ return Application::configure(basePath: dirname(__DIR__))
         channels: __DIR__.'/../routes/channels.php',
         health: '/up',
     )
+    ->withCommands([__DIR__.'/../app/Console/Commands'])
     ->withSchedule(function (Schedule $schedule): void {
         $schedule->command('platform:heartbeat')->everyMinute();
         $schedule->command('ledger:check-invariants')->dailyAt('03:00');
