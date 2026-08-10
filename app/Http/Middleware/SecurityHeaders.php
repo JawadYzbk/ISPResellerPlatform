@@ -33,7 +33,7 @@ final class SecurityHeaders
         $response->headers->set('X-Content-Type-Options', 'nosniff');
         $response->headers->set('X-Frame-Options', 'SAMEORIGIN');
         $response->headers->set('Referrer-Policy', 'strict-origin-when-cross-origin');
-        $response->headers->set('Permissions-Policy', 'camera=(), geolocation=(), microphone=()');
+        $response->headers->set('Permissions-Policy', 'camera=(), geolocation=(self), microphone=()');
         $response->headers->set('Content-Security-Policy', "default-src 'self'; base-uri 'self'; frame-ancestors 'self'; object-src 'none'; img-src 'self' data: https:; style-src ".implode(' ', $styleSources)."; font-src 'self' https://fonts.gstatic.com data:; script-src ".implode(' ', $scriptSources).'; connect-src '.implode(' ', $connectSources));
 
         if ($request->user() !== null) {
