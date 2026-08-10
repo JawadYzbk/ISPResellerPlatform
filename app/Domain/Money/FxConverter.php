@@ -2,6 +2,7 @@
 
 namespace App\Domain\Money;
 
+use App\Enums\FxRoundingMode;
 use App\Models\ExchangeRate;
 use App\Support\Money;
 use Carbon\CarbonImmutable;
@@ -20,16 +21,19 @@ final class FxConverter
         CarbonImmutable $at,
         ?int $overrideNumerator = null,
         ?int $overrideDenominator = null,
+        ?string $roundingMode = null,
     ): FxRateSnapshot {
+        $rounding = $this->roundingMode($roundingMode);
+
         if ($sourceCurrency === $targetCurrency) {
-            return new FxRateSnapshot($sourceCurrency, $targetCurrency, 1, 1, 'identity');
+            return new FxRateSnapshot($sourceCurrency, $targetCurrency, 1, 1, 'identity', false, $rounding);
         }
 
         if (($overrideNumerator === null) xor ($overrideDenominator === null)) {
             throw new DomainException('Both FX override ratio values are required.');
         }
         if ($overrideNumerator !== null && $overrideDenominator !== null) {
-            return new FxRateSnapshot($sourceCurrency, $targetCurrency, $overrideNumerator, $overrideDenominator, 'operator_override', true);
+            return new FxRateSnapshot($sourceCurrency, $targetCurrency, $overrideNumerator, $overrideDenominator, 'operator_override', true, $rounding, $at, 'operator_override');
         }
 
         $direct = ExchangeRate::query()
@@ -39,7 +43,7 @@ final class FxConverter
             ->latest('effective_from')
             ->first();
         if ($direct instanceof ExchangeRate) {
-            return new FxRateSnapshot($sourceCurrency, $targetCurrency, $direct->rate_numerator, $direct->rate_denominator, 'rate:'.$direct->id);
+            return new FxRateSnapshot($sourceCurrency, $targetCurrency, $direct->rate_numerator, $direct->rate_denominator, 'rate:'.$direct->id, false, $rounding, CarbonImmutable::instance($direct->effective_from), $direct->source);
         }
 
         $inverse = ExchangeRate::query()
@@ -49,9 +53,17 @@ final class FxConverter
             ->latest('effective_from')
             ->first();
         if ($inverse instanceof ExchangeRate) {
-            return new FxRateSnapshot($sourceCurrency, $targetCurrency, $inverse->rate_denominator, $inverse->rate_numerator, 'rate:'.$inverse->id.':inverse');
+            return new FxRateSnapshot($sourceCurrency, $targetCurrency, $inverse->rate_denominator, $inverse->rate_numerator, 'rate:'.$inverse->id.':inverse', false, $rounding, CarbonImmutable::instance($inverse->effective_from), $inverse->source);
         }
 
         throw new DomainException("No FX rate exists for {$sourceCurrency}/{$targetCurrency} at {$at->toIso8601String()}.");
+    }
+
+    private function roundingMode(?string $roundingMode): FxRoundingMode
+    {
+        $value = $roundingMode ?: (string) config('services.fx.rounding_mode', FxRoundingMode::HalfUp->value);
+        $mode = FxRoundingMode::tryFrom($value);
+
+        return $mode ?? throw new DomainException("Unsupported FX rounding mode: {$value}.");
     }
 }

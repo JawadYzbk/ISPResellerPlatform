@@ -38,6 +38,18 @@ return [
     'whatsapp' => [
         'token' => env('WHATSAPP_CLOUD_TOKEN'),
         'phone_number_id' => env('WHATSAPP_PHONE_NUMBER_ID'),
+        'mode' => env('WHATSAPP_PROVIDER', 'cloud'),
+    ],
+
+    'fx' => [
+        'rounding_mode' => env('FX_ROUNDING_MODE', 'half_up'),
+    ],
+
+    'frankfurter' => [
+        'enabled' => env('FRANKFURTER_ENABLED', false),
+        'endpoint' => env('FRANKFURTER_ENDPOINT', 'https://api.frankfurter.dev'),
+        'timeout' => max(1, (int) env('FRANKFURTER_TIMEOUT', 10)),
+        'quotes' => array_values(array_filter(array_map('trim', explode(',', (string) env('FRANKFURTER_QUOTES', 'LBP,USD,EUR'))))),
     ],
 
     'sms' => [
