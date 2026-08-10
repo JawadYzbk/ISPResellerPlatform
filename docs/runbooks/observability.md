@@ -30,7 +30,7 @@ Route alerts to an external on-call destination with a five-minute response targ
 
 ## Realtime transport
 
-The repository includes Laravel Reverb, a private tenant channel authorization rule keyed by tenant public ID, and an authenticated React client bridge. Keep local development on `BROADCAST_CONNECTION=log` and `VITE_REVERB_ENABLED=false`; enable Reverb only after setting `REVERB_APP_ID`, `REVERB_APP_KEY`, `REVERB_APP_SECRET`, the public host/scheme, a non-wildcard `REVERB_ALLOWED_ORIGINS` list, and matching `VITE_REVERB_APP_KEY`, `VITE_REVERB_HOST`, `VITE_REVERB_PORT`, and `VITE_REVERB_SCHEME` build variables.
+The repository includes Laravel Reverb, a private tenant channel authorization rule keyed by tenant public ID, and an authenticated React client bridge. Keep local development on `BROADCAST_CONNECTION=log` and `VITE_REVERB_ENABLED=false`; enable Reverb only after setting `BROADCAST_CONNECTION=reverb`, `REVERB_APP_ID`, `REVERB_APP_KEY`, `REVERB_APP_SECRET`, the public host/scheme, a non-wildcard `REVERB_ALLOWED_ORIGINS` list, and matching `VITE_REVERB_APP_KEY`, `VITE_REVERB_HOST`, `VITE_REVERB_PORT`, and `VITE_REVERB_SCHEME` build variables.
 
 Start the transport under a supervisor in a deployment environment:
 
