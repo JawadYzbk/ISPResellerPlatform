@@ -6,13 +6,22 @@ The build handoff in [`plan1/`](plan1/00-START-HERE.md) remains the product sour
 
 ## Current checkpoint
 
-The first slice is live:
+The current foundation is live:
 
 - Laravel 13 + Inertia 3 + React 19 + TypeScript + Tailwind 4
 - Shared-schema tenant context with global model scoping
 - Tenant, branch, zone, customer, plan and service foundations
 - Encrypted service credentials and hidden serialization
-- Staff login, dashboard, customer index and customer detail screens
+- Staff login, 2FA/re-authentication, session devices, dashboard, customer/service/report screens
+- Capability catalog, invitations, tenant isolation, audit events and API tokens
+- Historical FX conversion, double-entry ledger, invoices, payments, cash shifts and billing runs
+- Payment-driven renewal, scheduled overdue suspension and post-commit network command outbox
+- Message templates, provider delivery jobs, tickets, work orders and serialized inventory
+- FreeRADIUS sync, live-session accounting and daily usage rollups
+- Router/POP inventory, encrypted connection tests and repeated-failure incidents
+- Supplier credential workflows with permission, re-authentication and audit controls
+- Cursor-paginated customer API, idempotent payment API, OpenAPI slice and finance reporting
+- Basic reseller hierarchy and journal-linked wallet funding/debiting with credit limits
 - Demo tenant seed with customers, plans and services
 - Money value object backed by `brick/money`
 - Pest tests for money arithmetic, authentication and tenant isolation
@@ -59,7 +68,7 @@ npm run build
 
 ## Architecture
 
-The code is a modular monolith. Controllers validate and delegate to one Action. Actions own domain transactions. Tenant-owned models use `BelongsToTenant`, which adds a global scope and stamps writes from the explicit `Tenancy` context. External work will be added through an outbox and queue; routers are never called synchronously from a web request.
+The code is a modular monolith. Controllers validate and delegate to one Action. Actions own domain transactions. Tenant-owned models use `BelongsToTenant`, which adds a global scope and stamps writes from the explicit `Tenancy` context. Provisioning side effects use the outbox and queue; an explicit operator-triggered router connection test is the one bounded synchronous diagnostic and has a five-second timeout.
 
 Money is integer minor units plus ISO currency. Payments and journal entries will be append-only. Service commercial state and network state are separate fields so a paid customer can remain visibly drifted while a retry is pending.
 
