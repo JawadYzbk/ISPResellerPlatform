@@ -15,6 +15,7 @@ use App\Http\Controllers\Api\MessageWebhookController;
 use App\Http\Controllers\Api\NetworkCommandController;
 use App\Http\Controllers\Api\PartnerApiController;
 use App\Http\Controllers\Api\PaymentApiController;
+use App\Http\Controllers\Api\PaymentGatewayWebhookController;
 use App\Http\Controllers\Api\PlanApiController;
 use App\Http\Controllers\Api\PlanImportController;
 use App\Http\Controllers\Api\PortalAuthController;
@@ -38,6 +39,7 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('v1')->group(function (): void {
     Route::get('/health', [HealthController::class, 'show'])->name('api.health');
     Route::post('/webhooks/gateways/{gateway}', MessageWebhookController::class)->name('api.webhooks.gateways');
+    Route::post('/webhooks/payments/{gateway}', PaymentGatewayWebhookController::class)->name('api.webhooks.payments');
     Route::post('/tokens', [ApiTokenController::class, 'store'])->middleware('throttle:login')->name('api.tokens.store');
     Route::post('/auth/staff/login', [ApiTokenController::class, 'staffLogin'])->middleware('throttle:login')->name('api.auth.staff.login');
     Route::post('/auth/staff/two-factor', [ApiTokenController::class, 'staffTwoFactor'])->middleware('throttle:login')->name('api.auth.staff.two-factor');

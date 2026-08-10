@@ -27,7 +27,8 @@ final readonly class RecordPayment implements Action
 {
     public function __construct(private DocumentNumberGenerator $numbers, private PostJournalEntry $journal, private RenewService $renewService, private QueueCustomerNotification $notify, private FxConverter $fx) {}
 
-    public function handle(Customer $customer, int $amount, string $currency, string $method, string $idempotencyKey, ?Invoice $invoice = null, ?User $actor = null, ?CashShift $cashShift = null, ?int $fxRateNumerator = null, ?int $fxRateDenominator = null, ?string $fxOverrideReason = null, ?string $reference = null, ?string $roundingMode = null): Payment
+    /** @param array<string, mixed> $metadata */
+    public function handle(Customer $customer, int $amount, string $currency, string $method, string $idempotencyKey, ?Invoice $invoice = null, ?User $actor = null, ?CashShift $cashShift = null, ?int $fxRateNumerator = null, ?int $fxRateDenominator = null, ?string $fxOverrideReason = null, ?string $reference = null, ?string $roundingMode = null, array $metadata = []): Payment
     {
         if ($amount < 1) {
             throw new DomainException('Payment amount must be positive.');
@@ -76,7 +77,7 @@ final readonly class RecordPayment implements Action
         }
 
         try {
-            $payment = DB::transaction(function () use ($customer, $amount, $currency, $method, $idempotencyKey, $invoice, $actor, $cashShift, $fxOverrideReason, $reference, $receivedAt, $baseCurrency, $baseSnapshot, $ledgerSnapshot, $invoiceSnapshot): Payment {
+            $payment = DB::transaction(function () use ($customer, $amount, $currency, $method, $idempotencyKey, $invoice, $actor, $cashShift, $fxOverrideReason, $reference, $receivedAt, $baseCurrency, $baseSnapshot, $ledgerSnapshot, $invoiceSnapshot, $metadata): Payment {
                 $cash = LedgerAccount::query()->where('code', '1000')->firstOrFail();
                 $receivable = LedgerAccount::query()->where('code', '1100')->firstOrFail();
                 $lockedInvoice = null;
@@ -123,6 +124,7 @@ final readonly class RecordPayment implements Action
                         'ledger_fx' => $ledgerSnapshot->toArray(),
                         'invoice_amount' => $invoiceAmount,
                         'invoice_currency' => $lockedInvoice?->currency,
+                        ...$metadata,
                     ],
                 ]);
                 if ($lockedInvoice !== null && $invoiceAmount !== null && $outstanding !== null) {
