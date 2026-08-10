@@ -10,6 +10,7 @@ use App\Http\Controllers\Web\DashboardController;
 use App\Http\Controllers\Web\InventoryOperationsController;
 use App\Http\Controllers\Web\NetworkOperationsController;
 use App\Http\Controllers\Web\PartnerController;
+use App\Http\Controllers\Web\PlanOperationsController;
 use App\Http\Controllers\Web\PortalPageController;
 use App\Http\Controllers\Web\ReportController;
 use App\Http\Controllers\Web\RouterOperationsController;
@@ -73,6 +74,9 @@ Route::middleware(['auth', 'tenant', '2fa'])->group(function (): void {
     Route::get('/operations/work-orders', [WorkOrderOperationsController::class, 'index'])->name('operations.work-orders');
     Route::post('/operations/work-orders/{workOrder:public_id}/complete', [WorkOrderOperationsController::class, 'complete'])->name('operations.work-orders.complete');
     Route::get('/operations/inventory', [InventoryOperationsController::class, 'index'])->name('operations.inventory');
+    Route::get('/plans', [PlanOperationsController::class, 'index'])->name('plans.index');
+    Route::get('/plans/create', [PlanOperationsController::class, 'create'])->name('plans.create');
+    Route::post('/plans', [PlanOperationsController::class, 'store'])->name('plans.store');
     Route::get('/customers/{customer:public_id}/services/create', [ServiceController::class, 'create'])->name('services.create');
     Route::post('/customers/{customer:public_id}/services', [ServiceController::class, 'store'])->name('services.store');
     Route::get('/partners/commercial', [PartnerController::class, 'commercial'])->name('partners.commercial');
