@@ -17,11 +17,13 @@ The current foundation is live:
 - Capability-gated effective-dated FX rate administration using exact numerator/denominator ratios
 - Operator directory with role-limited one-time invitations and a public invitation acceptance flow
 - Staff invoice and payment queues with allocation-backed balances, audited reversals, router health registry and network command operations screen
+- Atomic subscriber registration that can create the customer, pending service, installation work order and audit event together, plus an invoice-first renewal desk with duplicate-open-invoice protection
 - Dedicated service diagnostics, live RADIUS session operations and incident workspaces with tenant-safe deep links and disconnect controls
 - Tenant-safe invoice detail and payment receipt views with posted allocation trails and browser print layouts
 - Staff ticket conversation/status workflow, customer support history, work-order calendar/completion surface with readings, signatures and bulk materials, serialized inventory trace/assignment, and plan/add-on/promotion catalog workflow
 - Supplier credential inventory view with secret redaction, tenant-safe assignment and audited reveal boundary
 - Capability catalog, invitations, tenant isolation, audit events and API tokens
+- Legacy `admin` accounts are reconciled to a full tenant role by the capability seeder; local web 2FA remains opt-in through `SECURITY_ENFORCE_TWO_FACTOR`
 - Historical FX conversion, double-entry ledger, invoices, payments, cash-shift reconciliation and billing runs
 - Payment-driven renewal, scheduled overdue suspension and post-commit network command outbox
 - Message templates, provider delivery jobs, tickets, work orders and serialized inventory
