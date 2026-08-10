@@ -55,3 +55,20 @@ it('returns a reseller catalog without exposing buy prices', function (): void {
         ->assertJsonPath('data.0.sell_amount_minor', 3500)
         ->assertJsonMissing(['buy_amount_minor' => 2500]);
 });
+
+it('exposes the operator settlement lifecycle through the API', function (): void {
+    $tenant = Tenant::create(['name' => 'Westline', 'slug' => 'westline', 'base_currency' => 'USD', 'collection_currency' => 'USD']);
+    app(Tenancy::class)->set($tenant);
+    $partner = app(CreatePartner::class)->handle('Reseller', 'R-006', 'USD');
+    $user = User::create(['tenant_id' => $tenant->id, 'name' => 'Billing', 'email' => 'settlement-api@example.test', 'password' => Hash::make('password'), 'role' => 'billing_manager']);
+    app(CapabilitySeeder::class)->run();
+    $user->assignRole('billing_manager');
+    $token = $user->createToken('settlement-api', ['api', 'staff:operator'])->plainTextToken;
+
+    $created = $this->withToken($token)->postJson('/api/v1/partners/'.$partner->id.'/settlements', ['period_start' => '2026-08-01', 'period_end' => '2026-08-10', 'currency' => 'usd']);
+    $created->assertCreated()->assertJsonPath('status', 'draft');
+    $id = $created->json('id');
+
+    $this->withToken($token)->postJson('/api/v1/settlements/'.$id.'/approve')->assertOk()->assertJsonPath('status', 'approved');
+    $this->withToken($token)->withHeaders(['X-Idempotency-Key' => 'settlement-pay-001'])->postJson('/api/v1/settlements/'.$id.'/pay')->assertOk()->assertJsonPath('status', 'paid');
+});

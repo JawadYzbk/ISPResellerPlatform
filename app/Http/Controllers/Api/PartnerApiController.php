@@ -2,7 +2,10 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Actions\ApprovePartnerSettlement;
 use App\Actions\FundPartnerWallet;
+use App\Actions\GeneratePartnerSettlement;
+use App\Actions\PayPartnerSettlement;
 use App\Actions\ResolvePartnerPrice;
 use App\Http\Controllers\Controller;
 use App\Models\Partner;
@@ -11,6 +14,7 @@ use App\Models\Plan;
 use App\Models\Settlement;
 use App\Models\User;
 use App\Models\WalletTransaction;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
@@ -104,6 +108,39 @@ final class PartnerApiController extends Controller
         return response()->json(['partner_id' => $model->id, 'data' => $settlements]);
     }
 
+    public function createSettlement(Request $request, int $partner, GeneratePartnerSettlement $generate): JsonResponse
+    {
+        $user = $this->user($request);
+        abort_unless($user->can('settlements.approve'), 403);
+        $validated = $request->validate(['period_start' => ['required', 'date'], 'period_end' => ['required', 'date', 'after_or_equal:period_start'], 'currency' => ['required', 'string', 'size:3']]);
+        $model = $this->visible($user)->whereKey($partner)->firstOrFail();
+        $settlement = $generate->handle($model, CarbonImmutable::parse($validated['period_start']), CarbonImmutable::parse($validated['period_end']), strtoupper($validated['currency']));
+
+        return response()->json($this->settlementPayload($settlement), 201);
+    }
+
+    public function approveSettlement(Request $request, int $settlement, ApprovePartnerSettlement $approve): JsonResponse
+    {
+        $user = $this->user($request);
+        abort_unless($user->can('settlements.approve'), 403);
+        $model = Settlement::query()->whereKey($settlement)->firstOrFail();
+        abort_unless($this->visible($user)->whereKey($model->partner_id)->exists(), 404);
+        $approved = $approve->handle($model, $user);
+
+        return response()->json($this->settlementPayload($approved));
+    }
+
+    public function paySettlement(Request $request, int $settlement, PayPartnerSettlement $pay): JsonResponse
+    {
+        $user = $this->user($request);
+        abort_unless($user->can('settlements.approve'), 403);
+        $model = Settlement::query()->whereKey($settlement)->firstOrFail();
+        abort_unless($this->visible($user)->whereKey($model->partner_id)->exists(), 404);
+        $paid = $pay->handle($model, $user);
+
+        return response()->json($this->settlementPayload($paid));
+    }
+
     /** @return Builder<Partner> */
     private function visible(User $user): Builder
     {
@@ -128,5 +165,11 @@ final class PartnerApiController extends Controller
     private function summary(Partner $partner): array
     {
         return ['id' => $partner->id, 'name' => $partner->name, 'code' => $partner->code, 'parent_id' => $partner->parent_id, 'depth' => $partner->depth, 'currency' => $partner->currency, 'balance_amount' => $partner->wallet->balance_amount, 'low_balance_threshold' => $partner->low_balance_threshold];
+    }
+
+    /** @return array<string, mixed> */
+    private function settlementPayload(Settlement $settlement): array
+    {
+        return ['id' => $settlement->id, 'partner_id' => $settlement->partner_id, 'period_start' => $settlement->period_start->toDateString(), 'period_end' => $settlement->period_end->toDateString(), 'currency' => $settlement->currency, 'opening_amount' => $settlement->opening_amount, 'activity_amount' => $settlement->activity_amount, 'closing_amount' => $settlement->closing_amount, 'due_amount' => $settlement->due_amount, 'status' => $settlement->status, 'journal_entry_id' => $settlement->journal_entry_id];
     }
 }

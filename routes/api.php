@@ -67,6 +67,9 @@ Route::prefix('v1')->group(function (): void {
             Route::get('/partners/{partner}', [PartnerApiController::class, 'show'])->name('api.partners.show');
             Route::get('/partners/{partner}/catalog', [PartnerApiController::class, 'catalog'])->name('api.partners.catalog');
             Route::get('/partners/{partner}/settlements', [PartnerApiController::class, 'settlements'])->name('api.partners.settlements');
+            Route::post('/partners/{partner}/settlements', [PartnerApiController::class, 'createSettlement'])->name('api.partners.settlements.create');
+            Route::post('/settlements/{settlement}/approve', [PartnerApiController::class, 'approveSettlement'])->name('api.settlements.approve');
+            Route::post('/settlements/{settlement}/pay', [PartnerApiController::class, 'paySettlement'])->middleware('idempotency')->name('api.settlements.pay');
             Route::post('/partners/{partner}/wallet-top-ups', [PartnerApiController::class, 'topUp'])->middleware('idempotency')->name('api.partners.wallet-top-ups');
             Route::post('/network/commands/{command}/retry', [NetworkCommandController::class, 'retry'])->middleware('idempotency')->name('api.network.commands.retry');
         });
