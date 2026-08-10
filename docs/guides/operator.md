@@ -29,6 +29,8 @@ Automatic overdue suspension runs hourly at minute 5. A renewal from `auto_overd
 
 Use **Billing -> Invoices** to search draft and issued invoices. A billing user with the invoice-issue capability can issue a draft from the queue; an issued invoice links to the customer payment form and shows the outstanding allocation-backed balance. Do not treat a displayed invoice as settled until the posted allocation is visible.
 
+Use **Billing -> Payments** to search receipts by customer, status, or method. Reversed receipts remain visible for audit history and no longer count toward an invoice's outstanding balance. Reversing a posted receipt requires the payment-void capability and recent authentication; confirm the receipt number before submitting.
+
 Record the payment against the customer’s public ID and, when applicable, an issued invoice. Amounts are integer minor units; currency must match the customer ledger currency. The action posts the cash-to-receivable journal entry, allocates the invoice, renews services on the invoice, and queues a receipt notice.
 
 Use one stable `X-Idempotency-Key` per client payment attempt. Reusing the same key returns the original payment; do not generate a new key when retrying after a timeout. Never “fix” a duplicate by deleting a payment.

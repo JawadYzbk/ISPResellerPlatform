@@ -13,7 +13,7 @@ The current foundation is live:
 - Tenant, branch, zone, customer, plan and service foundations
 - Encrypted service credentials and hidden serialization
 - Staff login, 2FA/re-authentication, session devices, dashboard, customer/service/report screens
-- Staff invoice queue with allocation-backed balances, router health registry and network command operations screen
+- Staff invoice and payment queues with allocation-backed balances, audited reversals, router health registry and network command operations screen
 - Staff ticket conversation/status workflow, work-order completion surface, serialized inventory trace, and plan catalog/create workflow
 - Supplier credential inventory view with secret redaction and audited reveal boundary
 - Capability catalog, invitations, tenant isolation, audit events and API tokens
