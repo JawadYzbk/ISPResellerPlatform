@@ -20,8 +20,8 @@ Last updated: 2026-08-10
 | ISP-041/043/044 | Driver boundary, post-commit network outbox, stale guards, retries, overdue suspension and reactivation | delivered with manual/fake drivers |
 | ISP-050/051/052 | Template rendering, idempotent message queueing, provider delivery boundary and tenant-local expiry reminders with opt-out/quiet-hour handling | delivered with null/fake providers |
 | ISP-060/061/062 | Ticket lifecycle, tenant-timezone business-hours SLA clock, scheduled resolved-ticket auto-close, work-order completion and serialized inventory assignment | delivered |
-| ISP-070/071/072 | Sanctum API, cursor pagination, query whitelists, idempotency middleware, customer portal OTP/session and billing history, collector batches, service discovery/state actions and OpenAPI slice | delivered for current customer/payment/service scope |
-| ISP-073 | Technician-assigned work-order list/detail endpoints and idempotent completion | delivered for current work-order scope |
+| ISP-070/071/072 | Sanctum API with role-scoped abilities, cursor pagination, query whitelists, idempotency middleware, app version config, customer portal OTP/session and billing history, collector batches, service discovery/state actions and OpenAPI slice | delivered for current customer/payment/service scope |
+| ISP-073 | Technician-assigned work-order list/detail endpoints, idempotent completion, service diagnostics and van inventory | delivered for current technician scope |
 | ISP-080/082/083 | FreeRADIUS sync, current sessions, scheduled stale-session cleanup, daily usage rollups, cycle quota/FUP command foundation, RouterOS FUP profile driver path and idempotent warning notifications | foundation delivered |
 | ISP-040/063 | POP/router inventory, encrypted connection tests, repeated-failure incidents and bounded router health observations | foundation delivered |
 | ISP-090/091 | Basic partner hierarchy/wallets with descendant-scoped API, tenant finance and operations reports with CSV export | foundation delivered; expanded report foundation delivered |
