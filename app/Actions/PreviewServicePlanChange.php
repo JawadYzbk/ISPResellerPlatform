@@ -35,8 +35,8 @@ final readonly class PreviewServicePlanChange implements Action
             return [
                 'effective' => $effective,
                 'apply_at' => $service->expires_at?->toIso8601String(),
-                'from_plan_id' => $service->plan_id,
-                'to_plan_id' => $newPlan->id,
+                'from_plan_id' => $service->plan->public_id,
+                'to_plan_id' => $newPlan->public_id,
                 'currency' => $service->plan->currency,
                 'old_credit_amount' => 0,
                 'new_charge_amount' => 0,
@@ -60,8 +60,8 @@ final readonly class PreviewServicePlanChange implements Action
         return [
             'effective' => $effective,
             'apply_at' => $now->toIso8601String(),
-            'from_plan_id' => $service->plan_id,
-            'to_plan_id' => $newPlan->id,
+            'from_plan_id' => $service->plan->public_id,
+            'to_plan_id' => $newPlan->public_id,
             'currency' => $newPrice->currency,
             'old_credit_amount' => $oldCredit,
             'new_charge_amount' => $newCharge,

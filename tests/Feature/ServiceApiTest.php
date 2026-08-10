@@ -109,8 +109,8 @@ it('previews and idempotently applies a service plan change through the operator
     $this->withToken($token)
         ->postJson('/api/v1/services/'.$service->public_id.'/plan-change-previews', ['plan_uuid' => $newPlan->public_id, 'effective' => 'immediate'])
         ->assertOk()
-        ->assertJsonPath('from_plan_id', $oldPlan->id)
-        ->assertJsonPath('to_plan_id', $newPlan->id)
+        ->assertJsonPath('from_plan_id', $oldPlan->public_id)
+        ->assertJsonPath('to_plan_id', $newPlan->public_id)
         ->assertJsonPath('old_credit_amount', 67)
         ->assertJsonPath('new_charge_amount', 133)
         ->assertJsonPath('net_amount', 66);
