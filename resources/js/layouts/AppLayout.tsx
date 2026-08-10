@@ -26,41 +26,47 @@ import {
     WalletCards,
     Wrench,
 } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import type { PropsWithChildren } from 'react';
 
 import RealtimeBridge from '@/components/RealtimeBridge';
 import type { PageProps } from '@/types';
 
+type NavigationItem = {
+    label: string;
+    href: string;
+    icon: LucideIcon;
+    permission?: string | string[];
+};
+
 export default function AppLayout({ children }: PropsWithChildren) {
     const { auth, app } = usePage<PageProps>().props;
+    const can = (permission: string | string[]) =>
+        Array.isArray(permission) ? permission.some((item) => auth.permissions.includes(item)) : auth.permissions.includes(permission);
 
-    const nav = [
+    const nav: NavigationItem[] = [
         { label: 'Overview', href: '/dashboard', icon: LayoutDashboard },
-        { label: 'Customers', href: '/customers', icon: Users },
-        { label: 'Plans', href: '/plans', icon: Tags },
-        { label: 'Services', href: '/services', icon: Wifi },
-        { label: 'Billing', href: '/billing/invoices', icon: ReceiptText },
-        { label: 'Payments', href: '/billing/payments', icon: CreditCard },
-        { label: 'Cash shifts', href: '/billing/shifts', icon: WalletCards },
-        ...(auth.permissions.includes('settings.manage')
-            ? [{ label: 'FX rates', href: '/billing/exchange-rates', icon: Scale }]
-            : []),
-        { label: 'Tickets', href: '/operations/tickets', icon: MessageSquare },
-        { label: 'Work orders', href: '/operations/work-orders', icon: ClipboardList },
-        { label: 'Work-order calendar', href: '/operations/work-orders/calendar', icon: CalendarDays },
-    { label: 'Inventory', href: '/operations/inventory', icon: Package },
-        { label: 'Imports', href: '/operations/imports', icon: FileUp },
-        { label: 'Credentials', href: '/operations/credentials', icon: KeyRound },
-        { label: 'Partners', href: '/partners/commercial', icon: Store },
-        { label: 'Reports', href: '/reports/operations', icon: BarChart3 },
-        { label: 'Network queue', href: '/operations/network-commands', icon: Wrench },
-    { label: 'Routers', href: '/operations/routers', icon: Router },
-        { label: 'POPs', href: '/operations/pops', icon: Network },
-        { label: 'IP pools', href: '/operations/ip-pools', icon: Network },
-        ...(auth.permissions.includes('settings.manage')
-            ? [{ label: 'Settings', href: '/settings/general', icon: Wrench }]
-            : []),
-    ];
+        { label: 'Customers', href: '/customers', icon: Users, permission: 'customers.view' },
+        { label: 'Plans', href: '/plans', icon: Tags, permission: 'plans.manage' },
+        { label: 'Services', href: '/services', icon: Wifi, permission: 'services.view' },
+        { label: 'Billing', href: '/billing/invoices', icon: ReceiptText, permission: 'billing.invoices.view' },
+        { label: 'Payments', href: '/billing/payments', icon: CreditCard, permission: 'payments.collect' },
+        { label: 'Cash shifts', href: '/billing/shifts', icon: WalletCards, permission: 'payments.collect' },
+        { label: 'FX rates', href: '/billing/exchange-rates', icon: Scale, permission: 'settings.manage' },
+        { label: 'Tickets', href: '/operations/tickets', icon: MessageSquare, permission: 'tickets.view' },
+        { label: 'Work orders', href: '/operations/work-orders', icon: ClipboardList, permission: 'workorders.complete' },
+        { label: 'Work-order calendar', href: '/operations/work-orders/calendar', icon: CalendarDays, permission: 'workorders.complete' },
+        { label: 'Inventory', href: '/operations/inventory', icon: Package, permission: 'inventory.view' },
+        { label: 'Imports', href: '/operations/imports', icon: FileUp, permission: ['customers.create', 'plans.manage', 'services.create', 'inventory.receive', 'billing.adjustments.create', 'network.view'] },
+        { label: 'Credentials', href: '/operations/credentials', icon: KeyRound, permission: 'suppliers.view' },
+        { label: 'Partners', href: '/partners/commercial', icon: Store, permission: 'wallets.view' },
+        { label: 'Reports', href: '/reports/operations', icon: BarChart3, permission: 'reports.operations' },
+        { label: 'Network queue', href: '/operations/network-commands', icon: Wrench, permission: 'network.view' },
+        { label: 'Routers', href: '/operations/routers', icon: Router, permission: 'network.view' },
+        { label: 'POPs', href: '/operations/pops', icon: Network, permission: 'network.view' },
+        { label: 'IP pools', href: '/operations/ip-pools', icon: Network, permission: 'network.view' },
+        { label: 'Settings', href: '/settings/general', icon: Wrench, permission: 'settings.manage' },
+    ].filter((item) => item.permission === undefined || can(item.permission));
 
     return (
         <div className="min-h-screen bg-canvas text-ink" dir={app.direction}>
