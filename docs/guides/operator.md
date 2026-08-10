@@ -57,7 +57,7 @@ Router incidents can broadcast notices only to customers affected by the router,
 
 ## Network operations
 
-Use **Operations -> Routers** to register devices with a tenant POP, filter them by online/offline state, and run a bounded health check. Router API and optional RADIUS/CoA secrets are encrypted at rest and are not rendered in the operations list. The page shows the last successful observation, consecutive failures, assigned service count and TLS verification state. Use **Operations -> Network queue** to follow the resulting command and its retry history.
+Use **Operations -> Routers** to register devices with a tenant POP, open a router detail page, filter them by online/offline state, and run a bounded health check. Router API and optional RADIUS/CoA secrets are encrypted at rest and are not rendered in the operations list or detail response. The detail page shows the last successful observation, consecutive failures, assigned service count and TLS verification state. Updating connection settings requires recent authentication; blank secret fields preserve the encrypted values. Use **Operations -> Network queue** to follow the resulting command and its retry history.
 
 Use **Operations -> Credentials** to review supplier inventory without exposing secrets. Staff with the credential-assignment capability can select an unassigned service for an available credential; the action requires recent authentication and prevents a service from receiving a second credential. Secret reveal and bulk import remain controlled workflows until their rollout approval is complete.
 
