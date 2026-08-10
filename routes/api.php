@@ -17,6 +17,7 @@ use App\Http\Controllers\Api\PlanImportController;
 use App\Http\Controllers\Api\PortalAuthController;
 use App\Http\Controllers\Api\PortalBillingController;
 use App\Http\Controllers\Api\PortalController;
+use App\Http\Controllers\Api\PortalTicketController;
 use App\Http\Controllers\Api\RouterSubscriberImportController;
 use App\Http\Controllers\Api\ServiceApiController;
 use App\Http\Controllers\Api\ServiceImportController;
@@ -37,6 +38,10 @@ Route::prefix('v1')->group(function (): void {
         Route::get('/me/services', [PortalController::class, 'services'])->middleware('portal.auth')->name('api.portal.services');
         Route::get('/me/services/{service}/usage', [PortalController::class, 'usage'])->middleware('portal.auth')->name('api.portal.services.usage');
         Route::get('/me/notices', [PortalController::class, 'notices'])->middleware('portal.auth')->name('api.portal.notices');
+        Route::get('/me/tickets', [PortalTicketController::class, 'index'])->middleware('portal.auth')->name('api.portal.tickets.index');
+        Route::post('/me/tickets', [PortalTicketController::class, 'store'])->middleware('portal.auth')->name('api.portal.tickets.store');
+        Route::get('/me/tickets/{ticket}', [PortalTicketController::class, 'show'])->middleware('portal.auth')->name('api.portal.tickets.show');
+        Route::post('/me/tickets/{ticket}/messages', [PortalTicketController::class, 'message'])->middleware('portal.auth')->name('api.portal.tickets.messages');
         Route::get('/billing', [PortalBillingController::class, 'show'])->middleware('portal.auth')->name('api.portal.billing');
         Route::post('/payments/intent', [PortalBillingController::class, 'intent'])->middleware('portal.auth')->name('api.portal.payments.intent');
     });

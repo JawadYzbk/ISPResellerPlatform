@@ -66,4 +66,10 @@ class Ticket extends Model
     {
         return $this->hasMany(TicketEvent::class);
     }
+
+    /** @return HasMany<TicketMessage, $this> */
+    public function messages(): HasMany
+    {
+        return $this->hasMany(TicketMessage::class);
+    }
 }
