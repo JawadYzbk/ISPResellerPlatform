@@ -24,7 +24,7 @@ Last updated: 2026-08-10
 | ISP-073 | Technician-assigned work-order list/detail endpoints, idempotent completion, separate image upload, service diagnostics and van inventory | delivered for current technician scope |
 | ISP-080/081/082/083 | FreeRADIUS sync, encrypted router CoA settings, UDP CoA/Disconnect client with response validation, current sessions, scheduled stale-session cleanup, daily usage rollups, cycle quota/FUP command foundation, RouterOS FUP profile driver path and idempotent warning notifications | foundation delivered; CoA driver path delivered, lab acceptance pending |
 | ISP-040/063 | POP/router inventory, encrypted connection tests, repeated-failure incidents and bounded router health observations | foundation delivered |
-| ISP-090/091 | Basic partner hierarchy/wallets with descendant-scoped API, tenant finance and operations reports with CSV export | foundation delivered; expanded report foundation delivered |
+| ISP-090/091 | Basic partner hierarchy/wallets with descendant-scoped API, tenant finance and operations reports with CSV export, aging, collection rate and revenue/usage breakdowns | foundation delivered; expanded report slice delivered |
 | ISP-092 | Manager attention queue with deep links plus live NOC signal panels for routers, sessions, commands, drift and incidents | delivered for current dashboard scope |
 | ISP-093 | Customer, plan, service, serialized-equipment and journal-backed balance CSV import preview, row-level validation, partial-success commit and guarded/reversing rollback API | delivered for current CSV scope |
 | ISP-P1-01 | Supplier credential inventory, import, assignment and audited reveal | foundation delivered |
