@@ -15,7 +15,7 @@ class WorkOrder extends Model
 {
     use Auditable, BelongsToTenant;
 
-    protected $fillable = ['tenant_id', 'public_id', 'number', 'type', 'customer_id', 'service_id', 'assigned_to', 'status', 'scheduled_at', 'started_at', 'completed_at', 'failure_reason', 'checklist', 'metadata'];
+    protected $fillable = ['tenant_id', 'public_id', 'number', 'type', 'customer_id', 'service_id', 'assigned_to', 'status', 'scheduled_at', 'started_at', 'completed_at', 'completion_idempotency_key', 'failure_reason', 'checklist', 'metadata'];
 
     protected function casts(): array
     {

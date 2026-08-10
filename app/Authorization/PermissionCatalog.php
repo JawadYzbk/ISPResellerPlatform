@@ -17,6 +17,7 @@ final class PermissionCatalog
         'network.view', 'network.provision', 'network.disconnect', 'network.credentials.reveal',
         'suppliers.view', 'credentials.import', 'credentials.reserve', 'credentials.assign', 'credentials.reveal',
         'inventory.view', 'inventory.receive', 'inventory.transfer', 'inventory.assign', 'inventory.write_off',
+        'workorders.complete',
         'tickets.view', 'tickets.create', 'tickets.assign', 'tickets.close',
         'reports.finance', 'reports.operations', 'reports.export',
         'settings.manage', 'users.manage', 'roles.manage', 'audit.view',

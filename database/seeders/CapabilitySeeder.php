@@ -18,7 +18,7 @@ class CapabilitySeeder extends Seeder
         'operations_manager' => [
             'customers.view', 'customers.create', 'customers.update', 'customers.export',
             'services.view', 'services.create', 'services.activate', 'services.suspend', 'services.change_plan',
-            'tickets.view', 'tickets.create', 'tickets.assign', 'tickets.close',
+            'tickets.view', 'tickets.create', 'tickets.assign', 'tickets.close', 'workorders.complete',
             'reports.operations', 'reports.export', 'users.manage', 'audit.view',
         ],
         'billing_manager' => [
@@ -29,7 +29,7 @@ class CapabilitySeeder extends Seeder
         'cashier' => ['customers.view', 'services.view', 'billing.invoices.view', 'payments.collect', 'reports.finance'],
         'collector' => ['customers.view', 'services.view', 'payments.collect', 'tickets.view'],
         'support_agent' => ['customers.view', 'services.view', 'network.view', 'tickets.view', 'tickets.create', 'tickets.close'],
-        'technician' => ['customers.view', 'services.view', 'network.view', 'inventory.view', 'inventory.assign', 'tickets.view', 'tickets.assign'],
+        'technician' => ['customers.view', 'services.view', 'network.view', 'inventory.view', 'inventory.assign', 'tickets.view', 'tickets.assign', 'workorders.complete'],
         'network_administrator' => [
             'customers.view', 'services.view', 'services.activate', 'services.suspend', 'services.force_resume',
             'network.view', 'network.provision', 'network.disconnect', 'network.credentials.reveal',
