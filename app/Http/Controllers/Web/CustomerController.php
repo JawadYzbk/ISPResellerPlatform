@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Web;
 use App\Actions\AnonymizeCustomer;
 use App\Actions\CreateCustomer;
 use App\Actions\DeleteCustomerView;
+use App\Actions\ExportCustomersCsv;
 use App\Actions\GetCustomerDetails;
 use App\Actions\ListCustomers;
 use App\Actions\ListCustomerSavedViews;
@@ -24,11 +25,13 @@ use App\Models\Invoice;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Models\Zone;
+use App\Support\Tenancy;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 final class CustomerController extends Controller
 {
@@ -167,7 +170,38 @@ final class CustomerController extends Controller
                     'columns' => $view->columns,
                 ])->values()
                 : [],
+            'canExport' => $request->user()?->can('customers.export') === true,
         ]);
+    }
+
+    public function export(CustomerIndexRequest $request, ExportCustomersCsv $export): StreamedResponse
+    {
+        $this->authorize('export', Customer::class);
+        $user = $request->user();
+        abort_unless($user instanceof User && $user->tenant instanceof Tenant, 403);
+        $tenant = $user->tenant;
+        $validated = $request->validated();
+        $query = array_filter([
+            'search' => $validated['search'] ?? null,
+            'status' => $validated['status'] ?? null,
+            'zone_id' => isset($validated['zone_id']) ? (int) $validated['zone_id'] : null,
+            'expires_from' => $validated['expires_from'] ?? null,
+            'expires_to' => $validated['expires_to'] ?? null,
+            'selected' => $validated['selected'] ?? [],
+        ], static fn (mixed $value): bool => $value !== null && $value !== []);
+
+        return response()->streamDownload(function () use ($export, $query, $tenant): void {
+            app(Tenancy::class)->run($tenant, function () use ($export, $query): void {
+                echo $export->handle(
+                    $query['search'] ?? null,
+                    $query['status'] ?? null,
+                    $query['zone_id'] ?? null,
+                    $query['expires_from'] ?? null,
+                    $query['expires_to'] ?? null,
+                    $query['selected'] ?? [],
+                );
+            });
+        }, 'customers.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);
     }
 
     public function storeSavedView(Request $request, SaveCustomerView $save): RedirectResponse
