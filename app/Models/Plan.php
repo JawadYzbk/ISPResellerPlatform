@@ -16,6 +16,7 @@ use Illuminate\Support\Str;
  * @property int $duration_days
  * @property int $download_kbps
  * @property int $upload_kbps
+ * @property array<string, mixed>|null $metadata
  */
 class Plan extends Model
 {

@@ -34,7 +34,7 @@ final readonly class RenewService implements Action
             );
             $autoOverdue = $locked->status === ServiceStatus::Suspended && $locked->suspension_reason === 'auto_overdue';
 
-            $locked->forceFill(['expires_at' => $renewedUntil->utc()])->save();
+            $locked->forceFill(['expires_at' => $renewedUntil->utc(), 'current_period_bytes' => 0, 'fup_applied_at' => null])->save();
             $updated = $autoOverdue
                 ? $this->transition->handle($locked, ServiceStatus::Active, $actor, ['reason' => 'payment_renewal'])
                 : $locked->refresh();
