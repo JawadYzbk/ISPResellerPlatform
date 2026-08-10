@@ -6,6 +6,7 @@ import {
     Edit3,
     MapPin,
     MessageCircle,
+    MessageSquare,
     Phone,
     Plus,
     Pause,
@@ -272,6 +273,46 @@ export default function CustomerShow({
                                 </dd>
                             </div>
                         </dl>
+                    </div>
+                    <div className="card overflow-hidden">
+                        <div className="flex items-center justify-between border-b border-line px-6 py-5">
+                            <div className="flex items-center gap-2">
+                                <MessageSquare size={18} className="text-brand" />
+                                <div>
+                                    <h2 className="section-title">Support tickets</h2>
+                                    <p className="mt-1 text-sm text-muted">Recent customer conversations.</p>
+                                </div>
+                            </div>
+                            <Link
+                                href={`/operations/tickets?search=${encodeURIComponent(customer.code)}`}
+                                className="text-sm font-semibold text-brand"
+                            >
+                                View queue
+                            </Link>
+                        </div>
+                        <div className="divide-y divide-line">
+                            {customer.tickets.map((ticket) => (
+                                <Link
+                                    key={ticket.public_id}
+                                    href={`/operations/tickets/${ticket.public_id}`}
+                                    className="block px-6 py-4 hover:bg-sand/30"
+                                >
+                                    <div className="flex items-start justify-between gap-3">
+                                        <div className="min-w-0">
+                                            <p className="text-sm font-semibold">{ticket.subject}</p>
+                                            <p className="mt-1 text-xs text-muted">
+                                                {ticket.number} · {ticket.priority} priority
+                                            </p>
+                                        </div>
+                                        <StatusBadge status={ticket.status} />
+                                    </div>
+                                    <p className="mt-2 text-xs text-muted">Updated {formatDate(ticket.updated_at)}</p>
+                                </Link>
+                            ))}
+                            {customer.tickets.length === 0 && (
+                                <p className="px-6 py-8 text-sm text-muted">No support tickets for this customer.</p>
+                            )}
+                        </div>
                     </div>
                     <div className="card p-6">
                         <div className="flex items-center gap-2">

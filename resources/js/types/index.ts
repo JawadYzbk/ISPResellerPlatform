@@ -217,6 +217,15 @@ export type Customer = {
         method: string;
         received_at: string | null;
     }[];
+    tickets: {
+        public_id: string;
+        number: string;
+        subject: string;
+        priority: string;
+        status: 'open' | 'in_progress' | 'pending' | 'resolved' | 'closed';
+        due_at: string | null;
+        updated_at: string | null;
+    }[];
     timeline: {
         type: string;
         title: string;
