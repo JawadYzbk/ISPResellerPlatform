@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import type { PropsWithChildren } from 'react';
 
+import RealtimeBridge from '@/components/RealtimeBridge';
 import type { PageProps } from '@/types';
 
 export default function AppLayout({ children }: PropsWithChildren) {
@@ -29,6 +30,7 @@ export default function AppLayout({ children }: PropsWithChildren) {
 
     return (
         <div className="min-h-screen bg-canvas text-ink" dir={app.direction}>
+            <RealtimeBridge />
             <aside className="fixed inset-y-0 start-0 z-20 hidden w-64 flex-col border-e border-line bg-white lg:flex">
                 <div className="flex h-20 items-center gap-3 border-b border-line px-6">
                     <div className="grid size-9 place-items-center rounded-xl bg-brand text-white shadow-sm">
