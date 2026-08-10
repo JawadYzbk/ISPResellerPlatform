@@ -59,6 +59,8 @@ Router incidents can broadcast notices only to customers affected by the router,
 
 Use **Operations -> Routers** to register devices with a tenant POP, open a router detail page, filter them by online/offline state, and run a bounded health check. Router API and optional RADIUS/CoA secrets are encrypted at rest and are not rendered in the operations list or detail response. The detail page shows the last successful observation, consecutive failures, assigned service count and TLS verification state. Updating connection settings requires recent authentication; blank secret fields preserve the encrypted values. Use **Operations -> Network queue** to follow the resulting command and its retry history.
 
+Use **Operations -> POPs** to review tenant locations, assigned routers, upstream capacity, provider contract dates and monthly costs. The current surface is inventory-only; change provider contracts through the approved finance workflow until POP write controls are released.
+
 Use **Operations -> Credentials** to review supplier inventory without exposing secrets. Staff with the credential-assignment capability can select an unassigned service for an available credential; the action requires recent authentication and prevents a service from receiving a second credential. Secret reveal and bulk import remain controlled workflows until their rollout approval is complete.
 
 Network changes are queued through the outbox and executed by the queue worker. Inspect the command state and retry only after checking the router connection and the desired service state. `routers:reconcile-subscribers` is report-only by default; `--heal` is an explicit change and requires an approved incident or maintenance record.
