@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\ApiTokenController;
 use App\Http\Controllers\Api\CollectorPaymentController;
 use App\Http\Controllers\Api\CustomerApiController;
+use App\Http\Controllers\Api\CustomerImportController;
 use App\Http\Controllers\Api\HealthController;
 use App\Http\Controllers\Api\NetworkCommandController;
 use App\Http\Controllers\Api\PaymentApiController;
@@ -26,6 +27,8 @@ Route::prefix('v1')->group(function (): void {
         Route::get('/me', fn (Request $request) => $request->user())->name('api.me');
         Route::get('/customers', [CustomerApiController::class, 'index'])->name('api.customers.index');
         Route::get('/customers/{customer:public_id}', [CustomerApiController::class, 'show'])->name('api.customers.show');
+        Route::post('/imports/customers', [CustomerImportController::class, 'store'])->name('api.imports.customers.store');
+        Route::post('/imports/{import}/rollback', [CustomerImportController::class, 'rollback'])->name('api.imports.rollback');
         Route::post('/payments', [PaymentApiController::class, 'store'])->middleware('idempotency')->name('api.payments.store');
         Route::post('/collector/payments/batch', [CollectorPaymentController::class, 'store'])->middleware('idempotency')->name('api.collector.payments.batch');
         Route::post('/network/commands/{command}/retry', [NetworkCommandController::class, 'retry'])->middleware('idempotency')->name('api.network.commands.retry');
