@@ -3,10 +3,11 @@ import { ArrowUpRight, CircleAlert, Clock3, CreditCard, Plus, Users, Wifi } from
 
 import StatusBadge from '@/components/StatusBadge';
 import AppLayout from '@/layouts/AppLayout';
-import type { PageProps } from '@/types';
+import { formatMoney } from '@/lib/format';
+import type { DashboardMetrics, PageProps } from '@/types';
 
 type Props = PageProps & {
-    metrics: { customers: number; activeServices: number; attention: number; expiringSoon: number };
+    metrics: DashboardMetrics;
 };
 
 export default function Dashboard({ metrics }: Props) {
@@ -90,20 +91,22 @@ export default function Dashboard({ metrics }: Props) {
                     <div className="grid divide-y divide-line sm:grid-cols-3 sm:divide-x sm:divide-y-0">
                         <div className="p-6">
                             <p className="text-xs font-semibold uppercase tracking-wider text-muted">Collections</p>
-                            <p className="mt-3 font-display text-2xl font-semibold">$0.00</p>
-                            <p className="mt-1 text-xs text-muted">No payments recorded yet</p>
+                            <p className="mt-3 font-display text-2xl font-semibold">
+                                {formatMoney(metrics.collectionsToday, metrics.collectionsCurrency)}
+                            </p>
+                            <p className="mt-1 text-xs text-muted">Posted collections today</p>
                         </div>
                         <div className="p-6">
                             <p className="text-xs font-semibold uppercase tracking-wider text-muted">Network</p>
                             <div className="mt-3 flex items-center gap-2">
-                                <StatusBadge status="in_sync" />
-                                <span className="text-sm font-medium">All systems in sync</span>
+                                <StatusBadge status={metrics.networkPending > 0 ? 'pending_sync' : 'in_sync'} />
+                                <span className="text-sm font-medium">{metrics.networkPending} pending command(s)</span>
                             </div>
                             <p className="mt-2 text-xs text-muted">Command pipeline is ready</p>
                         </div>
                         <div className="p-6">
                             <p className="text-xs font-semibold uppercase tracking-wider text-muted">Field work</p>
-                            <p className="mt-3 font-display text-2xl font-semibold">0</p>
+                            <p className="mt-3 font-display text-2xl font-semibold">{metrics.openWorkOrders}</p>
                             <p className="mt-1 text-xs text-muted">Open work orders</p>
                         </div>
                     </div>

@@ -27,6 +27,17 @@ export type PageProps = {
     };
 };
 
+export type DashboardMetrics = {
+    customers: number;
+    activeServices: number;
+    attention: number;
+    expiringSoon: number;
+    collectionsToday: number;
+    collectionsCurrency: string;
+    networkPending: number;
+    openWorkOrders: number;
+};
+
 export type Zone = {
     id: number;
     name: string;
