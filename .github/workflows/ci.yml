@@ -30,6 +30,18 @@ jobs:
       - name: Install JavaScript dependencies
         run: npm ci
 
+      - name: Install WhatsApp bridge dependencies
+        working-directory: integrations/whatsapp-web
+        run: npm ci --ignore-scripts
+
+      - name: Test WhatsApp bridge
+        working-directory: integrations/whatsapp-web
+        run: npm test
+
+      - name: Audit WhatsApp bridge dependencies
+        working-directory: integrations/whatsapp-web
+        run: npm audit --audit-level=high
+
       - name: Composer dependency audit
         run: composer audit --no-interaction
 
