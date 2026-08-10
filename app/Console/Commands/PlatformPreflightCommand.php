@@ -33,6 +33,10 @@ final class PlatformPreflightCommand extends Command
                 'Asynchronous queue connection' => $this->usesAsynchronousQueue(),
                 'Persistent cache store' => $this->usesPersistentCache(),
                 'Capability assignments' => $this->capabilityAssignmentsAreReady(),
+                'Sentry configuration' => $this->sentryIsConfigured(),
+                'Encrypted off-site backups' => $this->backupsAreConfigured(),
+                'Private object storage' => $this->objectStorageIsConfigured(),
+                'Reverb configuration' => $this->reverbIsConfigured(),
             ];
         }
 
@@ -144,5 +148,63 @@ final class PlatformPreflightCommand extends Command
         } catch (\Throwable) {
             return false;
         }
+    }
+
+    private function sentryIsConfigured(): bool
+    {
+        return $this->hasConfiguredValue(config('sentry.dsn')) && config('sentry.send_default_pii') === false;
+    }
+
+    private function backupsAreConfigured(): bool
+    {
+        $disks = config('backup.backup.destination.disks');
+        if (! is_array($disks)) {
+            return false;
+        }
+
+        $hasOffsiteDisk = collect($disks)->contains(fn (mixed $disk): bool => is_string($disk) && strtolower($disk) !== 'local');
+
+        return $hasOffsiteDisk
+            && $this->hasConfiguredValue(config('backup.backup.password'))
+            && strtolower((string) config('backup.backup.encryption')) !== 'none'
+            && $this->hasConfiguredValue(config('backup.notifications.mail.to'));
+    }
+
+    private function objectStorageIsConfigured(): bool
+    {
+        if ((string) config('filesystems.default') !== 's3') {
+            return false;
+        }
+
+        return collect(['key', 'secret', 'bucket', 'endpoint'])
+            ->every(fn (string $key): bool => $this->hasConfiguredValue(config('filesystems.disks.s3.'.$key)));
+    }
+
+    private function reverbIsConfigured(): bool
+    {
+        if ((string) config('broadcasting.default') !== 'reverb') {
+            return true;
+        }
+
+        $allowedOrigins = config('reverb.apps.apps.0.allowed_origins');
+
+        return $this->hasConfiguredValue(config('broadcasting.connections.reverb.key'))
+            && $this->hasConfiguredValue(config('broadcasting.connections.reverb.secret'))
+            && $this->hasConfiguredValue(config('broadcasting.connections.reverb.host'))
+            && is_array($allowedOrigins)
+            && $allowedOrigins !== [];
+    }
+
+    private function hasConfiguredValue(mixed $value): bool
+    {
+        if (! is_string($value) || trim($value) === '') {
+            return false;
+        }
+
+        $normalized = strtolower(trim($value));
+
+        return ! in_array($normalized, ['null', 'replace-me', 'change-me', 'placeholder', 'set-me'], true)
+            && ! str_contains($normalized, 'example.')
+            && ! in_array($normalized, ['localhost', '127.0.0.1', '::1', '[::1]'], true);
     }
 }

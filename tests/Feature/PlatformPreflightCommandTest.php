@@ -40,6 +40,22 @@ it('passes the production preflight for a production-shaped configuration', func
         'session.secure' => true,
         'queue.default' => 'database',
         'cache.default' => 'database',
+        'sentry.dsn' => 'https://public@sentry.io/123',
+        'sentry.send_default_pii' => false,
+        'backup.backup.destination.disks' => ['s3'],
+        'backup.backup.password' => 'backup-passphrase',
+        'backup.backup.encryption' => 'aes256',
+        'backup.notifications.mail.to' => 'ops@isp.test',
+        'filesystems.default' => 's3',
+        'filesystems.disks.s3.key' => 's3-key',
+        'filesystems.disks.s3.secret' => 's3-secret',
+        'filesystems.disks.s3.bucket' => 'isp-media',
+        'filesystems.disks.s3.endpoint' => 'https://objects.provider.test',
+        'broadcasting.default' => 'reverb',
+        'broadcasting.connections.reverb.key' => 'reverb-key',
+        'broadcasting.connections.reverb.secret' => 'reverb-secret',
+        'broadcasting.connections.reverb.host' => 'realtime.provider.test',
+        'reverb.apps.apps.0.allowed_origins' => ['https://portal.provider.test'],
     ]);
 
     $this->artisan('platform:preflight', ['--production' => true])
