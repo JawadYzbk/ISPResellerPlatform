@@ -16,7 +16,7 @@ jobs:
         with:
           php-version: '8.3'
           extensions: mbstring, dom, fileinfo, pdo_sqlite, pdo_pgsql, zip
-          coverage: none
+          coverage: pcov
 
       - name: Set up Node
         uses: actions/setup-node@v4
@@ -43,7 +43,23 @@ jobs:
         run: vendor/bin/phpstan analyse --no-progress
 
       - name: Feature and unit tests
-        run: php artisan test
+        run: php artisan test --coverage --coverage-clover storage/coverage.xml
+
+      - name: Prepare API contract artifact
+        if: always()
+        run: |
+          mkdir -p build/api
+          cp openapi/isp-platform-v1.yaml build/api/isp-platform-v1.yaml
+
+      - name: Upload API contract and coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-contract-and-coverage
+          path: |
+            build/api/isp-platform-v1.yaml
+            storage/coverage.xml
+          if-no-files-found: warn
 
       - name: Typecheck
         run: npm run typecheck
