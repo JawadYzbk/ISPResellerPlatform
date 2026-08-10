@@ -6,12 +6,18 @@ use App\Http\Controllers\Auth\ReauthenticateController;
 use App\Http\Controllers\Auth\TwoFactorController;
 use App\Http\Controllers\Web\CustomerController;
 use App\Http\Controllers\Web\DashboardController;
+use App\Http\Controllers\Web\PortalPageController;
 use App\Http\Controllers\Web\ReportController;
 use App\Http\Controllers\Web\SecurityController;
 use App\Http\Controllers\Web\ServiceController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', fn () => redirect()->route(auth()->check() ? 'dashboard' : 'login'));
+
+Route::prefix('portal/{tenant:slug}')->group(function (): void {
+    Route::get('/', [PortalPageController::class, 'signIn'])->name('portal.sign-in');
+    Route::get('/dashboard', [PortalPageController::class, 'dashboard'])->name('portal.dashboard');
+});
 
 Route::middleware('guest')->group(function (): void {
     Route::get('/login', [LoginController::class, 'create'])->name('login');
