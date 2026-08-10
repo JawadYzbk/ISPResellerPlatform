@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\FxRoundingMode;
 use App\Models\Currency;
 use App\Models\Customer;
 use App\Support\Tenancy;
@@ -37,6 +38,7 @@ final class CollectPaymentRequest extends FormRequest
             'fx_rate_numerator' => ['nullable', 'integer', 'min:1', Rule::requiredIf(fn (): bool => $this->boolean('fx_override'))],
             'fx_rate_denominator' => ['nullable', 'integer', 'min:1', Rule::requiredIf(fn (): bool => $this->boolean('fx_override'))],
             'fx_override_reason' => ['nullable', 'string', 'max:500', Rule::requiredIf(fn (): bool => $this->boolean('fx_override'))],
+            'rounding_mode' => ['nullable', 'string', Rule::in(array_map(fn (FxRoundingMode $mode): string => $mode->value, FxRoundingMode::cases()))],
             'reference' => ['nullable', 'string', 'max:128'],
         ];
     }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Actions\GetPaymentDetails;
 use App\Actions\ListPaymentsApi;
 use App\Actions\RecordPayment;
+use App\Enums\FxRoundingMode;
 use App\Http\Controllers\Controller;
 use App\Models\CashShift;
 use App\Models\Currency;
@@ -48,6 +49,7 @@ final class PaymentApiController extends Controller
             'fx_rate_numerator' => ['nullable', 'integer', 'min:1', Rule::requiredIf(fn (): bool => $request->boolean('fx_override'))],
             'fx_rate_denominator' => ['nullable', 'integer', 'min:1', Rule::requiredIf(fn (): bool => $request->boolean('fx_override'))],
             'fx_override_reason' => ['nullable', 'string', 'max:500', Rule::requiredIf(fn (): bool => $request->boolean('fx_override'))],
+            'rounding_mode' => ['nullable', 'string', Rule::in(array_map(fn (FxRoundingMode $mode): string => $mode->value, FxRoundingMode::cases()))],
             'reference' => ['nullable', 'string', 'max:128'],
         ]);
         $customer = Customer::query()->where('public_id', $validated['customer_id'])->firstOrFail();
@@ -75,6 +77,7 @@ final class PaymentApiController extends Controller
             ($validated['fx_override'] ?? false) ? (int) $validated['fx_rate_denominator'] : null,
             ($validated['fx_override'] ?? false) ? (string) $validated['fx_override_reason'] : null,
             isset($validated['reference']) ? (string) $validated['reference'] : null,
+            isset($validated['rounding_mode']) ? (string) $validated['rounding_mode'] : null,
         );
 
         return response()->json([
@@ -89,6 +92,9 @@ final class PaymentApiController extends Controller
             'fx_rate_numerator' => $payment->fx_rate_numerator,
             'fx_rate_denominator' => $payment->fx_rate_denominator,
             'fx_rate_overridden' => $payment->fx_rate_overridden,
+            'fx_rounding_mode' => $payment->metadata['base_fx_snapshot']['rounding_mode'] ?? null,
+            'fx_rate_source' => $payment->metadata['base_fx_snapshot']['rate_source'] ?? $payment->metadata['base_fx_source'] ?? null,
+            'fx_rate_effective_from' => $payment->metadata['base_fx_snapshot']['effective_from'] ?? null,
             'reference' => $payment->reference,
         ], 201);
     }

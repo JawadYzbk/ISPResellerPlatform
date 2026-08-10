@@ -7,6 +7,7 @@ use App\Domain\Ledger\JournalLineInput;
 use App\Domain\Ledger\PostJournalEntry;
 use App\Domain\Money\FxConverter;
 use App\Enums\CashShiftStatus;
+use App\Enums\FxRoundingMode;
 use App\Enums\InvoiceStatus;
 use App\Enums\PaymentStatus;
 use App\Models\CashShift;
@@ -26,7 +27,7 @@ final readonly class RecordPayment implements Action
 {
     public function __construct(private DocumentNumberGenerator $numbers, private PostJournalEntry $journal, private RenewService $renewService, private QueueCustomerNotification $notify, private FxConverter $fx) {}
 
-    public function handle(Customer $customer, int $amount, string $currency, string $method, string $idempotencyKey, ?Invoice $invoice = null, ?User $actor = null, ?CashShift $cashShift = null, ?int $fxRateNumerator = null, ?int $fxRateDenominator = null, ?string $fxOverrideReason = null, ?string $reference = null): Payment
+    public function handle(Customer $customer, int $amount, string $currency, string $method, string $idempotencyKey, ?Invoice $invoice = null, ?User $actor = null, ?CashShift $cashShift = null, ?int $fxRateNumerator = null, ?int $fxRateDenominator = null, ?string $fxOverrideReason = null, ?string $reference = null, ?string $roundingMode = null): Payment
     {
         if ($amount < 1) {
             throw new DomainException('Payment amount must be positive.');
@@ -39,6 +40,10 @@ final readonly class RecordPayment implements Action
         }
         if (($fxRateNumerator !== null || $fxRateDenominator !== null) && blank($fxOverrideReason)) {
             throw new DomainException('An explanation is required when overriding the FX rate.');
+        }
+        $rounding = FxRoundingMode::tryFrom($roundingMode ?: (string) config('services.fx.rounding_mode', FxRoundingMode::HalfUp->value));
+        if ($rounding === null) {
+            throw new DomainException('Unsupported FX rounding mode.');
         }
         if ($invoice !== null && ($invoice->tenant_id !== $customer->tenant_id || $invoice->customer_id !== $customer->id || $invoice->status !== InvoiceStatus::Issued)) {
             throw new DomainException('The invoice is not payable by this customer.');
@@ -54,10 +59,10 @@ final readonly class RecordPayment implements Action
 
         $receivedAt = CarbonImmutable::now();
         $baseCurrency = (string) Tenant::query()->whereKey($customer->tenant_id)->value('base_currency');
-        $baseSnapshot = $this->fx->snapshot($currency, $baseCurrency, $receivedAt, $fxRateNumerator, $fxRateDenominator);
+        $baseSnapshot = $this->fx->snapshot($currency, $baseCurrency, $receivedAt, $fxRateNumerator, $fxRateDenominator, $rounding->value);
         $ledgerSnapshot = $customer->balance_currency === $baseCurrency
             ? $baseSnapshot
-            : $this->fx->snapshot($currency, $customer->balance_currency, $receivedAt);
+            : $this->fx->snapshot($currency, $customer->balance_currency, $receivedAt, roundingMode: $rounding->value);
         if ($invoice !== null && $invoice->currency !== $baseCurrency && ($fxRateNumerator !== null || $fxRateDenominator !== null)) {
             throw new DomainException('FX overrides must be stated against the tenant base currency.');
         }
@@ -66,7 +71,7 @@ final readonly class RecordPayment implements Action
             $invoiceSnapshot = match (true) {
                 $invoice->currency === $baseCurrency => $baseSnapshot,
                 $invoice->currency === $customer->balance_currency => $ledgerSnapshot,
-                default => $this->fx->snapshot($currency, $invoice->currency, $receivedAt),
+                default => $this->fx->snapshot($currency, $invoice->currency, $receivedAt, roundingMode: $rounding->value),
             };
         }
 
@@ -113,7 +118,8 @@ final readonly class RecordPayment implements Action
                     'actor_id' => $actor?->id,
                     'metadata' => [
                         'base_currency' => $baseCurrency,
-                        'base_fx_source' => $baseSnapshot->source,
+                        'base_fx_source' => $baseSnapshot->rateSource ?? $baseSnapshot->source,
+                        'base_fx_snapshot' => $baseSnapshot->toArray(),
                         'ledger_fx' => $ledgerSnapshot->toArray(),
                         'invoice_amount' => $invoiceAmount,
                         'invoice_currency' => $lockedInvoice?->currency,

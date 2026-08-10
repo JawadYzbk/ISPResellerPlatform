@@ -31,6 +31,9 @@ final readonly class RecordCollectorPaymentBatch implements Action
                 if (($item['fx_override'] ?? false) && (! is_int($item['fx_rate_numerator'] ?? null) || ! is_int($item['fx_rate_denominator'] ?? null) || ! is_string($item['fx_override_reason'] ?? null))) {
                     throw new \InvalidArgumentException('The FX override payload is malformed.');
                 }
+                if (isset($item['rounding_mode']) && ! is_string($item['rounding_mode'])) {
+                    throw new \InvalidArgumentException('The FX rounding mode is malformed.');
+                }
                 $existing = Payment::query()->where('idempotency_key', $item['idempotency_key'])->first();
                 $cashShift = $existing instanceof Payment
                     ? null
@@ -53,6 +56,7 @@ final readonly class RecordCollectorPaymentBatch implements Action
                     ($item['fx_override'] ?? false) ? $item['fx_rate_denominator'] : null,
                     ($item['fx_override'] ?? false) ? $item['fx_override_reason'] : null,
                     isset($item['reference']) && is_string($item['reference']) ? $item['reference'] : null,
+                    isset($item['rounding_mode']) ? $item['rounding_mode'] : null,
                 );
                 $results[] = ['index' => $index, 'status' => 'ok', 'payment_id' => $payment->public_id];
             } catch (\Throwable $exception) {

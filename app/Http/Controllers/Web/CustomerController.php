@@ -243,6 +243,7 @@ final class CustomerController extends Controller
                 ($validated['fx_override'] ?? false) ? (int) $validated['fx_rate_denominator'] : null,
                 ($validated['fx_override'] ?? false) ? (string) $validated['fx_override_reason'] : null,
                 isset($validated['reference']) ? (string) $validated['reference'] : null,
+                isset($validated['rounding_mode']) ? (string) $validated['rounding_mode'] : null,
             );
         } catch (DomainException $exception) {
             throw ValidationException::withMessages(['currency' => $exception->getMessage()]);

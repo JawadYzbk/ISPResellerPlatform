@@ -32,6 +32,11 @@ it('records a collection-currency payment with a historical FX snapshot', functi
         ->and($payment->fx_rate_numerator)->toBe(1)
         ->and($payment->fx_rate_denominator)->toBe(90_000)
         ->and($payment->fx_rate_overridden)->toBeFalse()
+        ->and($payment->metadata['base_fx_snapshot']['numerator'])->toBe(1)
+        ->and($payment->metadata['base_fx_snapshot']['denominator'])->toBe(90_000)
+        ->and($payment->metadata['base_fx_snapshot']['rounding_mode'])->toBe('half_up')
+        ->and($payment->metadata['base_fx_snapshot']['rate_source'])->toBe('manual')
+        ->and($payment->metadata['base_fx_snapshot']['effective_from'])->not->toBeNull()
         ->and($payment->allocations()->first()->amount)->toBe(100)
         ->and($payment->allocations()->first()->currency)->toBe('USD')
         ->and($customer->refresh()->balance_amount)->toBe(0);
