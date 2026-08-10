@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers\Web;
 
+use App\Actions\AssignInventoryUnit;
 use App\Actions\ListInventoryUnits;
 use App\Http\Controllers\Controller;
 use App\Models\InventoryUnit;
+use App\Models\Service;
 use App\Models\User;
 use Carbon\CarbonImmutable;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Inertia\Inertia;
@@ -57,10 +60,39 @@ final class InventoryOperationsController extends Controller
             ['path' => $request->url(), 'query' => $request->query()],
         );
 
+        $canAssign = $user->can('inventory.assign');
+        $assignableServices = $canAssign
+            ? Service::query()
+                ->with('customer')
+                ->where('status', '!=', 'terminated')
+                ->orderBy('username')
+                ->get(['id', 'public_id', 'customer_id', 'username'])
+                ->map(fn (Service $service): array => [
+                    'public_id' => $service->public_id,
+                    'username' => $service->username,
+                    'customer' => $service->customer?->full_name,
+                ])
+                ->values()
+                ->all()
+            : [];
+
         return Inertia::render('Operations/Inventory', [
             'units' => $units,
             'filters' => $request->only(['status', 'search']),
+            'canAssign' => $canAssign,
+            'assignableServices' => $assignableServices,
         ]);
+    }
+
+    public function assign(Request $request, InventoryUnit $unit, AssignInventoryUnit $assign): RedirectResponse
+    {
+        $user = $request->user();
+        abort_unless($user instanceof User && $user->can('inventory.assign'), 403);
+        $validated = $request->validate(['service_public_id' => ['required', 'string']]);
+        $service = Service::query()->where('public_id', $validated['service_public_id'])->firstOrFail();
+        $assign->handle($unit, $service, $user);
+
+        return redirect()->route('operations.inventory')->with('success', "Inventory unit {$unit->serial_number} assigned.");
     }
 
     private function isoDate(mixed $value): ?string

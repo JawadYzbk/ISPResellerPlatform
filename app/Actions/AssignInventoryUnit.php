@@ -16,6 +16,9 @@ final readonly class AssignInventoryUnit implements Action
     {
         return DB::transaction(function () use ($unit, $service, $actor): InventoryUnit {
             $locked = InventoryUnit::query()->lockForUpdate()->findOrFail($unit->id);
+            if ($locked->tenant_id !== $service->tenant_id || ($actor !== null && $actor->tenant_id !== $locked->tenant_id)) {
+                throw new DomainException('Inventory units, services, and actors must belong to the same tenant.');
+            }
             if ($locked->status !== 'available' || $locked->service_id !== null) {
                 throw new DomainException('The serialized inventory unit is already assigned.');
             }

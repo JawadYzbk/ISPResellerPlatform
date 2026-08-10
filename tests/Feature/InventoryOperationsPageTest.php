@@ -51,3 +51,31 @@ it('does not expose inventory units from another tenant', function (): void {
     $this->actingAs($user)->get(route('operations.inventory'))->assertOk()->assertInertia(fn ($page) => $page->where('units.total', 0));
     expect($unit->serial_number)->toBe('ONU-SOUTH');
 });
+
+it('assigns an available unit through the tenant-safe web action', function (): void {
+    $tenant = Tenant::create(['name' => 'Northline', 'slug' => 'northline', 'base_currency' => 'USD', 'collection_currency' => 'USD']);
+    $user = User::create(['tenant_id' => $tenant->id, 'name' => 'Technician', 'email' => 'technician-assign@example.test', 'password' => Hash::make('password'), 'role' => 'technician']);
+    app(CapabilitySeeder::class)->run();
+    app(Tenancy::class)->set($tenant);
+    $user->assignRole('technician');
+    $item = InventoryItem::create(['sku' => 'CPE-ONU', 'name' => 'Fiber ONU', 'category' => 'onu', 'is_serialized' => true]);
+    $warehouse = Warehouse::create(['name' => 'Main warehouse', 'code' => 'MAIN']);
+    $service = Service::factory()->create(['username' => 'assignable-service']);
+    $unit = InventoryUnit::create(['inventory_item_id' => $item->id, 'warehouse_id' => $warehouse->id, 'serial_number' => 'ONU-002', 'status' => 'available']);
+    $user->forceFill(['last_authenticated_at' => now()])->save();
+
+    $this->actingAs($user)
+        ->get(route('operations.inventory'))
+        ->assertInertia(fn ($page) => $page
+            ->where('canAssign', true)
+            ->where('assignableServices.0.public_id', $service->public_id)
+        );
+
+    app(Tenancy::class)->set($tenant);
+    $this->actingAs($user)
+        ->post(route('operations.inventory.assign', $unit->id), ['service_public_id' => $service->public_id])
+        ->assertRedirect(route('operations.inventory'));
+
+    expect($unit->refresh()->service_id)->toBe($service->id)
+        ->and($unit->status)->toBe('assigned');
+});
