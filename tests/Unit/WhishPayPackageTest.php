@@ -1,12 +1,12 @@
 <?php
 
+use WhishPay\Exceptions\WhishApiException;
+use WhishPay\Exceptions\WhishValidationException;
 use WhishPay\PaymentRequest;
 use WhishPay\WhishClient;
 use WhishPay\WhishConfig;
 use WhishPay\WhishHttpResponse;
 use WhishPay\WhishHttpTransport;
-use WhishPay\Exceptions\WhishApiException;
-use WhishPay\Exceptions\WhishValidationException;
 
 it('creates a Whish payment using the documented JSON contract', function (): void {
     $transport = new class implements WhishHttpTransport
@@ -41,7 +41,7 @@ it('creates a Whish payment using the documented JSON contract', function (): vo
         ->and($transport->request['method'])->toBe('POST')
         ->and($transport->request['url'])->toBe(WhishConfig::SANDBOX_BASE_URL.'/payment/whish')
         ->and($transport->request['headers']['secret'])->toBe('secret')
-        ->and($transport->request['payload']['amount'])->toBe('12.50')
+        ->and($transport->request['payload']['amount'])->toBe(12.5)
         ->and($transport->request['payload']['externalId'])->toBe(123456789)
         ->and(json_encode(new WhishConfig('channel', 'secret', 'https://app.example.test')))->not->toContain('secret');
 });

@@ -55,6 +55,6 @@ it('converts LBP minor units without floating point arithmetic', function (): vo
     $result = app(WhishPaymentGateway::class)->create($attempt);
 
     expect($result->collectUrl)->toBe('https://pay.example.test/collect')
-        ->and($transport->payload['amount'])->toBe('125000')
+        ->and($transport->payload['amount'])->toBe(125000)
         ->and($transport->payload['currency'])->toBe('LBP');
 });

@@ -9,12 +9,19 @@ use WhishPay\Exceptions\WhishValidationException;
 final readonly class PaymentRequest
 {
     public string $amount;
+
     public string $currency;
+
     public string $invoice;
+
     public string $externalId;
+
     public string $successCallbackUrl;
+
     public string $failureCallbackUrl;
+
     public string $successRedirectUrl;
+
     public string $failureRedirectUrl;
 
     public function __construct(
@@ -52,11 +59,11 @@ final readonly class PaymentRequest
         }
     }
 
-    /** @return array<string, string|int> */
+    /** @return array<string, string|int|float> */
     public function toArray(): array
     {
         return [
-            'amount' => $this->amount,
+            'amount' => self::providerNumber($this->amount),
             'currency' => $this->currency,
             'invoice' => $this->invoice,
             'externalId' => (int) $this->externalId,
@@ -79,5 +86,10 @@ final readonly class PaymentRequest
         }
 
         return $value;
+    }
+
+    private static function providerNumber(string $value): int|float
+    {
+        return str_contains($value, '.') ? (float) $value : (int) $value;
     }
 }

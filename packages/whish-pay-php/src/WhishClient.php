@@ -4,20 +4,23 @@ declare(strict_types=1);
 
 namespace WhishPay;
 
+use JsonException;
 use WhishPay\Exceptions\WhishApiException;
 use WhishPay\Exceptions\WhishParseException;
-use JsonException;
 
 final class WhishClient
 {
     public const CREATE_PAYMENT_PATH = '/payment/whish';
+
     public const PAYMENT_STATUS_PATH = '/payment/collect/status';
+
     public const RATE_PATH = '/payment/whish/rate';
+
     public const BALANCE_PATH = '/payment/account/balance';
 
     public function __construct(
         private WhishConfig $config,
-        private WhishHttpTransport $transport = new CurlWhishHttpTransport(),
+        private WhishHttpTransport $transport = new CurlWhishHttpTransport,
     ) {}
 
     public function createPayment(PaymentRequest $request): PaymentResponse
@@ -47,7 +50,7 @@ final class WhishClient
     public function getRate(string|int $amount, string $currency): array
     {
         return $this->call('POST', self::RATE_PATH, [
-            'amount' => (string) $amount,
+            'amount' => str_contains((string) $amount, '.') ? (float) $amount : (int) $amount,
             'currency' => strtoupper($currency),
         ])['data'] ?? [];
     }
