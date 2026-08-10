@@ -37,6 +37,14 @@ Content-Type: application/json
 
 Operator clients can preview and apply service plan changes with `POST /api/v1/services/{service}/plan-change-previews` and `POST /api/v1/services/{service}/change-plan`. Send the target public plan ID and `effective` as `immediate` or `next_cycle`; the latter changes the plan during renewal without altering the current period. Immediate changes return the proration amounts and a queued network command.
 
+Operator clients can renew a service for one to twelve plan periods through the invoice-first flow:
+
+1. `POST /api/v1/services/{service}/renewal-previews` with optional `periods` returns the amount, currency, current expiry, new expiry, and a signed preview token.
+2. `POST /api/v1/services/{service}/renewals` with the `preview_id`, matching `periods`, and `X-Idempotency-Key` issues or reuses the renewal invoice.
+3. Collect the issued invoice through the payment endpoint. The service expiry advances only after the invoice is fully allocated; underpayments leave it open.
+
+Preview tokens expire after ten minutes. Keep the same idempotency key for retries and treat a replay as the original invoice response.
+
 ## Technician flow
 
 - `GET /api/v1/technician/work-orders?date=YYYY-MM-DD&status=assigned` lists work orders assigned to the authenticated technician only.

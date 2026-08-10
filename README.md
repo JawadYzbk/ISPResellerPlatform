@@ -27,7 +27,7 @@ The current foundation is live:
 - Historical FX conversion, double-entry ledger, invoices, payments, cash-shift reconciliation and billing runs
 - Multi-currency collection with inverse-rate lookup, payment FX snapshots, approved override reasons, references and overpayment credit
 - Immediate or next-renewal service plan changes with prorated ledger credit/charge entries and queued RouterOS/RADIUS rate synchronization
-- Payment-driven renewal, scheduled overdue suspension and post-commit network command outbox
+- Payment-driven one-to-twelve-period renewal with signed previews, scheduled overdue suspension and post-commit network command outbox
 - Message templates, provider delivery jobs, tickets, work orders and serialized inventory
 - Idempotent customer welcome, payment receipt, expiry, suspension and reactivation notifications with channel selection, opt-out handling, provider fallback and scoped outage broadcasts
 - FreeRADIUS sync, live-session accounting and daily usage rollups
@@ -40,7 +40,7 @@ The current foundation is live:
 - Append-only credit notes with ledger-backed invoice balance reduction
 - Scheduled RouterOS subscriber reconciliation with report-only defaults and explicit device-side healing
 - Supplier credential workflows with permission, re-authentication and audit controls
-- Cursor-paginated customer API, idempotent payment API, collector batches, customer portal OTP/session flow, OpenAPI slice and finance reporting
+- Cursor-paginated customer API, idempotent payment API, collector batches, customer portal OTP/session flow, service plan/renewal APIs, OpenAPI slice and finance reporting
 - Role-scoped Sanctum abilities, app version/maintenance config, technician diagnostics, van inventory, assigned work-order evidence/signature/readings/material APIs
 - Collector offline bootstrap/delta sync with signed cursors and per-payment created/replayed/rejected results
 - Customer, plan, service and serialized-equipment CSV imports with preview, partial success and guarded rollback

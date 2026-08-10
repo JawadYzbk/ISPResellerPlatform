@@ -36,6 +36,8 @@ Termination requires the `services.terminate` capability. It preserves the servi
 
 Staff with `services.change_plan` can change an active or suspended service immediately or schedule a different plan for the next renewal. An immediate change records the unused old-plan credit and new-plan remainder charge in the customer ledger currency, then queues a profile update. A next-cycle change leaves the current period untouched and is applied when the renewal succeeds. Inspect the network command afterward; a queued change is not proof that the device accepted it.
 
+For a paid renewal, use the service renewal action or API preview before issuing the invoice. Select one to twelve plan periods, confirm the signed preview amount and new expiry, then issue the invoice. The renewal is invoice-first: a service is extended only after the issued invoice is fully paid, and an underpayment remains collectible. A preview is valid for ten minutes; if it expires, create a new preview. Reuse the same idempotency key when retrying invoice issuance.
+
 ## Payments and collections
 
 Use **Billing -> Invoices** to search draft and issued invoices. A billing user with the invoice-issue capability can issue a draft from the queue; an issued invoice links to the customer payment form and shows the outstanding allocation-backed balance. Do not treat a displayed invoice as settled until the posted allocation is visible.
