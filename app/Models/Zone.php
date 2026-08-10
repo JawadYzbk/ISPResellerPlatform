@@ -22,6 +22,7 @@ class Zone extends Model
         return $this->belongsTo(Tenant::class);
     }
 
+    /** @return BelongsTo<self, $this> */
     public function parent(): BelongsTo
     {
         return $this->belongsTo(self::class, 'parent_id');

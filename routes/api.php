@@ -29,6 +29,7 @@ use App\Http\Controllers\Api\TechnicianMediaController;
 use App\Http\Controllers\Api\TechnicianWorkOrderController;
 use App\Http\Controllers\Api\TicketApiController;
 use App\Http\Controllers\Api\WorkOrderApiController;
+use App\Http\Controllers\Api\ZoneApiController;
 use App\Models\User;
 use App\Support\Api\UserApiResource;
 use Illuminate\Http\Request;
@@ -80,6 +81,8 @@ Route::prefix('v1')->group(function (): void {
         Route::middleware('any-abilities:staff:operator,staff:collector,staff:technician')->group(function (): void {
             Route::get('/customers', [CustomerApiController::class, 'index'])->name('api.customers.index');
             Route::get('/customers/{customer:public_id}', [CustomerApiController::class, 'show'])->name('api.customers.show');
+            Route::get('/zones', [ZoneApiController::class, 'index'])->name('api.zones.index');
+            Route::get('/zones/{zone}', [ZoneApiController::class, 'show'])->name('api.zones.show');
             Route::get('/services', [ServiceApiController::class, 'index'])->name('api.services.index');
             Route::get('/services/{service}', [ServiceApiController::class, 'show'])->name('api.services.show');
             Route::get('/plans', [PlanApiController::class, 'index'])->name('api.plans.index');
