@@ -132,6 +132,33 @@ paths:
         '200': { description: Service resource }
         '403': { description: Missing service view capability }
         '404': { description: Service not found }
+  /services/{service}/network-commands:
+    get:
+      summary: List recent network commands for a service
+      parameters:
+        - in: path
+          name: service
+          required: true
+          schema: { type: string }
+        - in: query
+          name: limit
+          schema: { type: integer, minimum: 1, maximum: 50, default: 20 }
+      responses:
+        '200': { description: Sanitized recent command history }
+        '403': { description: Missing service view capability }
+        '404': { description: Service not found }
+  /network-commands/{command}:
+    get:
+      summary: Poll a network command
+      parameters:
+        - in: path
+          name: command
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: Sanitized command status and result }
+        '403': { description: Missing network view capability }
+        '404': { description: Network command not found }
   /services/{service}/activate:
     post:
       summary: Activate a service and enqueue network provisioning

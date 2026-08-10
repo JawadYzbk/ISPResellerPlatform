@@ -8,8 +8,10 @@ use App\Actions\TransitionService;
 use App\Enums\ServiceStatus;
 use App\Http\Controllers\Controller;
 use App\Models\CurrentSession;
+use App\Models\NetworkCommand;
 use App\Models\Service;
 use App\Models\User;
+use App\Support\Api\NetworkCommandApiResource;
 use App\Support\Api\ServiceApiResource;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -29,6 +31,22 @@ final class ServiceApiController extends Controller
         $this->authorize('view', $service);
 
         return response()->json($resource->make($service));
+    }
+
+    public function networkCommands(Request $request, string $service, NetworkCommandApiResource $resource): JsonResponse
+    {
+        $service = $this->find($service);
+        $this->authorize('view', $service);
+        $limit = min(max($request->integer('limit', 20), 1), 50);
+        $commands = NetworkCommand::query()
+            ->where('service_id', $service->id)
+            ->latest('created_at')
+            ->limit($limit)
+            ->get()
+            ->map(fn (NetworkCommand $command): array => $resource->make($command))
+            ->values();
+
+        return response()->json(['data' => $commands]);
     }
 
     public function activate(Request $request, string $service, TransitionService $transition, EnqueueNetworkCommand $enqueue): JsonResponse

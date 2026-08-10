@@ -62,6 +62,7 @@ Route::prefix('v1')->group(function (): void {
             Route::get('/customers/{customer:public_id}', [CustomerApiController::class, 'show'])->name('api.customers.show');
             Route::get('/services', [ServiceApiController::class, 'index'])->name('api.services.index');
             Route::get('/services/{service}', [ServiceApiController::class, 'show'])->name('api.services.show');
+            Route::get('/services/{service}/network-commands', [ServiceApiController::class, 'networkCommands'])->name('api.services.network-commands');
             Route::post('/payments', [PaymentApiController::class, 'store'])->middleware('idempotency')->name('api.payments.store');
         });
         Route::middleware('abilities:staff:operator')->group(function (): void {
@@ -90,6 +91,7 @@ Route::prefix('v1')->group(function (): void {
             Route::post('/settlements/{settlement}/pay', [PartnerApiController::class, 'paySettlement'])->middleware('idempotency')->name('api.settlements.pay');
             Route::post('/partners/{partner}/wallet-top-ups', [PartnerApiController::class, 'topUp'])->middleware('idempotency')->name('api.partners.wallet-top-ups');
             Route::post('/network/commands/{command}/retry', [NetworkCommandController::class, 'retry'])->middleware('idempotency')->name('api.network.commands.retry');
+            Route::get('/network-commands/{command}', [NetworkCommandController::class, 'show'])->name('api.network-commands.show');
         });
         Route::middleware('abilities:staff:collector')->group(function (): void {
             Route::post('/collector/payments/batch', [CollectorPaymentController::class, 'store'])->middleware('idempotency')->name('api.collector.payments.batch');
