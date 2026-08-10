@@ -1,25 +1,37 @@
 import { Head, Link, router } from '@inertiajs/react';
-import { ChevronLeft, ChevronRight, Filter, Search, SlidersHorizontal, Users } from 'lucide-react';
+import { CalendarClock, ChevronLeft, ChevronRight, Filter, Search, SlidersHorizontal, Users } from 'lucide-react';
 import { useState } from 'react';
 
 import { StatusBadge } from '@/components/StatusBadge';
 import AppLayout from '@/layouts/AppLayout';
-import { formatMoney } from '@/lib/format';
+import { formatDate, formatMoney } from '@/lib/format';
 import type { Customer, PageProps, Paginator } from '@/types';
 
-type Props = PageProps & { customers: Paginator<Customer>; filters: { search?: string; status?: string } };
-type ColumnKey = 'zone' | 'services' | 'balance' | 'status';
+type Zone = { id: number; name: string; code: string };
+type Props = PageProps & { customers: Paginator<Customer>; filters: { search?: string; status?: string; zone_id?: string; expires_from?: string; expires_to?: string }; zones: Zone[] };
+type ColumnKey = 'zone' | 'services' | 'balance' | 'expiry' | 'status';
 
 const columnOptions: { key: ColumnKey; label: string }[] = [
     { key: 'zone', label: 'Zone' },
     { key: 'services', label: 'Services' },
     { key: 'balance', label: 'Balance' },
+    { key: 'expiry', label: 'Next expiry' },
     { key: 'status', label: 'Status' },
 ];
 
-export default function CustomersIndex({ customers, filters }: Props) {
+function getNextExpiry(customer: Customer): string | null {
+    return customer.services
+        .filter((service) => service.status !== 'terminated' && service.expires_at)
+        .map((service) => service.expires_at as string)
+        .sort()[0] ?? null;
+}
+
+export default function CustomersIndex({ customers, filters, zones }: Props) {
     const [search, setSearch] = useState(filters.search ?? '');
     const [status, setStatus] = useState(filters.status ?? '');
+    const [zoneId, setZoneId] = useState(filters.zone_id?.toString() ?? '');
+    const [expiresFrom, setExpiresFrom] = useState(filters.expires_from ?? '');
+    const [expiresTo, setExpiresTo] = useState(filters.expires_to ?? '');
     const [showFilters, setShowFilters] = useState(false);
     const [showColumns, setShowColumns] = useState(false);
     const [visibleColumns, setVisibleColumns] = useState<ColumnKey[]>(columnOptions.map(({ key }) => key));
@@ -27,7 +39,7 @@ export default function CustomersIndex({ customers, filters }: Props) {
     const applyFilters = () => {
         router.get(
             '/customers',
-            { search: search || undefined, status: status || undefined },
+            { search: search || undefined, status: status || undefined, zone_id: zoneId || undefined, expires_from: expiresFrom || undefined, expires_to: expiresTo || undefined },
             { preserveState: true, replace: true },
         );
     };
@@ -92,7 +104,7 @@ export default function CustomersIndex({ customers, filters }: Props) {
                 {(showFilters || showColumns) && (
                     <div className="flex flex-col gap-5 border-b border-line bg-sand/30 px-5 py-4 sm:flex-row sm:items-end">
                         {showFilters && (
-                            <div className="flex items-end gap-3">
+                            <div className="flex flex-wrap items-end gap-3">
                                 <label className="block min-w-44">
                                     <span className="field-label">Customer status</span>
                                     <select
@@ -105,6 +117,21 @@ export default function CustomersIndex({ customers, filters }: Props) {
                                         <option value="inactive">Inactive</option>
                                         <option value="archived">Archived</option>
                                     </select>
+                                </label>
+                                <label className="block min-w-48">
+                                    <span className="field-label">Zone</span>
+                                    <select className="field" value={zoneId} onChange={(event) => setZoneId(event.target.value)}>
+                                        <option value="">All zones</option>
+                                        {zones.map((zone) => <option key={zone.id} value={zone.id}>{zone.name}</option>)}
+                                    </select>
+                                </label>
+                                <label className="block min-w-40">
+                                    <span className="field-label">Expiry from</span>
+                                    <input className="field" type="date" value={expiresFrom} onChange={(event) => setExpiresFrom(event.target.value)} />
+                                </label>
+                                <label className="block min-w-40">
+                                    <span className="field-label">Expiry to</span>
+                                    <input className="field" type="date" value={expiresTo} onChange={(event) => setExpiresTo(event.target.value)} />
                                 </label>
                                 <button type="button" className="button-primary" onClick={applyFilters}>
                                     Apply
@@ -140,6 +167,7 @@ export default function CustomersIndex({ customers, filters }: Props) {
                                 {visibleColumns.includes('balance') && (
                                     <th className="px-5 py-3.5 text-start">Balance</th>
                                 )}
+                                {visibleColumns.includes('expiry') && <th className="px-5 py-3.5 text-start">Next expiry</th>}
                                 {visibleColumns.includes('status') && (
                                     <th className="px-5 py-3.5 text-start">Status</th>
                                 )}
@@ -147,9 +175,12 @@ export default function CustomersIndex({ customers, filters }: Props) {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-line">
-                            {customers.data.map((customer) => (
-                                <tr key={customer.public_id} className="group transition hover:bg-sand/30">
-                                    <td className="px-5 py-4">
+                            {customers.data.map((customer) => {
+                                const nextExpiry = getNextExpiry(customer);
+
+                                return (
+                                    <tr key={customer.public_id} className="group transition hover:bg-sand/30">
+                                        <td className="px-5 py-4">
                                         <Link
                                             href={`/customers/${customer.public_id}`}
                                             className="flex items-center gap-3"
@@ -167,38 +198,46 @@ export default function CustomersIndex({ customers, filters }: Props) {
                                                 </span>
                                             </span>
                                         </Link>
-                                    </td>
-                                    {visibleColumns.includes('zone') && (
-                                        <td className="px-5 py-4 text-sm text-muted">
-                                            {customer.zone?.name ?? 'Unassigned'}
                                         </td>
-                                    )}
-                                    {visibleColumns.includes('services') && (
-                                        <td className="px-5 py-4 text-sm text-muted">
-                                            {customer.services.length}{' '}
-                                            {customer.services.length === 1 ? 'service' : 'services'}
+                                        {visibleColumns.includes('zone') && (
+                                            <td className="px-5 py-4 text-sm text-muted">
+                                                {customer.zone?.name ?? 'Unassigned'}
+                                            </td>
+                                        )}
+                                        {visibleColumns.includes('services') && (
+                                            <td className="px-5 py-4 text-sm text-muted">
+                                                {customer.services.length}{' '}
+                                                {customer.services.length === 1 ? 'service' : 'services'}
+                                            </td>
+                                        )}
+                                        {visibleColumns.includes('balance') && (
+                                            <td className="px-5 py-4 text-sm font-semibold">
+                                                {formatMoney(customer.balance_amount, customer.balance_currency)}
+                                            </td>
+                                        )}
+                                        {visibleColumns.includes('expiry') && (
+                                            <td className="px-5 py-4 text-sm text-muted">
+                                                <span className="inline-flex items-center gap-1.5">
+                                                    <CalendarClock size={14} /> {formatDate(nextExpiry)}
+                                                </span>
+                                            </td>
+                                        )}
+                                        {visibleColumns.includes('status') && (
+                                            <td className="px-5 py-4">
+                                                <StatusBadge status={customer.status} />
+                                            </td>
+                                        )}
+                                        <td className="px-5 py-4 text-end">
+                                            <Link
+                                                href={`/customers/${customer.public_id}`}
+                                                className="text-sm font-semibold text-brand opacity-0 transition group-hover:opacity-100"
+                                            >
+                                                Open
+                                            </Link>
                                         </td>
-                                    )}
-                                    {visibleColumns.includes('balance') && (
-                                        <td className="px-5 py-4 text-sm font-semibold">
-                                            {formatMoney(customer.balance_amount, customer.balance_currency)}
-                                        </td>
-                                    )}
-                                    {visibleColumns.includes('status') && (
-                                        <td className="px-5 py-4">
-                                            <StatusBadge status={customer.status} />
-                                        </td>
-                                    )}
-                                    <td className="px-5 py-4 text-end">
-                                        <Link
-                                            href={`/customers/${customer.public_id}`}
-                                            className="text-sm font-semibold text-brand opacity-0 transition group-hover:opacity-100"
-                                        >
-                                            Open
-                                        </Link>
-                                    </td>
-                                </tr>
-                            ))}
+                                    </tr>
+                                );
+                            })}
                             {customers.data.length === 0 && (
                                 <tr>
                                     <td colSpan={visibleColumns.length + 2} className="px-5 py-16 text-center">
