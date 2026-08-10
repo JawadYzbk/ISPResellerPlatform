@@ -37,7 +37,7 @@ final class CashShiftOperationsController extends Controller
             ['path' => $request->url(), 'query' => $request->query()],
         );
         $current = CashShift::query()->where('user_id', $user->id)->where('status', 'open')->latest('opened_at')->first();
-        $systemTotals = array_map('intval', $current?->opening_float ?? []);
+        $systemTotals = array_map('intval', $current === null ? [] : ($current->opening_float ?? []));
         if ($current !== null) {
             foreach ($current->payments()->where('status', 'posted')->selectRaw('currency, sum(amount) as total')->groupBy('currency')->pluck('total', 'currency') as $currency => $total) {
                 $systemTotals[$currency] = ($systemTotals[$currency] ?? 0) + (int) $total;

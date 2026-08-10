@@ -9,6 +9,7 @@ use App\Models\Currency;
 use App\Models\Customer;
 use App\Models\Invoice;
 use App\Models\Payment;
+use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -17,7 +18,8 @@ final class PaymentApiController extends Controller
 {
     public function store(Request $request, RecordPayment $recordPayment): JsonResponse
     {
-        abort_unless($request->user()?->can('payments.collect'), 403);
+        $user = $request->user();
+        abort_unless($user instanceof User && $user->can('payments.collect'), 403);
         $validated = $request->validate([
             'customer_id' => ['required', 'string', 'exists:customers,public_id'],
             'invoice_id' => ['nullable', 'string', 'exists:invoices,public_id'],
@@ -35,8 +37,8 @@ final class PaymentApiController extends Controller
             ? Invoice::query()->where('public_id', $validated['invoice_id'])->firstOrFail()
             : null;
         $cashShift = null;
-        if ($request->user()?->tokenCan('staff:collector')) {
-            $cashShift = CashShift::query()->where('user_id', $request->user()->id)->where('status', 'open')->latest('opened_at')->first();
+        if ($user->tokenCan('staff:collector')) {
+            $cashShift = CashShift::query()->where('user_id', $user->id)->where('status', 'open')->latest('opened_at')->first();
             if (! $cashShift instanceof CashShift) {
                 $replayed = Payment::query()->where('idempotency_key', $request->header('X-Idempotency-Key'))->first();
                 abort_unless($replayed instanceof Payment, 423, 'An open cash shift is required before recording collector payments.');
@@ -49,7 +51,7 @@ final class PaymentApiController extends Controller
             $validated['method'],
             $request->header('X-Idempotency-Key'),
             $invoice,
-            $request->user(),
+            $user,
             $cashShift,
             ($validated['fx_override'] ?? false) ? (int) $validated['fx_rate_numerator'] : null,
             ($validated['fx_override'] ?? false) ? (int) $validated['fx_rate_denominator'] : null,

@@ -6,7 +6,7 @@ use App\Contracts\Action;
 use App\Enums\PaymentStatus;
 use App\Models\Payment;
 use App\Models\User;
-use Illuminate\Contracts\Pagination\CursorPaginator;
+use Illuminate\Pagination\CursorPaginator;
 
 final readonly class ListCollectorPayments implements Action
 {
