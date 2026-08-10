@@ -12,12 +12,12 @@ Last updated: 2026-08-10
 | ISP-010 | Tenant, branch, zone and document-sequence schema | foundation delivered |
 | ISP-013 | Model scope plus route-binding isolation proof | foundation delivered |
 | ISP-014 | RTL-aware Inertia app shell and staff navigation | foundation delivered |
-| ISP-020/021 | Customer seed, index and show screen | first vertical slice delivered |
+| ISP-020/021 | Customer seed, index/show screen, staff create/edit flows, working list filters/columns and tenant-isolated search entry point | vertical slice delivered |
 | ISP-011/012/015 | Capability catalog, invitations, Sanctum tokens, 2FA, re-authentication, session devices and audit events | delivered |
 | ISP-022/023/024 | Versioned plan prices, customer creation/phone normalization, service transitions and billing-period arithmetic | delivered |
-| ISP-030/031/032/033 | Historical FX, append-only double-entry ledger, invoice lifecycle, idempotent payments and reversals | delivered |
+| ISP-030/031/032/033 | Historical FX, append-only double-entry ledger, invoice lifecycle, idempotent payments and reversals, plus staff payment collection with invoice-balance validation | delivered |
 | ISP-034/035/036 | Payment renewal, cash shifts and scheduled tenant-aware idempotent billing runs | delivered |
-| ISP-041/043/044 | Driver boundary, post-commit network outbox, stale guards, retries, overdue suspension and reactivation | delivered with manual/fake drivers plus a configured external OSS/UISP/ACS webhook adapter; real endpoint and device acceptance remain external |
+| ISP-041/043/044 | Driver boundary, post-commit network outbox, stale guards, retries, overdue suspension and reactivation, plus authorized service re-sync enqueueing | delivered with manual/fake drivers plus a configured external OSS/UISP/ACS webhook adapter; real endpoint and device acceptance remain external |
 | ISP-050/051/052 | Template rendering, idempotent message queueing, configured WhatsApp/SMS/FCM/email adapter seams, signed delivery callbacks, tenant-local expiry reminders, customer welcome, payment receipt, service suspension/reactivation notices with opt-out/channel selection and configured-channel fallback, plus scoped zone/POP outage broadcasts | delivered at adapter/automation level; provider credentials remain external/in progress |
 | ISP-060/061/062 | Ticket lifecycle, tenant-timezone business-hours SLA clock, scheduled resolved-ticket auto-close, customer portal ticket messages, work-order completion and serialized inventory assignment | delivered for current ticket/work-order scope |
 | ISP-070/071/072 | Sanctum API with role-scoped abilities, cursor pagination, query whitelists, idempotency middleware, app version config, customer portal OTP/session, profile/services/usage/notices/tickets/billing APIs and portal UI, collector batches, offline bootstrap/delta/push sync, service discovery/state actions and OpenAPI slice | delivered for current customer/payment/service/collector/portal scope |
