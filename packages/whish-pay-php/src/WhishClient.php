@@ -64,10 +64,10 @@ final class WhishClient
         $response = $this->transport->send($method, $this->config->resolvedBaseUrl().$path, [
             'Accept' => 'application/json',
             'Content-Type' => 'application/json',
-            'channel' => $this->config->channel,
-            'secret' => $this->config->secret,
-            'websiteurl' => $this->config->websiteUrl,
-        ], $payload, $this->config->timeout);
+            'channel' => $this->config->channel(),
+            'secret' => $this->config->secret(),
+            'websiteurl' => $this->config->websiteUrl(),
+        ], $payload, $this->config->timeout());
 
         try {
             $decoded = json_decode($response->body, true, flags: JSON_THROW_ON_ERROR);

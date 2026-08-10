@@ -11,14 +11,27 @@ final readonly class WhishConfig
     public const SANDBOX_BASE_URL = 'https://lb.sandbox.whish.money/itel-service/api';
     public const PRODUCTION_BASE_URL = 'https://whish.money/itel-service/api';
 
+    private string $channel;
+    private string $secret;
+    private string $websiteUrl;
+    private string $environment;
+    private ?string $baseUrl;
+    private int $timeout;
+
     public function __construct(
-        public string $channel,
-        public string $secret,
-        public string $websiteUrl,
-        public string $environment = 'sandbox',
-        public ?string $baseUrl = null,
-        public int $timeout = 15,
+        string $channel,
+        string $secret,
+        string $websiteUrl,
+        string $environment = 'sandbox',
+        ?string $baseUrl = null,
+        int $timeout = 15,
     ) {
+        $this->channel = $channel;
+        $this->secret = $secret;
+        $this->websiteUrl = $websiteUrl;
+        $this->environment = $environment;
+        $this->baseUrl = $baseUrl;
+        $this->timeout = $timeout;
         if (trim($this->channel) === '' || trim($this->secret) === '' || trim($this->websiteUrl) === '') {
             throw new WhishConfigurationException('Whish channel, secret, and website URL are required.');
         }
@@ -36,5 +49,25 @@ final readonly class WhishConfig
     public function resolvedBaseUrl(): string
     {
         return rtrim($this->baseUrl ?? ($this->environment === 'production' ? self::PRODUCTION_BASE_URL : self::SANDBOX_BASE_URL), '/');
+    }
+
+    public function channel(): string
+    {
+        return $this->channel;
+    }
+
+    public function secret(): string
+    {
+        return $this->secret;
+    }
+
+    public function websiteUrl(): string
+    {
+        return $this->websiteUrl;
+    }
+
+    public function timeout(): int
+    {
+        return $this->timeout;
     }
 }

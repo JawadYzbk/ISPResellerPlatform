@@ -42,7 +42,8 @@ it('creates a Whish payment using the documented JSON contract', function (): vo
         ->and($transport->request['url'])->toBe(WhishConfig::SANDBOX_BASE_URL.'/payment/whish')
         ->and($transport->request['headers']['secret'])->toBe('secret')
         ->and($transport->request['payload']['amount'])->toBe('12.50')
-        ->and($transport->request['payload']['externalId'])->toBe(123456789);
+        ->and($transport->request['payload']['externalId'])->toBe(123456789)
+        ->and(json_encode(new WhishConfig('channel', 'secret', 'https://app.example.test')))->not->toContain('secret');
 });
 
 it('requires the callback to use a supported positive payment payload', function (): void {
