@@ -17,14 +17,23 @@ type InventoryUnit = {
     service: { public_id: string; username: string; customer_public_id: string | null; customer: string | null } | null;
 };
 
+type AssignableService = {
+    public_id: string;
+    username: string;
+    customer: string | null;
+};
+
 type Props = PageProps & {
     units: Paginator<InventoryUnit>;
     filters: { status?: string; search?: string };
+    canAssign?: boolean;
+    assignableServices?: AssignableService[];
 };
 
-export default function InventoryPage({ units, filters }: Props) {
+export default function InventoryPage({ units, filters, canAssign = false, assignableServices = [] }: Props) {
     const [search, setSearch] = useState(filters.search ?? '');
     const [status, setStatus] = useState(filters.status ?? '');
+    const [selectedServices, setSelectedServices] = useState<Record<number, string>>({});
 
     const applyFilters = (event: React.FormEvent) => {
         event.preventDefault();
@@ -33,6 +42,17 @@ export default function InventoryPage({ units, filters }: Props) {
             { search: search || undefined, status: status || undefined },
             { preserveState: true, replace: true },
         );
+    };
+
+    const assignUnit = (unit: InventoryUnit) => {
+        const servicePublicId = selectedServices[unit.id];
+        if (!servicePublicId) {
+            return;
+        }
+
+        if (window.confirm(`Assign unit ${unit.serial_number} to this service?`)) {
+            router.post(`/operations/inventory/${unit.id}/assign`, { service_public_id: servicePublicId });
+        }
     };
 
     return (
@@ -89,6 +109,7 @@ export default function InventoryPage({ units, filters }: Props) {
                                 <th className="px-5 py-3.5 text-start">Warehouse</th>
                                 <th className="px-5 py-3.5 text-start">Status</th>
                                 <th className="px-5 py-3.5 text-start">Assigned service</th>
+                                <th className="px-5 py-3.5 text-end">Action</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-line">
@@ -123,11 +144,41 @@ export default function InventoryPage({ units, filters }: Props) {
                                         )}
                                         {unit.service?.customer && <p className="mt-1 text-xs text-muted">{unit.service.customer}</p>}
                                     </td>
+                                    <td className="px-5 py-4 text-end">
+                                        {canAssign && unit.status === 'available' && assignableServices.length > 0 && (
+                                            <div className="flex items-center justify-end gap-2">
+                                                <select
+                                                    className="field max-w-56 py-2 text-xs"
+                                                    value={selectedServices[unit.id] ?? ''}
+                                                    onChange={(event) =>
+                                                        setSelectedServices((current) => ({
+                                                            ...current,
+                                                            [unit.id]: event.target.value,
+                                                        }))
+                                                    }
+                                                >
+                                                    <option value="">Select service</option>
+                                                    {assignableServices.map((service) => (
+                                                        <option key={service.public_id} value={service.public_id}>
+                                                            {service.username} · {service.customer ?? 'No customer'}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                                <button
+                                                    type="button"
+                                                    className="text-sm font-semibold text-brand"
+                                                    onClick={() => assignUnit(unit)}
+                                                >
+                                                    Assign
+                                                </button>
+                                            </div>
+                                        )}
+                                    </td>
                                 </tr>
                             ))}
                             {units.data.length === 0 && (
                                 <tr>
-                                    <td colSpan={5} className="px-5 py-16 text-center">
+                                    <td colSpan={6} className="px-5 py-16 text-center">
                                         <Package className="mx-auto text-muted" size={28} />
                                         <p className="mt-3 font-semibold">No inventory units match these filters</p>
                                     </td>
