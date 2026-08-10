@@ -26,6 +26,7 @@ use App\Http\Controllers\Api\ServiceApiController;
 use App\Http\Controllers\Api\ServiceImportController;
 use App\Http\Controllers\Api\TechnicianMediaController;
 use App\Http\Controllers\Api\TechnicianWorkOrderController;
+use App\Http\Controllers\Api\TicketApiController;
 use App\Models\User;
 use App\Support\Api\UserApiResource;
 use Illuminate\Http\Request;
@@ -83,6 +84,8 @@ Route::prefix('v1')->group(function (): void {
             Route::get('/plans/{plan}', [PlanApiController::class, 'show'])->name('api.plans.show');
             Route::get('/invoices', [InvoiceApiController::class, 'index'])->name('api.invoices.index');
             Route::get('/invoices/{invoice}', [InvoiceApiController::class, 'show'])->name('api.invoices.show');
+            Route::get('/tickets', [TicketApiController::class, 'index'])->name('api.tickets.index');
+            Route::get('/tickets/{ticket}', [TicketApiController::class, 'show'])->name('api.tickets.show');
             Route::get('/services/{service}/network-commands', [ServiceApiController::class, 'networkCommands'])->name('api.services.network-commands');
             Route::post('/services/{service}/plan-change-previews', [ServiceApiController::class, 'planChangePreview'])->name('api.services.plan-change-previews');
             Route::post('/payments', [PaymentApiController::class, 'store'])->middleware('idempotency')->name('api.payments.store');
@@ -91,6 +94,9 @@ Route::prefix('v1')->group(function (): void {
             Route::post('/customers', [CustomerApiController::class, 'store'])->name('api.customers.store');
             Route::patch('/customers/{customer:public_id}', [CustomerApiController::class, 'update'])->name('api.customers.update');
             Route::post('/services', [ServiceApiController::class, 'store'])->name('api.services.store');
+            Route::post('/tickets', [TicketApiController::class, 'store'])->name('api.tickets.store');
+            Route::post('/tickets/{ticket}/messages', [TicketApiController::class, 'message'])->name('api.tickets.messages');
+            Route::post('/tickets/{ticket}/status', [TicketApiController::class, 'status'])->name('api.tickets.status');
             Route::post('/services/{service}/activate', [ServiceApiController::class, 'activate'])->middleware('idempotency')->name('api.services.activate');
             Route::post('/services/{service}/suspend', [ServiceApiController::class, 'suspend'])->middleware('idempotency')->name('api.services.suspend');
             Route::post('/services/{service}/pause', [ServiceApiController::class, 'pause'])->middleware('idempotency')->name('api.services.pause');
