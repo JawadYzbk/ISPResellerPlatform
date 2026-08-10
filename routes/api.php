@@ -85,6 +85,8 @@ Route::prefix('v1')->group(function (): void {
             Route::post('/payments', [PaymentApiController::class, 'store'])->middleware('idempotency')->name('api.payments.store');
         });
         Route::middleware('abilities:staff:operator')->group(function (): void {
+            Route::post('/customers', [CustomerApiController::class, 'store'])->name('api.customers.store');
+            Route::patch('/customers/{customer:public_id}', [CustomerApiController::class, 'update'])->name('api.customers.update');
             Route::post('/services/{service}/activate', [ServiceApiController::class, 'activate'])->middleware('idempotency')->name('api.services.activate');
             Route::post('/services/{service}/suspend', [ServiceApiController::class, 'suspend'])->middleware('idempotency')->name('api.services.suspend');
             Route::post('/services/{service}/pause', [ServiceApiController::class, 'pause'])->middleware('idempotency')->name('api.services.pause');
