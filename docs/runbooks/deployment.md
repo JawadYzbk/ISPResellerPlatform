@@ -5,7 +5,7 @@ Use this procedure for a production-shaped deployment. Keep the release artifact
 ## Before the window
 
 - Confirm the target release commit and a tested rollback artifact.
-- Confirm database, Redis, queue, mail, object storage, Sentry, backup, payment, notification, router, and Reverb secrets are present in the secret store.
+- Confirm database, Redis, queue, mail, object storage, Sentry, backup, payment, notification, router, and Reverb secrets are present in the secret store. If using Web.js notifications, also provision the bridge token, callback secret, and persistent session volume.
 - Confirm a recent backup and a successful isolated restore rehearsal. A successful backup listing alone is not a restore test.
 - Announce the window to operations and support. Pause imports and planned network maintenance during schema changes.
 
@@ -26,6 +26,10 @@ docker compose -f docker-compose.production.yml up -d app worker scheduler rever
 docker compose -f docker-compose.production.yml exec app php artisan platform:preflight --production
 ```
 
+The WhatsApp Web.js bridge is deliberately behind the `whatsapp` Compose profile and the application defaults to the Cloud API path. To opt in, set `WHATSAPP_PROVIDER=web`, `WHATSAPP_WEB_ENABLED=true`, `WHATSAPP_WEB_TOKEN`, and `WHATSAPP_WEBHOOK_SECRET`, then start it with `--profile whatsapp`. Pair the account through the private bridge `/qr` endpoint, verify `/status` reports `ready`, and only then send a controlled test notification. Keep the session volume private and backed up; the bridge uses an unofficial WhatsApp Web client and may be disconnected or blocked by WhatsApp.
+
+Frankfurter synchronization is disabled by default. For a tenant whose base currency is USD and collection currency is LBP, set `FRANKFURTER_ENABLED=true`, confirm the approved quote policy, and run `php artisan fx:sync-frankfurter` once before enabling the scheduler. Imported quotes are append-only effective-dated ratios. Manual rates remain available for treasury or street-rate policy, and payment receipts preserve the selected rate, source, effective date, and rounding mode.
+
 The shared `bootstrap/cache` volume makes the cache commands visible to all PHP services. Do not expose PostgreSQL, Redis, or MinIO directly to the public internet. Put TLS termination and the public DNS name in front of the `web` service, and set `APP_URL`, `REVERB_HOST`, and `REVERB_ALLOWED_ORIGINS` to that public origin.
 
 ## Application release
@@ -43,7 +47,7 @@ php artisan route:cache
 php artisan platform:preflight --production
 ```
 
-`platform:preflight --production` must pass before traffic is admitted. It checks the application key, database connectivity, migration state, production environment, debug mode, public HTTPS URL, secure session cookies, asynchronous queue, persistent cache, tenant capability assignments, Sentry privacy configuration, encrypted off-site backups, private object storage, and Reverb credentials when realtime is enabled. It does not replace the scheduler, queue-worker, backup-restore, or external alert checks below.
+`platform:preflight --production` must pass before traffic is admitted. It checks the application key, database connectivity, migration state, production environment, debug mode, public HTTPS URL, secure session cookies, asynchronous queue, persistent cache, tenant capability assignments, Sentry privacy configuration, encrypted off-site backups, private object storage, Reverb credentials when realtime is enabled, and the Web.js bridge configuration when that provider is selected. It does not replace the scheduler, queue-worker, backup-restore, or external alert checks below.
 
 Start or restart the long-running processes from the deployment supervisor:
 

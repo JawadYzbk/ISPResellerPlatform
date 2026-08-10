@@ -37,6 +37,12 @@ x-app-environment: &app-environment
   REVERB_SERVER_HOST: 0.0.0.0
   REVERB_SERVER_PORT: 8080
   REVERB_ALLOWED_ORIGINS: ${REVERB_ALLOWED_ORIGINS:-https://example.invalid}
+  WHATSAPP_PROVIDER: ${WHATSAPP_PROVIDER:-cloud}
+  WHATSAPP_WEB_ENABLED: ${WHATSAPP_WEB_ENABLED:-false}
+  WHATSAPP_WEB_ENDPOINT: ${WHATSAPP_WEB_ENDPOINT:-http://whatsapp-web:3001}
+  WHATSAPP_WEB_TOKEN: ${WHATSAPP_WEB_TOKEN:-change-me}
+  WHATSAPP_WEBHOOK_SECRET: ${WHATSAPP_WEBHOOK_SECRET:-change-me}
+  WHATSAPP_WEBHOOK_URL: ${WHATSAPP_WEBHOOK_URL:-http://web/api/v1/webhooks/gateways/whatsapp_web}
   MAIL_MAILER: ${MAIL_MAILER:-smtp}
   MAIL_HOST: ${MAIL_HOST:-mail.example.invalid}
   MAIL_PORT: ${MAIL_PORT:-587}
@@ -124,6 +130,36 @@ services:
       redis:
         condition: service_healthy
 
+  whatsapp-web:
+    build:
+      context: ./integrations/whatsapp-web
+      dockerfile: Dockerfile
+    image: ${WHATSAPP_WEB_IMAGE:-isp-manager-whatsapp-web}:${APP_VERSION:-local}
+    profiles: ["whatsapp"]
+    init: true
+    restart: unless-stopped
+    environment:
+      WHATSAPP_WEB_HOST: 0.0.0.0
+      WHATSAPP_WEB_PORT: 3001
+      WHATSAPP_WEB_TOKEN: ${WHATSAPP_WEB_TOKEN:-change-me}
+      WHATSAPP_WEBHOOK_URL: ${WHATSAPP_WEBHOOK_URL:-http://web/api/v1/webhooks/gateways/whatsapp_web}
+      WHATSAPP_WEBHOOK_SECRET: ${WHATSAPP_WEBHOOK_SECRET:-change-me}
+      WHATSAPP_WEB_CLIENT_ID: ${WHATSAPP_WEB_CLIENT_ID:-isp-manager}
+      WHATSAPP_WEB_HEADLESS: "true"
+      WHATSAPP_WEB_SESSION_PATH: /data/.wwebjs_auth
+    volumes:
+      - whatsapp-web-auth:/data
+    expose:
+      - "3001"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3001/health').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    depends_on:
+      web:
+        condition: service_started
+
   postgres:
     image: postgres:17-alpine
     restart: unless-stopped
@@ -181,3 +217,4 @@ volumes:
   postgres-data:
   redis-data:
   minio-data:
+  whatsapp-web-auth:

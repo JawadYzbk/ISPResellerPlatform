@@ -88,3 +88,25 @@ it('rejects a production tenant with an unassigned capability role', function ()
         ->assertExitCode(Command::FAILURE)
         ->expectsOutputToContain('Capability assignments');
 });
+
+it('requires the private Web.js bridge and callback secret when selected', function (): void {
+    config()->set([
+        'app.key' => 'base64:'.base64_encode(str_repeat('a', 32)),
+        'app.env' => 'production',
+        'app.debug' => false,
+        'app.url' => 'https://portal.example.com',
+        'session.secure' => true,
+        'queue.default' => 'database',
+        'cache.default' => 'database',
+        'services.whatsapp.mode' => 'web',
+        'services.whatsapp.web.enabled' => true,
+        'services.whatsapp.web.endpoint' => 'http://whatsapp-web:3001',
+        'services.whatsapp.web.token' => '',
+        'services.whatsapp.web.webhook_url' => 'https://portal.example.com/api/v1/webhooks/gateways/whatsapp_web',
+        'services.webhooks.secrets.whatsapp_web' => '',
+    ]);
+
+    $this->artisan('platform:preflight', ['--production' => true])
+        ->assertExitCode(Command::FAILURE)
+        ->expectsOutputToContain('WhatsApp configuration');
+});

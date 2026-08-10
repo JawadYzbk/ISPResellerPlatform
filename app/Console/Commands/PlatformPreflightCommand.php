@@ -37,6 +37,7 @@ final class PlatformPreflightCommand extends Command
                 'Encrypted off-site backups' => $this->backupsAreConfigured(),
                 'Private object storage' => $this->objectStorageIsConfigured(),
                 'Reverb configuration' => $this->reverbIsConfigured(),
+                'WhatsApp configuration' => $this->whatsappIsConfigured(),
             ];
         }
 
@@ -193,6 +194,19 @@ final class PlatformPreflightCommand extends Command
             && $this->hasConfiguredValue(config('broadcasting.connections.reverb.host'))
             && is_array($allowedOrigins)
             && $allowedOrigins !== [];
+    }
+
+    private function whatsappIsConfigured(): bool
+    {
+        if ((string) config('services.whatsapp.mode', 'cloud') !== 'web') {
+            return true;
+        }
+
+        return (bool) config('services.whatsapp.web.enabled')
+            && $this->hasConfiguredValue(config('services.whatsapp.web.endpoint'))
+            && $this->hasConfiguredValue(config('services.whatsapp.web.token'))
+            && $this->hasConfiguredValue(config('services.whatsapp.web.webhook_url'))
+            && $this->hasConfiguredValue(config('services.webhooks.secrets.whatsapp_web'));
     }
 
     private function hasConfiguredValue(mixed $value): bool
