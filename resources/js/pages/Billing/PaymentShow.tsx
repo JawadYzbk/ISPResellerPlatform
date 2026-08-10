@@ -19,6 +19,9 @@ type Payment = {
     fx_rate_denominator: number | null;
     fx_rate_overridden: boolean;
     fx_override_reason: string | null;
+    fx_rounding_mode: 'half_up' | 'floor' | 'ceil' | null;
+    fx_rate_source: string | null;
+    fx_rate_effective_from: string | null;
     reference: string | null;
     method: string;
     received_at: string | null;
@@ -149,6 +152,20 @@ export default function PaymentShowPage({ payment, canReverse }: Props) {
                                     {payment.fx_rate_numerator}/{payment.fx_rate_denominator}
                                     <span className="mt-1 block text-xs font-normal text-muted">
                                         {payment.fx_override_reason}
+                                    </span>
+                                </dd>
+                            </div>
+                        )}
+                        {payment.fx_rounding_mode && (
+                            <div>
+                                <dt className="field-label">FX conversion policy</dt>
+                                <dd className="mt-1 text-sm font-semibold">
+                                    {payment.fx_rounding_mode.replace('_', ' ')}
+                                    <span className="mt-1 block text-xs font-normal text-muted">
+                                        {payment.fx_rate_source ?? 'stored rate'}
+                                        {payment.fx_rate_effective_from
+                                            ? ` · effective ${formatDate(payment.fx_rate_effective_from)}`
+                                            : ''}
                                     </span>
                                 </dd>
                             </div>

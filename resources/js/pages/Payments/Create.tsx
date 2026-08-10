@@ -56,6 +56,7 @@ export default function PaymentCreate({ customer, invoices, defaultCurrency, pay
         fx_rate_numerator: '',
         fx_rate_denominator: '',
         fx_override_reason: '',
+        rounding_mode: 'half_up',
         reference: '',
     });
     const selectedCurrency = paymentCurrencies.find((item) => item.code === form.data.currency);
@@ -306,6 +307,27 @@ export default function PaymentCreate({ customer, invoices, defaultCurrency, pay
                                     </div>
                                 </div>
                             )}
+                            <div>
+                                <label className="field-label" htmlFor="rounding_mode">
+                                    Conversion rounding
+                                </label>
+                                <select
+                                    id="rounding_mode"
+                                    className="field"
+                                    value={form.data.rounding_mode}
+                                    onChange={(event) => form.setData('rounding_mode', event.target.value)}
+                                >
+                                    <option value="half_up">Half up (standard)</option>
+                                    <option value="floor">Floor (never over-collect)</option>
+                                    <option value="ceil">Ceiling</option>
+                                </select>
+                                <p className="mt-1 text-xs text-muted">
+                                    The selected policy is saved with the payment rate for audit and receipt history.
+                                </p>
+                                {form.errors.rounding_mode && (
+                                    <p className="field-error">{form.errors.rounding_mode}</p>
+                                )}
+                            </div>
                         </div>
                     )}
                     <div>
