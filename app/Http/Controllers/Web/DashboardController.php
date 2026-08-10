@@ -13,8 +13,8 @@ final class DashboardController extends Controller
     public function __invoke(GetDashboardMetrics $getDashboardMetrics, GetDashboardAttentionQueue $getDashboardAttentionQueue): Response
     {
         return Inertia::render('Dashboard/Index', [
-            'metrics' => $getDashboardMetrics->handle(),
-            'attentionQueue' => $getDashboardAttentionQueue->handle(),
+            'metrics' => Inertia::defer(fn (): array => $getDashboardMetrics->handle(), 'dashboard-metrics'),
+            'attentionQueue' => Inertia::defer(fn (): array => $getDashboardAttentionQueue->handle(), 'dashboard-attention'),
         ]);
     }
 }

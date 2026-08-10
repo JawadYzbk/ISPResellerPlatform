@@ -14,5 +14,10 @@ it('allows a tenant user to sign in and reach the dashboard', function (): void 
     $this->post(route('login.store'), ['email' => 'maya@example.test', 'password' => 'password'])
         ->assertRedirect(route('dashboard'));
 
-    $this->get(route('dashboard'))->assertOk()->assertInertia(fn ($page) => $page->component('Dashboard/Index'));
+    $this->get(route('dashboard'))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->component('Dashboard/Index')
+            ->loadDeferredProps(['dashboard-metrics', 'dashboard-attention'], fn ($deferred) => $deferred->hasAll(['metrics', 'attentionQueue']))
+        );
 });
