@@ -25,11 +25,13 @@ final readonly class ReversePayment implements Action
             }
             $cash = LedgerAccount::query()->where('code', '1000')->firstOrFail();
             $receivable = LedgerAccount::query()->where('code', '1100')->firstOrFail();
+            $ledgerAmount = (int) ($payment->ledger_amount ?? $payment->amount);
+            $ledgerCurrency = $payment->ledger_currency ?? $payment->currency;
             $this->journal->post(
                 'Reverse payment '.$payment->number,
                 [
-                    new JournalLineInput($cash->id, $payment->currency, creditAmount: $payment->amount),
-                    new JournalLineInput($receivable->id, $payment->currency, debitAmount: $payment->amount, customerId: $payment->customer_id),
+                    new JournalLineInput($cash->id, $ledgerCurrency, creditAmount: $ledgerAmount),
+                    new JournalLineInput($receivable->id, $ledgerCurrency, debitAmount: $ledgerAmount, customerId: $payment->customer_id),
                 ],
                 actor: $actor,
                 sourceType: Payment::class.':reversal',

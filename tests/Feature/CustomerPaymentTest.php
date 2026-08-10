@@ -49,7 +49,7 @@ it('renders and records a staff customer payment against an invoice', function (
         ->and($customer->refresh()->balance_amount)->toBe(0);
 });
 
-it('rejects a payment larger than the selected invoice balance', function (): void {
+it('records an overpayment as customer credit', function (): void {
     $tenant = Tenant::create(['name' => 'Northline', 'slug' => 'northline', 'base_currency' => 'USD', 'collection_currency' => 'USD']);
     $user = User::create(['tenant_id' => $tenant->id, 'name' => 'Cashier', 'email' => 'cashier@example.test', 'password' => Hash::make('password'), 'role' => 'tenant_owner']);
     app(CapabilitySeeder::class)->run();
@@ -62,7 +62,6 @@ it('rejects a payment larger than the selected invoice balance', function (): vo
 
     app(Tenancy::class)->set($tenant);
     $this->actingAs($user)
-        ->from(route('customers.payments.create', $customer->public_id))
         ->post(route('customers.payments.store', $customer->public_id), [
             'amount' => 3501,
             'currency' => 'USD',
@@ -70,5 +69,9 @@ it('rejects a payment larger than the selected invoice balance', function (): vo
             'invoice_id' => $invoice->public_id,
             'idempotency_key' => '0198d9a4-0e80-72bb-9ef8-44a7bf6c2190',
         ])
-        ->assertSessionHasErrors('amount');
+        ->assertRedirect(route('customers.show', $customer->public_id));
+
+    app(Tenancy::class)->set($tenant);
+    expect($customer->payments()->count())->toBe(1)
+        ->and($customer->refresh()->balance_amount)->toBe(-1);
 });

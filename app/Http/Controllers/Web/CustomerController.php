@@ -14,12 +14,14 @@ use App\Actions\RecordPayment;
 use App\Actions\SaveCustomerView;
 use App\Actions\StoreMediaUpload;
 use App\Actions\UpdateCustomer;
+use App\Domain\Money\FxConverter;
 use App\Enums\InvoiceStatus;
 use App\Enums\PaymentStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\CollectPaymentRequest;
 use App\Http\Requests\CustomerIndexRequest;
 use App\Http\Requests\CustomerRequest;
+use App\Models\Currency;
 use App\Models\Customer;
 use App\Models\CustomerSavedView;
 use App\Models\Invoice;
@@ -104,10 +106,11 @@ final class CustomerController extends Controller
         return redirect()->route('customers.show', $customer->public_id)->with('success', 'Customer document uploaded.');
     }
 
-    public function createPayment(Request $request, Customer $customer): Response
+    public function createPayment(Request $request, Customer $customer, FxConverter $fx): Response
     {
         $this->authorize('view', $customer);
-        abort_unless($request->user()?->can('payments.collect') === true, 403);
+        $user = $request->user();
+        abort_unless($user instanceof User && $user->can('payments.collect'), 403);
 
         $invoices = Invoice::query()
             ->where('customer_id', $customer->id)
@@ -135,9 +138,32 @@ final class CustomerController extends Controller
             ->filter(fn (array $invoice): bool => $invoice['outstanding_amount'] > 0)
             ->values();
 
+        $paymentCurrencies = Currency::query()
+            ->where('is_active', true)
+            ->orderBy('code')
+            ->get(['code', 'name', 'decimal_digits'])
+            ->map(function (Currency $currency) use ($customer, $fx): array {
+                $rate = null;
+                try {
+                    $rate = $fx->snapshot($currency->code, $customer->balance_currency, now()->toImmutable());
+                } catch (DomainException) {
+                    // The collector can still choose this currency and enter an approved override.
+                }
+
+                return [
+                    'code' => $currency->code,
+                    'name' => $currency->name,
+                    'decimal_digits' => $currency->decimal_digits,
+                    'rate' => $rate?->toArray(),
+                ];
+            })
+            ->values();
+
         return Inertia::render('Payments/Create', [
             'customer' => $customer->only(['public_id', 'code', 'first_name', 'last_name', 'balance_amount', 'balance_currency']),
             'invoices' => $invoices,
+            'defaultCurrency' => (string) (Tenant::query()->whereKey($user->tenant_id)->value('collection_currency') ?? $customer->balance_currency),
+            'paymentCurrencies' => $paymentCurrencies,
         ]);
     }
 
@@ -202,15 +228,25 @@ final class CustomerController extends Controller
         $user = $request->user();
         abort_unless($user instanceof User, 401);
 
-        $payment = $recordPayment->handle(
-            $customer,
-            (int) $request->validated('amount'),
-            strtoupper((string) $request->validated('currency')),
-            (string) $request->validated('method'),
-            (string) $request->validated('idempotency_key'),
-            $invoice,
-            $user,
-        );
+        $validated = $request->validated();
+        try {
+            $payment = $recordPayment->handle(
+                $customer,
+                (int) $validated['amount'],
+                strtoupper((string) $validated['currency']),
+                (string) $validated['method'],
+                (string) $validated['idempotency_key'],
+                $invoice,
+                $user,
+                null,
+                ($validated['fx_override'] ?? false) ? (int) $validated['fx_rate_numerator'] : null,
+                ($validated['fx_override'] ?? false) ? (int) $validated['fx_rate_denominator'] : null,
+                ($validated['fx_override'] ?? false) ? (string) $validated['fx_override_reason'] : null,
+                isset($validated['reference']) ? (string) $validated['reference'] : null,
+            );
+        } catch (DomainException $exception) {
+            throw ValidationException::withMessages(['currency' => $exception->getMessage()]);
+        }
 
         return redirect()->route('customers.show', $customer->public_id)->with('success', "Payment {$payment->number} recorded.");
     }
