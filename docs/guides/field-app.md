@@ -38,13 +38,14 @@ Content-Type: application/json
 ## Technician flow
 
 - `GET /api/v1/technician/work-orders?date=YYYY-MM-DD&status=assigned` lists work orders assigned to the authenticated technician only.
-- `GET /api/v1/technician/work-orders/{workOrder}` loads the checklist, metadata, customer, service, and event history.
+- `GET /api/v1/technician/work-orders/{workOrder}` loads the checklist, metadata, customer, service, event history, and safe media metadata.
 - `GET /api/v1/technician/services/{service}/diagnostics` loads service diagnostics.
 - `GET /api/v1/technician/inventory` loads the technician’s assigned inventory.
 - `POST /api/v1/technician/uploads` accepts one JPEG, PNG, or WebP image up to 20 MB as multipart field `file`.
+- `POST /api/v1/technician/work-orders/{workOrder}/media` accepts one assigned-work-order JPEG, PNG, or WebP image up to 20 MB as multipart `file`, with optional `purpose` of `evidence` or `other`.
 - `POST /api/v1/technician/work-orders/{workOrder}/complete` completes the assigned order. Send `X-Idempotency-Key` so an offline retry cannot complete it twice.
 
-Only the assigned technician can read or complete a work order. Completing an installation may activate the linked service and enqueue a network command; show the returned status as a pending operational action when appropriate.
+Only the assigned technician can read, upload evidence to, or complete a work order. Completing an installation may activate the linked service and enqueue a network command; show the returned status as a pending operational action when appropriate. The API returns media IDs and metadata, never storage paths or hashes.
 
 ## Client safety rules
 

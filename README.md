@@ -34,7 +34,7 @@ The current foundation is live:
 - Scheduled RouterOS subscriber reconciliation with report-only defaults and explicit device-side healing
 - Supplier credential workflows with permission, re-authentication and audit controls
 - Cursor-paginated customer API, idempotent payment API, collector batches, customer portal OTP/session flow, OpenAPI slice and finance reporting
-- Role-scoped Sanctum abilities, app version/maintenance config, technician diagnostics, van inventory and private media upload APIs
+- Role-scoped Sanctum abilities, app version/maintenance config, technician diagnostics, van inventory and assigned work-order evidence media APIs
 - Collector offline bootstrap/delta sync with signed cursors and per-payment created/replayed/rejected results
 - Customer, plan, service and serialized-equipment CSV imports with preview, partial success and guarded rollback
 - Staff import workspace with CSV/XLSX preview, row-level reports, tenant-scoped history and controlled rollback

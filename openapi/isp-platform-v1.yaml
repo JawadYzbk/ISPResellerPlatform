@@ -811,9 +811,32 @@ paths:
           required: true
           schema: { type: string }
       responses:
-        '200': { description: Work-order detail with checklist and event history }
+        '200': { description: Work-order detail with checklist, event history and safe media metadata }
         '403': { description: Missing work-order capability }
         '404': { description: Work order not found }
+  /technician/work-orders/{workOrder}/media:
+    post:
+      summary: Upload evidence to an assigned work order
+      parameters:
+        - in: path
+          name: workOrder
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file: { type: string, format: binary, description: JPEG, PNG or WebP image up to 20 MB }
+                purpose: { type: string, enum: [evidence, other], default: evidence }
+      responses:
+        '201': { description: Public media ID and non-sensitive file metadata }
+        '403': { description: Missing work-order capability }
+        '404': { description: Work order is not assigned to the authenticated technician }
+        '422': { description: Invalid media type, size or purpose }
   /technician/work-orders/{workOrder}/complete:
     post:
       summary: Complete an assigned work order idempotently
