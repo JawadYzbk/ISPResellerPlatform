@@ -1143,6 +1143,42 @@ paths:
         '200': { description: Partner wallet and transactions }
         '403': { description: Missing wallet view capability }
         '404': { description: Partner not found }
+  /partners/{partner}/wallets:
+    get:
+      summary: Read the visible partner wallet balance and limits
+      parameters:
+        - in: path
+          name: partner
+          required: true
+          schema: { type: string, description: Partner public ULID }
+      responses:
+        '200': { description: Partner wallet balance, credit limit and threshold }
+        '403': { description: Missing wallet view capability }
+        '404': { description: Partner not found }
+  /partners/{partner}/wallet-transactions:
+    get:
+      summary: List visible partner wallet transactions
+      parameters:
+        - in: path
+          name: partner
+          required: true
+          schema: { type: string, description: Partner public ULID }
+        - in: query
+          name: per_page
+          schema: { type: integer, minimum: 1, maximum: 100, default: 25 }
+        - in: query
+          name: cursor
+          schema: { type: string }
+        - in: query
+          name: type
+          schema: { type: string, enum: [top_up, renewal] }
+        - in: query
+          name: direction
+          schema: { type: string, enum: [credit, debit] }
+      responses:
+        '200': { description: Cursor-paginated partner wallet transactions }
+        '403': { description: Missing wallet view capability }
+        '404': { description: Partner not found }
   /partners/{partner}/wallet-top-ups:
     post:
       summary: Fund a partner wallet
