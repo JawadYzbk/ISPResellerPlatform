@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Actions\ChangeServicePlan;
 use App\Actions\CreateRenewalInvoice;
+use App\Actions\CreateService;
 use App\Actions\EnqueueNetworkCommand;
 use App\Actions\ListServicesApi;
 use App\Actions\PreviewServicePlanChange;
@@ -11,9 +12,12 @@ use App\Actions\PreviewServiceRenewal;
 use App\Actions\TransitionService;
 use App\Enums\ServiceStatus;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\CreateServiceApiRequest;
 use App\Models\CurrentSession;
+use App\Models\Customer;
 use App\Models\NetworkCommand;
 use App\Models\Plan;
+use App\Models\Router;
 use App\Models\Service;
 use App\Models\User;
 use App\Support\Api\NetworkCommandApiResource;
@@ -33,6 +37,20 @@ final class ServiceApiController extends Controller
         abort_unless($request->user()?->can('services.view'), 403);
 
         return response()->json($listServices->handle($request, $request->integer('per_page', 20)));
+    }
+
+    public function store(CreateServiceApiRequest $request, CreateService $createService, ServiceApiResource $resource): JsonResponse
+    {
+        $this->authorize('create', Service::class);
+        $data = $request->validated();
+        $customer = Customer::query()->where('public_id', $data['customer_id'])->firstOrFail();
+        $data['plan_id'] = Plan::query()->where('public_id', $data['plan_id'])->firstOrFail()->id;
+        if (filled($data['router_id'] ?? null)) {
+            $data['router_id'] = Router::query()->where('public_id', $data['router_id'])->firstOrFail()->id;
+        }
+        $service = $createService->handle($customer, $data, $request->user());
+
+        return response()->json($resource->make($service), 201);
     }
 
     public function show(Request $request, string $service, ServiceApiResource $resource): JsonResponse
