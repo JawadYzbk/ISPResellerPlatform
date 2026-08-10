@@ -12,6 +12,7 @@ use App\Enums\InvoiceStatus;
 use App\Enums\PaymentStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\CollectPaymentRequest;
+use App\Http\Requests\CustomerIndexRequest;
 use App\Http\Requests\CustomerRequest;
 use App\Models\Customer;
 use App\Models\Invoice;
@@ -121,13 +122,21 @@ final class CustomerController extends Controller
         return redirect()->route('customers.show', $customer->public_id)->with('success', "Payment {$payment->number} recorded.");
     }
 
-    public function index(Request $request, ListCustomers $listCustomers): Response
+    public function index(CustomerIndexRequest $request, ListCustomers $listCustomers): Response
     {
         $this->authorize('viewAny', Customer::class);
+        $validated = $request->validated();
 
         return Inertia::render('Customers/Index', [
-            'customers' => $listCustomers->handle($request->string('search')->toString() ?: null, $request->string('status')->toString() ?: null),
-            'filters' => $request->only(['search', 'status']),
+            'customers' => $listCustomers->handle(
+                $validated['search'] ?? null,
+                $validated['status'] ?? null,
+                isset($validated['zone_id']) ? (int) $validated['zone_id'] : null,
+                $validated['expires_from'] ?? null,
+                $validated['expires_to'] ?? null,
+            ),
+            'filters' => $request->only(['search', 'status', 'zone_id', 'expires_from', 'expires_to']),
+            'zones' => Zone::query()->orderBy('name')->get(['id', 'name', 'code']),
         ]);
     }
 
