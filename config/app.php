@@ -14,6 +14,10 @@ return [
     */
 
     'name' => env('APP_NAME', 'ISP Manager'),
+    'version' => env('APP_VERSION', '1.0.0'),
+    'min_supported_version' => env('MIN_SUPPORTED_APP_VERSION', '1.0.0'),
+    'maintenance_mode' => (bool) env('APP_MAINTENANCE', false),
+    'maintenance_message' => env('APP_MAINTENANCE_MESSAGE'),
 
     /*
     |--------------------------------------------------------------------------

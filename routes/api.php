@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\ApiTokenController;
+use App\Http\Controllers\Api\AppConfigController;
 use App\Http\Controllers\Api\CollectorPaymentController;
 use App\Http\Controllers\Api\CustomerApiController;
 use App\Http\Controllers\Api\CustomerImportController;
@@ -31,6 +32,7 @@ Route::prefix('v1')->group(function (): void {
 
     Route::middleware(['auth:sanctum', 'tenant'])->group(function (): void {
         Route::delete('/tokens/current', [ApiTokenController::class, 'destroy'])->name('api.tokens.destroy');
+        Route::get('/app/config', [AppConfigController::class, 'show'])->name('api.app.config');
         Route::get('/me', fn (Request $request) => $request->user())->name('api.me');
         Route::middleware('any-abilities:staff:operator,staff:collector,staff:technician')->group(function (): void {
             Route::get('/customers', [CustomerApiController::class, 'index'])->name('api.customers.index');
