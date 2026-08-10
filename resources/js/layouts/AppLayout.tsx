@@ -11,6 +11,7 @@ import {
     Search,
     Users,
     Wifi,
+    Wrench,
 } from 'lucide-react';
 import type { PropsWithChildren } from 'react';
 
@@ -26,6 +27,7 @@ export default function AppLayout({ children }: PropsWithChildren) {
         { label: 'Services', href: '/services', icon: Wifi },
         { label: 'Partners', href: '/partners/commercial', icon: Store },
         { label: 'Reports', href: '/reports/operations', icon: BarChart3 },
+        { label: 'Network queue', href: '/operations/network-commands', icon: Wrench },
     ];
 
     return (

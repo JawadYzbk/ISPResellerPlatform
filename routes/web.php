@@ -6,6 +6,7 @@ use App\Http\Controllers\Auth\ReauthenticateController;
 use App\Http\Controllers\Auth\TwoFactorController;
 use App\Http\Controllers\Web\CustomerController;
 use App\Http\Controllers\Web\DashboardController;
+use App\Http\Controllers\Web\NetworkOperationsController;
 use App\Http\Controllers\Web\PartnerController;
 use App\Http\Controllers\Web\PortalPageController;
 use App\Http\Controllers\Web\ReportController;
@@ -51,6 +52,8 @@ Route::middleware(['auth', 'tenant', '2fa'])->group(function (): void {
     Route::post('/customers/{customer:public_id}/anonymize', [CustomerController::class, 'anonymize'])->middleware('recent-auth')->name('customers.anonymize');
     Route::get('/services', [ServiceController::class, 'index'])->name('services.index');
     Route::post('/services/{service:public_id}/resync', [ServiceController::class, 'resync'])->name('services.resync');
+    Route::get('/operations/network-commands', [NetworkOperationsController::class, 'index'])->name('operations.network-commands');
+    Route::post('/operations/network-commands/{command:public_id}/retry', [NetworkOperationsController::class, 'retry'])->name('operations.network-commands.retry');
     Route::get('/customers/{customer:public_id}/services/create', [ServiceController::class, 'create'])->name('services.create');
     Route::post('/customers/{customer:public_id}/services', [ServiceController::class, 'store'])->name('services.store');
     Route::get('/partners/commercial', [PartnerController::class, 'commercial'])->name('partners.commercial');

@@ -12,6 +12,8 @@ use Illuminate\Support\Str;
  * @property string $public_id
  * @property int $desired_state_version
  * @property int $attempts
+ * @property Carbon|null $available_at
+ * @property Carbon|null $started_at
  * @property Carbon|null $completed_at
  */
 class NetworkCommand extends Model

@@ -9,7 +9,12 @@ type Status =
     | 'unknown'
     | 'drifted'
     | 'failed'
-    | 'pending_sync';
+    | 'pending_sync'
+    | 'running'
+    | 'completed'
+    | 'awaiting_confirmation'
+    | 'abandoned'
+    | 'stale';
 
 const styles: Record<Status, string> = {
     active: 'bg-emerald-50 text-emerald-700 ring-emerald-600/20',
@@ -23,6 +28,11 @@ const styles: Record<Status, string> = {
     drifted: 'bg-amber-50 text-amber-700 ring-amber-600/20',
     failed: 'bg-rose-50 text-rose-700 ring-rose-600/20',
     pending_sync: 'bg-amber-50 text-amber-700 ring-amber-600/20',
+    running: 'bg-blue-50 text-blue-700 ring-blue-600/20',
+    completed: 'bg-emerald-50 text-emerald-700 ring-emerald-600/20',
+    awaiting_confirmation: 'bg-amber-50 text-amber-700 ring-amber-600/20',
+    abandoned: 'bg-rose-50 text-rose-700 ring-rose-600/20',
+    stale: 'bg-slate-100 text-slate-600 ring-slate-500/20',
 };
 
 export function StatusBadge({ status }: { status: Status }) {
