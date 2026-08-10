@@ -24,9 +24,10 @@ type Props = PageProps & {
     routers: Paginator<RouterRow>;
     filters: { status?: string };
     canCheckHealth?: boolean;
+    canCreate?: boolean;
 };
 
-export default function RoutersPage({ routers, filters, canCheckHealth = false }: Props) {
+export default function RoutersPage({ routers, filters, canCheckHealth = false, canCreate = false }: Props) {
     const [status, setStatus] = useState(filters.status ?? '');
 
     const applyFilters = (event: React.FormEvent) => {
@@ -43,9 +44,16 @@ export default function RoutersPage({ routers, filters, canCheckHealth = false }
                     <h1 className="page-title">Routers</h1>
                     <p className="page-subtitle">Inspect device reachability and the services assigned to each router.</p>
                 </div>
-                <Link href="/operations/network-commands" className="button-secondary">
-                    Command queue
-                </Link>
+                <div className="flex flex-wrap gap-2">
+                    <Link href="/operations/network-commands" className="button-secondary">
+                        Command queue
+                    </Link>
+                    {canCreate && (
+                        <Link href="/operations/routers/create" className="button-primary">
+                            Add router
+                        </Link>
+                    )}
+                </div>
             </div>
 
             <form onSubmit={applyFilters} className="card mt-8 flex flex-col gap-4 p-5 sm:flex-row sm:items-end">
