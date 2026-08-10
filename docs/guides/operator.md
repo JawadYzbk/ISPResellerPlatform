@@ -7,7 +7,7 @@ This guide describes the day-to-day workflow for customer care, billing, support
 1. Open the dashboard and review active services, overdue accounts, open work, and current incidents.
 2. Check `/up` for the process-level probe and `/api/v1/health` for database, cache, queue, scheduler, and worker heartbeat status.
 3. Review failed jobs and unresolved network commands before making manual service changes.
-4. Confirm the cash shift is open before accepting cash payments.
+4. Confirm the cash shift is open before accepting cash payments. Use **Billing -> Cash shifts** to open the till, compare posted collections with counted cash, and close it with a variance note when totals differ.
 
 Owners can use **Settings** to maintain the workspace name, locale, timezone, currencies, display formats, notification quiet hours, ticket auto-close window and RADIUS interim interval. Saving settings requires the settings capability and recent authentication; currency and automation changes should be announced to billing and operations staff before use.
 

@@ -19,7 +19,7 @@ The current foundation is live:
 - Staff ticket conversation/status workflow, customer support history, work-order completion surface, serialized inventory trace/assignment, and plan catalog/create workflow
 - Supplier credential inventory view with secret redaction, tenant-safe assignment and audited reveal boundary
 - Capability catalog, invitations, tenant isolation, audit events and API tokens
-- Historical FX conversion, double-entry ledger, invoices, payments, cash shifts and billing runs
+- Historical FX conversion, double-entry ledger, invoices, payments, cash-shift reconciliation and billing runs
 - Payment-driven renewal, scheduled overdue suspension and post-commit network command outbox
 - Message templates, provider delivery jobs, tickets, work orders and serialized inventory
 - Idempotent customer welcome, payment receipt, expiry, suspension and reactivation notifications with channel selection, opt-out handling, provider fallback and scoped outage broadcasts
