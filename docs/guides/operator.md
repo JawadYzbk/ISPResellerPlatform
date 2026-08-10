@@ -9,6 +9,8 @@ This guide describes the day-to-day workflow for customer care, billing, support
 3. Review failed jobs and unresolved network commands before making manual service changes.
 4. Confirm the cash shift is open before accepting cash payments.
 
+Owners can use **Settings** to maintain the workspace name, locale, timezone, currencies, display formats, notification quiet hours, ticket auto-close window and RADIUS interim interval. Saving settings requires the settings capability and recent authentication; currency and automation changes should be announced to billing and operations staff before use.
+
 ## Customer and service lifecycle
 
 From the customer page, staff with the customer-update capability can edit contact and zone details. The page also shows the ten most recently updated support tickets and links directly to the staff conversation view. Staff with payment-collection capability can use **Take payment**, enter the normal currency amount, optionally select an issued invoice, and choose the payment method. The form rejects amounts above the selected invoice balance; an unallocated payment is recorded as customer account credit. Do not submit the same payment again after a timeout: the form carries an idempotency key.
