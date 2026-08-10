@@ -17,6 +17,7 @@ The repository includes `docker-compose.production.yml` for a self-hosted single
 docker compose -f docker-compose.production.yml build
 docker compose -f docker-compose.production.yml up -d postgres redis minio minio-init
 docker compose -f docker-compose.production.yml run --rm app php artisan migrate --force
+docker compose -f docker-compose.production.yml run --rm app php artisan db:seed --class=CapabilitySeeder --force
 docker compose -f docker-compose.production.yml run --rm app php artisan optimize:clear
 docker compose -f docker-compose.production.yml run --rm app php artisan config:cache
 docker compose -f docker-compose.production.yml run --rm app php artisan route:cache
