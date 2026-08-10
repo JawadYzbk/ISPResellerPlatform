@@ -2,7 +2,7 @@ openapi: 3.1.0
 info:
   title: ISP Manager API
   version: 1.0.0
-  description: Versioned mobile and portal contract for tenant-scoped reads, scoped Sanctum abilities, idempotent collection writes, offline collector sync, imports and technician operations.
+description: Versioned mobile and portal contract for tenant-scoped reads, scoped Sanctum abilities, idempotent collection writes, offline collector sync, imports, technician operations and customer self-service.
 servers:
   - url: /api/v1
 security:
@@ -251,6 +251,147 @@ paths:
       responses:
         '200': { description: Customer profile and services }
         '401': { description: Invalid portal session }
+  /portal/{tenant}/me/profile:
+    patch:
+      summary: Update customer contact and notification preferences
+      parameters:
+        - in: path
+          name: tenant
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email: { type: string, format: email, nullable: true }
+                address: { type: string, maxLength: 500, nullable: true }
+                notification_preferences: { type: object, additionalProperties: true }
+      responses:
+        '200': { description: Updated customer profile fields }
+        '401': { description: Invalid portal session }
+        '422': { description: Validation failed }
+  /portal/{tenant}/me/services:
+    get:
+      summary: List the authenticated customer's services and current sessions
+      parameters:
+        - in: path
+          name: tenant
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: Customer service summaries }
+        '401': { description: Invalid portal session }
+  /portal/{tenant}/me/services/{service}/usage:
+    get:
+      summary: Read daily usage for an owned service
+      parameters:
+        - in: path
+          name: tenant
+          required: true
+          schema: { type: string }
+        - in: path
+          name: service
+          required: true
+          schema: { type: string, description: Service public ULID }
+        - in: query
+          name: from
+          schema: { type: string, format: date }
+        - in: query
+          name: to
+          schema: { type: string, format: date }
+      responses:
+        '200': { description: Daily input, output and total octets }
+        '401': { description: Invalid portal session }
+        '404': { description: Service is not owned by the portal customer }
+  /portal/{tenant}/me/notices:
+    get:
+      summary: Read active incidents affecting the customer's zone or POP
+      parameters:
+        - in: path
+          name: tenant
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: Active customer-scoped outage notices }
+        '401': { description: Invalid portal session }
+  /portal/{tenant}/me/tickets:
+    get:
+      summary: List the authenticated customer's support tickets
+      parameters:
+        - in: path
+          name: tenant
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: Customer-owned ticket summaries }
+        '401': { description: Invalid portal session }
+    post:
+      summary: Open a support ticket for the authenticated customer
+      parameters:
+        - in: path
+          name: tenant
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [category, subject, description]
+              properties:
+                category: { type: string, enum: [no_service, slow, billing, relocation, other] }
+                subject: { type: string, maxLength: 160 }
+                description: { type: string, maxLength: 5000 }
+                service_uuid: { type: string, nullable: true }
+      responses:
+        '201': { description: Ticket created }
+        '401': { description: Invalid portal session }
+        '422': { description: Validation failed }
+  /portal/{tenant}/me/tickets/{ticket}:
+    get:
+      summary: Read a customer-owned ticket and public messages
+      parameters:
+        - in: path
+          name: tenant
+          required: true
+          schema: { type: string }
+        - in: path
+          name: ticket
+          required: true
+          schema: { type: string, description: Ticket public ULID }
+      responses:
+        '200': { description: Ticket detail and public message history }
+        '401': { description: Invalid portal session }
+        '404': { description: Ticket not found }
+  /portal/{tenant}/me/tickets/{ticket}/messages:
+    post:
+      summary: Add a public reply to a customer-owned ticket
+      parameters:
+        - in: path
+          name: tenant
+          required: true
+          schema: { type: string }
+        - in: path
+          name: ticket
+          required: true
+          schema: { type: string, description: Ticket public ULID }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [body]
+              properties:
+                body: { type: string, maxLength: 5000 }
+      responses:
+        '200': { description: Ticket with the appended public message }
+        '401': { description: Invalid portal session }
+        '404': { description: Ticket not found }
   /portal/{tenant}/billing:
     get:
       summary: Read the authenticated customer's invoice and payment history
