@@ -1,5 +1,5 @@
-import { Head, Link } from '@inertiajs/react';
-import { ArrowLeft, BookOpen, WalletCards } from 'lucide-react';
+import { Head, Link, useForm } from '@inertiajs/react';
+import { ArrowLeft, BookOpen, Plus, WalletCards } from 'lucide-react';
 
 import AppLayout from '@/layouts/AppLayout';
 import { formatDate, formatMoney } from '@/lib/format';
@@ -33,9 +33,24 @@ type Props = PageProps & {
     catalog: CatalogItem[];
     settlements: Settlement[];
     showCost: boolean;
+    canManage: boolean;
 };
 
-export default function Commercial({ partners, selectedPartner, catalog, settlements, showCost }: Props) {
+export default function Commercial({ partners, selectedPartner, catalog, settlements, showCost, canManage }: Props) {
+    const form = useForm({
+        name: '',
+        code: '',
+        currency: selectedPartner?.currency ?? 'USD',
+        parent_id: selectedPartner?.id ?? '',
+        credit_limit: 0,
+        low_balance_threshold: 0,
+    });
+
+    const submit = (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        form.post('/partners', { preserveScroll: true, onSuccess: () => form.reset() });
+    };
+
     return (
         <AppLayout>
             <Head title="Partner commercial" />
@@ -68,6 +83,59 @@ export default function Commercial({ partners, selectedPartner, catalog, settlem
                     </div>
                 )}
             </div>
+            {canManage && (
+                <form onSubmit={submit} className="card mt-8 space-y-5 p-6">
+                    <div className="flex items-center gap-3">
+                        <div className="grid size-10 place-items-center rounded-xl bg-brand-soft text-brand">
+                            <Plus size={19} />
+                        </div>
+                        <div>
+                            <h2 className="section-title">Add reseller account</h2>
+                            <p className="mt-1 text-sm text-muted">Create a partner wallet and place it in the visible hierarchy.</p>
+                        </div>
+                    </div>
+                    <div className="grid gap-4 md:grid-cols-3">
+                        <label>
+                            <span className="field-label">Name</span>
+                            <input className="field" value={form.data.name} onChange={(event) => form.setData('name', event.target.value)} />
+                            {form.errors.name && <span className="field-error">{form.errors.name}</span>}
+                        </label>
+                        <label>
+                            <span className="field-label">Code</span>
+                            <input className="field" value={form.data.code} onChange={(event) => form.setData('code', event.target.value)} />
+                            {form.errors.code && <span className="field-error">{form.errors.code}</span>}
+                        </label>
+                        <label>
+                            <span className="field-label">Currency</span>
+                            <input className="field uppercase" maxLength={3} value={form.data.currency} onChange={(event) => form.setData('currency', event.target.value.toUpperCase())} />
+                            {form.errors.currency && <span className="field-error">{form.errors.currency}</span>}
+                        </label>
+                    </div>
+                    <div className="grid gap-4 md:grid-cols-3">
+                        <label>
+                            <span className="field-label">Parent account</span>
+                            <select className="field" value={form.data.parent_id} onChange={(event) => form.setData('parent_id', event.target.value)}>
+                                <option value="">Tenant account</option>
+                                {partners.map((partner) => <option key={partner.id} value={partner.id}>{partner.name} · {partner.code}</option>)}
+                            </select>
+                            {form.errors.parent_id && <span className="field-error">{form.errors.parent_id}</span>}
+                        </label>
+                        <label>
+                            <span className="field-label">Credit limit</span>
+                            <input className="field" type="number" min="0" value={form.data.credit_limit} onChange={(event) => form.setData('credit_limit', Number(event.target.value))} />
+                            {form.errors.credit_limit && <span className="field-error">{form.errors.credit_limit}</span>}
+                        </label>
+                        <label>
+                            <span className="field-label">Low balance alert</span>
+                            <input className="field" type="number" min="0" value={form.data.low_balance_threshold} onChange={(event) => form.setData('low_balance_threshold', Number(event.target.value))} />
+                            {form.errors.low_balance_threshold && <span className="field-error">{form.errors.low_balance_threshold}</span>}
+                        </label>
+                    </div>
+                    <div className="flex justify-end">
+                        <button type="submit" className="button-primary" disabled={form.processing}>Create partner</button>
+                    </div>
+                </form>
+            )}
             {selectedPartner ? <div className="mt-8 grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
                 <section className="card overflow-hidden">
                     <div className="flex items-center gap-3 border-b border-line px-6 py-5">
