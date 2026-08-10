@@ -6,7 +6,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 uses(RefreshDatabase::class);
 
 it('passes the baseline preflight when the database and key are ready', function (): void {
-    config()->set('app.key', 'base64:preflight-test-key');
+    config()->set('app.key', 'base64:'.base64_encode(str_repeat('a', 32)));
 
     $this->artisan('platform:preflight')
         ->assertExitCode(Command::SUCCESS)
@@ -15,7 +15,7 @@ it('passes the baseline preflight when the database and key are ready', function
 
 it('fails the production preflight for unsafe public configuration', function (): void {
     config()->set([
-        'app.key' => 'base64:preflight-test-key',
+        'app.key' => 'base64:'.base64_encode(str_repeat('a', 32)),
         'app.env' => 'local',
         'app.debug' => true,
         'app.url' => 'http://localhost',
@@ -31,7 +31,7 @@ it('fails the production preflight for unsafe public configuration', function ()
 
 it('passes the production preflight for a production-shaped configuration', function (): void {
     config()->set([
-        'app.key' => 'base64:preflight-test-key',
+        'app.key' => 'base64:'.base64_encode(str_repeat('a', 32)),
         'app.env' => 'production',
         'app.debug' => false,
         'app.url' => 'https://portal.example.com',
@@ -43,4 +43,12 @@ it('passes the production preflight for a production-shaped configuration', func
     $this->artisan('platform:preflight', ['--production' => true])
         ->assertExitCode(Command::SUCCESS)
         ->expectsOutputToContain('Preflight passed.');
+});
+
+it('rejects a placeholder application key', function (): void {
+    config()->set('app.key', 'base64:placeholder');
+
+    $this->artisan('platform:preflight')
+        ->assertExitCode(Command::FAILURE)
+        ->expectsOutputToContain('Application key');
 });

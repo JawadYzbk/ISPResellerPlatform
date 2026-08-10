@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Database\Migrations\Migrator;
+use Illuminate\Encryption\Encrypter;
 use Illuminate\Support\Facades\DB;
 
 final class PlatformPreflightCommand extends Command
@@ -55,7 +56,15 @@ final class PlatformPreflightCommand extends Command
     {
         $key = config('app.key');
 
-        return is_string($key) && trim($key) !== '';
+        if (! is_string($key) || trim($key) === '') {
+            return false;
+        }
+
+        if (str_starts_with($key, 'base64:')) {
+            $key = base64_decode(substr($key, 7), true);
+        }
+
+        return is_string($key) && Encrypter::supported($key, (string) config('app.cipher'));
     }
 
     private function databaseIsReachable(): bool
