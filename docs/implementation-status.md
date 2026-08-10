@@ -42,6 +42,7 @@ Last updated: 2026-08-11
 - Real provider credentials/approvals.
 - WhatsApp Web.js QR pairing, session supervision and account-policy acceptance; the private bridge is implemented and opt-in, but no live account is claimed here.
 - Customer self-service online payments through a real gateway and realtime deployment rollout.
+- Whish Pay PHP gateway, collector QR generation and server-verified callback settlement are planned under ISP-033A and intentionally not implemented in the current slice. The referenced community client is a contract reference only; its Node package will not be shipped in this Laravel application.
 - Monitoring alert routing and external dashboard signal delivery.
 - Security operations: deployment-shaped PostgreSQL/object-media backup restore rehearsal, off-site retention and Sentry project validation; the local encrypted SQLite rehearsal passed.
 - PostgreSQL 17 production-shaped pool and infrastructure-level cold-cache acceptance against the 50k-service seed; the isolated PostgreSQL 17 data/query-plan and post-restart evidence is recorded in the performance runbook.
