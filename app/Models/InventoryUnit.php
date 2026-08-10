@@ -3,9 +3,16 @@
 namespace App\Models;
 
 use App\Models\Concerns\BelongsToTenant;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @property string $serial_number
+ * @property string $status
+ * @property Carbon|null $assigned_at
+ * @property Carbon|null $returned_at
+ */
 class InventoryUnit extends Model
 {
     use BelongsToTenant;

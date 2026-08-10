@@ -92,6 +92,12 @@ class Service extends Model
         return $this->hasMany(CurrentSession::class);
     }
 
+    /** @return HasMany<InventoryUnit, $this> */
+    public function assignedInventoryUnits(): HasMany
+    {
+        return $this->hasMany(InventoryUnit::class)->where('status', 'assigned')->latest('assigned_at');
+    }
+
     /** @param Builder<Service> $query */
     public function scopeSearch(Builder $query, ?string $search): Builder
     {

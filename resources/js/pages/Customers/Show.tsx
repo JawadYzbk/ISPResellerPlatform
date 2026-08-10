@@ -209,6 +209,26 @@ export default function CustomerShow({
                                                 {service.session?.framed_ip ?? service.session?.nasname ?? 'No active session'}
                                             </p>
                                         </div>
+                                        <div className="lg:col-span-4">
+                                            <p className="text-xs text-muted">Equipment</p>
+                                            {service.equipment.length > 0 ? (
+                                                <div className="mt-2 flex flex-wrap gap-2">
+                                                    {service.equipment.map((unit) => (
+                                                        <span
+                                                            key={unit.serial_number}
+                                                            className="inline-flex items-center gap-1.5 rounded-full bg-sand px-3 py-1.5 text-xs font-semibold"
+                                                        >
+                                                            {unit.item?.name ?? 'Serialized equipment'} · {unit.serial_number}
+                                                            <span className="font-normal text-muted">
+                                                                · Assigned {formatDate(unit.assigned_at)}
+                                                            </span>
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                            ) : (
+                                                <p className="mt-1 text-sm text-muted">No equipment assigned.</p>
+                                            )}
+                                        </div>
                                         <div className="flex flex-wrap items-center gap-3 sm:justify-end">
                                             {service.status === 'pending' && canActivateServices && (
                                                 <button

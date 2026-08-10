@@ -4,6 +4,7 @@ namespace App\Actions;
 
 use App\Contracts\Action;
 use App\Models\Customer;
+use App\Models\InventoryUnit;
 use App\Models\MediaUpload;
 
 final readonly class GetCustomerDetails implements Action
@@ -16,6 +17,7 @@ final readonly class GetCustomerDetails implements Action
             'services.plan',
             'services.router',
             'services.currentSessions' => fn ($query) => $query->whereNull('stopped_at')->latest('last_seen_at'),
+            'services.assignedInventoryUnits.item',
             'services.events' => fn ($query) => $query->latest()->limit(10),
             'invoices' => fn ($query) => $query->latest('issued_at')->limit(20),
             'payments' => fn ($query) => $query->latest('received_at')->limit(20),
@@ -79,6 +81,12 @@ final readonly class GetCustomerDetails implements Action
                 'expires_at' => $service->expires_at?->toIso8601String(),
                 'plan' => $service->plan?->only(['id', 'public_id', 'name', 'download_kbps', 'upload_kbps', 'amount_minor', 'currency']),
                 'router' => $service->router?->only(['public_id', 'name']),
+                'equipment' => $service->assignedInventoryUnits->map(fn (InventoryUnit $unit): array => [
+                    'serial_number' => $unit->serial_number,
+                    'status' => $unit->status,
+                    'assigned_at' => $unit->assigned_at?->toIso8601String(),
+                    'item' => $unit->item?->only(['sku', 'name', 'category']),
+                ])->values()->all(),
                 'session' => ($session = $service->currentSessions->first()) === null ? null : [
                     'acct_session_id' => $session->acct_session_id,
                     'nasname' => $session->nasname,

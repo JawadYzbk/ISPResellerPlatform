@@ -192,6 +192,12 @@ export type Service = {
     provisioning_mode?: 'manual' | 'radius' | 'mikrotik' | 'external' | 'upstream_credential';
     expires_at: string | null;
     router?: { public_id: string; name: string } | null;
+    equipment: {
+        serial_number: string;
+        status: string;
+        assigned_at: string | null;
+        item: { sku: string; name: string; category: string } | null;
+    }[];
     session?: {
         acct_session_id: string;
         nasname: string | null;
