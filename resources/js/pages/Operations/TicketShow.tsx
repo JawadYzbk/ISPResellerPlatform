@@ -26,12 +26,14 @@ type Ticket = {
     message_count: number;
     customer: { public_id: string; code: string; name: string } | null;
     service: { public_id: string; username: string } | null;
-    assignee: { name: string } | null;
+    assignee: { id: number; name: string } | null;
     messages: TicketMessage[];
 };
 
 type Props = PageProps & {
     ticket: Ticket;
+    assignees: { id: number; name: string; role: string }[];
+    canAssign?: boolean;
     canMutate?: boolean;
     canClose?: boolean;
 };
@@ -44,9 +46,11 @@ const transitions: Record<Ticket['status'], Ticket['status'][]> = {
     closed: ['closed'],
 };
 
-export default function TicketShow({ ticket, canMutate = false, canClose = false }: Props) {
+export default function TicketShow({ ticket, assignees, canAssign = false, canMutate = false, canClose = false }: Props) {
     const [status, setStatus] = useState(ticket.status);
-    const form = useForm({ body: '' });
+    const [assigneeId, setAssigneeId] = useState(ticket.assignee?.id.toString() ?? '');
+    const [visibility, setVisibility] = useState<'public' | 'internal'>('public');
+    const form = useForm<{ body: string; visibility: 'public' | 'internal' }>({ body: '', visibility: 'public' });
 
     const updateStatus = (event: React.FormEvent) => {
         event.preventDefault();
@@ -58,6 +62,11 @@ export default function TicketShow({ ticket, canMutate = false, canClose = false
     const submitReply = (event: React.FormEvent) => {
         event.preventDefault();
         form.post(`/operations/tickets/${ticket.public_id}/messages`, { preserveScroll: true });
+    };
+
+    const submitAssignment = (event: React.FormEvent) => {
+        event.preventDefault();
+        router.post(`/operations/tickets/${ticket.public_id}/assignee`, { assignee_id: assigneeId || null }, { preserveScroll: true });
     };
 
     return (
@@ -108,6 +117,19 @@ export default function TicketShow({ ticket, canMutate = false, canClose = false
                             </div>
                         </dl>
                     </div>
+                    {canAssign && (
+                        <form onSubmit={submitAssignment} className="card space-y-4 p-6">
+                            <h2 className="section-title">Assignment</h2>
+                            <label>
+                                <span className="field-label">Responsible operator</span>
+                                <select className="field" value={assigneeId} onChange={(event) => setAssigneeId(event.target.value)}>
+                                    <option value="">Unassigned</option>
+                                    {assignees.map((assignee) => <option key={assignee.id} value={assignee.id}>{assignee.name} · {assignee.role.replace('_', ' ')}</option>)}
+                                </select>
+                            </label>
+                            <button className="button-secondary w-full justify-center">Save assignment</button>
+                        </form>
+                    )}
                     {canMutate && ticket.status !== 'closed' && (
                         <form onSubmit={updateStatus} className="card space-y-4 p-6">
                             <h2 className="section-title">Update status</h2>
@@ -135,9 +157,9 @@ export default function TicketShow({ ticket, canMutate = false, canClose = false
                     </div>
                     <div className="space-y-5 p-6">
                         {ticket.messages.map((message) => (
-                            <article key={message.public_id} className="rounded-xl border border-line bg-sand/30 p-4">
+                            <article key={message.public_id} className={`rounded-xl border p-4 ${message.visibility === 'internal' ? 'border-amber-200 bg-amber-50/70' : 'border-line bg-sand/30'}`}>
                                 <div className="flex items-center justify-between gap-3 text-xs text-muted">
-                                    <span className="font-semibold capitalize">{message.author_type}</span>
+                                    <span className="font-semibold capitalize">{message.author_type} · {message.visibility === 'internal' ? 'internal note' : 'public reply'}</span>
                                     <time>{formatDate(message.created_at)}</time>
                                 </div>
                                 <p className="mt-3 whitespace-pre-wrap text-sm leading-6">{message.body}</p>
@@ -147,15 +169,17 @@ export default function TicketShow({ ticket, canMutate = false, canClose = false
                     </div>
                     {canMutate && ticket.status !== 'closed' && (
                         <form onSubmit={submitReply} className="border-t border-line bg-sand/20 p-6">
-                            <label className="field-label" htmlFor="body">
-                                Public reply
-                            </label>
+                            <div className="mb-3 flex gap-2">
+                                <button type="button" className={`button-secondary ${visibility === 'public' ? 'bg-white text-brand' : ''}`} onClick={() => { setVisibility('public'); form.setData('visibility', 'public'); }}>Public reply</button>
+                                <button type="button" className={`button-secondary ${visibility === 'internal' ? 'bg-white text-amber-700' : ''}`} onClick={() => { setVisibility('internal'); form.setData('visibility', 'internal'); }}>Internal note</button>
+                            </div>
+                            <label className="field-label" htmlFor="body">{visibility === 'internal' ? 'Internal note' : 'Public reply'}</label>
                             <textarea
                                 id="body"
                                 className="field min-h-32 resize-y"
                                 value={form.data.body}
                                 onChange={(event) => form.setData('body', event.target.value)}
-                                placeholder="Write the customer-facing update"
+                                placeholder={visibility === 'internal' ? 'Add context for the next operator' : 'Write the customer-facing update'}
                             />
                             {form.errors.body && <p className="field-error">{form.errors.body}</p>}
                             <div className="mt-4 flex justify-end">
