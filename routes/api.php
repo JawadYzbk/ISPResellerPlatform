@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\ApiTokenController;
 use App\Http\Controllers\Api\CollectorPaymentController;
 use App\Http\Controllers\Api\CustomerApiController;
 use App\Http\Controllers\Api\CustomerImportController;
+use App\Http\Controllers\Api\EquipmentImportController;
 use App\Http\Controllers\Api\HealthController;
 use App\Http\Controllers\Api\NetworkCommandController;
 use App\Http\Controllers\Api\PartnerApiController;
@@ -43,6 +44,8 @@ Route::prefix('v1')->group(function (): void {
         Route::post('/imports/plans/{import}/rollback', [PlanImportController::class, 'rollback'])->name('api.imports.plans.rollback');
         Route::post('/imports/services', [ServiceImportController::class, 'store'])->name('api.imports.services.store');
         Route::post('/imports/services/{import}/rollback', [ServiceImportController::class, 'rollback'])->name('api.imports.services.rollback');
+        Route::post('/imports/equipment', [EquipmentImportController::class, 'store'])->name('api.imports.equipment.store');
+        Route::post('/imports/equipment/{import}/rollback', [EquipmentImportController::class, 'rollback'])->name('api.imports.equipment.rollback');
         Route::post('/imports/{import}/rollback', [CustomerImportController::class, 'rollback'])->name('api.imports.rollback');
         Route::post('/payments', [PaymentApiController::class, 'store'])->middleware('idempotency')->name('api.payments.store');
         Route::get('/partners', [PartnerApiController::class, 'index'])->name('api.partners.index');
