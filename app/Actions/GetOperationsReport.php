@@ -10,6 +10,7 @@ use App\Models\NetworkCommand;
 use App\Models\Router;
 use App\Models\Service;
 use App\Models\WorkOrder;
+use App\Support\StockQuantity;
 use Illuminate\Database\Eloquent\Builder;
 
 final readonly class GetOperationsReport implements Action
@@ -31,11 +32,23 @@ final readonly class GetOperationsReport implements Action
                 ->where('is_active', true)
                 ->where('reorder_level', '>', 0)
                 ->withCount(['units as available_units' => fn (Builder $query): Builder => $query->where('status', 'available')])
+                ->withSum('stockBalances as bulk_units', 'quantity')
                 ->get()
-                ->filter(fn (InventoryItem $item): bool => $item->available_units <= $item->reorder_level)
-                ->sortBy('available_units')
+                ->map(function (InventoryItem $item): array {
+                    $available = $item->is_serialized ? (string) $item->available_units : StockQuantity::format((string) ($item->bulk_units ?? '0.000'));
+
+                    return [
+                        'sku' => $item->sku,
+                        'name' => $item->name,
+                        'available_units' => $item->is_serialized ? (int) $item->available_units : $available,
+                        'reorder_level' => $item->reorder_level,
+                        '_available_for_sort' => $available,
+                    ];
+                })
+                ->filter(fn (array $item): bool => ! StockQuantity::greaterThan($item['_available_for_sort'], (string) $item['reorder_level']))
+                ->sortBy('_available_for_sort')
                 ->take(10)
-                ->map(fn (InventoryItem $item): array => ['sku' => $item->sku, 'name' => $item->name, 'available_units' => $item->available_units, 'reorder_level' => $item->reorder_level])
+                ->map(fn (array $item): array => ['sku' => $item['sku'], 'name' => $item['name'], 'available_units' => $item['available_units'], 'reorder_level' => $item['reorder_level']])
                 ->values()
                 ->all(),
         ];

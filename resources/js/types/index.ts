@@ -119,7 +119,7 @@ export type OperationsReport = {
     offline_routers: number;
     network_drift: number;
     failed_commands: number;
-    low_stock_items: { sku: string; name: string; available_units: number; reorder_level: number }[];
+        low_stock_items: { sku: string; name: string; available_units: number | string; reorder_level: number }[];
 };
 
 export type PublicTenant = { slug: string; name: string };

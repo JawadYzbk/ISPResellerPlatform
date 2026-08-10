@@ -9,13 +9,18 @@ use DomainException;
 
 final class StockQuantity
 {
-    public static function normalize(string $value): string
+    public static function format(string $value): string
     {
         try {
-            $quantity = BigDecimal::of(trim($value))->toScale(3, RoundingMode::Unnecessary);
+            return BigDecimal::of(trim($value))->toScale(3, RoundingMode::Unnecessary)->__toString();
         } catch (MathException) {
-            throw new DomainException('Stock quantity must be a positive number with at most three decimal places.');
+            throw new DomainException('Stock quantity must be a number with at most three decimal places.');
         }
+    }
+
+    public static function normalize(string $value): string
+    {
+        $quantity = BigDecimal::of(self::format($value));
 
         if (! $quantity->isPositive()) {
             throw new DomainException('Stock quantity must be greater than zero.');

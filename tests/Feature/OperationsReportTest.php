@@ -6,6 +6,7 @@ use App\Enums\ServiceStatus;
 use App\Models\InventoryItem;
 use App\Models\InventoryUnit;
 use App\Models\Service;
+use App\Models\StockBalance;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Models\Warehouse;
@@ -35,6 +36,18 @@ it('summarizes live service and network operations by status', function (): void
         ->and($report['offline_routers'])->toBe(0)
         ->and($report['failed_commands'])->toBe(0);
     expect($report['low_stock_items'])->toMatchArray([['sku' => 'ONT-001', 'name' => 'Optical terminal', 'available_units' => 1, 'reorder_level' => 2]]);
+});
+
+it('includes bulk inventory balances in low-stock alerts', function (): void {
+    $tenant = Tenant::factory()->create(['name' => 'Eastline', 'slug' => 'eastline']);
+    app(Tenancy::class)->set($tenant);
+    $item = InventoryItem::create(['sku' => 'CABLE-001', 'name' => 'Outdoor cable', 'category' => 'cable', 'is_serialized' => false, 'reorder_level' => 10]);
+    $warehouse = Warehouse::create(['name' => 'Main', 'code' => 'MAIN-BULK', 'type' => 'warehouse']);
+    StockBalance::create(['inventory_item_id' => $item->id, 'warehouse_id' => $warehouse->id, 'quantity' => '4.500']);
+
+    $report = app(GetOperationsReport::class)->handle();
+
+    expect($report['low_stock_items'])->toContain(['sku' => 'CABLE-001', 'name' => 'Outdoor cable', 'available_units' => '4.500', 'reorder_level' => 10]);
 });
 
 it('streams the operations report for an authorised operator', function (): void {
