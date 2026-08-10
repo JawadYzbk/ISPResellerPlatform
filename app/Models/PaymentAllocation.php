@@ -6,6 +6,12 @@ use App\Models\Concerns\BelongsToTenant;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @property int $id
+ * @property int $amount
+ * @property string $currency
+ * @property Invoice $invoice
+ */
 class PaymentAllocation extends Model
 {
     use BelongsToTenant;
@@ -27,6 +33,7 @@ class PaymentAllocation extends Model
         return $this->belongsTo(Payment::class);
     }
 
+    /** @return BelongsTo<Invoice, $this> */
     public function invoice(): BelongsTo
     {
         return $this->belongsTo(Invoice::class);

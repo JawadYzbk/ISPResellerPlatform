@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Web;
 
+use App\Actions\GetInvoiceDetails;
+use App\Actions\GetPaymentDetails;
 use App\Actions\IssueInvoice;
 use App\Actions\ListInvoices;
 use App\Actions\ListPayments;
@@ -9,6 +11,7 @@ use App\Actions\ReversePayment;
 use App\Http\Controllers\Controller;
 use App\Models\Invoice;
 use App\Models\Payment;
+use App\Models\PaymentAllocation;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -76,6 +79,56 @@ final class BillingController extends Controller
         return redirect()->route('billing.invoices')->with('success', "Invoice {$invoice->number} issued.");
     }
 
+    public function showInvoice(Request $request, Invoice $invoice, GetInvoiceDetails $getDetails): Response
+    {
+        abort_unless($request->user()?->can('billing.invoices.view') === true, 403);
+        $invoice = $getDetails->handle($invoice);
+        $allocated = $invoice->payments->sum(fn (Payment $payment): int => $payment->allocations
+            ->where('invoice_id', $invoice->id)
+            ->sum('amount'));
+
+        return Inertia::render('Billing/InvoiceShow', [
+            'invoice' => [
+                'public_id' => $invoice->public_id,
+                'number' => $invoice->number,
+                'status' => $invoice->status->value,
+                'currency' => $invoice->currency,
+                'subtotal_amount' => $invoice->subtotal_amount,
+                'tax_amount' => $invoice->tax_amount,
+                'total_amount' => $invoice->total_amount,
+                'allocated_amount' => $allocated,
+                'outstanding_amount' => max(0, $invoice->total_amount - $allocated),
+                'due_at' => $invoice->due_at?->toIso8601String(),
+                'issued_at' => $invoice->issued_at?->toIso8601String(),
+                'voided_at' => $invoice->voided_at?->toIso8601String(),
+                'customer' => [
+                    'public_id' => $invoice->customer->public_id,
+                    'code' => $invoice->customer->code,
+                    'name' => $invoice->customer->full_name,
+                ],
+                'lines' => $invoice->lines->map(fn ($line): array => [
+                    'id' => $line->id,
+                    'description' => $line->description,
+                    'quantity' => $line->quantity,
+                    'unit_amount' => $line->unit_amount,
+                    'total_amount' => $line->total_amount,
+                    'currency' => $line->currency,
+                    'plan' => $line->plan === null ? null : ['name' => $line->plan->name],
+                    'service' => $line->service === null ? null : ['public_id' => $line->service->public_id, 'username' => $line->service->username],
+                ])->values(),
+                'payments' => $invoice->payments->map(fn (Payment $payment): array => [
+                    'public_id' => $payment->public_id,
+                    'number' => $payment->number,
+                    'amount' => $payment->amount,
+                    'currency' => $payment->currency,
+                    'method' => $payment->method,
+                    'received_at' => $payment->received_at?->toIso8601String(),
+                    'collector' => $payment->actor?->name,
+                ])->values(),
+            ],
+        ]);
+    }
+
     public function payments(Request $request, ListPayments $listPayments): Response
     {
         $user = $request->user();
@@ -129,5 +182,40 @@ final class BillingController extends Controller
         $reversePayment->handle($payment, $request->user());
 
         return redirect()->route('billing.payments')->with('success', "Payment {$payment->number} reversed.");
+    }
+
+    public function showPayment(Request $request, Payment $payment, GetPaymentDetails $getDetails): Response
+    {
+        $user = $request->user();
+        abort_unless($user instanceof User && $user->can('payments.collect'), 403);
+        $payment = $getDetails->handle($payment);
+
+        return Inertia::render('Billing/PaymentShow', [
+            'payment' => [
+                'public_id' => $payment->public_id,
+                'number' => $payment->number,
+                'status' => $payment->status->value,
+                'amount' => $payment->amount,
+                'currency' => $payment->currency,
+                'method' => $payment->method,
+                'received_at' => $payment->received_at?->toIso8601String(),
+                'reversed_at' => $payment->reversed_at?->toIso8601String(),
+                'collector' => $payment->actor?->name,
+                'cash_shift' => $payment->cashShift?->public_id,
+                'customer' => [
+                    'public_id' => $payment->customer->public_id,
+                    'code' => $payment->customer->code,
+                    'name' => $payment->customer->full_name,
+                ],
+                'invoice' => $payment->invoice === null ? null : ['public_id' => $payment->invoice->public_id, 'number' => $payment->invoice->number],
+                'allocations' => $payment->allocations->map(fn (PaymentAllocation $allocation): array => [
+                    'id' => $allocation->id,
+                    'amount' => $allocation->amount,
+                    'currency' => $allocation->currency,
+                    'invoice' => ['public_id' => $allocation->invoice->public_id, 'number' => $allocation->invoice->number],
+                ])->values(),
+            ],
+            'canReverse' => $user->can('payments.void'),
+        ]);
     }
 }

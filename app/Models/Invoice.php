@@ -15,6 +15,7 @@ use Illuminate\Support\Str;
  * @property InvoiceStatus $status
  * @property Carbon|null $due_at
  * @property Carbon|null $issued_at
+ * @property Carbon|null $voided_at
  */
 class Invoice extends Model
 {

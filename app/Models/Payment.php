@@ -65,6 +65,7 @@ class Payment extends Model
         return $this->belongsTo(User::class, 'actor_id');
     }
 
+    /** @return HasMany<PaymentAllocation, $this> */
     public function allocations(): HasMany
     {
         return $this->hasMany(PaymentAllocation::class);

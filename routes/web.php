@@ -80,8 +80,10 @@ Route::middleware(['auth', 'tenant', '2fa'])->group(function (): void {
     Route::post('/operations/routers', [RouterOperationsController::class, 'store'])->middleware('recent-auth')->name('operations.routers.store');
     Route::post('/operations/routers/{router:public_id}/health', [RouterOperationsController::class, 'health'])->name('operations.routers.health');
     Route::get('/billing/invoices', [BillingController::class, 'invoices'])->name('billing.invoices');
+    Route::get('/billing/invoices/{invoice:public_id}', [BillingController::class, 'showInvoice'])->name('billing.invoices.show');
     Route::post('/billing/invoices/{invoice:public_id}/issue', [BillingController::class, 'issue'])->name('billing.invoices.issue');
     Route::get('/billing/payments', [BillingController::class, 'payments'])->name('billing.payments');
+    Route::get('/billing/payments/{payment:public_id}', [BillingController::class, 'showPayment'])->name('billing.payments.show');
     Route::get('/billing/shifts', [CashShiftOperationsController::class, 'index'])->name('billing.shifts');
     Route::post('/billing/shifts/open', [CashShiftOperationsController::class, 'open'])->name('billing.shifts.open');
     Route::post('/billing/shifts/{shift:public_id}/close', [CashShiftOperationsController::class, 'close'])->middleware('recent-auth')->name('billing.shifts.close');
