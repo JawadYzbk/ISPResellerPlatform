@@ -41,8 +41,8 @@ Route::prefix('v1')->group(function (): void {
     Route::get('/health', [HealthController::class, 'show'])->name('api.health');
     Route::post('/webhooks/gateways/{gateway}', MessageWebhookController::class)->name('api.webhooks.gateways');
     Route::post('/webhooks/payments/{gateway}', PaymentGatewayWebhookController::class)->name('api.webhooks.payments');
-    Route::get('/webhooks/payments/whish/success', [WhishPaymentCallbackController::class, 'success'])->name('api.webhooks.payments.whish.success');
-    Route::get('/webhooks/payments/whish/failure', [WhishPaymentCallbackController::class, 'failure'])->name('api.webhooks.payments.whish.failure');
+    Route::get('/webhooks/payments/whish/success', [WhishPaymentCallbackController::class, 'success'])->middleware('throttle:30,1')->name('api.webhooks.payments.whish.success');
+    Route::get('/webhooks/payments/whish/failure', [WhishPaymentCallbackController::class, 'failure'])->middleware('throttle:30,1')->name('api.webhooks.payments.whish.failure');
     Route::post('/tokens', [ApiTokenController::class, 'store'])->middleware('throttle:login')->name('api.tokens.store');
     Route::post('/auth/staff/login', [ApiTokenController::class, 'staffLogin'])->middleware('throttle:login')->name('api.auth.staff.login');
     Route::post('/auth/staff/two-factor', [ApiTokenController::class, 'staffTwoFactor'])->middleware('throttle:login')->name('api.auth.staff.two-factor');

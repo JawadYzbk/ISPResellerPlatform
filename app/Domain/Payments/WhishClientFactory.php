@@ -21,6 +21,9 @@ final readonly class WhishClientFactory
         $secret = config('services.whish.secret');
         $websiteUrl = config('services.whish.website_url');
         $environment = (string) config('services.whish.environment', 'sandbox');
+        if (! in_array($environment, ['sandbox', 'production'], true)) {
+            throw new DomainException('Whish environment must be sandbox or production.');
+        }
         if (! is_string($channel) || trim($channel) === '' || ! is_string($secret) || trim($secret) === '' || ! is_string($websiteUrl) || trim($websiteUrl) === '') {
             throw new DomainException('Whish Pay credentials and website URL are not configured.');
         }

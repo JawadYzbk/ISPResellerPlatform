@@ -9,13 +9,19 @@ use WhishPay\Exceptions\WhishConfigurationException;
 final readonly class WhishConfig
 {
     public const SANDBOX_BASE_URL = 'https://lb.sandbox.whish.money/itel-service/api';
+
     public const PRODUCTION_BASE_URL = 'https://whish.money/itel-service/api';
 
     private string $channel;
+
     private string $secret;
+
     private string $websiteUrl;
+
     private string $environment;
+
     private ?string $baseUrl;
+
     private int $timeout;
 
     public function __construct(
@@ -38,7 +44,7 @@ final readonly class WhishConfig
         if (! in_array($this->environment, ['sandbox', 'production'], true)) {
             throw new WhishConfigurationException('Whish environment must be sandbox or production.');
         }
-        if ($this->baseUrl !== null && trim($this->baseUrl) === '') {
+        if ($this->baseUrl !== null && (trim($this->baseUrl) === '' || filter_var($this->baseUrl, FILTER_VALIDATE_URL) === false)) {
             throw new WhishConfigurationException('Whish base URL cannot be blank.');
         }
         if ($this->timeout < 1) {

@@ -235,11 +235,17 @@ final class PlatformPreflightCommand extends Command
             ->every(fn (string $key): bool => $this->hasConfiguredValue(config('services.whish.'.$key)))) {
             return false;
         }
+        if (filter_var((string) config('services.whish.website_url'), FILTER_VALIDATE_URL) === false) {
+            return false;
+        }
 
         $configuredUrls = collect(['success_callback_url', 'failure_callback_url', 'success_redirect_url', 'failure_redirect_url'])
             ->map(fn (string $key): mixed => config('services.whish.'.$key))
             ->filter(fn (mixed $url): bool => is_string($url) && trim($url) !== '');
         if ($configuredUrls->contains(fn (mixed $url): bool => ! $this->hasConfiguredValue($url))) {
+            return false;
+        }
+        if ($configuredUrls->contains(fn (mixed $url): bool => filter_var((string) $url, FILTER_VALIDATE_URL) === false)) {
             return false;
         }
 
