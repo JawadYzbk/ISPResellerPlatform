@@ -3,9 +3,18 @@
 namespace App\Models;
 
 use App\Models\Concerns\BelongsToTenant;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @property int|null $capacity_mbps
+ * @property int $monthly_cost_amount
+ * @property string $currency
+ * @property Carbon $contract_start
+ * @property Carbon|null $contract_end
+ * @property string|null $notes
+ */
 class UpstreamLink extends Model
 {
     use BelongsToTenant;

@@ -15,6 +15,7 @@ use App\Http\Controllers\Web\InvitationController;
 use App\Http\Controllers\Web\NetworkOperationsController;
 use App\Http\Controllers\Web\PartnerController;
 use App\Http\Controllers\Web\PlanOperationsController;
+use App\Http\Controllers\Web\PopOperationsController;
 use App\Http\Controllers\Web\PortalPageController;
 use App\Http\Controllers\Web\ReportController;
 use App\Http\Controllers\Web\RouterOperationsController;
@@ -81,6 +82,8 @@ Route::middleware(['auth', 'tenant', '2fa'])->group(function (): void {
     Route::get('/operations/routers/{router:public_id}', [RouterOperationsController::class, 'show'])->name('operations.routers.show');
     Route::put('/operations/routers/{router:public_id}', [RouterOperationsController::class, 'update'])->middleware('recent-auth')->name('operations.routers.update');
     Route::post('/operations/routers/{router:public_id}/health', [RouterOperationsController::class, 'health'])->name('operations.routers.health');
+    Route::get('/operations/pops', [PopOperationsController::class, 'index'])->name('operations.pops');
+    Route::get('/operations/pops/{pop}', [PopOperationsController::class, 'show'])->name('operations.pops.show');
     Route::get('/billing/invoices', [BillingController::class, 'invoices'])->name('billing.invoices');
     Route::get('/billing/invoices/{invoice:public_id}', [BillingController::class, 'showInvoice'])->name('billing.invoices.show');
     Route::post('/billing/invoices/{invoice:public_id}/issue', [BillingController::class, 'issue'])->name('billing.invoices.issue');
