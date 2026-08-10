@@ -35,6 +35,29 @@ export function formatDuration(startedAt: string | null, endedAt: string | null)
     return `${remainingMinutes}m`;
 }
 
+export function formatBytes(bytes: number): string {
+    if (bytes < 1024) return `${bytes} B`;
+    const units = ['KB', 'MB', 'GB', 'TB'];
+    let value = bytes;
+    let unit = 0;
+    while (value >= 1024 && unit < units.length - 1) {
+        value /= 1024;
+        unit += 1;
+    }
+
+    return `${value.toFixed(value >= 10 ? 0 : 1)} ${units[unit]}`;
+}
+
+export function formatExpiryCountdown(value: string | null): string {
+    if (!value) return 'No expiry date';
+    const days = Math.ceil((new Date(value).getTime() - Date.now()) / 86_400_000);
+    if (days < 0) return `Expired ${Math.abs(days)} day${Math.abs(days) === 1 ? '' : 's'} ago`;
+    if (days === 0) return 'Expires today';
+    if (days === 1) return 'Expires tomorrow';
+
+    return `Expires in ${days} days`;
+}
+
 export function formatDate(value: string | null, locale = 'en-US'): string {
     if (!value) return '—';
     return new Intl.DateTimeFormat(locale, { dateStyle: 'medium' }).format(new Date(value));

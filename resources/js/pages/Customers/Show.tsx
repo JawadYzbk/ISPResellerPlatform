@@ -23,7 +23,7 @@ import {
 import { StatusBadge } from '@/components/StatusBadge';
 import MapView from '@/components/MapView';
 import AppLayout from '@/layouts/AppLayout';
-import { formatDate, formatDuration, formatMoney } from '@/lib/format';
+import { formatBytes, formatDate, formatDuration, formatExpiryCountdown, formatMoney } from '@/lib/format';
 import type { Customer, PageProps } from '@/types';
 
 type Props = PageProps & {
@@ -56,6 +56,10 @@ export default function CustomerShow({
     canForceResumeServices = false,
 }: Props) {
     const fullName = `${customer.first_name} ${customer.last_name ?? ''}`.trim();
+    const nextExpiry = customer.services
+        .map((service) => service.expires_at)
+        .filter((expiresAt): expiresAt is string => expiresAt !== null)
+        .sort((left, right) => new Date(left).getTime() - new Date(right).getTime())[0] ?? null;
     const documentForm = useForm<{ file: File | null; document_type: string; retention_until: string }>({ file: null, document_type: 'contract', retention_until: '' });
     const submitDocument = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -132,13 +136,13 @@ export default function CustomerShow({
             </div>
             <div className="mt-8 grid gap-6 xl:grid-cols-[1.3fr_0.7fr]">
                 <div className="space-y-6">
-                    <div className="grid gap-4 sm:grid-cols-3">
+                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                         <div className="card p-5">
                             <p className="text-xs font-semibold uppercase tracking-wider text-muted">Balance</p>
-                            <p className="mt-3 font-display text-2xl font-semibold">
+                            <p className={`mt-3 font-display text-2xl font-semibold ${customer.balance_amount > 0 ? 'text-coral' : ''}`}>
                                 {formatMoney(customer.balance_amount, customer.balance_currency)}
                             </p>
-                            <p className="mt-1 text-xs text-muted">Account balance</p>
+                            <p className="mt-1 text-xs text-muted">{customer.balance_amount > 0 ? 'Amount owing' : 'Account balance'}</p>
                         </div>
                         <div className="card p-5">
                             <p className="text-xs font-semibold uppercase tracking-wider text-muted">Services</p>
@@ -149,6 +153,13 @@ export default function CustomerShow({
                             <p className="text-xs font-semibold uppercase tracking-wider text-muted">Contact</p>
                             <p className="mt-3 truncate text-sm font-semibold">{customer.phone}</p>
                             <p className="mt-1 truncate text-xs text-muted">{customer.email ?? 'No email on file'}</p>
+                        </div>
+                        <div className="card p-5">
+                            <p className="text-xs font-semibold uppercase tracking-wider text-muted">Expiry</p>
+                            <p className={`mt-3 text-sm font-semibold ${nextExpiry !== null && new Date(nextExpiry) < new Date() ? 'text-coral' : ''}`}>
+                                {formatExpiryCountdown(nextExpiry)}
+                            </p>
+                            <p className="mt-1 text-xs text-muted">Earliest service expiry</p>
                         </div>
                     </div>
                     <div className="card overflow-hidden">
@@ -220,6 +231,24 @@ export default function CustomerShow({
                                                 <p className="mt-1 text-xs text-muted">
                                                     Uptime {formatDuration(service.session.started_at, service.session.last_seen_at)}
                                                 </p>
+                                            )}
+                                        </div>
+                                        <div>
+                                            <p className="text-xs text-muted">Quota</p>
+                                            {service.usage.quota_bytes > 0 ? (
+                                                <>
+                                                    <div className="mt-2 h-2 overflow-hidden rounded-full bg-sand">
+                                                        <div
+                                                            className="h-full rounded-full bg-brand"
+                                                            style={{ width: `${Math.min(100, (service.usage.used_bytes / service.usage.quota_bytes) * 100)}%` }}
+                                                        />
+                                                    </div>
+                                                    <p className="mt-1 text-xs text-muted">
+                                                        {formatBytes(service.usage.used_bytes)} of {formatBytes(service.usage.quota_bytes)}
+                                                    </p>
+                                                </>
+                                            ) : (
+                                                <p className="mt-1 text-sm text-muted">No quota set</p>
                                             )}
                                         </div>
                                         <div className="lg:col-span-4">

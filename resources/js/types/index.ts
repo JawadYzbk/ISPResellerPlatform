@@ -192,6 +192,7 @@ export type Service = {
     provisioning_mode?: 'manual' | 'radius' | 'mikrotik' | 'external' | 'upstream_credential';
     expires_at: string | null;
     router?: { public_id: string; name: string } | null;
+    usage: { used_bytes: number; quota_bytes: number };
     equipment: {
         serial_number: string;
         status: string;

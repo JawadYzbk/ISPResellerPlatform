@@ -22,6 +22,8 @@ it('includes the active customer service session and excludes stopped sessions',
     app(Tenancy::class)->set($tenant);
     $user->assignRole('tenant_owner');
     $service = Service::factory()->create(['status' => ServiceStatus::Active]);
+    $service->plan->update(['metadata' => ['quota_bytes' => 1000]]);
+    $service->update(['current_period_bytes' => 500]);
     $item = InventoryItem::create(['sku' => 'CPE-ONU', 'name' => 'Fiber ONU', 'category' => 'onu', 'is_serialized' => true]);
     $warehouse = Warehouse::create(['name' => 'Main warehouse', 'code' => 'MAIN']);
     InventoryUnit::create(['inventory_item_id' => $item->id, 'warehouse_id' => $warehouse->id, 'serial_number' => 'ONU-001', 'status' => 'assigned', 'service_id' => $service->id, 'assigned_at' => now()->subDay()]);
@@ -36,6 +38,8 @@ it('includes the active customer service session and excludes stopped sessions',
             ->where('customer.services.0.session.acct_session_id', 'customer-session-001')
             ->where('customer.services.0.session.framed_ip', '10.0.0.20')
             ->where('customer.services.0.equipment.0.serial_number', 'ONU-001')
+            ->where('customer.services.0.usage.used_bytes', 500)
+            ->where('customer.services.0.usage.quota_bytes', 1000)
             ->where('canDisconnectSessions', true)
         );
 });

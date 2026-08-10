@@ -81,6 +81,10 @@ final readonly class GetCustomerDetails implements Action
                 'expires_at' => $service->expires_at?->toIso8601String(),
                 'plan' => $service->plan?->only(['id', 'public_id', 'name', 'download_kbps', 'upload_kbps', 'amount_minor', 'currency']),
                 'router' => $service->router?->only(['public_id', 'name']),
+                'usage' => [
+                    'used_bytes' => $service->current_period_bytes,
+                    'quota_bytes' => (int) ($service->plan?->metadata['quota_bytes'] ?? 0),
+                ],
                 'equipment' => $service->assignedInventoryUnits->map(fn (InventoryUnit $unit): array => [
                     'serial_number' => $unit->serial_number,
                     'status' => $unit->status,
