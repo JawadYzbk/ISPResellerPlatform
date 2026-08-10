@@ -17,6 +17,7 @@ The current foundation is live:
 - Capability-gated effective-dated FX rate administration using exact numerator/denominator ratios
 - Operator directory with role-limited one-time invitations and a public invitation acceptance flow
 - Staff invoice and payment queues with allocation-backed balances, audited reversals, router health registry and network command operations screen
+- Dedicated service diagnostics, live RADIUS session operations and incident workspaces with tenant-safe deep links and disconnect controls
 - Tenant-safe invoice detail and payment receipt views with posted allocation trails and browser print layouts
 - Staff ticket conversation/status workflow, customer support history, work-order calendar/completion surface with readings, signatures and bulk materials, serialized inventory trace/assignment, and plan/add-on/promotion catalog workflow
 - Supplier credential inventory view with secret redaction, tenant-safe assignment and audited reveal boundary
@@ -45,6 +46,7 @@ The current foundation is live:
 - Finance report with collection rate, allocation-based aging, plan/zone/POP revenue, upstream cost and margin, collector performance, retention, ARPU and top-usage breakdowns
 - Server-generated A4 invoice and receipt PDFs with tenant-scoped billing authorization
 - Deferred owner dashboard metrics and manager attention panels with server-rendered loading fallbacks
+- Capability-aware global command palette for customers, services, billing records, tickets, equipment and incidents
 - Transactional APP_KEY rotation command with an operator runbook for encrypted credentials
 - Coherent demo tenant seed with 200 customers/services, billing history, routers/POPs, tickets, work orders and serialized stock
 - Money value object backed by `brick/money`
