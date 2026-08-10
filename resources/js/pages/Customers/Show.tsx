@@ -110,6 +110,12 @@ export default function CustomerShow({
                             Take payment
                         </Link>
                     )}
+                    {canCollectPayment && customer.services.some((service) => service.status !== 'terminated') && (
+                        <Link href={`/customers/${customer.public_id}/renew`} className="button-secondary">
+                            <RefreshCw size={16} />
+                            Renew
+                        </Link>
+                    )}
                     {canCreateTicket && (
                         <Link href={`/customers/${customer.public_id}/tickets/create`} className="button-secondary">
                             <MessageSquare size={16} />
