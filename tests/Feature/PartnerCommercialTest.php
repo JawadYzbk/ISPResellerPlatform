@@ -1,9 +1,11 @@
 <?php
 
+use App\Actions\AccruePartnerCommission;
 use App\Actions\CalculatePartnerCommission;
 use App\Actions\CreatePartner;
 use App\Actions\ResolvePartnerPrice;
 use App\Models\CommissionRule;
+use App\Models\JournalLine;
 use App\Models\Plan;
 use App\Models\PriceBook;
 use App\Models\PriceBookItem;
@@ -44,4 +46,24 @@ it('calculates percentage and fixed commission rules in minor units', function (
     $item->forceFill(['commission_rule_id' => $fixed->id])->save();
 
     expect(app(CalculatePartnerCommission::class)->handle($item->refresh()))->toBe(275);
+});
+
+it('accrues an immutable commission entry and attributes the payable to the partner', function (): void {
+    $tenant = Tenant::create(['name' => 'Eastline', 'slug' => 'eastline', 'base_currency' => 'USD', 'collection_currency' => 'USD']);
+    app(Tenancy::class)->set($tenant);
+    $partner = app(CreatePartner::class)->handle('Reseller', 'R-002', 'USD');
+    $plan = Plan::factory()->create(['name' => 'Starter', 'slug' => 'starter', 'currency' => 'USD']);
+    $rule = CommissionRule::create(['type' => 'fixed', 'value' => 450, 'effective_from' => now()->subDay(), 'version' => 7]);
+    $book = PriceBook::create(['name' => 'Default', 'effective_from' => now()->subDay()]);
+    $item = PriceBookItem::create(['price_book_id' => $book->id, 'plan_id' => $plan->id, 'commission_rule_id' => $rule->id, 'currency' => 'USD', 'buy_amount_minor' => 0, 'sell_amount_minor' => 3000, 'effective_from' => now()->subDay()]);
+
+    $entry = app(AccruePartnerCommission::class)->handle($partner, 'renewal', 'renewal-001', $item);
+    $replayed = app(AccruePartnerCommission::class)->handle($partner, 'renewal', 'renewal-001', $item);
+    $rule->update(['value' => 900, 'version' => 8]);
+
+    expect($replayed->is($entry))->toBeTrue()
+        ->and($entry->refresh()->amount_minor)->toBe(450)
+        ->and($entry->rule_version)->toBe(7)
+        ->and($entry->journal_entry_id)->not->toBeNull()
+        ->and(JournalLine::query()->where('partner_id', $partner->id)->sole()->credit_amount)->toBe(450);
 });
