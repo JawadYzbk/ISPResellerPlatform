@@ -1,5 +1,5 @@
 import { Head, Link, router } from '@inertiajs/react';
-import { ArrowLeft, CreditCard, Printer } from 'lucide-react';
+import { ArrowLeft, CreditCard, Download, Printer } from 'lucide-react';
 
 import StatusBadge from '@/components/StatusBadge';
 import AppLayout from '@/layouts/AppLayout';
@@ -37,9 +37,10 @@ export default function PaymentShowPage({ payment, canReverse }: Props) {
                 <Link href="/billing/payments" className="inline-flex items-center gap-2 text-sm font-semibold text-muted hover:text-brand">
                     <ArrowLeft size={16} /> Back to payments
                 </Link>
-                <button type="button" className="button-secondary" onClick={() => window.print()}>
-                    <Printer size={16} /> Print receipt
-                </button>
+                <div className="flex gap-2">
+                    <a href={`/billing/payments/${payment.public_id}/pdf`} className="button-secondary"><Download size={16} /> Download PDF</a>
+                    <button type="button" className="button-secondary" onClick={() => window.print()}><Printer size={16} /> Print receipt</button>
+                </div>
             </div>
 
             <div className="mt-8 flex flex-col justify-between gap-5 sm:flex-row sm:items-start">
@@ -72,6 +73,7 @@ export default function PaymentShowPage({ payment, canReverse }: Props) {
                 <div className="card h-fit p-5 print:hidden">
                     <p className="text-sm font-semibold">Receipt actions</p>
                     <div className="mt-5 space-y-3">
+                        <a href={`/billing/payments/${payment.public_id}/pdf`} className="button-secondary w-full justify-center"><Download size={16} /> Download PDF</a>
                         <button type="button" className="button-secondary w-full justify-center" onClick={() => window.print()}><Printer size={16} /> Print receipt</button>
                         {canReverse && payment.status === 'posted' && <button type="button" className="button-danger w-full justify-center" onClick={reverse}>Reverse posted payment</button>}
                     </div>

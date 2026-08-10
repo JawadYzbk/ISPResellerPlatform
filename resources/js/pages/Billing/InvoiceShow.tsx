@@ -1,5 +1,5 @@
 import { Head, Link, useForm } from '@inertiajs/react';
-import { ArrowLeft, FilePlus2, Printer, ReceiptText } from 'lucide-react';
+import { ArrowLeft, Download, FilePlus2, Printer, ReceiptText } from 'lucide-react';
 
 import StatusBadge from '@/components/StatusBadge';
 import AppLayout from '@/layouts/AppLayout';
@@ -57,9 +57,10 @@ export default function InvoiceShowPage({ invoice, canCredit }: { invoice: Invoi
                 <Link href="/billing/invoices" className="inline-flex items-center gap-2 text-sm font-semibold text-muted hover:text-brand">
                     <ArrowLeft size={16} /> Back to invoices
                 </Link>
-                <button type="button" className="button-secondary" onClick={() => window.print()}>
-                    <Printer size={16} /> Print invoice
-                </button>
+                <div className="flex gap-2">
+                    <a href={`/billing/invoices/${invoice.public_id}/pdf`} className="button-secondary"><Download size={16} /> Download PDF</a>
+                    <button type="button" className="button-secondary" onClick={() => window.print()}><Printer size={16} /> Print invoice</button>
+                </div>
             </div>
 
             <div className="mt-8 flex flex-col justify-between gap-5 sm:flex-row sm:items-start">
