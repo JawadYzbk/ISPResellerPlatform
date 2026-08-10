@@ -13,6 +13,7 @@ import {
     MessageSquare,
     Package,
     ReceiptText,
+    Scale,
     Store,
     Search,
     Router,
@@ -38,6 +39,9 @@ export default function AppLayout({ children }: PropsWithChildren) {
         { label: 'Billing', href: '/billing/invoices', icon: ReceiptText },
         { label: 'Payments', href: '/billing/payments', icon: CreditCard },
         { label: 'Cash shifts', href: '/billing/shifts', icon: WalletCards },
+        ...(auth.permissions.includes('settings.manage')
+            ? [{ label: 'FX rates', href: '/billing/exchange-rates', icon: Scale }]
+            : []),
         { label: 'Tickets', href: '/operations/tickets', icon: MessageSquare },
         { label: 'Work orders', href: '/operations/work-orders', icon: ClipboardList },
         { label: 'Inventory', href: '/operations/inventory', icon: Package },
