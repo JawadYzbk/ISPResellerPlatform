@@ -423,6 +423,86 @@ paths:
         '200': { description: Updated customer profile fields }
         '401': { description: Invalid portal session }
         '422': { description: Validation failed }
+  /portal/{tenant}/me/balance:
+    get:
+      summary: Read the authenticated customer's balance and next due invoice
+      parameters:
+        - in: path
+          name: tenant
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: Customer balance and next outstanding invoice }
+        '401': { description: Invalid portal session }
+  /portal/{tenant}/me/invoices:
+    get:
+      summary: List the authenticated customer's invoices
+      parameters:
+        - in: path
+          name: tenant
+          required: true
+          schema: { type: string }
+        - in: query
+          name: per_page
+          schema: { type: integer, minimum: 1, maximum: 100, default: 25 }
+        - in: query
+          name: cursor
+          schema: { type: string }
+      responses:
+        '200': { description: Cursor-paginated invoice summaries with line items }
+        '401': { description: Invalid portal session }
+  /portal/{tenant}/me/invoices/{invoice}:
+    get:
+      summary: Read one authenticated customer invoice
+      parameters:
+        - in: path
+          name: tenant
+          required: true
+          schema: { type: string }
+        - in: path
+          name: invoice
+          required: true
+          schema: { type: string, description: Invoice public ULID }
+      responses:
+        '200': { description: Invoice detail with lines and allocated payments }
+        '401': { description: Invalid portal session }
+        '404': { description: Invoice not found for this customer }
+  /portal/{tenant}/me/invoices/{invoice}/pdf:
+    get:
+      summary: Download one authenticated customer invoice as PDF
+      parameters:
+        - in: path
+          name: tenant
+          required: true
+          schema: { type: string }
+        - in: path
+          name: invoice
+          required: true
+          schema: { type: string, description: Invoice public ULID }
+      responses:
+        '200':
+          description: A4 invoice PDF
+          content:
+            application/pdf: { schema: { type: string, format: binary } }
+        '401': { description: Invalid portal session }
+        '404': { description: Invoice not found for this customer }
+  /portal/{tenant}/me/payments:
+    get:
+      summary: List the authenticated customer's posted payments
+      parameters:
+        - in: path
+          name: tenant
+          required: true
+          schema: { type: string }
+        - in: query
+          name: per_page
+          schema: { type: integer, minimum: 1, maximum: 100, default: 25 }
+        - in: query
+          name: cursor
+          schema: { type: string }
+      responses:
+        '200': { description: Cursor-paginated payment receipt summaries }
+        '401': { description: Invalid portal session }
   /portal/{tenant}/me/services:
     get:
       summary: List the authenticated customer's services and current sessions
@@ -434,6 +514,23 @@ paths:
       responses:
         '200': { description: Customer service summaries }
         '401': { description: Invalid portal session }
+  /portal/{tenant}/me/payments/intent:
+    post:
+      summary: Create a customer payment intent through the configured gateway
+      parameters:
+        - in: path
+          name: tenant
+          required: true
+          schema: { type: string }
+        - in: header
+          name: X-Idempotency-Key
+          required: true
+          schema: { type: string, maxLength: 120 }
+      responses:
+        '201': { description: Gateway-specific payment intent payload }
+        '401': { description: Invalid portal session }
+        '404': { description: Invoice not found for this customer }
+        '503': { description: No payment gateway is configured }
   /portal/{tenant}/me/services/{service}/usage:
     get:
       summary: Read daily usage for an owned service
