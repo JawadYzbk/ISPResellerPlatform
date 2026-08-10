@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react';
 import laravel from 'laravel-vite-plugin';
 import tailwindcss from '@tailwindcss/vite';
 
-const localAppOrigins = new Set(['http://localhost:8000', 'http://127.0.0.1:8000', 'http://[::1]:8000']);
+const localAppOrigins = ['http://localhost:8000', 'http://127.0.0.1:8000', 'http://[::1]:8000'];
 
 export default defineConfig({
     plugins: [
@@ -18,9 +18,7 @@ export default defineConfig({
         host: '127.0.0.1',
         origin: 'http://127.0.0.1:5173',
         cors: {
-            origin: (origin, callback) => {
-                callback(null, origin !== undefined && localAppOrigins.has(origin) ? origin : false);
-            },
+            origin: localAppOrigins,
         },
         hmr: {
             host: '127.0.0.1',
