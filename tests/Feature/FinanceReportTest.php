@@ -24,6 +24,7 @@ it('reconciles issued revenue and posted collections by currency', function (): 
     $plan = Plan::factory()->create(['amount_minor' => 3500]);
     $plan->prices()->create(['currency' => 'USD', 'amount_minor' => 3500, 'effective_from' => now()->subDay()]);
     $invoice = app(IssueInvoice::class)->handle(app(CreateInvoice::class)->handle($customer, $plan));
+    $invoice->update(['due_at' => now()->subDays(10)]);
     app(RecordPayment::class)->handle($customer, 1000, 'USD', 'cash', 'report-payment-001', $invoice);
 
     $report = app(GetFinanceReport::class)->handle(CarbonImmutable::now()->subDay(), CarbonImmutable::now()->addDay());
@@ -32,6 +33,9 @@ it('reconciles issued revenue and posted collections by currency', function (): 
         ->and($report['payment_count'])->toBe(1)
         ->and($report['invoiced_by_currency']['USD'])->toBe(3500)
         ->and($report['collected_by_currency']['USD'])->toBe(1000)
+        ->and($report['collection_rate_by_currency']['USD'])->toBe(28.57)
+        ->and($report['aging_by_currency']['USD']['1_30'])->toBe(2500)
+        ->and($report['outstanding_by_currency']['USD'])->toBe(2500)
         ->and(app(ExportFinanceReportCsv::class)->handle(CarbonImmutable::now()->subDay(), CarbonImmutable::now()->addDay()))
         ->toContain('invoiced_by_currency,USD,3500');
 });
