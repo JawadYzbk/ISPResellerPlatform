@@ -13,6 +13,7 @@ final readonly class GetCustomerDetails implements Action
         $customer->load([
             'zone',
             'services.plan',
+            'services.router',
             'services.events' => fn ($query) => $query->latest()->limit(10),
             'invoices' => fn ($query) => $query->latest('issued_at')->limit(20),
             'payments' => fn ($query) => $query->latest('received_at')->limit(20),
@@ -69,9 +70,11 @@ final readonly class GetCustomerDetails implements Action
                 'username' => $service->username,
                 'status' => $service->status->value,
                 'network_state' => $service->network_state->value,
+                'provisioning_mode' => $service->provisioning_mode->value,
                 'suspension_reason' => $service->suspension_reason,
                 'expires_at' => $service->expires_at?->toIso8601String(),
                 'plan' => $service->plan?->only(['id', 'public_id', 'name', 'download_kbps', 'upload_kbps', 'amount_minor', 'currency']),
+                'router' => $service->router?->only(['public_id', 'name']),
             ])->values()->all(),
             'invoices' => $customer->invoices->map(fn ($invoice): array => [
                 'public_id' => $invoice->public_id,

@@ -171,7 +171,12 @@ export default function CustomerShow({
                                         </div>
                                         <div>
                                             <p className="text-xs text-muted">Provisioning</p>
-                                            <p className="mt-1 text-sm font-semibold capitalize">Manual handoff</p>
+                                            <p className="mt-1 text-sm font-semibold capitalize">
+                                                {(service.provisioning_mode ?? 'manual').replace('_', ' ')}
+                                            </p>
+                                            <p className="mt-1 text-xs text-muted">
+                                                {service.router?.name ?? 'No router assigned'}
+                                            </p>
                                         </div>
                                         <div className="flex flex-wrap items-center gap-3 sm:justify-end">
                                             {service.status === 'pending' && canActivateServices && (

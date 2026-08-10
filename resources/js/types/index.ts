@@ -169,7 +169,9 @@ export type Service = {
     status: 'pending' | 'active' | 'suspended' | 'terminated';
     suspension_reason?: string | null;
     network_state: 'unknown' | 'pending_sync' | 'in_sync' | 'drifted' | 'failed';
+    provisioning_mode?: 'manual' | 'radius' | 'mikrotik' | 'external' | 'upstream_credential';
     expires_at: string | null;
+    router?: { public_id: string; name: string } | null;
     plan: Plan;
     customer?: Customer;
 };
