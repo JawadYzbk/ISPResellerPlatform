@@ -9,8 +9,8 @@ use WhishPay\WhishHttpTransport;
 final class LaravelWhishTransport implements WhishHttpTransport
 {
     /**
-     * @param array<string, string> $headers
-     * @param array<string, mixed>|null $payload
+     * @param  array<string, string>  $headers
+     * @param  array<string, mixed>|null  $payload
      */
     public function send(string $method, string $url, array $headers, ?array $payload, int $timeout): WhishHttpResponse
     {

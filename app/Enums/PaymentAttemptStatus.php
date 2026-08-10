@@ -7,4 +7,5 @@ enum PaymentAttemptStatus: string
     case Pending = 'pending';
     case Succeeded = 'succeeded';
     case Failed = 'failed';
+    case SettlementFailed = 'settlement_failed';
 }

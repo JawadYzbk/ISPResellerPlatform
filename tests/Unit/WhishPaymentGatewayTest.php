@@ -1,8 +1,8 @@
 <?php
 
 use App\Domain\Payments\WhishPaymentGateway;
-use App\Domain\Payments\WhishClientFactory;
 use App\Models\Currency;
+use App\Models\Customer;
 use App\Models\PaymentAttempt;
 use App\Models\Tenant;
 use App\Support\Tenancy;
@@ -41,7 +41,7 @@ it('converts LBP minor units without floating point arithmetic', function (): vo
     app(Tenancy::class)->set($tenant);
     $currency = Currency::query()->where('code', 'LBP')->firstOrFail();
     $currency->update(['name' => 'Lebanese pound', 'decimal_digits' => 0, 'is_collection' => true, 'is_active' => true]);
-    $customer = \App\Models\Customer::factory()->create();
+    $customer = Customer::factory()->create();
     $attempt = PaymentAttempt::create([
         'gateway' => 'whish',
         'external_id' => '123456789',

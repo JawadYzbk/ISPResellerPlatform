@@ -36,6 +36,20 @@ final readonly class WhishPaymentGateway
         return $this->clients->make()->getPaymentStatus($attempt->external_id, $attempt->currency);
     }
 
+    public function amountAsDecimal(PaymentAttempt $attempt): string
+    {
+        return $this->minorToDecimal($attempt->amount, $attempt->currency);
+    }
+
+    public function matchesAmount(PaymentAttempt $attempt, ?string $providerAmount): bool
+    {
+        if ($providerAmount === null || preg_match('/^\d+(?:\.\d+)?$/', $providerAmount) !== 1) {
+            return false;
+        }
+
+        return $this->canonicalDecimal($this->amountAsDecimal($attempt)) === $this->canonicalDecimal($providerAmount);
+    }
+
     private function url(string $configKey, string $routeName): string
     {
         $configured = config('services.whish.'.$configKey);
@@ -59,5 +73,14 @@ final readonly class WhishPaymentGateway
         $fraction = str_pad((string) ($amount % $factor), $digits, '0', STR_PAD_LEFT);
 
         return $whole.'.'.$fraction;
+    }
+
+    private function canonicalDecimal(string $value): string
+    {
+        [$whole, $fraction] = array_pad(explode('.', $value, 2), 2, '');
+        $whole = ltrim($whole, '0') ?: '0';
+        $fraction = rtrim($fraction, '0');
+
+        return $whole.($fraction === '' ? '' : '.'.$fraction);
     }
 }

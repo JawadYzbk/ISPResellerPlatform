@@ -29,6 +29,7 @@ use App\Http\Controllers\Api\ServiceImportController;
 use App\Http\Controllers\Api\TechnicianMediaController;
 use App\Http\Controllers\Api\TechnicianWorkOrderController;
 use App\Http\Controllers\Api\TicketApiController;
+use App\Http\Controllers\Api\WhishPaymentCallbackController;
 use App\Http\Controllers\Api\WorkOrderApiController;
 use App\Http\Controllers\Api\ZoneApiController;
 use App\Models\User;
@@ -40,6 +41,8 @@ Route::prefix('v1')->group(function (): void {
     Route::get('/health', [HealthController::class, 'show'])->name('api.health');
     Route::post('/webhooks/gateways/{gateway}', MessageWebhookController::class)->name('api.webhooks.gateways');
     Route::post('/webhooks/payments/{gateway}', PaymentGatewayWebhookController::class)->name('api.webhooks.payments');
+    Route::get('/webhooks/payments/whish/success', [WhishPaymentCallbackController::class, 'success'])->name('api.webhooks.payments.whish.success');
+    Route::get('/webhooks/payments/whish/failure', [WhishPaymentCallbackController::class, 'failure'])->name('api.webhooks.payments.whish.failure');
     Route::post('/tokens', [ApiTokenController::class, 'store'])->middleware('throttle:login')->name('api.tokens.store');
     Route::post('/auth/staff/login', [ApiTokenController::class, 'staffLogin'])->middleware('throttle:login')->name('api.auth.staff.login');
     Route::post('/auth/staff/two-factor', [ApiTokenController::class, 'staffTwoFactor'])->middleware('throttle:login')->name('api.auth.staff.two-factor');
@@ -184,6 +187,7 @@ Route::prefix('v1')->group(function (): void {
             Route::post('/collector/payments/{payment}/receipt', [CollectorApiController::class, 'resendReceipt'])->middleware('idempotency')->name('api.collector.payments.receipt');
             Route::get('/collector/summary', [CollectorApiController::class, 'summary'])->name('api.collector.summary');
             Route::post('/collector/payments/batch', [CollectorPaymentController::class, 'store'])->middleware('idempotency')->name('api.collector.payments.batch');
+            Route::post('/collector/payments/whish', [CollectorPaymentController::class, 'createWhish'])->middleware('idempotency')->name('api.collector.payments.whish');
             Route::get('/collector/sync/bootstrap', [CollectorSyncController::class, 'bootstrap'])->name('api.collector.sync.bootstrap');
             Route::get('/collector/sync/delta', [CollectorSyncController::class, 'delta'])->name('api.collector.sync.delta');
             Route::post('/collector/sync/push', [CollectorSyncController::class, 'push'])->middleware('idempotency')->name('api.collector.sync.push');
