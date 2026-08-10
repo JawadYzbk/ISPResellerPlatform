@@ -39,6 +39,7 @@ final class PlatformPreflightCommand extends Command
                 'Reverb configuration' => $this->reverbIsConfigured(),
                 'WhatsApp configuration' => $this->whatsappIsConfigured(),
                 'Payment gateway configuration' => $this->paymentGatewayIsConfigured(),
+                'Whish Pay configuration' => $this->whishIsConfigured(),
             ];
         }
 
@@ -218,6 +219,45 @@ final class PlatformPreflightCommand extends Command
 
         return collect(['secret', 'publishable_key', 'endpoint', 'webhook_secret'])
             ->every(fn (string $key): bool => $this->hasConfiguredValue(config('services.stripe.'.$key)));
+    }
+
+    private function whishIsConfigured(): bool
+    {
+        if (! (bool) config('services.whish.enabled')) {
+            return true;
+        }
+
+        if (! in_array((string) config('services.whish.environment', 'sandbox'), ['sandbox', 'production'], true)) {
+            return false;
+        }
+
+        if (! collect(['channel', 'secret', 'website_url'])
+            ->every(fn (string $key): bool => $this->hasConfiguredValue(config('services.whish.'.$key)))) {
+            return false;
+        }
+
+        $configuredUrls = collect(['success_callback_url', 'failure_callback_url', 'success_redirect_url', 'failure_redirect_url'])
+            ->map(fn (string $key): mixed => config('services.whish.'.$key))
+            ->filter(fn (mixed $url): bool => is_string($url) && trim($url) !== '');
+        if ($configuredUrls->contains(fn (mixed $url): bool => ! $this->hasConfiguredValue($url))) {
+            return false;
+        }
+
+        if ((string) config('services.whish.environment', 'sandbox') !== 'production') {
+            return true;
+        }
+
+        return $this->isPublicHttpsUrl((string) config('services.whish.website_url'))
+            && $configuredUrls->every(fn (mixed $url): bool => $this->isPublicHttpsUrl((string) $url));
+    }
+
+    private function isPublicHttpsUrl(string $value): bool
+    {
+        $parsed = parse_url($value);
+        $host = is_array($parsed) ? strtolower((string) ($parsed['host'] ?? '')) : '';
+        $scheme = is_array($parsed) ? strtolower((string) ($parsed['scheme'] ?? '')) : '';
+
+        return $scheme === 'https' && $host !== '' && ! in_array($host, ['localhost', '127.0.0.1', '::1', '[::1]'], true);
     }
 
     private function hasConfiguredValue(mixed $value): bool

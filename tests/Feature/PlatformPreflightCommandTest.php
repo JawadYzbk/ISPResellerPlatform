@@ -131,3 +131,24 @@ it('requires Stripe credentials and a webhook secret when selected', function ()
         ->assertExitCode(Command::FAILURE)
         ->expectsOutputToContain('Payment gateway configuration');
 });
+
+it('requires Whish credentials and public URLs when selected for production', function (): void {
+    config()->set([
+        'app.key' => 'base64:'.base64_encode(str_repeat('a', 32)),
+        'app.env' => 'production',
+        'app.debug' => false,
+        'app.url' => 'https://portal.isp.test',
+        'session.secure' => true,
+        'queue.default' => 'database',
+        'cache.default' => 'database',
+        'services.whish.enabled' => true,
+        'services.whish.environment' => 'production',
+        'services.whish.channel' => 'channel',
+        'services.whish.secret' => '',
+        'services.whish.website_url' => 'https://portal.isp.test',
+    ]);
+
+    $this->artisan('platform:preflight', ['--production' => true])
+        ->assertExitCode(Command::FAILURE)
+        ->expectsOutputToContain('Whish Pay configuration');
+});

@@ -26,6 +26,7 @@ The current foundation is live:
 - Legacy `admin` accounts are reconciled to a full tenant role by the capability seeder; local web 2FA remains opt-in through `SECURITY_ENFORCE_TWO_FACTOR`
 - Historical FX conversion, double-entry ledger, invoices, payments, cash-shift reconciliation and billing runs
 - Configurable Stripe customer-portal checkout with signed, idempotent payment settlement through the existing ledger path
+- Standalone PHP Whish Pay collector flow with persisted attempts, provider-verified callbacks, and QR collection links for USD/LBP/AED
 - Multi-currency collection with inverse-rate lookup, payment FX snapshots, approved override reasons, references and overpayment credit
 - Immediate or next-renewal service plan changes with prorated ledger credit/charge entries, pause/resume lifecycle controls, and queued RouterOS/RADIUS rate synchronization
 - Payment-driven one-to-twelve-period renewal with signed previews, scheduled overdue suspension and post-commit network command outbox
