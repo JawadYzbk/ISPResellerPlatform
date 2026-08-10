@@ -43,17 +43,20 @@ class WorkOrder extends Model
     }
 
     /** @return BelongsTo<Customer, $this> */
+    /** @return BelongsTo<Customer, $this> */
     public function customer(): BelongsTo
     {
         return $this->belongsTo(Customer::class);
     }
 
     /** @return BelongsTo<Service, $this> */
+    /** @return BelongsTo<Service, $this> */
     public function service(): BelongsTo
     {
         return $this->belongsTo(Service::class);
     }
 
+    /** @return BelongsTo<User, $this> */
     public function assignee(): BelongsTo
     {
         return $this->belongsTo(User::class, 'assigned_to');

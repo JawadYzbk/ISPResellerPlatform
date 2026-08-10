@@ -15,6 +15,7 @@ use App\Http\Controllers\Web\RouterOperationsController;
 use App\Http\Controllers\Web\SecurityController;
 use App\Http\Controllers\Web\ServiceController;
 use App\Http\Controllers\Web\TicketOperationsController;
+use App\Http\Controllers\Web\WorkOrderOperationsController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', fn () => redirect()->route(auth()->check() ? 'dashboard' : 'login'));
@@ -68,6 +69,8 @@ Route::middleware(['auth', 'tenant', '2fa'])->group(function (): void {
     Route::get('/operations/tickets/{ticket:public_id}', [TicketOperationsController::class, 'show'])->name('operations.tickets.show');
     Route::post('/operations/tickets/{ticket:public_id}/status', [TicketOperationsController::class, 'status'])->name('operations.tickets.status');
     Route::post('/operations/tickets/{ticket:public_id}/messages', [TicketOperationsController::class, 'reply'])->name('operations.tickets.messages');
+    Route::get('/operations/work-orders', [WorkOrderOperationsController::class, 'index'])->name('operations.work-orders');
+    Route::post('/operations/work-orders/{workOrder:public_id}/complete', [WorkOrderOperationsController::class, 'complete'])->name('operations.work-orders.complete');
     Route::get('/customers/{customer:public_id}/services/create', [ServiceController::class, 'create'])->name('services.create');
     Route::post('/customers/{customer:public_id}/services', [ServiceController::class, 'store'])->name('services.store');
     Route::get('/partners/commercial', [PartnerController::class, 'commercial'])->name('partners.commercial');
