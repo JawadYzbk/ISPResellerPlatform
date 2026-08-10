@@ -3,15 +3,22 @@
 namespace App\Http\Controllers\Web;
 
 use App\Actions\AssignUpstreamCredential;
+use App\Actions\ImportCredentialCsv;
 use App\Actions\ListUpstreamCredentials;
+use App\Actions\RevealUpstreamCredential;
 use App\Http\Controllers\Controller;
 use App\Models\Service;
+use App\Models\Supplier;
+use App\Models\Tenant;
 use App\Models\UpstreamCredential;
 use App\Models\User;
 use Carbon\CarbonImmutable;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -77,7 +84,38 @@ final class CredentialOperationsController extends Controller
             'filters' => $request->only(['status', 'search']),
             'canAssign' => $canAssign,
             'assignableServices' => $assignableServices,
+            'canImport' => $user->can('credentials.import'),
+            'canReveal' => $user->can('credentials.reveal'),
+            'suppliers' => $user->can('credentials.import')
+                ? Supplier::query()->where('is_active', true)->orderBy('name')->get(['id', 'name', 'code'])->values()
+                : [],
         ]);
+    }
+
+    public function import(Request $request, ImportCredentialCsv $import): RedirectResponse
+    {
+        $user = $request->user();
+        abort_unless($user instanceof User && $user->can('credentials.import') && $user->tenant instanceof Tenant, 403);
+        $validated = $request->validate([
+            'supplier_id' => [Rule::exists('suppliers', 'id')->where('tenant_id', $user->tenant->id)],
+            'reference' => ['required', 'string', 'max:64'],
+            'expires_at' => ['nullable', 'date'],
+            'file' => ['required', 'file', 'mimes:csv,txt', 'max:10240'],
+        ]);
+        $file = $validated['file'];
+        abort_unless($file instanceof UploadedFile, 422, 'A credential CSV file is required.');
+        $supplier = Supplier::query()->findOrFail((int) $validated['supplier_id']);
+        $batch = $import->handle($supplier, (string) $validated['reference'], $validated['expires_at'] ?? null, $file->get());
+
+        return redirect()->route('operations.credentials')->with('success', "Imported credentials into batch {$batch->reference}.");
+    }
+
+    public function reveal(Request $request, UpstreamCredential $credential, RevealUpstreamCredential $reveal): JsonResponse
+    {
+        $user = $request->user();
+        abort_unless($user instanceof User, 401);
+
+        return response()->json(['secret' => $reveal->handle($user, $credential)]);
     }
 
     public function assign(Request $request, UpstreamCredential $credential, AssignUpstreamCredential $assign): RedirectResponse

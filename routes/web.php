@@ -110,6 +110,8 @@ Route::middleware(['auth', 'tenant', '2fa'])->group(function (): void {
     Route::post('/operations/imports', [ImportOperationsController::class, 'store'])->name('operations.imports.store');
     Route::post('/operations/imports/{import}/rollback', [ImportOperationsController::class, 'rollback'])->middleware('recent-auth')->name('operations.imports.rollback');
     Route::get('/operations/credentials', [CredentialOperationsController::class, 'index'])->name('operations.credentials');
+    Route::post('/operations/credentials/import', [CredentialOperationsController::class, 'import'])->middleware('recent-auth')->name('operations.credentials.import');
+    Route::post('/operations/credentials/{credential}/reveal', [CredentialOperationsController::class, 'reveal'])->middleware('recent-auth')->name('operations.credentials.reveal');
     Route::post('/operations/credentials/{credential}/assign', [CredentialOperationsController::class, 'assign'])->middleware('recent-auth')->name('operations.credentials.assign');
     Route::get('/plans', [PlanOperationsController::class, 'index'])->name('plans.index');
     Route::get('/plans/create', [PlanOperationsController::class, 'create'])->name('plans.create');
