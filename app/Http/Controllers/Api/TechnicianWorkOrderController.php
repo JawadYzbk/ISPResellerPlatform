@@ -3,14 +3,18 @@
 namespace App\Http\Controllers\Api;
 
 use App\Actions\CompleteWorkOrder;
+use App\Actions\ConsumeWorkOrderMaterial;
 use App\Actions\GetTechnicianServiceDiagnostics;
 use App\Actions\ListTechnicianInventory;
 use App\Actions\RecordWorkOrderReadings;
 use App\Enums\WorkOrderStatus;
 use App\Http\Controllers\Controller;
+use App\Models\InventoryItem;
 use App\Models\MediaUpload;
 use App\Models\Service;
+use App\Models\Warehouse;
 use App\Models\WorkOrder;
+use App\Models\WorkOrderMaterial;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -57,7 +61,7 @@ final class TechnicianWorkOrderController extends Controller
     {
         $this->ensureTechnician($request);
         $order = $this->assignedQuery($request)
-            ->with(['customer', 'service.plan', 'events', 'mediaUploads', 'signature.media'])
+            ->with(['customer', 'service.plan', 'events', 'mediaUploads', 'signature.media', 'materials.item', 'materials.warehouse'])
             ->where('public_id', $workOrder)
             ->firstOrFail();
 
@@ -92,6 +96,33 @@ final class TechnicianWorkOrderController extends Controller
         }
 
         return response()->json(['id' => $updated->public_id, 'readings' => $updated->readings ?? []]);
+    }
+
+    public function materials(Request $request, string $workOrder, ConsumeWorkOrderMaterial $consume): JsonResponse
+    {
+        $this->ensureTechnician($request);
+        $validated = $request->validate([
+            'inventory_item_id' => ['required', 'integer'],
+            'warehouse_id' => ['required', 'integer'],
+            'quantity' => ['required', 'string', 'regex:/^\d{1,9}(?:\.\d{1,3})?$/'],
+            'note' => ['nullable', 'string', 'max:500'],
+        ]);
+        $order = $this->assignedQuery($request)->where('public_id', $workOrder)->firstOrFail();
+        $item = InventoryItem::query()->findOrFail($validated['inventory_item_id']);
+        $warehouse = Warehouse::query()->findOrFail($validated['warehouse_id']);
+        try {
+            $material = $consume->handle($order, $item, $warehouse, $request->user(), (string) $validated['quantity'], $validated['note'] ?? null);
+        } catch (\DomainException $exception) {
+            return response()->json(['message' => $exception->getMessage()], 409);
+        }
+
+        return response()->json([
+            'id' => $material->id,
+            'inventory_item_id' => $material->inventory_item_id,
+            'warehouse_id' => $material->warehouse_id,
+            'quantity' => (string) $material->quantity,
+            'consumed_at' => $material->consumed_at?->toIso8601String(),
+        ], 201);
     }
 
     private function ensureTechnician(Request $request): void
@@ -144,6 +175,15 @@ final class TechnicianWorkOrderController extends Controller
                 'signed_at' => $order->signature->signed_at?->toIso8601String(),
                 'media_id' => $order->signature->media?->public_id,
             ],
+            'materials' => $order->materials->map(fn (WorkOrderMaterial $material): array => [
+                'id' => $material->id,
+                'sku' => $material->item?->sku,
+                'name' => $material->item?->name,
+                'warehouse' => $material->warehouse?->code,
+                'quantity' => (string) $material->quantity,
+                'note' => $material->note,
+                'consumed_at' => $material->consumed_at?->toIso8601String(),
+            ])->values(),
         ];
     }
 }

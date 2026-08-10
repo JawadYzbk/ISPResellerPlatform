@@ -3,21 +3,27 @@
 namespace App\Http\Controllers\Web;
 
 use App\Actions\AssignInventoryUnit;
+use App\Actions\ListBulkStock;
 use App\Actions\ListInventoryUnits;
+use App\Actions\ReceiveBulkStock;
 use App\Http\Controllers\Controller;
+use App\Models\InventoryItem;
 use App\Models\InventoryUnit;
 use App\Models\Service;
 use App\Models\User;
+use App\Models\Warehouse;
 use Carbon\CarbonImmutable;
+use DomainException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 
 final class InventoryOperationsController extends Controller
 {
-    public function index(Request $request, ListInventoryUnits $listInventoryUnits): Response
+    public function index(Request $request, ListInventoryUnits $listInventoryUnits, ListBulkStock $listBulkStock): Response
     {
         $user = $request->user();
         abort_unless($user instanceof User && $user->can('inventory.view'), 403);
@@ -61,6 +67,7 @@ final class InventoryOperationsController extends Controller
         );
 
         $canAssign = $user->can('inventory.assign');
+        $canReceive = $user->can('inventory.receive');
         $assignableServices = $canAssign
             ? Service::query()
                 ->with('customer')
@@ -76,12 +83,50 @@ final class InventoryOperationsController extends Controller
                 ->all()
             : [];
 
+        $bulkBalances = $listBulkStock->handle()->map(fn ($balance): array => [
+            'inventory_item_id' => $balance->inventory_item_id,
+            'warehouse_id' => $balance->warehouse_id,
+            'sku' => $balance->item?->sku,
+            'name' => $balance->item?->name,
+            'warehouse' => $balance->warehouse?->code,
+            'quantity' => (string) $balance->quantity,
+        ])->values();
+
         return Inertia::render('Operations/Inventory', [
             'units' => $units,
             'filters' => $request->only(['status', 'search']),
             'canAssign' => $canAssign,
+            'canReceive' => $canReceive,
             'assignableServices' => $assignableServices,
+            'bulkBalances' => $bulkBalances,
+            'bulkItems' => $canReceive
+                ? InventoryItem::query()->where('is_serialized', false)->where('is_active', true)->orderBy('name')->get(['id', 'sku', 'name'])->values()
+                : [],
+            'bulkWarehouses' => $canReceive
+                ? Warehouse::query()->where('is_active', true)->orderBy('code')->get(['id', 'code', 'name'])->values()
+                : [],
         ]);
+    }
+
+    public function receiveBulk(Request $request, ReceiveBulkStock $receive): RedirectResponse
+    {
+        $user = $request->user();
+        abort_unless($user instanceof User && $user->can('inventory.receive'), 403);
+        $validated = $request->validate([
+            'inventory_item_id' => ['required', 'integer'],
+            'warehouse_id' => ['required', 'integer'],
+            'quantity' => ['required', 'string', 'regex:/^\d{1,9}(?:\.\d{1,3})?$/'],
+            'note' => ['nullable', 'string', 'max:500'],
+        ]);
+        $item = InventoryItem::query()->findOrFail($validated['inventory_item_id']);
+        $warehouse = Warehouse::query()->findOrFail($validated['warehouse_id']);
+        try {
+            $receive->handle($item, $warehouse, $user, (string) $validated['quantity'], $validated['note'] ?? null);
+        } catch (DomainException $exception) {
+            throw ValidationException::withMessages(['quantity' => $exception->getMessage()]);
+        }
+
+        return redirect()->route('operations.inventory')->with('success', 'Bulk stock received.');
     }
 
     public function assign(Request $request, InventoryUnit $unit, AssignInventoryUnit $assign): RedirectResponse

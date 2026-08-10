@@ -19,6 +19,7 @@ use Illuminate\Support\Str;
  * @property Carbon|null $completed_at
  * @property array<string, mixed>|null $checklist
  * @property array<string, mixed>|null $metadata
+ * @property array<string, string>|null $readings
  */
 class WorkOrder extends Model
 {
@@ -79,5 +80,11 @@ class WorkOrder extends Model
     public function signature(): HasOne
     {
         return $this->hasOne(WorkOrderSignature::class);
+    }
+
+    /** @return HasMany<WorkOrderMaterial, $this> */
+    public function materials(): HasMany
+    {
+        return $this->hasMany(WorkOrderMaterial::class);
     }
 }

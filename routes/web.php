@@ -121,7 +121,9 @@ Route::middleware(['auth', 'tenant', '2fa'])->group(function (): void {
     Route::post('/operations/work-orders/{workOrder:public_id}/schedule', [WorkOrderOperationsController::class, 'schedule'])->middleware('recent-auth')->name('operations.work-orders.schedule');
     Route::post('/operations/work-orders/{workOrder:public_id}/signature', [WorkOrderOperationsController::class, 'storeSignature'])->middleware('recent-auth')->name('operations.work-orders.signature.store');
     Route::post('/operations/work-orders/{workOrder:public_id}/readings', [WorkOrderOperationsController::class, 'readings'])->middleware('recent-auth')->name('operations.work-orders.readings.store');
+    Route::post('/operations/work-orders/{workOrder:public_id}/materials', [WorkOrderOperationsController::class, 'material'])->middleware('recent-auth')->name('operations.work-orders.materials.store');
     Route::get('/operations/inventory', [InventoryOperationsController::class, 'index'])->name('operations.inventory');
+    Route::post('/operations/inventory/bulk-receive', [InventoryOperationsController::class, 'receiveBulk'])->middleware('recent-auth')->name('operations.inventory.bulk-receive');
     Route::post('/operations/inventory/{unit}/assign', [InventoryOperationsController::class, 'assign'])->middleware('recent-auth')->name('operations.inventory.assign');
     Route::get('/operations/imports', [ImportOperationsController::class, 'index'])->name('operations.imports');
     Route::post('/operations/imports', [ImportOperationsController::class, 'store'])->name('operations.imports.store');

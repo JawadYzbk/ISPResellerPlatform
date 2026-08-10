@@ -4,16 +4,21 @@ namespace App\Http\Controllers\Web;
 
 use App\Actions\CaptureWorkOrderSignature;
 use App\Actions\CompleteWorkOrder;
+use App\Actions\ConsumeWorkOrderMaterial;
 use App\Actions\GetWorkOrderDetails;
+use App\Actions\ListBulkStock;
 use App\Actions\ListWorkOrderCalendar;
 use App\Actions\ListWorkOrders;
 use App\Actions\RecordWorkOrderReadings;
 use App\Actions\ScheduleWorkOrder;
 use App\Http\Controllers\Controller;
+use App\Models\InventoryItem;
 use App\Models\MediaUpload;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Models\Warehouse;
 use App\Models\WorkOrder;
+use App\Models\WorkOrderMaterial;
 use Carbon\CarbonImmutable;
 use DomainException;
 use Illuminate\Http\RedirectResponse;
@@ -160,7 +165,28 @@ final class WorkOrderOperationsController extends Controller
         return redirect()->route('operations.work-orders.show', $workOrder->public_id)->with('success', 'Work-order readings saved.');
     }
 
-    public function show(Request $request, WorkOrder $workOrder, GetWorkOrderDetails $getDetails): Response
+    public function material(Request $request, WorkOrder $workOrder, ConsumeWorkOrderMaterial $consume): RedirectResponse
+    {
+        $user = $request->user();
+        abort_unless($user instanceof User && $user->can('workorders.complete'), 403);
+        $validated = $request->validate([
+            'inventory_item_id' => ['required', 'integer'],
+            'warehouse_id' => ['required', 'integer'],
+            'quantity' => ['required', 'string', 'regex:/^\d{1,9}(?:\.\d{1,3})?$/'],
+            'note' => ['nullable', 'string', 'max:500'],
+        ]);
+        $item = InventoryItem::query()->findOrFail($validated['inventory_item_id']);
+        $warehouse = Warehouse::query()->findOrFail($validated['warehouse_id']);
+        try {
+            $consume->handle($workOrder, $item, $warehouse, $user, (string) $validated['quantity'], $validated['note'] ?? null);
+        } catch (DomainException $exception) {
+            throw ValidationException::withMessages(['quantity' => $exception->getMessage()]);
+        }
+
+        return redirect()->route('operations.work-orders.show', $workOrder->public_id)->with('success', 'Work-order material recorded.');
+    }
+
+    public function show(Request $request, WorkOrder $workOrder, GetWorkOrderDetails $getDetails, ListBulkStock $listBulkStock): Response
     {
         $user = $request->user();
         abort_unless($user instanceof User && $user->can('workorders.complete'), 403);
@@ -206,7 +232,24 @@ final class WorkOrderOperationsController extends Controller
                     'signed_at' => $workOrder->signature->signed_at?->toIso8601String(),
                     'download_url' => $workOrder->signature->media === null ? null : route('operations.media.download', $workOrder->signature->media->public_id),
                 ],
+                'materials' => $workOrder->materials->map(fn (WorkOrderMaterial $material): array => [
+                    'id' => $material->id,
+                    'sku' => $material->item?->sku,
+                    'name' => $material->item?->name,
+                    'warehouse' => $material->warehouse?->code,
+                    'quantity' => (string) $material->quantity,
+                    'note' => $material->note,
+                    'consumed_at' => $material->consumed_at?->toIso8601String(),
+                ])->values(),
             ],
+            'bulkMaterials' => $listBulkStock->handle()->map(fn ($balance): array => [
+                'inventory_item_id' => $balance->inventory_item_id,
+                'warehouse_id' => $balance->warehouse_id,
+                'sku' => $balance->item?->sku,
+                'name' => $balance->item?->name,
+                'warehouse' => $balance->warehouse?->code,
+                'quantity' => (string) $balance->quantity,
+            ])->values(),
             'scheduledAtLocal' => $this->localDate($workOrder->scheduled_at, $timezone),
             'timezone' => $timezone,
         ]);
