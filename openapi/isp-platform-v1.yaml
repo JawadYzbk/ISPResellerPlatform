@@ -223,6 +223,35 @@ paths:
         '200': { description: Paginated customer list }
         '401': { description: Unauthenticated }
         '403': { description: Forbidden }
+    post:
+      summary: Create a tenant customer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [first_name, phone]
+              properties:
+                first_name: { type: string, maxLength: 100 }
+                last_name: { type: string, maxLength: 100, nullable: true }
+                phone: { type: string, maxLength: 32 }
+                email: { type: string, format: email, maxLength: 255, nullable: true }
+                zone_id: { type: integer, nullable: true }
+                address: { type: string, maxLength: 500, nullable: true }
+                latitude: { type: number, minimum: -90, maximum: 90, nullable: true }
+                longitude: { type: number, minimum: -180, maximum: 180, nullable: true }
+                create_service: { type: boolean, default: false }
+                plan_id: { type: integer, nullable: true }
+                username: { type: string, maxLength: 64, nullable: true }
+                password: { type: string, format: password, minLength: 12, maxLength: 128, nullable: true }
+                provisioning_mode: { type: string, enum: [manual, upstream_credential, mikrotik, radius, external], nullable: true }
+                router_id: { type: integer, nullable: true }
+      responses:
+        '201': { description: Created customer resource }
+        '401': { description: Unauthenticated }
+        '403': { description: Missing customer or service creation capability }
+        '422': { description: Validation failure }
   /customers/{customer}:
     get:
       summary: Read one tenant customer
@@ -235,6 +264,35 @@ paths:
         '200': { description: Customer resource }
         '401': { description: Unauthenticated }
         '404': { description: Customer not found }
+    patch:
+      summary: Partially update a tenant customer
+      parameters:
+        - in: path
+          name: customer
+          required: true
+          schema: { type: string, description: Customer public ULID }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              minProperties: 1
+              properties:
+                first_name: { type: string, maxLength: 100 }
+                last_name: { type: string, maxLength: 100, nullable: true }
+                phone: { type: string, maxLength: 32 }
+                email: { type: string, format: email, maxLength: 255, nullable: true }
+                zone_id: { type: integer, nullable: true }
+                address: { type: string, maxLength: 500, nullable: true }
+                latitude: { type: number, minimum: -90, maximum: 90, nullable: true }
+                longitude: { type: number, minimum: -180, maximum: 180, nullable: true }
+      responses:
+        '200': { description: Updated customer resource }
+        '401': { description: Unauthenticated }
+        '403': { description: Missing customer update capability }
+        '404': { description: Customer not found }
+        '422': { description: Validation failure }
   /services:
     get:
       summary: List tenant services
