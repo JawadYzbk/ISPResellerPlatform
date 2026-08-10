@@ -45,9 +45,11 @@ Route::prefix('v1')->group(function (): void {
         Route::post('/otp/request', [PortalAuthController::class, 'requestCustomerOtp'])->middleware('throttle:customer-otp')->name('api.auth.customer.otp.request');
         Route::post('/otp/verify', [PortalAuthController::class, 'verifyCustomerOtp'])->middleware('throttle:login')->name('api.auth.customer.otp.verify');
     });
+    Route::post('/auth/customer/logout', [PortalAuthController::class, 'logout'])->middleware('portal.auth')->name('api.auth.customer.logout');
     Route::prefix('portal/{tenant:slug}')->middleware('portal.tenant')->group(function (): void {
         Route::post('/otp/request', [PortalAuthController::class, 'requestOtp'])->middleware('throttle:customer-otp')->name('api.portal.otp.request');
         Route::post('/otp/verify', [PortalAuthController::class, 'verifyOtp'])->middleware('throttle:login')->name('api.portal.otp.verify');
+        Route::post('/logout', [PortalAuthController::class, 'logout'])->middleware('portal.auth')->name('api.portal.logout');
         Route::get('/me', [PortalController::class, 'me'])->middleware('portal.auth')->name('api.portal.me');
         Route::get('/me/profile', [PortalController::class, 'me'])->middleware('portal.auth')->name('api.portal.profile');
         Route::patch('/me/profile', [PortalController::class, 'updateProfile'])->middleware('portal.auth')->name('api.portal.profile.update');

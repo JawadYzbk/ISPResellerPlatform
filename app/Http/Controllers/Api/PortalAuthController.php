@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Actions\RequestPortalOtp;
 use App\Actions\VerifyPortalOtp;
 use App\Http\Controllers\Controller;
+use App\Models\PortalSession;
 use App\Models\Tenant;
 use Carbon\CarbonImmutable;
 use DomainException;
@@ -56,5 +57,14 @@ final class PortalAuthController extends Controller
         }
 
         return response()->json([...$result, 'type' => 'Bearer']);
+    }
+
+    public function logout(Request $request): JsonResponse
+    {
+        $session = $request->attributes->get('portal_session');
+        abort_unless($session instanceof PortalSession, 401);
+        $session->forceFill(['revoked_at' => now()])->save();
+
+        return response()->json(status: 204);
     }
 }

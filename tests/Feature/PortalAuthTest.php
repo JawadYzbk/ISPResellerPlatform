@@ -31,4 +31,7 @@ it('hashes the OTP and issues a separate portal session after verification', fun
     expect($session['token'])->toStartWith('portal_')
         ->and($result['challenge']->refresh()->code_hash)->not->toBe($result['code'])
         ->and($this->withToken($session['token'])->getJson('/api/v1/portal/southline/me')->assertOk()->json('phone_normalized'))->toBe('96170456789');
+
+    $this->withToken($session['token'])->postJson('/api/v1/portal/southline/logout')->assertNoContent();
+    $this->withToken($session['token'])->getJson('/api/v1/portal/southline/me')->assertUnauthorized();
 });

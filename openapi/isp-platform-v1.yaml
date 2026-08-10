@@ -131,6 +131,12 @@ paths:
         '200': { description: Portal bearer token and expiry }
         '400': { description: Tenant context is missing when more than one tenant is active }
         '422': { description: Invalid or expired code }
+  /auth/customer/logout:
+    post:
+      summary: Revoke the current customer portal session
+      responses:
+        '204': { description: Portal session revoked }
+        '401': { description: Invalid portal session }
   /app/config:
     get:
       summary: Read mobile version and maintenance configuration
@@ -1178,6 +1184,17 @@ paths:
       responses:
         '200': { description: Portal bearer session issued }
         '422': { description: Invalid or expired code }
+  /portal/{tenant}/logout:
+    post:
+      summary: Revoke the current tenant-scoped customer portal session
+      parameters:
+        - in: path
+          name: tenant
+          required: true
+          schema: { type: string }
+      responses:
+        '204': { description: Portal session revoked }
+        '401': { description: Invalid portal session }
   /portal/{tenant}/me:
     get:
       summary: Read the authenticated customer portal profile

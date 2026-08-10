@@ -48,6 +48,9 @@ it('accepts the documented phone-code customer login and resolves root me routes
         ->assertOk()
         ->assertJsonPath('public_id', $customer->public_id)
         ->assertJsonPath('phone_normalized', '96170456788');
+
+    $this->withToken((string) $response->json('token'))->postJson('/api/v1/auth/customer/logout')->assertNoContent();
+    $this->withToken((string) $response->json('token'))->getJson('/api/v1/me/profile')->assertUnauthorized();
 });
 
 it('requires an explicit tenant selector for root OTP requests when multiple tenants are active', function (): void {

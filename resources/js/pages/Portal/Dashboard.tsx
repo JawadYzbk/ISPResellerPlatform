@@ -43,7 +43,14 @@ export default function PortalDashboard({ tenant }: Props) {
             .catch(() => setError('The portal could not be loaded.'));
     }, [tenant.slug, tokenKey]);
 
-    const signOut = () => {
+    const signOut = async () => {
+        const token = sessionStorage.getItem(tokenKey);
+        if (token) {
+            await fetch(`/api/v1/portal/${tenant.slug}/logout`, {
+                method: 'POST',
+                headers: { Authorization: `Bearer ${token}` },
+            }).catch(() => undefined);
+        }
         sessionStorage.removeItem(tokenKey);
         window.location.assign(`/portal/${tenant.slug}`);
     };
