@@ -63,7 +63,7 @@ final readonly class GetCustomerDetails implements Action
         }
 
         return [
-            ...$customer->only(['id', 'public_id', 'code', 'first_name', 'last_name', 'phone', 'email', 'address', 'status', 'anonymized_at', 'balance_amount', 'balance_currency']),
+            ...$customer->only(['id', 'public_id', 'code', 'first_name', 'last_name', 'phone', 'email', 'address', 'latitude', 'longitude', 'status', 'anonymized_at', 'balance_amount', 'balance_currency']),
             'zone' => $customer->zone?->only(['id', 'name', 'code']),
             'services' => $customer->services->map(fn ($service): array => [
                 'id' => $service->id,

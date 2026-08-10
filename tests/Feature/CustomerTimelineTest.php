@@ -16,7 +16,7 @@ uses(RefreshDatabase::class);
 it('returns safe customer activity for the staff show screen', function (): void {
     $tenant = Tenant::create(['name' => 'Northline', 'slug' => 'northline', 'base_currency' => 'USD', 'collection_currency' => 'USD']);
     app(Tenancy::class)->set($tenant);
-    $customer = Customer::factory()->create();
+    $customer = Customer::factory()->create(['latitude' => 33.8938, 'longitude' => 35.5018]);
     $plan = Plan::factory()->create(['amount_minor' => 3500]);
     $plan->prices()->create(['currency' => 'USD', 'amount_minor' => 3500, 'effective_from' => now()->subDay()]);
     $invoice = app(IssueInvoice::class)->handle(app(CreateInvoice::class)->handle($customer, $plan));
@@ -33,4 +33,6 @@ it('returns safe customer activity for the staff show screen', function (): void
         ->and(collect($details['timeline'])->pluck('type')->all())->toContain('payment')
         ->and(collect($details['timeline'])->pluck('type')->all())->toContain('invoice')
         ->and($details['timeline'][0])->not->toHaveKey('tenant_id');
+    expect((float) $details['latitude'])->toBe(33.8938)
+        ->and((float) $details['longitude'])->toBe(35.5018);
 });
