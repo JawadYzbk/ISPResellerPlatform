@@ -17,10 +17,14 @@ final readonly class RenewService implements Action
 {
     public function __construct(private TransitionService $transition, private EnqueueNetworkCommand $enqueue, private QueueCustomerNotification $notify) {}
 
-    public function handle(Service $service, ?User $actor = null): Service
+    public function handle(Service $service, ?User $actor = null, int $periods = 1): Service
     {
+        if ($periods < 1 || $periods > 12) {
+            throw new DomainException('Renewal periods must be between one and twelve.');
+        }
+
         $planSyncRequired = false;
-        $updated = DB::transaction(function () use ($service, $actor, &$planSyncRequired): Service {
+        $updated = DB::transaction(function () use ($service, $actor, $periods, &$planSyncRequired): Service {
             $locked = Service::query()->with(['plan', 'tenant'])->lockForUpdate()->findOrFail($service->id);
             if ($locked->status === ServiceStatus::Terminated) {
                 throw new DomainException('Terminated services require an explicit reactivation workflow.');
@@ -47,12 +51,15 @@ final readonly class RenewService implements Action
             $settings = $locked->tenant->settingsData();
             $now = CarbonImmutable::now($settings->timezone);
             $expiresAt = $locked->expires_at === null ? null : CarbonImmutable::instance($locked->expires_at);
-            $period = BillingPeriod::custom($expiresAt ?? $now, max(1, (int) $locked->plan->duration_days));
-            $renewedUntil = $period->renewFrom(
-                $now,
-                $expiresAt,
-                (bool) ($settings->settings['grace_extends_period'] ?? false),
-            );
+            $renewedUntil = $expiresAt;
+            for ($period = 0; $period < $periods; $period++) {
+                $billingPeriod = BillingPeriod::custom($renewedUntil ?? $now, max(1, (int) $locked->plan->duration_days));
+                $renewedUntil = $billingPeriod->renewFrom(
+                    $now,
+                    $renewedUntil,
+                    (bool) ($settings->settings['grace_extends_period'] ?? false),
+                );
+            }
             $autoOverdue = $locked->status === ServiceStatus::Suspended && $locked->suspension_reason === 'auto_overdue';
 
             $locked->forceFill(['expires_at' => $renewedUntil->utc(), 'current_period_bytes' => 0, 'fup_applied_at' => null])->save();

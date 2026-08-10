@@ -135,9 +135,10 @@ final readonly class RecordPayment implements Action
                 );
 
                 if ($lockedInvoice !== null && $invoiceAmount !== null && $outstanding !== null && $invoiceAmount >= $outstanding) {
+                    $renewalPeriods = max(1, (int) (($lockedInvoice->metadata ?? [])['renewal_periods'] ?? 1));
                     foreach ($lockedInvoice->lines as $line) {
                         if ($line->service !== null) {
-                            $this->renewService->handle($line->service, $actor);
+                            $this->renewService->handle($line->service, $actor, $renewalPeriods);
                         }
                     }
                 }

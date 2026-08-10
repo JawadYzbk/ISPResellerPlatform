@@ -1,6 +1,7 @@
 <?php
 
 use App\Actions\CreateInvoice;
+use App\Actions\CreateRenewalInvoice;
 use App\Actions\IssueInvoice;
 use App\Actions\RecordPayment;
 use App\Actions\RenewService;
@@ -63,4 +64,21 @@ it('extends a manually suspended service without reactivating it', function (): 
         ->and($updated->suspension_reason)->toBe('manual')
         ->and($updated->expires_at->isFuture())->toBeTrue()
         ->and(NetworkCommand::count())->toBe(0);
+});
+
+it('extends a service for every period on a multi-period renewal invoice', function (): void {
+    $tenant = Tenant::create(['name' => 'Westline', 'slug' => 'westline', 'base_currency' => 'USD', 'collection_currency' => 'USD']);
+    app(Tenancy::class)->set($tenant);
+    $customer = Customer::factory()->create();
+    $plan = Plan::factory()->create(['duration_days' => 30, 'amount_minor' => 3500]);
+    $plan->prices()->create(['currency' => 'USD', 'amount_minor' => 3500, 'effective_from' => now()->subDay()]);
+    $service = Service::factory()->for($customer)->for($plan)->create(['status' => ServiceStatus::Active, 'expires_at' => now()->addDay()]);
+    $invoice = app(CreateRenewalInvoice::class)->handle($customer, $service, periods: 2);
+    $before = $service->refresh()->expires_at;
+
+    app(RecordPayment::class)->handle($customer, 7000, 'USD', 'cash', 'renewal-multi-period-001', $invoice);
+
+    expect($invoice->metadata['renewal_periods'])->toBe(2)
+        ->and($invoice->lines()->firstOrFail()->quantity)->toBe(2)
+        ->and($service->refresh()->expires_at->greaterThan($before->addDays(59)))->toBeTrue();
 });
