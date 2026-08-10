@@ -2,6 +2,9 @@
 
 use App\Actions\CreatePartner;
 use App\Models\Partner;
+use App\Models\Plan;
+use App\Models\PriceBook;
+use App\Models\PriceBookItem;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Support\Tenancy;
@@ -31,4 +34,24 @@ it('limits reseller partner APIs to descendants and funds a visible wallet idemp
     $second->assertCreated()->assertJsonPath('wallet_transaction_id', $first->json('wallet_transaction_id'));
     app(Tenancy::class)->set($tenant);
     expect(Partner::findOrFail($child->id)->wallet->balance_amount)->toBe(1000);
+});
+
+it('returns a reseller catalog without exposing buy prices', function (): void {
+    $tenant = Tenant::create(['name' => 'Eastline', 'slug' => 'eastline', 'base_currency' => 'USD', 'collection_currency' => 'USD']);
+    app(Tenancy::class)->set($tenant);
+    $partner = app(CreatePartner::class)->handle('Reseller', 'R-004', 'USD');
+    $plan = Plan::factory()->create(['name' => 'Home 50', 'slug' => 'home-50', 'currency' => 'USD', 'status' => 'active']);
+    $book = PriceBook::create(['partner_id' => $partner->id, 'name' => 'Reseller prices', 'effective_from' => now()->subDay()]);
+    PriceBookItem::create(['price_book_id' => $book->id, 'plan_id' => $plan->id, 'currency' => 'USD', 'buy_amount_minor' => 2500, 'sell_amount_minor' => 3500, 'effective_from' => now()->subDay()]);
+    $user = User::create(['tenant_id' => $tenant->id, 'partner_id' => $partner->id, 'name' => 'Reseller', 'email' => 'catalog-api@example.test', 'password' => Hash::make('password'), 'role' => 'reseller_owner']);
+    app(CapabilitySeeder::class)->run();
+    $user->assignRole('reseller_owner');
+    $token = $user->createToken('catalog-api', ['api', 'staff:operator'])->plainTextToken;
+
+    $response = $this->withToken($token)->getJson('/api/v1/partners/'.$partner->id.'/catalog');
+
+    $response->assertOk()
+        ->assertJsonPath('partner_id', $partner->id)
+        ->assertJsonPath('data.0.sell_amount_minor', 3500)
+        ->assertJsonMissing(['buy_amount_minor' => 2500]);
 });

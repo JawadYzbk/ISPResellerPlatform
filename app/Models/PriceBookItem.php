@@ -22,6 +22,7 @@ class PriceBookItem extends Model
         return ['buy_amount_minor' => 'integer', 'sell_amount_minor' => 'integer', 'min_amount_minor' => 'integer', 'max_amount_minor' => 'integer', 'effective_from' => 'datetime', 'effective_to' => 'datetime'];
     }
 
+    /** @return BelongsTo<PriceBook, $this> */
     public function priceBook(): BelongsTo
     {
         return $this->belongsTo(PriceBook::class);

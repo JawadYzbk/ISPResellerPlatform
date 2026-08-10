@@ -60,6 +60,8 @@ Route::prefix('v1')->group(function (): void {
             Route::post('/imports/{import}/rollback', [CustomerImportController::class, 'rollback'])->name('api.imports.rollback');
             Route::get('/partners', [PartnerApiController::class, 'index'])->name('api.partners.index');
             Route::get('/partners/{partner}', [PartnerApiController::class, 'show'])->name('api.partners.show');
+            Route::get('/partners/{partner}/catalog', [PartnerApiController::class, 'catalog'])->name('api.partners.catalog');
+            Route::get('/partners/{partner}/settlements', [PartnerApiController::class, 'settlements'])->name('api.partners.settlements');
             Route::post('/partners/{partner}/wallet-top-ups', [PartnerApiController::class, 'topUp'])->middleware('idempotency')->name('api.partners.wallet-top-ups');
             Route::post('/network/commands/{command}/retry', [NetworkCommandController::class, 'retry'])->middleware('idempotency')->name('api.network.commands.retry');
         });
