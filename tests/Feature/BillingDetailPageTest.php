@@ -52,6 +52,11 @@ it('renders tenant-scoped invoice and payment details with posted allocations', 
         'idempotency_key' => 'billing-detail-payment',
         'received_at' => now(),
         'actor_id' => $user->id,
+        'ledger_amount' => 3500,
+        'ledger_currency' => 'USD',
+        'base_amount' => 3500,
+        'metadata' => ['base_currency' => 'USD'],
+        'reference' => 'cash-001',
     ]);
     PaymentAllocation::create(['payment_id' => $payment->id, 'invoice_id' => $invoice->id, 'amount' => 3500, 'currency' => 'USD']);
 
@@ -77,6 +82,7 @@ it('renders tenant-scoped invoice and payment details with posted allocations', 
             ->where('payment.number', 'RCT-DETAIL-001')
             ->where('payment.invoice.number', 'INV-DETAIL-001')
             ->where('payment.allocations.0.amount', 3500)
+            ->where('payment.reference', 'cash-001')
             ->where('canReverse', true)
         );
 });

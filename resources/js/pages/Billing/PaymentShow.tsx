@@ -11,6 +11,15 @@ type Payment = {
     status: 'posted' | 'reversed';
     amount: number;
     currency: string;
+    ledger_amount: number | null;
+    ledger_currency: string;
+    base_amount: number | null;
+    base_currency: string;
+    fx_rate_numerator: number | null;
+    fx_rate_denominator: number | null;
+    fx_rate_overridden: boolean;
+    fx_override_reason: string | null;
+    reference: string | null;
     method: string;
     received_at: string | null;
     reversed_at: string | null;
@@ -66,6 +75,10 @@ export default function PaymentShowPage({ payment, canReverse }: Props) {
                         <div><dt className="field-label">Method</dt><dd className="mt-1 text-sm font-semibold capitalize">{payment.method.replace('_', ' ')}</dd></div>
                         <div><dt className="field-label">Invoice</dt><dd className="mt-1 text-sm font-semibold">{payment.invoice ? <Link href={`/billing/invoices/${payment.invoice.public_id}`} className="hover:text-brand">{payment.invoice.number}</Link> : 'Account credit'}</dd></div>
                         <div><dt className="field-label">Cash shift</dt><dd className="mt-1 text-sm font-semibold">{payment.cash_shift ?? 'Not assigned'}</dd></div>
+                        {payment.ledger_amount !== null && payment.ledger_currency !== payment.currency && <div><dt className="field-label">Ledger equivalent</dt><dd className="mt-1 text-sm font-semibold">{formatMoney(payment.ledger_amount, payment.ledger_currency)}</dd></div>}
+                        {payment.base_amount !== null && <div><dt className="field-label">Base equivalent</dt><dd className="mt-1 text-sm font-semibold">{formatMoney(payment.base_amount, payment.base_currency)}</dd></div>}
+                        {payment.reference && <div><dt className="field-label">Reference</dt><dd className="mt-1 text-sm font-semibold break-all">{payment.reference}</dd></div>}
+                        {payment.fx_rate_overridden && <div><dt className="field-label">FX override</dt><dd className="mt-1 text-sm font-semibold">{payment.fx_rate_numerator}/{payment.fx_rate_denominator}<span className="mt-1 block text-xs font-normal text-muted">{payment.fx_override_reason}</span></dd></div>}
                     </dl>
                     {payment.reversed_at && <p className="mt-8 rounded-lg bg-rose-50 px-4 py-3 text-sm text-rose-700">Reversed on {formatDate(payment.reversed_at)}. This receipt no longer counts toward invoice balances.</p>}
                 </div>

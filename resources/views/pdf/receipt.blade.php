@@ -42,6 +42,15 @@
 
     <table class="amount"><tr><td><h2>Amount received</h2><p class="muted">{{ $payment->invoice?->number ?? 'Unallocated payment' }}</p></td><td class="value">{{ $formatter::money($payment->amount, $payment->currency) }}</td></tr></table>
 
+    @if($payment->ledger_amount !== null && ($payment->ledger_currency !== $payment->currency || $payment->fx_rate_overridden || $payment->reference))
+        <table class="meta">
+            <tr><td><h2>Ledger equivalent</h2><p>{{ $formatter::money($payment->ledger_amount, $payment->ledger_currency) }}</p></td><td class="header-right"><h2>Base equivalent</h2><p>{{ $formatter::money($payment->base_amount ?? $payment->ledger_amount, data_get($payment->metadata, 'base_currency', $payment->ledger_currency)) }}</p></td></tr>
+            @if($payment->reference || $payment->fx_rate_overridden)<tr><td><h2>Reference</h2><p>{{ $payment->reference ?? '—' }}</p></td><td class="header-right"><h2>FX rate</h2><p>{{ $payment->fx_rate_overridden ? $payment->fx_rate_numerator.'/'.$payment->fx_rate_denominator.' · '.$payment->fx_override_reason : 'Current rate' }}</p></td></tr>@endif
+        </table>
+    @elseif($payment->reference)
+        <p class="muted">Reference: {{ $payment->reference }}</p>
+    @endif
+
     @if($payment->allocations->isNotEmpty())
         <h2>Invoice allocations</h2>
         <table class="allocations">
