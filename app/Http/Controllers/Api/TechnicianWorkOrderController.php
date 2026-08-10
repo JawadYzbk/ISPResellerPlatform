@@ -56,7 +56,7 @@ final class TechnicianWorkOrderController extends Controller
         $this->ensureTechnician($request);
         $order = $this->assignedQuery($request)
             ->with(['customer', 'service.plan', 'events'])
-            ->where(fn (Builder $query) => $query->where('public_id', $workOrder)->orWhere('id', $workOrder))
+            ->where('public_id', $workOrder)
             ->firstOrFail();
 
         return response()->json($this->details($order));
@@ -67,11 +67,12 @@ final class TechnicianWorkOrderController extends Controller
         $this->ensureTechnician($request);
         $order = $this->assignedQuery($request)
             ->with('service')
-            ->where(fn (Builder $query) => $query->where('public_id', $workOrder)->orWhere('id', $workOrder))
+            ->where('public_id', $workOrder)
             ->firstOrFail();
         $completed = $complete->handle($order, $request->user(), $request->header('X-Idempotency-Key'));
+        $completed->loadMissing('service');
 
-        return response()->json(['id' => $completed->public_id, 'status' => $completed->status->value, 'service_id' => $completed->service_id], 200);
+        return response()->json(['id' => $completed->public_id, 'status' => $completed->status->value, 'service_id' => $completed->service?->public_id], 200);
     }
 
     private function ensureTechnician(Request $request): void

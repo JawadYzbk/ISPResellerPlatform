@@ -27,10 +27,10 @@ it('completes an installation once and makes retries replay the same result', fu
     $token = $user->createToken('technician', ['api', 'staff:technician'])->plainTextToken;
     $headers = ['X-Idempotency-Key' => 'work-order-complete-001'];
 
-    $first = $this->withToken($token)->withHeaders($headers)->postJson('/api/v1/technician/work-orders/'.$workOrder->id.'/complete');
-    $second = $this->withToken($token)->withHeaders($headers)->postJson('/api/v1/technician/work-orders/'.$workOrder->id.'/complete');
+    $first = $this->withToken($token)->withHeaders($headers)->postJson('/api/v1/technician/work-orders/'.$workOrder->public_id.'/complete');
+    $second = $this->withToken($token)->withHeaders($headers)->postJson('/api/v1/technician/work-orders/'.$workOrder->public_id.'/complete');
 
-    $first->assertOk();
+    $first->assertOk()->assertJsonPath('service_id', $service->public_id);
     $second->assertOk()->assertJsonPath('id', $first->json('id'));
     expect($workOrder->refresh()->status)->toBe(WorkOrderStatus::Completed)
         ->and($service->refresh()->status)->toBe(ServiceStatus::Active)

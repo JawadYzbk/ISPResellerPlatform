@@ -24,13 +24,13 @@ final readonly class ImportRouterSubscribers implements Action
             $errors = $username === '' ? ['name is required'] : [];
             $service = $services->get($username);
             $data = [
-                'router_id' => $router->id,
+                'router_id' => $router->public_id,
                 'username' => $username,
                 'comment' => $comment,
                 'disabled' => $this->disabled($source['disabled'] ?? false),
                 'profile' => trim((string) ($source['profile'] ?? '')),
                 'remote_address' => trim((string) ($source['remote-address'] ?? '')),
-                'service_id' => $service?->id,
+                'service_id' => $service?->public_id,
                 'match' => $service === null ? 'unmatched' : 'service_username',
             ];
             $report[] = [
@@ -43,7 +43,7 @@ final readonly class ImportRouterSubscribers implements Action
 
         $batch = ImportBatch::create([
             'type' => 'router_subscribers',
-            'filename' => 'router-'.$router->id.'-ppp-secrets.json',
+            'filename' => 'router-'.$router->public_id.'-ppp-secrets.json',
             'status' => $dryRun ? 'preview' : 'processing',
             'total_rows' => count($report),
         ]);
