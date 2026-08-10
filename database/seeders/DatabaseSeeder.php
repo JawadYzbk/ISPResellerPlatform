@@ -2,12 +2,16 @@
 
 namespace Database\Seeders;
 
+use App\Domain\Ledger\JournalLineInput;
+use App\Domain\Ledger\PostJournalEntry;
 use App\Enums\CustomerStatus;
 use App\Enums\NetworkState;
 use App\Enums\ProvisioningMode;
 use App\Enums\ServiceStatus;
 use App\Models\Branch;
 use App\Models\Customer;
+use App\Models\LedgerAccount;
+use App\Models\LedgerEntry;
 use App\Models\Plan;
 use App\Models\PlanPrice;
 use App\Models\Service;
@@ -29,6 +33,7 @@ class DatabaseSeeder extends Seeder
         app(Tenancy::class)->run($tenant, fn (): mixed => $admin->assignRole('tenant_owner'));
 
         app(Tenancy::class)->run($tenant, function (): void {
+            $postJournalEntry = app(PostJournalEntry::class);
             $zones = collect([
                 ['name' => 'Central District', 'code' => 'CENTRAL'],
                 ['name' => 'Hillside', 'code' => 'HILL'],
@@ -65,7 +70,22 @@ class DatabaseSeeder extends Seeder
             ];
 
             foreach ($customers as $index => $data) {
-                $customer = Customer::updateOrCreate(['code' => 'CUS-'.str_pad((string) ($index + 1), 5, '0', STR_PAD_LEFT)], ['zone_id' => $zones[$data['zone']]->id, 'first_name' => $data['first_name'], 'last_name' => $data['last_name'], 'phone' => $data['phone'], 'phone_normalized' => preg_replace('/\D+/', '', $data['phone']), 'email' => $data['email'], 'address' => ($index + 10).' Cedar Street', 'status' => $data['status'], 'balance_amount' => $data['service_status'] === ServiceStatus::Suspended ? 3500 : 0, 'balance_currency' => 'USD']);
+                $openingBalance = $data['service_status'] === ServiceStatus::Suspended ? 3500 : 0;
+                $customer = Customer::firstOrNew(['code' => 'CUS-'.str_pad((string) ($index + 1), 5, '0', STR_PAD_LEFT)]);
+                $customer->fill(['zone_id' => $zones[$data['zone']]->id, 'first_name' => $data['first_name'], 'last_name' => $data['last_name'], 'phone' => $data['phone'], 'phone_normalized' => preg_replace('/\D+/', '', $data['phone']), 'email' => $data['email'], 'address' => ($index + 10).' Cedar Street', 'status' => $data['status'], 'balance_currency' => 'USD']);
+                $hasLedgerEntries = LedgerEntry::query()->where('customer_id', $customer->id)->exists();
+                if (! $hasLedgerEntries) {
+                    $customer->balance_amount = 0;
+                }
+                $customer->save();
+
+                if ($openingBalance > 0 && ! $hasLedgerEntries) {
+                    $postJournalEntry->post('Demo opening customer balance', [
+                        new JournalLineInput(LedgerAccount::query()->where('code', '1100')->firstOrFail()->id, 'USD', debitAmount: $openingBalance, customerId: $customer->id),
+                        new JournalLineInput(LedgerAccount::query()->where('code', '4000')->firstOrFail()->id, 'USD', creditAmount: $openingBalance),
+                    ]);
+                }
+
                 Service::updateOrCreate(['username' => strtolower($data['first_name']).'.'.($index + 1)], ['customer_id' => $customer->id, 'plan_id' => $plans[$data['plan']]->id, 'password_encrypted' => 'demo-secret-not-for-production', 'status' => $data['service_status'], 'provisioning_mode' => ProvisioningMode::Manual, 'network_state' => $data['service_status'] === ServiceStatus::Active ? NetworkState::InSync : NetworkState::PendingSync, 'activated_at' => now()->subMonths(4), 'expires_at' => $data['expires']]);
             }
         });

@@ -7,6 +7,7 @@ use App\Models\Customer;
 use App\Models\LedgerAccount;
 use App\Models\Tenant;
 use App\Support\Tenancy;
+use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
@@ -39,4 +40,14 @@ it('reports a customer projection drift without mutating the ledger', function (
 
     expect($result['status'])->toBe('failed')
         ->and(collect($result['violations'])->contains(fn (array $violation): bool => $violation['type'] === 'customer_projection'))->toBeTrue();
+});
+
+it('keeps the demo seed ledger projections consistent', function (): void {
+    $this->seed(DatabaseSeeder::class);
+    $tenant = Tenant::query()->where('slug', 'northline')->firstOrFail();
+
+    $result = app(Tenancy::class)->run($tenant, fn (): array => app(CheckLedgerInvariants::class)->handle());
+
+    expect($result['status'])->toBe('ok')
+        ->and($result['violations'])->toBeEmpty();
 });
