@@ -1,12 +1,15 @@
 import { Head, Link } from '@inertiajs/react';
-import { AlertTriangle, Check, LogOut, RefreshCw, Send, UserRound, Wifi } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { Elements, PaymentElement, useElements, useStripe } from '@stripe/react-stripe-js';
+import { loadStripe } from '@stripe/stripe-js';
+import { AlertTriangle, Check, CreditCard, LogOut, RefreshCw, Send, UserRound, Wifi } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { StatusBadge } from '@/components/StatusBadge';
 import { formatDate } from '@/lib/format';
 import type { Customer, PortalBalance, PortalBilling, PortalNotice, PortalTicket, PublicTenant } from '@/types';
 
 type Props = { tenant: PublicTenant };
+type StripeIntent = { clientSecret: string; publishableKey: string; invoiceId: string };
 
 export default function PortalDashboard({ tenant }: Props) {
     const [customer, setCustomer] = useState<Customer | null>(null);
@@ -20,6 +23,10 @@ export default function PortalDashboard({ tenant }: Props) {
     const [profileBusy, setProfileBusy] = useState(false);
     const [profileSaved, setProfileSaved] = useState(false);
     const [restartBusy, setRestartBusy] = useState<string | null>(null);
+    const [selectedInvoiceId, setSelectedInvoiceId] = useState('');
+    const [paymentIntent, setPaymentIntent] = useState<StripeIntent | null>(null);
+    const [paymentBusy, setPaymentBusy] = useState(false);
+    const [paymentMessage, setPaymentMessage] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
     const tokenKey = `portal_token:${tenant.slug}`;
 
@@ -110,6 +117,51 @@ export default function PortalDashboard({ tenant }: Props) {
             setError(payload.detail ?? payload.message ?? 'We could not restart this connection.');
         }
         setRestartBusy(null);
+    };
+
+    const startOnlinePayment = async () => {
+        const token = sessionStorage.getItem(tokenKey);
+        const payableInvoices =
+            billing?.invoices.filter((invoice) => invoice.status === 'issued' && invoice.outstanding_amount > 0) ?? [];
+        const invoice = payableInvoices.find((item) => item.id === selectedInvoiceId) ?? payableInvoices[0];
+        if (!token || !invoice) return;
+        setPaymentBusy(true);
+        setPaymentMessage(null);
+        const response = await fetch(`/api/v1/portal/${tenant.slug}/payments/intent`, {
+            method: 'POST',
+            headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json',
+                'X-Idempotency-Key': `portal-payment-${crypto.randomUUID()}`,
+            },
+            body: JSON.stringify({ invoice_id: invoice.id, amount: invoice.outstanding_amount }),
+        });
+        const payload = await response.json();
+        if (!response.ok) {
+            setPaymentMessage(payload.detail ?? payload.message ?? 'We could not start the payment.');
+            setPaymentBusy(false);
+            return;
+        }
+        const clientSecret = payload.payload?.client_secret;
+        const publishableKey = payload.payload?.publishable_key;
+        if (typeof clientSecret !== 'string' || typeof publishableKey !== 'string') {
+            setPaymentMessage('The payment provider returned an incomplete checkout session.');
+            setPaymentBusy(false);
+            return;
+        }
+        setPaymentIntent({ clientSecret, publishableKey, invoiceId: invoice.id });
+        setPaymentBusy(false);
+    };
+
+    const paymentSubmitted = async () => {
+        setPaymentMessage('Payment submitted. Your balance will update after provider confirmation.');
+        setPaymentIntent(null);
+        const token = sessionStorage.getItem(tokenKey);
+        if (!token) return;
+        const response = await fetch(`/api/v1/portal/${tenant.slug}/billing`, {
+            headers: { Authorization: `Bearer ${token}` },
+        });
+        if (response.ok) setBilling(await response.json());
     };
 
     const submitTicket = async (event: React.FormEvent) => {
@@ -335,6 +387,76 @@ export default function PortalDashboard({ tenant }: Props) {
                                 </div>
                             </section>
                         )}
+                        {billing?.online_payments.enabled &&
+                            billing.invoices.some(
+                                (invoice) => invoice.status === 'issued' && invoice.outstanding_amount > 0,
+                            ) && (
+                                <section className="card mt-8 p-6" aria-labelledby="online-payment-heading">
+                                    <div className="flex items-center gap-2">
+                                        <CreditCard size={17} className="text-brand" />
+                                        <h2 id="online-payment-heading" className="section-title">
+                                            Pay an invoice
+                                        </h2>
+                                    </div>
+                                    <p className="mt-2 text-sm text-muted">
+                                        Payments are confirmed by the provider before your account is updated.
+                                    </p>
+                                    {!paymentIntent ? (
+                                        <div className="mt-5 flex flex-col gap-4 sm:flex-row sm:items-end">
+                                            <label className="block flex-1">
+                                                <span className="field-label">Invoice</span>
+                                                <select
+                                                    className="field"
+                                                    value={
+                                                        selectedInvoiceId ||
+                                                        billing.invoices.find(
+                                                            (invoice) =>
+                                                                invoice.status === 'issued' &&
+                                                                invoice.outstanding_amount > 0,
+                                                        )?.id ||
+                                                        ''
+                                                    }
+                                                    onChange={(event) => {
+                                                        setSelectedInvoiceId(event.target.value);
+                                                        setPaymentMessage(null);
+                                                    }}
+                                                >
+                                                    {billing.invoices
+                                                        .filter(
+                                                            (invoice) =>
+                                                                invoice.status === 'issued' &&
+                                                                invoice.outstanding_amount > 0,
+                                                        )
+                                                        .map((invoice) => (
+                                                            <option key={invoice.id} value={invoice.id}>
+                                                                {invoice.number} ·{' '}
+                                                                {(invoice.outstanding_amount / 100).toFixed(2)}{' '}
+                                                                {invoice.currency}
+                                                            </option>
+                                                        ))}
+                                                </select>
+                                            </label>
+                                            <button
+                                                type="button"
+                                                disabled={paymentBusy}
+                                                onClick={startOnlinePayment}
+                                                className="button-primary"
+                                            >
+                                                <CreditCard size={16} />
+                                                {paymentBusy ? 'Opening checkout…' : 'Continue to payment'}
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <StripeCheckout
+                                            clientSecret={paymentIntent.clientSecret}
+                                            publishableKey={paymentIntent.publishableKey}
+                                            onSubmitted={paymentSubmitted}
+                                            onError={setPaymentMessage}
+                                        />
+                                    )}
+                                    {paymentMessage && <p className="mt-4 text-sm text-muted">{paymentMessage}</p>}
+                                </section>
+                            )}
                         <form
                             onSubmit={saveProfile}
                             className="card mt-8 space-y-5 p-6"
@@ -456,5 +578,64 @@ export default function PortalDashboard({ tenant }: Props) {
                 Return to portal sign in
             </Link>
         </div>
+    );
+}
+
+function StripeCheckout({
+    clientSecret,
+    publishableKey,
+    onSubmitted,
+    onError,
+}: {
+    clientSecret: string;
+    publishableKey: string;
+    onSubmitted: () => void;
+    onError: (message: string) => void;
+}) {
+    const stripePromise = useMemo(() => loadStripe(publishableKey), [publishableKey]);
+
+    return (
+        <div className="mt-5 rounded-2xl border border-line p-4">
+            <Elements stripe={stripePromise} options={{ clientSecret }}>
+                <StripePaymentForm onSubmitted={onSubmitted} onError={onError} />
+            </Elements>
+        </div>
+    );
+}
+
+function StripePaymentForm({ onSubmitted, onError }: { onSubmitted: () => void; onError: (message: string) => void }) {
+    const stripe = useStripe();
+    const elements = useElements();
+    const [busy, setBusy] = useState(false);
+
+    const submit = async (event: React.FormEvent) => {
+        event.preventDefault();
+        if (!stripe || !elements) return;
+        setBusy(true);
+        const result = await stripe.confirmPayment({
+            elements,
+            confirmParams: { return_url: window.location.href },
+            redirect: 'if_required',
+        });
+        if (result.error) {
+            onError(result.error.message ?? 'The payment could not be confirmed.');
+        } else {
+            onSubmitted();
+        }
+        setBusy(false);
+    };
+
+    return (
+        <form onSubmit={submit} className="space-y-4">
+            <PaymentElement />
+            <button
+                type="submit"
+                disabled={busy || !stripe || !elements}
+                className="button-primary w-full justify-center"
+            >
+                <CreditCard size={16} />
+                {busy ? 'Confirming payment…' : 'Pay securely'}
+            </button>
+        </form>
     );
 }

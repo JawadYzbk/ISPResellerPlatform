@@ -35,6 +35,8 @@
     "dependencies": {
         "@inertiajs/react": "^3.6.1",
         "@inertiajs/vite": "^3.6.1",
+        "@stripe/react-stripe-js": "^6.8.1",
+        "@stripe/stripe-js": "^9.13.0",
         "clsx": "^2.1.1",
         "laravel-echo": "^2.4.0",
         "leaflet": "^1.9.4",

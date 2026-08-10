@@ -14,6 +14,13 @@ final class SecurityHeaders
         $styleSources = ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'];
         $scriptSources = ["'self'", "'unsafe-inline'"];
         $connectSources = ["'self'"];
+        $frameSources = ["'self'"];
+
+        if ((string) config('services.payments.driver', 'null') === 'stripe') {
+            $scriptSources[] = 'https://js.stripe.com';
+            $connectSources[] = 'https://api.stripe.com';
+            $frameSources = [...$frameSources, 'https://js.stripe.com', 'https://hooks.stripe.com'];
+        }
 
         if (in_array((string) config('app.env'), ['local', 'testing'], true)) {
             $styleSources = [...$styleSources, 'http://localhost:5173', 'http://127.0.0.1:5173'];
@@ -34,7 +41,7 @@ final class SecurityHeaders
         $response->headers->set('X-Frame-Options', 'SAMEORIGIN');
         $response->headers->set('Referrer-Policy', 'strict-origin-when-cross-origin');
         $response->headers->set('Permissions-Policy', 'camera=(), geolocation=(self), microphone=()');
-        $response->headers->set('Content-Security-Policy', "default-src 'self'; base-uri 'self'; frame-ancestors 'self'; object-src 'none'; img-src 'self' data: https:; style-src ".implode(' ', $styleSources)."; font-src 'self' https://fonts.gstatic.com data:; script-src ".implode(' ', $scriptSources).'; connect-src '.implode(' ', $connectSources));
+        $response->headers->set('Content-Security-Policy', "default-src 'self'; base-uri 'self'; frame-ancestors 'self'; object-src 'none'; img-src 'self' data: https:; style-src ".implode(' ', $styleSources)."; font-src 'self' https://fonts.gstatic.com data:; script-src ".implode(' ', $scriptSources).'; frame-src '.implode(' ', $frameSources).'; connect-src '.implode(' ', $connectSources));
 
         if ($request->user() !== null) {
             $response->headers->set('Cache-Control', 'no-store, private');

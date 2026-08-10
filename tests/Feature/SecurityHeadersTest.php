@@ -40,3 +40,14 @@ it('allows the configured Reverb websocket origin', function (): void {
 
     expect($policy)->toContain('wss://realtime.example.test:443');
 });
+
+it('allows Stripe.js only when the Stripe payment driver is enabled', function (): void {
+    config(['services.payments.driver' => 'stripe']);
+
+    $policy = $this->get('/login')->headers->get('Content-Security-Policy');
+
+    expect($policy)
+        ->toContain('https://js.stripe.com')
+        ->toContain('https://api.stripe.com')
+        ->toContain('frame-src');
+});

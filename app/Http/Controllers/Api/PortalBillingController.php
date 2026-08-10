@@ -26,7 +26,16 @@ final class PortalBillingController extends Controller
         $invoices = Invoice::query()->where('customer_id', $customer->id)->with(['lines', 'payments.allocations', 'creditNotes'])->latest('issued_at')->limit(20)->get()->map(fn (Invoice $invoice): array => $this->invoiceSummary($invoice))->values();
         $payments = Payment::query()->where('customer_id', $customer->id)->where('status', PaymentStatus::Posted)->latest('received_at')->limit(20)->get()->map(fn (Payment $payment): array => $this->paymentSummary($payment))->values();
 
-        return response()->json(['invoices' => $invoices, 'payments' => $payments]);
+        return response()->json([
+            'invoices' => $invoices,
+            'payments' => $payments,
+            'online_payments' => [
+                'enabled' => (string) config('services.payments.driver', 'null') === 'stripe'
+                    && is_string(config('services.stripe.publishable_key'))
+                    && trim((string) config('services.stripe.publishable_key')) !== '',
+                'provider' => (string) config('services.payments.driver', 'null'),
+            ],
+        ]);
     }
 
     public function balance(Request $request): JsonResponse

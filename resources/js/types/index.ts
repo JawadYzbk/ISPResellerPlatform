@@ -131,6 +131,7 @@ export type PortalBilling = {
         status: string;
         currency: string;
         total_amount: number;
+        outstanding_amount: number;
         due_at: string | null;
         issued_at: string | null;
         lines: { description: string; amount: number; currency: string }[];
@@ -143,6 +144,7 @@ export type PortalBilling = {
         amount: number;
         received_at: string | null;
     }[];
+    online_payments: { enabled: boolean; provider: string };
 };
 
 export type PortalBalance = {
