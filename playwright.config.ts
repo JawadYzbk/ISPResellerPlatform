@@ -1,0 +1,31 @@
+import { defineConfig, devices } from '@playwright/test';
+
+const executablePath = process.env.PLAYWRIGHT_EXECUTABLE_PATH;
+
+export default defineConfig({
+    testDir: './tests/e2e',
+    fullyParallel: false,
+    workers: 1,
+    forbidOnly: Boolean(process.env.CI),
+    retries: process.env.CI ? 2 : 0,
+    reporter: process.env.CI ? [['line'], ['html', { open: 'never' }]] : 'list',
+    use: {
+        baseURL: process.env.PLAYWRIGHT_BASE_URL ?? 'http://127.0.0.1:8000',
+        trace: 'retain-on-failure',
+        screenshot: 'only-on-failure',
+        video: 'retain-on-failure',
+        launchOptions: executablePath ? { executablePath } : undefined,
+    },
+    projects: [
+        {
+            name: 'chromium',
+            use: { ...devices['Desktop Chrome'] },
+        },
+    ],
+    webServer: {
+        command: 'php artisan serve --host=127.0.0.1 --port=8000',
+        url: 'http://127.0.0.1:8000/up',
+        reuseExistingServer: !process.env.CI,
+        timeout: 120_000,
+    },
+});
