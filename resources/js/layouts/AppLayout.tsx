@@ -51,7 +51,9 @@ export default function AppLayout({ children }: PropsWithChildren) {
     const [searching, setSearching] = useState(false);
     const searchInput = useRef<HTMLInputElement>(null);
     const can = (permission: string | string[]) =>
-        Array.isArray(permission) ? permission.some((item) => auth.permissions.includes(item)) : auth.permissions.includes(permission);
+        Array.isArray(permission)
+            ? permission.some((item) => auth.permissions.includes(item))
+            : auth.permissions.includes(permission);
 
     useEffect(() => {
         const handleShortcut = (event: KeyboardEvent) => {
@@ -109,10 +111,32 @@ export default function AppLayout({ children }: PropsWithChildren) {
         { label: 'Cash shifts', href: '/billing/shifts', icon: WalletCards, permission: 'payments.collect' },
         { label: 'FX rates', href: '/billing/exchange-rates', icon: Scale, permission: 'settings.manage' },
         { label: 'Tickets', href: '/operations/tickets', icon: MessageSquare, permission: 'tickets.view' },
-        { label: 'Work orders', href: '/operations/work-orders', icon: ClipboardList, permission: 'workorders.complete' },
-        { label: 'Work-order calendar', href: '/operations/work-orders/calendar', icon: CalendarDays, permission: 'workorders.complete' },
+        {
+            label: 'Work orders',
+            href: '/operations/work-orders',
+            icon: ClipboardList,
+            permission: 'workorders.complete',
+        },
+        {
+            label: 'Work-order calendar',
+            href: '/operations/work-orders/calendar',
+            icon: CalendarDays,
+            permission: 'workorders.complete',
+        },
         { label: 'Inventory', href: '/operations/inventory', icon: Package, permission: 'inventory.view' },
-        { label: 'Imports', href: '/operations/imports', icon: FileUp, permission: ['customers.create', 'plans.manage', 'services.create', 'inventory.receive', 'billing.adjustments.create', 'network.view'] },
+        {
+            label: 'Imports',
+            href: '/operations/imports',
+            icon: FileUp,
+            permission: [
+                'customers.create',
+                'plans.manage',
+                'services.create',
+                'inventory.receive',
+                'billing.adjustments.create',
+                'network.view',
+            ],
+        },
         { label: 'Credentials', href: '/operations/credentials', icon: KeyRound, permission: 'suppliers.view' },
         { label: 'Partners', href: '/partners/commercial', icon: Store, permission: 'wallets.view' },
         { label: 'Reports', href: '/reports/operations', icon: BarChart3, permission: 'reports.operations' },
@@ -171,7 +195,11 @@ export default function AppLayout({ children }: PropsWithChildren) {
                         >
                             <Command size={17} />
                         </button>
-                        <button type="button" onClick={() => setSearchOpen(true)} className="hidden items-center gap-2 text-sm text-muted hover:text-ink sm:flex">
+                        <button
+                            type="button"
+                            onClick={() => setSearchOpen(true)}
+                            className="hidden items-center gap-2 text-sm text-muted hover:text-ink sm:flex"
+                        >
                             <Search size={16} />
                             <span>Search customers, services…</span>
                             <kbd className="ms-2 rounded border border-line bg-white px-1.5 py-0.5 text-[10px]">
@@ -216,7 +244,12 @@ export default function AppLayout({ children }: PropsWithChildren) {
                         role="presentation"
                         onMouseDown={(event) => event.target === event.currentTarget && setSearchOpen(false)}
                     >
-                        <div className="mx-auto max-w-2xl overflow-hidden rounded-2xl border border-line bg-white shadow-2xl" role="dialog" aria-modal="true" aria-label="Global search">
+                        <div
+                            className="mx-auto max-w-2xl overflow-hidden rounded-2xl border border-line bg-white shadow-2xl"
+                            role="dialog"
+                            aria-modal="true"
+                            aria-label="Global search"
+                        >
                             <div className="flex items-center gap-3 border-b border-line px-5 py-4">
                                 <Search size={19} className="text-brand" />
                                 <input
@@ -228,18 +261,46 @@ export default function AppLayout({ children }: PropsWithChildren) {
                                     placeholder="Search customer, service, IP, invoice, ticket…"
                                     aria-label="Search workspace"
                                 />
-                                <kbd className="rounded border border-line px-1.5 py-0.5 text-[10px] text-muted">ESC</kbd>
+                                <kbd className="rounded border border-line px-1.5 py-0.5 text-[10px] text-muted">
+                                    ESC
+                                </kbd>
                             </div>
                             <div className="max-h-[min(60vh,32rem)] overflow-y-auto p-2">
-                                {searching && <p className="px-3 py-8 text-center text-sm text-muted">Searching workspace…</p>}
-                                {!searching && search.trim().length < 2 && <p className="px-3 py-8 text-center text-sm text-muted">Type at least two characters to search.</p>}
-                                {!searching && search.trim().length >= 2 && searchResults.length === 0 && <p className="px-3 py-8 text-center text-sm text-muted">No matching records found.</p>}
-                                {!searching && search.trim().length >= 2 && searchResults.map((result) => (
-                                    <Link key={`${result.type}-${result.href}`} href={result.href} onClick={() => setSearchOpen(false)} className="flex items-center gap-3 rounded-xl px-3 py-3 hover:bg-sand">
-                                        <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-brand-soft text-xs font-bold uppercase text-brand">{result.type.slice(0, 2)}</span>
-                                        <span className="min-w-0 flex-1"><span className="block truncate text-sm font-semibold">{result.label}</span><span className="mt-0.5 block truncate text-xs capitalize text-muted">{result.detail} · {result.type}</span></span>
-                                    </Link>
-                                ))}
+                                {searching && (
+                                    <p className="px-3 py-8 text-center text-sm text-muted">Searching workspace…</p>
+                                )}
+                                {!searching && search.trim().length < 2 && (
+                                    <p className="px-3 py-8 text-center text-sm text-muted">
+                                        Type at least two characters to search.
+                                    </p>
+                                )}
+                                {!searching && search.trim().length >= 2 && searchResults.length === 0 && (
+                                    <p className="px-3 py-8 text-center text-sm text-muted">
+                                        No matching records found.
+                                    </p>
+                                )}
+                                {!searching &&
+                                    search.trim().length >= 2 &&
+                                    searchResults.map((result) => (
+                                        <Link
+                                            key={`${result.type}-${result.href}`}
+                                            href={result.href}
+                                            onClick={() => setSearchOpen(false)}
+                                            className="flex items-center gap-3 rounded-xl px-3 py-3 hover:bg-sand"
+                                        >
+                                            <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-brand-soft text-xs font-bold uppercase text-brand">
+                                                {result.type.slice(0, 2)}
+                                            </span>
+                                            <span className="min-w-0 flex-1">
+                                                <span className="block truncate text-sm font-semibold">
+                                                    {result.label}
+                                                </span>
+                                                <span className="mt-0.5 block truncate text-xs capitalize text-muted">
+                                                    {result.detail} · {result.type}
+                                                </span>
+                                            </span>
+                                        </Link>
+                                    ))}
                             </div>
                         </div>
                     </div>

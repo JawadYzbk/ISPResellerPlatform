@@ -68,8 +68,22 @@ export default function SignaturePad({ onChange }: Props) {
 
     return (
         <div className="space-y-2">
-            <canvas ref={canvasRef} className="h-36 w-full touch-none rounded-lg border border-line bg-white" onPointerDown={start} onPointerMove={draw} onPointerUp={finish} onPointerCancel={finish} aria-label="Signature pad" />
-            <button type="button" className="inline-flex items-center gap-1.5 text-sm font-semibold text-muted hover:text-brand" onClick={clear}><Eraser size={14} /> Clear signature</button>
+            <canvas
+                ref={canvasRef}
+                className="h-36 w-full touch-none rounded-lg border border-line bg-white"
+                onPointerDown={start}
+                onPointerMove={draw}
+                onPointerUp={finish}
+                onPointerCancel={finish}
+                aria-label="Signature pad"
+            />
+            <button
+                type="button"
+                className="inline-flex items-center gap-1.5 text-sm font-semibold text-muted hover:text-brand"
+                onClick={clear}
+            >
+                <Eraser size={14} /> Clear signature
+            </button>
         </div>
     );
 }

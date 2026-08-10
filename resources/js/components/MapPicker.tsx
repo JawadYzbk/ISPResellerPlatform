@@ -78,7 +78,9 @@ export default function MapPicker({ latitude, longitude, onLatitudeChange, onLon
                     )}
                 </MapContainer>
             </div>
-            <p className="text-xs text-muted">Click the map to place a pin, or drag the existing pin to refine the service location.</p>
+            <p className="text-xs text-muted">
+                Click the map to place a pin, or drag the existing pin to refine the service location.
+            </p>
         </div>
     );
 }

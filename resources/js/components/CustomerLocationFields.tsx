@@ -13,9 +13,13 @@ type Props = {
 export default function CustomerLocationFields({ latitude, longitude, onLatitudeChange, onLongitudeChange }: Props) {
     const [locating, setLocating] = useState(false);
     const [locationError, setLocationError] = useState<string | null>(null);
-    const mapUrl = latitude && longitude
-        ? 'https://www.openstreetmap.org/?mlat=' + encodeURIComponent(latitude) + '&mlon=' + encodeURIComponent(longitude)
-        : null;
+    const mapUrl =
+        latitude && longitude
+            ? 'https://www.openstreetmap.org/?mlat=' +
+              encodeURIComponent(latitude) +
+              '&mlon=' +
+              encodeURIComponent(longitude)
+            : null;
 
     const useCurrentLocation = () => {
         if (!navigator.geolocation) {
@@ -32,7 +36,9 @@ export default function CustomerLocationFields({ latitude, longitude, onLatitude
                 setLocating(false);
             },
             () => {
-                setLocationError('Location access was unavailable. Enter coordinates manually or allow browser access.');
+                setLocationError(
+                    'Location access was unavailable. Enter coordinates manually or allow browser access.',
+                );
                 setLocating(false);
             },
             { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 },
@@ -56,11 +62,29 @@ export default function CustomerLocationFields({ latitude, longitude, onLatitude
             <div className="grid gap-5 sm:grid-cols-2">
                 <label>
                     <span className="field-label">Latitude</span>
-                    <input type="number" step="0.0000001" min="-90" max="90" className="field" value={latitude} onChange={(event) => onLatitudeChange(event.target.value)} placeholder="33.8938" />
+                    <input
+                        type="number"
+                        step="0.0000001"
+                        min="-90"
+                        max="90"
+                        className="field"
+                        value={latitude}
+                        onChange={(event) => onLatitudeChange(event.target.value)}
+                        placeholder="33.8938"
+                    />
                 </label>
                 <label>
                     <span className="field-label">Longitude</span>
-                    <input type="number" step="0.0000001" min="-180" max="180" className="field" value={longitude} onChange={(event) => onLongitudeChange(event.target.value)} placeholder="35.5018" />
+                    <input
+                        type="number"
+                        step="0.0000001"
+                        min="-180"
+                        max="180"
+                        className="field"
+                        value={longitude}
+                        onChange={(event) => onLongitudeChange(event.target.value)}
+                        placeholder="35.5018"
+                    />
                 </label>
             </div>
             <MapPicker
@@ -70,7 +94,16 @@ export default function CustomerLocationFields({ latitude, longitude, onLatitude
                 onLongitudeChange={onLongitudeChange}
             />
             {locationError && <p className="field-error">{locationError}</p>}
-            {mapUrl && <a href={mapUrl} target="_blank" rel="noreferrer" className="inline-flex text-sm font-semibold text-brand hover:underline">Open coordinates in OpenStreetMap</a>}
+            {mapUrl && (
+                <a
+                    href={mapUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex text-sm font-semibold text-brand hover:underline"
+                >
+                    Open coordinates in OpenStreetMap
+                </a>
+            )}
         </fieldset>
     );
 }
