@@ -20,11 +20,31 @@ type RouterOption = { id: number; public_id: string; name: string };
 type Props = PageProps & { customer: CustomerSummary; plans: PlanOption[]; routers: RouterOption[] };
 
 const modes = [
-    { value: 'manual', label: 'Manual handoff', description: 'Record the intent for an operator to complete outside the platform.' },
-    { value: 'radius', label: 'FreeRADIUS', description: 'Sync authorization data and enforce live sessions through RADIUS.' },
-    { value: 'mikrotik', label: 'MikroTik RouterOS', description: 'Queue RouterOS REST provisioning and state changes.' },
-    { value: 'external', label: 'External OSS / ACS', description: 'Send queued commands to the configured external network adapter.' },
-    { value: 'upstream_credential', label: 'Upstream credential', description: 'Keep the service in the supervised manual credential workflow.' },
+    {
+        value: 'manual',
+        label: 'Manual handoff',
+        description: 'Record the intent for an operator to complete outside the platform.',
+    },
+    {
+        value: 'radius',
+        label: 'FreeRADIUS',
+        description: 'Sync authorization data and enforce live sessions through RADIUS.',
+    },
+    {
+        value: 'mikrotik',
+        label: 'MikroTik RouterOS',
+        description: 'Queue RouterOS REST provisioning and state changes.',
+    },
+    {
+        value: 'external',
+        label: 'External OSS / ACS',
+        description: 'Send queued commands to the configured external network adapter.',
+    },
+    {
+        value: 'upstream_credential',
+        label: 'Upstream credential',
+        description: 'Keep the service in the supervised manual credential workflow.',
+    },
 ] as const;
 
 export default function ServicesCreate({ customer, plans, routers }: Props) {
@@ -35,7 +55,10 @@ export default function ServicesCreate({ customer, plans, routers }: Props) {
         provisioning_mode: 'manual',
         router_id: '',
     });
-    const selectedPlan = useMemo(() => plans.find((plan) => plan.id.toString() === form.data.plan_id), [form.data.plan_id, plans]);
+    const selectedPlan = useMemo(
+        () => plans.find((plan) => plan.id.toString() === form.data.plan_id),
+        [form.data.plan_id, plans],
+    );
     const needsRouter = form.data.provisioning_mode === 'radius' || form.data.provisioning_mode === 'mikrotik';
 
     const generatePassword = () => {
@@ -58,7 +81,8 @@ export default function ServicesCreate({ customer, plans, routers }: Props) {
                 <p className="eyebrow">Subscriber operations</p>
                 <h1 className="page-title">Add service</h1>
                 <p className="page-subtitle">
-                    Create a pending connection for {customer.first_name} {customer.last_name ?? ''}. Activation and network work remain separate steps.
+                    Create a pending connection for {customer.first_name} {customer.last_name ?? ''}. Activation and
+                    network work remain separate steps.
                 </p>
                 <form
                     onSubmit={(event) => {
@@ -79,12 +103,15 @@ export default function ServicesCreate({ customer, plans, routers }: Props) {
                         >
                             {plans.map((plan) => (
                                 <option key={plan.id} value={plan.id}>
-                                    {plan.name} · {plan.download_kbps / 1000}/{plan.upload_kbps / 1000} Mbps · {plan.duration_days} days
+                                    {plan.name} · {plan.download_kbps / 1000}/{plan.upload_kbps / 1000} Mbps ·{' '}
+                                    {plan.duration_days} days
                                 </option>
                             ))}
                         </select>
                         {form.errors.plan_id && <p className="field-error">{form.errors.plan_id}</p>}
-                        {selectedPlan && <p className="mt-1 text-xs text-muted">Plan currency: {selectedPlan.currency}</p>}
+                        {selectedPlan && (
+                            <p className="mt-1 text-xs text-muted">Plan currency: {selectedPlan.currency}</p>
+                        )}
                     </div>
                     <div className="grid gap-5 sm:grid-cols-2">
                         <div>
@@ -111,12 +138,19 @@ export default function ServicesCreate({ customer, plans, routers }: Props) {
                                     value={form.data.password}
                                     onChange={(event) => form.setData('password', event.target.value)}
                                 />
-                                <button type="button" className="button-secondary shrink-0" onClick={generatePassword} title="Generate secure password">
+                                <button
+                                    type="button"
+                                    className="button-secondary shrink-0"
+                                    onClick={generatePassword}
+                                    title="Generate secure password"
+                                >
                                     <KeyRound size={16} />
                                 </button>
                             </div>
                             {form.errors.password && <p className="field-error">{form.errors.password}</p>}
-                            <p className="mt-1 text-xs text-muted">At least 12 characters. Generate one or enter a subscriber-provided password.</p>
+                            <p className="mt-1 text-xs text-muted">
+                                At least 12 characters. Generate one or enter a subscriber-provided password.
+                            </p>
                         </div>
                     </div>
                     <div>
@@ -134,7 +168,8 @@ export default function ServicesCreate({ customer, plans, routers }: Props) {
                                         checked={form.data.provisioning_mode === mode.value}
                                         onChange={(event) => {
                                             form.setData('provisioning_mode', event.target.value);
-                                            if (event.target.value !== 'radius' && event.target.value !== 'mikrotik') form.setData('router_id', '');
+                                            if (event.target.value !== 'radius' && event.target.value !== 'mikrotik')
+                                                form.setData('router_id', '');
                                         }}
                                         className="sr-only"
                                     />
@@ -143,7 +178,9 @@ export default function ServicesCreate({ customer, plans, routers }: Props) {
                                 </label>
                             ))}
                         </div>
-                        {form.errors.provisioning_mode && <p className="field-error">{form.errors.provisioning_mode}</p>}
+                        {form.errors.provisioning_mode && (
+                            <p className="field-error">{form.errors.provisioning_mode}</p>
+                        )}
                     </div>
                     {needsRouter && (
                         <div>
@@ -168,7 +205,10 @@ export default function ServicesCreate({ customer, plans, routers }: Props) {
                     )}
                     <div className="flex items-start gap-3 rounded-xl bg-sand/60 p-4 text-sm text-muted">
                         <Wifi size={18} className="mt-0.5 shrink-0 text-brand" />
-                        <p>The service will be created as pending with a pending network state. No router call occurs until an authorized activation is queued.</p>
+                        <p>
+                            The service will be created as pending with a pending network state. No router call occurs
+                            until an authorized activation is queued.
+                        </p>
                     </div>
                     <div className="flex justify-end gap-3 border-t border-line pt-5">
                         <Link href={`/customers/${customer.public_id}`} className="button-secondary">

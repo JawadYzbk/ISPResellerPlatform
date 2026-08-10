@@ -119,7 +119,7 @@ export type OperationsReport = {
     offline_routers: number;
     network_drift: number;
     failed_commands: number;
-        low_stock_items: { sku: string; name: string; available_units: number | string; reorder_level: number }[];
+    low_stock_items: { sku: string; name: string; available_units: number | string; reorder_level: number }[];
 };
 
 export type PublicTenant = { slug: string; name: string };
@@ -239,7 +239,16 @@ export type Customer = {
     address: string | null;
     latitude: number | null;
     longitude: number | null;
-    documents: { id: string; filename: string; mime_type: string; size_bytes: number; document_type: string | null; retention_until: string | null; created_at: string | null; download_url: string }[];
+    documents: {
+        id: string;
+        filename: string;
+        mime_type: string;
+        size_bytes: number;
+        document_type: string | null;
+        retention_until: string | null;
+        created_at: string | null;
+        download_url: string;
+    }[];
     status: 'active' | 'inactive' | 'archived';
     anonymized_at?: string | null;
     balance_amount: number;

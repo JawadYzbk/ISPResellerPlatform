@@ -164,13 +164,17 @@ export default function ServiceShow({
                             Pause
                         </button>
                     )}
-                    {((service.status === 'suspended' && canActivate) || (service.status === 'paused' && canActivate)) && (
+                    {((service.status === 'suspended' && canActivate) ||
+                        (service.status === 'paused' && canActivate)) && (
                         <button
                             type="button"
                             className="button-primary"
                             onClick={() =>
-                                window.confirm(service.status === 'paused' ? 'Resume this service from pause?' : 'Resume this service?') &&
-                                router.post(`/services/${service.public_id}/resume`)
+                                window.confirm(
+                                    service.status === 'paused'
+                                        ? 'Resume this service from pause?'
+                                        : 'Resume this service?',
+                                ) && router.post(`/services/${service.public_id}/resume`)
                             }
                         >
                             Resume

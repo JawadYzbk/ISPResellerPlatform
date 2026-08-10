@@ -31,7 +31,10 @@ export default function ServicesIndex({ services, filters }: Props) {
                 <p className="page-subtitle">Track entitlement, expiry, and network state from one queue.</p>
             </div>
             <div className="mt-8 card overflow-hidden">
-                <form onSubmit={submitSearch} className="flex flex-col gap-4 border-b border-line px-5 py-4 sm:flex-row sm:items-end">
+                <form
+                    onSubmit={submitSearch}
+                    className="flex flex-col gap-4 border-b border-line px-5 py-4 sm:flex-row sm:items-end"
+                >
                     <label className="block sm:min-w-80">
                         <span className="field-label">Search username or customer</span>
                         <div className="relative">
@@ -73,7 +76,10 @@ export default function ServicesIndex({ services, filters }: Props) {
                             {services.data.map((service) => (
                                 <tr key={service.public_id} className="hover:bg-sand/30">
                                     <td className="px-5 py-4">
-                                        <Link href={`/services/${service.public_id}`} className="text-sm font-semibold hover:text-brand">
+                                        <Link
+                                            href={`/services/${service.public_id}`}
+                                            className="text-sm font-semibold hover:text-brand"
+                                        >
                                             {service.username}
                                         </Link>
                                         <p className="mt-1 text-xs text-muted">
@@ -115,7 +121,8 @@ export default function ServicesIndex({ services, filters }: Props) {
                 </div>
                 <div className="flex items-center justify-between border-t border-line px-5 py-4">
                     <p className="text-xs text-muted">
-                        {services.total.toLocaleString()} service(s) · Page {services.current_page} of {services.last_page}
+                        {services.total.toLocaleString()} service(s) · Page {services.current_page} of{' '}
+                        {services.last_page}
                     </p>
                     <div className="flex items-center gap-1">
                         {services.links.map((link, index) => {
@@ -124,7 +131,13 @@ export default function ServicesIndex({ services, filters }: Props) {
                             if (!link.url) {
                                 return (
                                     <span key={index} className="grid size-8 place-items-center text-muted/40">
-                                        {isPrevious ? <ChevronLeft size={16} /> : isNext ? <ChevronRight size={16} /> : link.label}
+                                        {isPrevious ? (
+                                            <ChevronLeft size={16} />
+                                        ) : isNext ? (
+                                            <ChevronRight size={16} />
+                                        ) : (
+                                            link.label
+                                        )}
                                     </span>
                                 );
                             }
@@ -134,7 +147,13 @@ export default function ServicesIndex({ services, filters }: Props) {
                                     href={link.url}
                                     className={`grid size-8 place-items-center rounded-lg text-xs ${link.active ? 'bg-brand text-white' : 'text-muted hover:bg-sand'}`}
                                 >
-                                    {isPrevious ? <ChevronLeft size={16} /> : isNext ? <ChevronRight size={16} /> : link.label}
+                                    {isPrevious ? (
+                                        <ChevronLeft size={16} />
+                                    ) : isNext ? (
+                                        <ChevronRight size={16} />
+                                    ) : (
+                                        link.label
+                                    )}
                                 </Link>
                             );
                         })}
