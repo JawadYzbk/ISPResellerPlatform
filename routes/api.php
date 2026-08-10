@@ -32,6 +32,7 @@ Route::prefix('v1')->group(function (): void {
         Route::post('/otp/verify', [PortalAuthController::class, 'verifyOtp'])->middleware('throttle:login')->name('api.portal.otp.verify');
         Route::get('/me', [PortalController::class, 'me'])->middleware('portal.auth')->name('api.portal.me');
         Route::get('/billing', [PortalBillingController::class, 'show'])->middleware('portal.auth')->name('api.portal.billing');
+        Route::post('/payments/intent', [PortalBillingController::class, 'intent'])->middleware('portal.auth')->name('api.portal.payments.intent');
     });
 
     Route::middleware(['auth:sanctum', 'tenant'])->group(function (): void {

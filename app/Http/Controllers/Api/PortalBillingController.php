@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Actions\CreatePortalPaymentIntent;
 use App\Http\Controllers\Controller;
 use App\Models\Customer;
 use App\Models\Invoice;
@@ -37,5 +38,16 @@ final class PortalBillingController extends Controller
         ])->values();
 
         return response()->json(['invoices' => $invoices, 'payments' => $payments]);
+    }
+
+    public function intent(Request $request, CreatePortalPaymentIntent $createIntent): JsonResponse
+    {
+        $customer = $request->attributes->get('portal_customer');
+        abort_unless($customer instanceof Customer, 401);
+        $validated = $request->validate(['invoice_id' => ['required', 'string'], 'amount' => ['required', 'integer', 'min:1']]);
+        $invoice = Invoice::query()->where('public_id', $validated['invoice_id'])->firstOrFail();
+        $intent = $createIntent->handle($customer, $invoice, $validated['amount'], (string) $request->header('X-Idempotency-Key'));
+
+        return response()->json(['id' => $intent->id, 'status' => $intent->status, 'amount' => $intent->amount, 'currency' => $intent->currency, 'payload' => $intent->payload], 201);
     }
 }

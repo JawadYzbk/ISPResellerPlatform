@@ -4,6 +4,8 @@ namespace App\Providers;
 
 use App\Domain\Network\MikrotikSubscriberReader;
 use App\Domain\Network\SubscriberReader;
+use App\Domain\Payments\NullPaymentGateway;
+use App\Domain\Payments\PaymentGateway;
 use App\Domain\Radius\RadiusTransport;
 use App\Domain\Radius\UdpRadiusTransport;
 use App\Models\Customer;
@@ -33,6 +35,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(RequestContext::class);
         $this->app->bind(RadiusTransport::class, UdpRadiusTransport::class);
         $this->app->bind(SubscriberReader::class, MikrotikSubscriberReader::class);
+        $this->app->bind(PaymentGateway::class, NullPaymentGateway::class);
     }
 
     /**
