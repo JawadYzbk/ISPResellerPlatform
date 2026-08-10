@@ -1,5 +1,5 @@
-import { Head, Link, router } from '@inertiajs/react';
-import { ArrowLeft, CheckCircle2, ClipboardCheck, Clock3, UserRound } from 'lucide-react';
+import { Head, Link, router, useForm } from '@inertiajs/react';
+import { ArrowLeft, CalendarClock, CheckCircle2, ClipboardCheck, Clock3, UserRound } from 'lucide-react';
 
 import StatusBadge from '@/components/StatusBadge';
 import AppLayout from '@/layouts/AppLayout';
@@ -30,8 +30,20 @@ function isChecked(value: boolean | string): boolean {
     return value === true || value === 'true';
 }
 
-export default function WorkOrderShowPage({ workOrder }: { workOrder: WorkOrder }) {
+type Props = {
+    workOrder: WorkOrder;
+    scheduledAtLocal: string | null;
+    timezone: string;
+};
+
+export default function WorkOrderShowPage({ workOrder, scheduledAtLocal, timezone }: Props) {
     const canComplete = ['assigned', 'in_progress'].includes(workOrder.status);
+    const scheduleForm = useForm({ scheduled_at: scheduledAtLocal ?? '' });
+
+    const submitSchedule = (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        scheduleForm.post('/operations/work-orders/' + workOrder.public_id + '/schedule');
+    };
 
     return (
         <AppLayout>
@@ -73,6 +85,13 @@ export default function WorkOrderShowPage({ workOrder }: { workOrder: WorkOrder 
                             <div className="flex justify-between gap-4"><dt className="text-muted">Started</dt><dd className="font-semibold">{formatDate(workOrder.started_at)}</dd></div>
                             <div className="flex justify-between gap-4"><dt className="text-muted">Completed</dt><dd className="font-semibold">{formatDate(workOrder.completed_at)}</dd></div>
                         </dl>
+                        {!['completed', 'cancelled'].includes(workOrder.status) && (
+                            <form onSubmit={submitSchedule} className="mt-5 space-y-3 border-t border-line pt-5">
+                                <div className="flex items-center gap-2"><CalendarClock size={15} className="text-brand" /><span className="text-sm font-semibold">Reschedule</span></div>
+                                <label><span className="field-label">Tenant local time ({timezone})</span><input type="datetime-local" className="field" value={scheduleForm.data.scheduled_at} onChange={(event) => scheduleForm.setData('scheduled_at', event.target.value)} />{scheduleForm.errors.scheduled_at && <p className="field-error">{scheduleForm.errors.scheduled_at}</p>}</label>
+                                <button type="submit" className="button-secondary w-full" disabled={scheduleForm.processing}>Save schedule</button>
+                            </form>
+                        )}
                         {workOrder.failure_reason && <p className="mt-5 rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-700">{workOrder.failure_reason}</p>}
                     </div>
                 </aside>
