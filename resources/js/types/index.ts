@@ -63,6 +63,27 @@ export type FinanceReport = {
 
 export type PublicTenant = { slug: string; name: string };
 
+export type PortalBilling = {
+    invoices: {
+        id: string;
+        number: string;
+        status: string;
+        currency: string;
+        total_amount: number;
+        due_at: string | null;
+        issued_at: string | null;
+        lines: { description: string; amount: number; currency: string }[];
+    }[];
+    payments: {
+        id: string;
+        number: string;
+        status: string;
+        currency: string;
+        amount: number;
+        received_at: string | null;
+    }[];
+};
+
 export type Zone = {
     id: number;
     name: string;

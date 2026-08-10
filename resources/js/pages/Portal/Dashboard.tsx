@@ -4,12 +4,13 @@ import { useEffect, useState } from 'react';
 
 import { StatusBadge } from '@/components/StatusBadge';
 import { formatDate } from '@/lib/format';
-import type { Customer, PublicTenant } from '@/types';
+import type { Customer, PortalBilling, PublicTenant } from '@/types';
 
 type Props = { tenant: PublicTenant };
 
 export default function PortalDashboard({ tenant }: Props) {
     const [customer, setCustomer] = useState<Customer | null>(null);
+    const [billing, setBilling] = useState<PortalBilling | null>(null);
     const [error, setError] = useState<string | null>(null);
     const tokenKey = `portal_token:${tenant.slug}`;
 
@@ -19,13 +20,17 @@ export default function PortalDashboard({ tenant }: Props) {
             window.location.assign(`/portal/${tenant.slug}`);
             return;
         }
-        fetch(`/api/v1/portal/${tenant.slug}/me`, { headers: { Authorization: `Bearer ${token}` } })
-            .then(async (response) => {
-                if (!response.ok) {
+        Promise.all([
+            fetch(`/api/v1/portal/${tenant.slug}/me`, { headers: { Authorization: `Bearer ${token}` } }),
+            fetch(`/api/v1/portal/${tenant.slug}/billing`, { headers: { Authorization: `Bearer ${token}` } }),
+        ])
+            .then(async ([customerResponse, billingResponse]) => {
+                if (!customerResponse.ok || !billingResponse.ok) {
                     window.location.assign(`/portal/${tenant.slug}`);
                     return;
                 }
-                setCustomer(await response.json());
+                setCustomer(await customerResponse.json());
+                setBilling(await billingResponse.json());
             })
             .catch(() => setError('The portal could not be loaded.'));
     }, [tenant.slug, tokenKey]);
@@ -97,6 +102,54 @@ export default function PortalDashboard({ tenant }: Props) {
                                 </div>
                             )}
                         </section>
+                        {billing && (
+                            <section className="mt-8 grid gap-6 md:grid-cols-2">
+                                <div className="card p-6">
+                                    <h2 className="section-title">Invoices</h2>
+                                    <div className="mt-4 divide-y divide-line">
+                                        {billing.invoices.map((invoice) => (
+                                            <div
+                                                key={invoice.id}
+                                                className="flex items-center justify-between gap-4 py-3 text-sm"
+                                            >
+                                                <span>
+                                                    <b>{invoice.number}</b>
+                                                    <small className="mt-1 block text-muted">{invoice.status}</small>
+                                                </span>
+                                                <span className="font-semibold">
+                                                    {(invoice.total_amount / 100).toFixed(2)} {invoice.currency}
+                                                </span>
+                                            </div>
+                                        ))}
+                                        {billing.invoices.length === 0 && (
+                                            <p className="py-3 text-sm text-muted">No invoices yet.</p>
+                                        )}
+                                    </div>
+                                </div>
+                                <div className="card p-6">
+                                    <h2 className="section-title">Payment history</h2>
+                                    <div className="mt-4 divide-y divide-line">
+                                        {billing.payments.map((payment) => (
+                                            <div
+                                                key={payment.id}
+                                                className="flex items-center justify-between gap-4 py-3 text-sm"
+                                            >
+                                                <span>
+                                                    <b>{payment.number}</b>
+                                                    <small className="mt-1 block text-muted">{payment.status}</small>
+                                                </span>
+                                                <span className="font-semibold">
+                                                    {(payment.amount / 100).toFixed(2)} {payment.currency}
+                                                </span>
+                                            </div>
+                                        ))}
+                                        {billing.payments.length === 0 && (
+                                            <p className="py-3 text-sm text-muted">No payments yet.</p>
+                                        )}
+                                    </div>
+                                </div>
+                            </section>
+                        )}
                     </>
                 )}
             </main>
