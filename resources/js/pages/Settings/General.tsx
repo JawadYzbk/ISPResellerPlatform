@@ -41,6 +41,10 @@ export default function GeneralSettings({ tenant, settings }: Props) {
                 <p className="eyebrow">Administration · {tenant.slug}</p>
                 <h1 className="page-title">Workspace settings</h1>
                 <p className="page-subtitle">Control tenant identity, business time, currency, and automation defaults.</p>
+                <div className="mt-5 flex gap-2">
+                    <Link href="/settings/general" className="button-secondary">General</Link>
+                    <Link href="/settings/users" className="button-secondary">Users and invitations</Link>
+                </div>
                 <form onSubmit={submit} className="card mt-8 space-y-8 p-6">
                     <section>
                         <div className="flex items-center gap-2">
