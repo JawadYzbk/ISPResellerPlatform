@@ -57,7 +57,9 @@ final readonly class MessageProviderManager
     private function configured(string $channel): bool
     {
         return match ($channel) {
-            'whatsapp' => (bool) config('services.whatsapp.token') && (bool) config('services.whatsapp.phone_number_id'),
+            'whatsapp' => config('services.whatsapp.mode') === 'web'
+                ? (bool) config('services.whatsapp.web.enabled') && (bool) config('services.whatsapp.web.endpoint') && (bool) config('services.whatsapp.web.token')
+                : (bool) config('services.whatsapp.token') && (bool) config('services.whatsapp.phone_number_id'),
             'sms' => (bool) config('services.sms.endpoint') && (bool) config('services.sms.token'),
             'push' => (bool) config('services.fcm.endpoint') && (bool) config('services.fcm.token'),
             'email' => (bool) config('services.notifications.email_enabled', false),
@@ -78,7 +80,9 @@ final readonly class MessageProviderManager
     private function sendConfigured(Message $message, string $channel): MessageDeliveryResult
     {
         return match ($channel) {
-            'whatsapp' => app(WhatsAppCloudMessageProvider::class)->send($message),
+            'whatsapp' => config('services.whatsapp.mode') === 'web'
+                ? app(WhatsAppWebMessageProvider::class)->send($message)
+                : app(WhatsAppCloudMessageProvider::class)->send($message),
             'sms' => app(HttpSmsMessageProvider::class)->send($message),
             'push' => app(FcmMessageProvider::class)->send($message),
             'email' => app(MailMessageProvider::class)->send($message),

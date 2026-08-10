@@ -4,6 +4,7 @@ use App\Domain\Communications\FcmMessageProvider;
 use App\Domain\Communications\HttpSmsMessageProvider;
 use App\Domain\Communications\MailMessageProvider;
 use App\Domain\Communications\WhatsAppCloudMessageProvider;
+use App\Domain\Communications\WhatsAppWebMessageProvider;
 use App\Models\Message;
 use App\Models\Tenant;
 use App\Support\Tenancy;
@@ -38,4 +39,20 @@ it('delivers through configured WhatsApp, SMS, FCM and email adapters', function
         ->and(app(HttpSmsMessageProvider::class)->send($sms)->providerMessageId)->toBe('sms-001')
         ->and(app(FcmMessageProvider::class)->send($push)->providerMessageId)->toBe('fcm-001')
         ->and(app(MailMessageProvider::class)->send($email)->status)->toBe('sent');
+});
+
+it('delivers WhatsApp through the private Web.js bridge when selected', function (): void {
+    $tenant = Tenant::create(['name' => 'Northline', 'slug' => 'northline', 'base_currency' => 'USD', 'collection_currency' => 'USD']);
+    app(Tenancy::class)->set($tenant);
+    $message = Message::create(['channel' => 'whatsapp', 'recipient' => '96170123456', 'locale' => 'en', 'body' => 'Hello', 'status' => 'queued', 'idempotency_key' => 'provider-wa-web']);
+    config([
+        'services.whatsapp.mode' => 'web',
+        'services.whatsapp.web.enabled' => true,
+        'services.whatsapp.web.endpoint' => 'http://whatsapp-web:3001',
+        'services.whatsapp.web.token' => 'bridge-token',
+    ]);
+    Http::fake(['http://whatsapp-web:3001/messages' => Http::response(['provider_message_id' => 'wamid-web-001'], 201)]);
+
+    expect(app(WhatsAppWebMessageProvider::class)->send($message)->providerMessageId)->toBe('wamid-web-001');
+    Http::assertSent(fn ($request): bool => $request->url() === 'http://whatsapp-web:3001/messages' && $request['idempotency_key'] === 'provider-wa-web');
 });

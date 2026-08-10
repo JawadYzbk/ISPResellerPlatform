@@ -95,3 +95,25 @@ it('falls back to the next configured notification channel after a provider fail
         ->and($message->metadata['attempted_channels'])->toBe(['sms', 'email']);
     Http::assertSentCount(1);
 });
+
+it('routes the existing WhatsApp channel through the Web.js bridge when enabled', function (): void {
+    Queue::fake();
+    Http::fake(['http://whatsapp-web:3001/messages' => Http::response(['provider_message_id' => 'wamid-web-002'], 201)]);
+    config([
+        'services.whatsapp.mode' => 'web',
+        'services.whatsapp.web.enabled' => true,
+        'services.whatsapp.web.endpoint' => 'http://whatsapp-web:3001',
+        'services.whatsapp.web.token' => 'bridge-token',
+    ]);
+
+    $tenant = Tenant::create(['name' => 'Webline', 'slug' => 'webline', 'base_currency' => 'USD', 'collection_currency' => 'USD']);
+    app(Tenancy::class)->set($tenant);
+    $template = MessageTemplate::create(['key' => 'payment.receipt', 'channel' => 'whatsapp', 'locale' => 'en', 'body' => 'Receipt {{ receipt_number }}']);
+    $message = app(QueueMessage::class)->handle($template, '96170123456', 'whatsapp', 'en', 'web-message-001', ['receipt_number' => 'RCT-WEB']);
+
+    (new DeliverMessage($message->id, $tenant->id))->handle(app(MessageProviderManager::class));
+
+    expect($message->refresh()->status->value)->toBe('sent')
+        ->and($message->provider)->toBe('whatsapp_web')
+        ->and($message->provider_message_id)->toBe('wamid-web-002');
+});

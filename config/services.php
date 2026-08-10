@@ -39,6 +39,11 @@ return [
         'token' => env('WHATSAPP_CLOUD_TOKEN'),
         'phone_number_id' => env('WHATSAPP_PHONE_NUMBER_ID'),
         'mode' => env('WHATSAPP_PROVIDER', 'cloud'),
+        'web' => [
+            'enabled' => env('WHATSAPP_WEB_ENABLED', false),
+            'endpoint' => env('WHATSAPP_WEB_ENDPOINT', 'http://whatsapp-web:3001'),
+            'token' => env('WHATSAPP_WEB_TOKEN'),
+        ],
     ],
 
     'fx' => [
@@ -70,6 +75,7 @@ return [
     'webhooks' => [
         'secrets' => [
             'whatsapp' => env('WHATSAPP_WEBHOOK_SECRET'),
+            'whatsapp_web' => env('WHATSAPP_WEBHOOK_SECRET'),
             'sms' => env('SMS_WEBHOOK_SECRET'),
             'fcm' => env('FCM_WEBHOOK_SECRET'),
         ],
