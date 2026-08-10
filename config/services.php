@@ -35,4 +35,24 @@ return [
         ],
     ],
 
+    'whatsapp' => [
+        'token' => env('WHATSAPP_CLOUD_TOKEN'),
+        'phone_number_id' => env('WHATSAPP_PHONE_NUMBER_ID'),
+    ],
+
+    'sms' => [
+        'endpoint' => env('SMS_PROVIDER_ENDPOINT'),
+        'token' => env('SMS_PROVIDER_TOKEN'),
+        'sender' => env('SMS_PROVIDER_SENDER'),
+    ],
+
+    'fcm' => [
+        'endpoint' => env('FCM_PROVIDER_ENDPOINT'),
+        'token' => env('FCM_PROVIDER_TOKEN'),
+    ],
+
+    'notifications' => [
+        'email_enabled' => env('NOTIFICATIONS_EMAIL_ENABLED', false),
+    ],
+
 ];
