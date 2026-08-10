@@ -36,6 +36,7 @@ class WalletTransaction extends Model
         return $this->belongsTo(PartnerWallet::class, 'wallet_id');
     }
 
+    /** @return BelongsTo<JournalEntry, $this> */
     public function journalEntry(): BelongsTo
     {
         return $this->belongsTo(JournalEntry::class);
