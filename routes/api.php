@@ -3,16 +3,16 @@
 use App\Http\Controllers\Api\ApiTokenController;
 use App\Http\Controllers\Api\CollectorPaymentController;
 use App\Http\Controllers\Api\CustomerApiController;
+use App\Http\Controllers\Api\HealthController;
 use App\Http\Controllers\Api\NetworkCommandController;
 use App\Http\Controllers\Api\PaymentApiController;
 use App\Http\Controllers\Api\PortalAuthController;
 use App\Http\Controllers\Api\PortalController;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function (): void {
-    Route::get('/health', fn (): JsonResponse => response()->json(['status' => 'ok']))->name('api.health');
+    Route::get('/health', [HealthController::class, 'show'])->name('api.health');
     Route::post('/tokens', [ApiTokenController::class, 'store'])->middleware('throttle:login')->name('api.tokens.store');
     Route::prefix('portal/{tenant:slug}')->middleware('portal.tenant')->group(function (): void {
         Route::post('/otp/request', [PortalAuthController::class, 'requestOtp'])->middleware('throttle:login')->name('api.portal.otp.request');
