@@ -14,6 +14,7 @@ use App\Http\Controllers\Api\MessageWebhookController;
 use App\Http\Controllers\Api\NetworkCommandController;
 use App\Http\Controllers\Api\PartnerApiController;
 use App\Http\Controllers\Api\PaymentApiController;
+use App\Http\Controllers\Api\PlanApiController;
 use App\Http\Controllers\Api\PlanImportController;
 use App\Http\Controllers\Api\PortalAuthController;
 use App\Http\Controllers\Api\PortalBillingController;
@@ -77,6 +78,8 @@ Route::prefix('v1')->group(function (): void {
             Route::get('/customers/{customer:public_id}', [CustomerApiController::class, 'show'])->name('api.customers.show');
             Route::get('/services', [ServiceApiController::class, 'index'])->name('api.services.index');
             Route::get('/services/{service}', [ServiceApiController::class, 'show'])->name('api.services.show');
+            Route::get('/plans', [PlanApiController::class, 'index'])->name('api.plans.index');
+            Route::get('/plans/{plan}', [PlanApiController::class, 'show'])->name('api.plans.show');
             Route::get('/services/{service}/network-commands', [ServiceApiController::class, 'networkCommands'])->name('api.services.network-commands');
             Route::post('/services/{service}/plan-change-previews', [ServiceApiController::class, 'planChangePreview'])->name('api.services.plan-change-previews');
             Route::post('/payments', [PaymentApiController::class, 'store'])->middleware('idempotency')->name('api.payments.store');
@@ -92,6 +95,7 @@ Route::prefix('v1')->group(function (): void {
             Route::post('/services/{service}/renewals', [ServiceApiController::class, 'renewal'])->middleware('idempotency')->name('api.services.renewals');
             Route::post('/services/{service}/disconnect-session', [ServiceApiController::class, 'disconnectSession'])->middleware('idempotency')->name('api.services.disconnect-session');
             Route::post('/services/{service}/resync', [ServiceApiController::class, 'resync'])->middleware('idempotency')->name('api.services.resync');
+            Route::post('/plans', [PlanApiController::class, 'store'])->name('api.plans.store');
             Route::post('/imports/customers', [CustomerImportController::class, 'store'])->name('api.imports.customers.store');
             Route::post('/imports/plans', [PlanImportController::class, 'store'])->name('api.imports.plans.store');
             Route::post('/imports/plans/{import}/rollback', [PlanImportController::class, 'rollback'])->name('api.imports.plans.rollback');
