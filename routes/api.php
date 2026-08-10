@@ -63,6 +63,8 @@ Route::prefix('v1')->group(function (): void {
         Route::delete('/tokens/current', [ApiTokenController::class, 'destroy'])->name('api.tokens.destroy');
         Route::post('/auth/logout', [ApiTokenController::class, 'destroy'])->name('api.auth.logout');
         Route::get('/auth/me', [ApiTokenController::class, 'me'])->name('api.auth.me');
+        Route::post('/auth/devices/{device}/revoke', [ApiTokenController::class, 'revokeDevice'])->name('api.auth.devices.revoke');
+        Route::post('/auth/push-token', [ApiTokenController::class, 'pushToken'])->name('api.auth.push-token');
         Route::get('/app/config', [AppConfigController::class, 'show'])->name('api.app.config');
         Route::get('/me', function (Request $request, UserApiResource $resource) {
             $user = $request->user();

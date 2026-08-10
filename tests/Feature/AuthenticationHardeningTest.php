@@ -1,8 +1,10 @@
 <?php
 
+use App\Models\PushToken;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Security\TwoFactorService;
+use App\Support\Tenancy;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
@@ -79,4 +81,29 @@ it('supports the staff authentication contract with a separate two-factor exchan
 
     $this->withToken($token)->postJson('/api/v1/auth/logout')->assertNoContent();
     expect(PersonalAccessToken::findToken($token))->toBeNull();
+});
+
+it('registers encrypted push tokens and revokes every token for a device', function (): void {
+    $tenant = Tenant::create(['name' => 'Southline', 'slug' => 'southline', 'base_currency' => 'USD', 'collection_currency' => 'USD']);
+    $user = User::create(['tenant_id' => $tenant->id, 'name' => 'Operator', 'email' => 'device-auth-operator@example.test', 'password' => Hash::make('password'), 'role' => 'operator']);
+
+    $token = $this->postJson('/api/v1/auth/staff/login', [
+        'email' => $user->email,
+        'password' => 'password',
+        'device_name' => 'field-phone',
+        'device_id' => 'device-001',
+    ])->assertOk()->json('token');
+
+    $this->withToken($token)->postJson('/api/v1/auth/push-token', [
+        'token' => 'push-token-secret',
+        'platform' => 'android',
+        'app' => 'isp-manager',
+    ])->assertNoContent();
+
+    app(Tenancy::class)->set($tenant);
+    expect(PushToken::query()->where('user_id', $user->id)->count())->toBe(1)
+        ->and(PushToken::query()->firstOrFail()->token_encrypted)->toBe('push-token-secret');
+
+    $this->withToken($token)->postJson('/api/v1/auth/devices/device-001/revoke')->assertNoContent();
+    expect(PersonalAccessToken::query()->where('tokenable_id', $user->id)->where('device_id', 'device-001')->count())->toBe(0);
 });

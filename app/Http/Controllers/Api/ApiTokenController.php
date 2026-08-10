@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\PushToken;
 use App\Models\User;
 use App\Security\ApiTokenAbilities;
 use App\Security\TwoFactorService;
@@ -54,7 +55,7 @@ final class ApiTokenController extends Controller
             ], 422);
         }
 
-        return $this->issueStaffToken($user, $validated['device_name'], $requestedAbilities, $abilities, $resource);
+        return $this->issueStaffToken($user, $validated['device_name'], $requestedAbilities, $abilities, $resource, (string) $validated['device_id']);
     }
 
     public function staffTwoFactor(Request $request, TwoFactorService $twoFactor, ApiTokenAbilities $abilities, UserApiResource $resource): JsonResponse
@@ -64,7 +65,7 @@ final class ApiTokenController extends Controller
             'code' => ['required', 'string', 'min:6', 'max:16'],
         ]);
         $challenge = Cache::get('auth:staff:challenge:'.$validated['challenge_id']);
-        abort_unless(is_array($challenge) && isset($challenge['user_id'], $challenge['device_name'], $challenge['abilities']), 422, 'The staff authentication challenge is invalid or expired.');
+        abort_unless(is_array($challenge) && isset($challenge['user_id'], $challenge['device_name'], $challenge['device_id'], $challenge['abilities']), 422, 'The staff authentication challenge is invalid or expired.');
         $user = User::query()->find((int) $challenge['user_id']);
         abort_unless($user instanceof User && $user->role !== 'customer' && $twoFactor->verify($user, $validated['code']), 422, 'The two-factor code is invalid or expired.');
         Cache::forget('auth:staff:challenge:'.$validated['challenge_id']);
@@ -72,7 +73,7 @@ final class ApiTokenController extends Controller
         /** @var list<string> $requestedAbilities */
         $requestedAbilities = array_values($challenge['abilities']);
 
-        return $this->issueStaffToken($user, (string) $challenge['device_name'], $requestedAbilities, $abilities, $resource);
+        return $this->issueStaffToken($user, (string) $challenge['device_name'], $requestedAbilities, $abilities, $resource, (string) $challenge['device_id']);
     }
 
     public function store(Request $request, TwoFactorService $twoFactor, ApiTokenAbilities $abilities): JsonResponse
@@ -130,8 +131,48 @@ final class ApiTokenController extends Controller
         ]);
     }
 
+    public function revokeDevice(Request $request, string $device): JsonResponse
+    {
+        $user = $request->user();
+        abort_unless($user instanceof User, 401);
+
+        PersonalAccessToken::query()
+            ->where('tokenable_type', User::class)
+            ->where('tokenable_id', $user->id)
+            ->where('device_id', $device)
+            ->delete();
+
+        return response()->json(status: 204);
+    }
+
+    public function pushToken(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        abort_unless($user instanceof User && $user->tenant_id !== null, 401);
+        $validated = $request->validate([
+            'token' => ['required', 'string', 'max:4096'],
+            'platform' => ['required', 'string', 'in:android,ios,web'],
+            'app' => ['required', 'string', 'max:100'],
+        ]);
+        $tokenHash = hash('sha256', $validated['token']);
+
+        PushToken::query()->updateOrCreate(
+            ['token_hash' => $tokenHash],
+            [
+                'user_id' => $user->id,
+                'token_encrypted' => $validated['token'],
+                'platform' => $validated['platform'],
+                'app' => $validated['app'],
+                'last_seen_at' => now(),
+                'revoked_at' => null,
+            ],
+        );
+
+        return response()->json(status: 204);
+    }
+
     /** @param list<string> $requestedAbilities */
-    private function issueStaffToken(User $user, string $deviceName, array $requestedAbilities, ApiTokenAbilities $abilities, UserApiResource $resource): JsonResponse
+    private function issueStaffToken(User $user, string $deviceName, array $requestedAbilities, ApiTokenAbilities $abilities, UserApiResource $resource, ?string $deviceId = null): JsonResponse
     {
         try {
             $tokenAbilities = $abilities->resolve($user, $requestedAbilities);
@@ -140,6 +181,9 @@ final class ApiTokenController extends Controller
         }
         $user->forceFill(['last_authenticated_at' => now()])->save();
         $token = $user->createToken($deviceName, $tokenAbilities);
+        if ($deviceId !== null) {
+            $token->accessToken->forceFill(['device_id' => $deviceId])->save();
+        }
 
         return response()->json([
             'token' => $token->plainTextToken,
