@@ -11,6 +11,7 @@ use App\Http\Controllers\Web\CredentialOperationsController;
 use App\Http\Controllers\Web\CustomerController;
 use App\Http\Controllers\Web\DashboardController;
 use App\Http\Controllers\Web\InventoryOperationsController;
+use App\Http\Controllers\Web\ImportOperationsController;
 use App\Http\Controllers\Web\InvitationController;
 use App\Http\Controllers\Web\NetworkOperationsController;
 use App\Http\Controllers\Web\PartnerController;
@@ -105,6 +106,9 @@ Route::middleware(['auth', 'tenant', '2fa'])->group(function (): void {
     Route::post('/operations/work-orders/{workOrder:public_id}/complete', [WorkOrderOperationsController::class, 'complete'])->name('operations.work-orders.complete');
     Route::get('/operations/inventory', [InventoryOperationsController::class, 'index'])->name('operations.inventory');
     Route::post('/operations/inventory/{unit}/assign', [InventoryOperationsController::class, 'assign'])->middleware('recent-auth')->name('operations.inventory.assign');
+    Route::get('/operations/imports', [ImportOperationsController::class, 'index'])->name('operations.imports');
+    Route::post('/operations/imports', [ImportOperationsController::class, 'store'])->name('operations.imports.store');
+    Route::post('/operations/imports/{import}/rollback', [ImportOperationsController::class, 'rollback'])->middleware('recent-auth')->name('operations.imports.rollback');
     Route::get('/operations/credentials', [CredentialOperationsController::class, 'index'])->name('operations.credentials');
     Route::post('/operations/credentials/{credential}/assign', [CredentialOperationsController::class, 'assign'])->middleware('recent-auth')->name('operations.credentials.assign');
     Route::get('/plans', [PlanOperationsController::class, 'index'])->name('plans.index');

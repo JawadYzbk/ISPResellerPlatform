@@ -25,7 +25,26 @@ export type PageProps = {
     flash: {
         success?: string;
         error?: string;
+        importResult?: ImportBatchResult;
     };
+};
+
+export type ImportBatchReportRow = {
+    row: number;
+    status: string;
+    errors: string[];
+    [key: string]: unknown;
+};
+
+export type ImportBatchResult = {
+    id: string;
+    type: string;
+    filename: string;
+    status: string;
+    total_rows: number;
+    successful_rows: number;
+    failed_rows: number;
+    report: ImportBatchReportRow[];
 };
 
 export type DashboardMetrics = {

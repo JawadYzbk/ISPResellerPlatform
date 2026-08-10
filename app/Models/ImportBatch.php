@@ -9,7 +9,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Str;
 
 /**
+ * @property Carbon|null $created_at
  * @property Carbon|null $completed_at
+ * @property Carbon|null $rolled_back_at
  * @property array<int, array<string, mixed>>|null $report
  */
 class ImportBatch extends Model
