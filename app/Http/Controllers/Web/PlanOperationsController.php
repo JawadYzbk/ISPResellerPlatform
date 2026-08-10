@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Web;
 
+use App\Actions\ArchiveAddon;
+use App\Actions\ArchivePromotion;
 use App\Actions\CreateAddon;
 use App\Actions\CreatePlan;
 use App\Actions\CreatePromotion;
@@ -108,10 +110,10 @@ final class PlanOperationsController extends Controller
         return redirect()->route('plans.index')->with('success', 'Addon updated.');
     }
 
-    public function archiveAddon(Request $request, Addon $addon): RedirectResponse
+    public function archiveAddon(Request $request, Addon $addon, ArchiveAddon $archive): RedirectResponse
     {
         $this->ensureManager($request);
-        $addon->forceFill(['status' => 'inactive'])->save();
+        $archive->handle($addon);
 
         return redirect()->route('plans.index')->with('success', 'Addon archived.');
     }
@@ -136,10 +138,10 @@ final class PlanOperationsController extends Controller
         return redirect()->route('plans.index')->with('success', 'Promotion updated.');
     }
 
-    public function archivePromotion(Request $request, Promotion $promotion): RedirectResponse
+    public function archivePromotion(Request $request, Promotion $promotion, ArchivePromotion $archive): RedirectResponse
     {
         $this->ensureManager($request);
-        $promotion->forceFill(['is_active' => false])->save();
+        $archive->handle($promotion);
 
         return redirect()->route('plans.index')->with('success', 'Promotion archived.');
     }

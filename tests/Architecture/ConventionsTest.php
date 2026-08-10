@@ -12,7 +12,7 @@ it('requires tenant scoping on tenant-owned models', function (): void {
             continue;
         }
 
-        expect(class_uses_recursive($class))->toContain(BelongsToTenant::class, "{$class} must use BelongsToTenant");
+        expect(class_uses_recursive($class))->toContain(BelongsToTenant::class);
     }
 });
 

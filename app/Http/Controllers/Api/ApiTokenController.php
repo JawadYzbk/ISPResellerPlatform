@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Actions\IssueApiToken;
+use App\Actions\RevokeApiToken;
+use App\Actions\RevokeDeviceApiTokens;
 use App\Http\Controllers\Controller;
 use App\Models\PushToken;
 use App\Models\User;
@@ -14,11 +17,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
-use Laravel\Sanctum\PersonalAccessToken;
 
 final class ApiTokenController extends Controller
 {
-    public function staffLogin(Request $request, TwoFactorService $twoFactor, ApiTokenAbilities $abilities, UserApiResource $resource): JsonResponse
+    public function staffLogin(Request $request, TwoFactorService $twoFactor, ApiTokenAbilities $abilities, UserApiResource $resource, IssueApiToken $issue): JsonResponse
     {
         $validated = $request->validate([
             'email' => ['required', 'email'],
@@ -55,10 +57,10 @@ final class ApiTokenController extends Controller
             ], 422);
         }
 
-        return $this->issueStaffToken($user, $validated['device_name'], $requestedAbilities, $abilities, $resource, (string) $validated['device_id']);
+        return $this->issueStaffToken($user, $validated['device_name'], $requestedAbilities, $abilities, $resource, $issue, (string) $validated['device_id']);
     }
 
-    public function staffTwoFactor(Request $request, TwoFactorService $twoFactor, ApiTokenAbilities $abilities, UserApiResource $resource): JsonResponse
+    public function staffTwoFactor(Request $request, TwoFactorService $twoFactor, ApiTokenAbilities $abilities, UserApiResource $resource, IssueApiToken $issue): JsonResponse
     {
         $validated = $request->validate([
             'challenge_id' => ['required', 'string', 'max:26'],
@@ -73,10 +75,10 @@ final class ApiTokenController extends Controller
         /** @var list<string> $requestedAbilities */
         $requestedAbilities = array_values($challenge['abilities']);
 
-        return $this->issueStaffToken($user, (string) $challenge['device_name'], $requestedAbilities, $abilities, $resource, (string) $challenge['device_id']);
+        return $this->issueStaffToken($user, (string) $challenge['device_name'], $requestedAbilities, $abilities, $resource, $issue, (string) $challenge['device_id']);
     }
 
-    public function store(Request $request, TwoFactorService $twoFactor, ApiTokenAbilities $abilities): JsonResponse
+    public function store(Request $request, TwoFactorService $twoFactor, ApiTokenAbilities $abilities, IssueApiToken $issue): JsonResponse
     {
         $validated = $request->validate([
             'email' => ['required', 'email'],
@@ -101,20 +103,14 @@ final class ApiTokenController extends Controller
         } catch (DomainException $exception) {
             abort(403, $exception->getMessage());
         }
-        $user->forceFill(['last_authenticated_at' => now()])->save();
-        $token = $user->createToken($validated['device_name'], $tokenAbilities);
+        $token = $issue->handle($user, (string) $validated['device_name'], $tokenAbilities);
 
         return response()->json(['token' => $token->plainTextToken, 'type' => 'Bearer', 'abilities' => $tokenAbilities]);
     }
 
-    public function destroy(Request $request): JsonResponse
+    public function destroy(Request $request, RevokeApiToken $revoke): JsonResponse
     {
-        $bearerToken = $request->bearerToken();
-        if (is_string($bearerToken) && $bearerToken !== '') {
-            PersonalAccessToken::findToken($bearerToken)?->delete();
-        } else {
-            $request->user()?->currentAccessToken()?->delete();
-        }
+        $revoke->handle($request->bearerToken(), $request->user()?->currentAccessToken());
 
         return response()->json(status: 204);
     }
@@ -131,16 +127,12 @@ final class ApiTokenController extends Controller
         ]);
     }
 
-    public function revokeDevice(Request $request, string $device): JsonResponse
+    public function revokeDevice(Request $request, string $device, RevokeDeviceApiTokens $revoke): JsonResponse
     {
         $user = $request->user();
         abort_unless($user instanceof User, 401);
 
-        PersonalAccessToken::query()
-            ->where('tokenable_type', User::class)
-            ->where('tokenable_id', $user->id)
-            ->where('device_id', $device)
-            ->delete();
+        $revoke->handle($user, $device);
 
         return response()->json(status: 204);
     }
@@ -172,18 +164,14 @@ final class ApiTokenController extends Controller
     }
 
     /** @param list<string> $requestedAbilities */
-    private function issueStaffToken(User $user, string $deviceName, array $requestedAbilities, ApiTokenAbilities $abilities, UserApiResource $resource, ?string $deviceId = null): JsonResponse
+    private function issueStaffToken(User $user, string $deviceName, array $requestedAbilities, ApiTokenAbilities $abilities, UserApiResource $resource, IssueApiToken $issue, ?string $deviceId = null): JsonResponse
     {
         try {
             $tokenAbilities = $abilities->resolve($user, $requestedAbilities);
         } catch (DomainException $exception) {
             abort(403, $exception->getMessage());
         }
-        $user->forceFill(['last_authenticated_at' => now()])->save();
-        $token = $user->createToken($deviceName, $tokenAbilities);
-        if ($deviceId !== null) {
-            $token->accessToken->forceFill(['device_id' => $deviceId])->save();
-        }
+        $token = $issue->handle($user, $deviceName, $tokenAbilities, $deviceId);
 
         return response()->json([
             'token' => $token->plainTextToken,
