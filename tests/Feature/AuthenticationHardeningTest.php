@@ -28,7 +28,12 @@ it('issues and accepts a Sanctum token for a standard operator', function (): vo
         'device_name' => 'test-device',
     ])->assertOk()->assertJsonStructure(['token', 'type']);
 
-    $this->withToken($response->json('token'))->getJson('/api/v1/me')->assertOk()->assertJsonPath('email', 'operator@example.test');
+    $this->withToken($response->json('token'))->getJson('/api/v1/me')
+        ->assertOk()
+        ->assertJsonPath('email', 'operator@example.test')
+        ->assertJsonMissingPath('id')
+        ->assertJsonMissingPath('tenant_id')
+        ->assertJsonMissingPath('partner_id');
 });
 
 it('throttles repeated login attempts by account and IP', function (): void {

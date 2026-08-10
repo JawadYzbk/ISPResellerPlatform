@@ -23,6 +23,8 @@ use App\Http\Controllers\Api\ServiceApiController;
 use App\Http\Controllers\Api\ServiceImportController;
 use App\Http\Controllers\Api\TechnicianMediaController;
 use App\Http\Controllers\Api\TechnicianWorkOrderController;
+use App\Models\User;
+use App\Support\Api\UserApiResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -49,7 +51,12 @@ Route::prefix('v1')->group(function (): void {
     Route::middleware(['auth:sanctum', 'tenant'])->group(function (): void {
         Route::delete('/tokens/current', [ApiTokenController::class, 'destroy'])->name('api.tokens.destroy');
         Route::get('/app/config', [AppConfigController::class, 'show'])->name('api.app.config');
-        Route::get('/me', fn (Request $request) => $request->user())->name('api.me');
+        Route::get('/me', function (Request $request, UserApiResource $resource) {
+            $user = $request->user();
+            abort_unless($user instanceof User, 401);
+
+            return response()->json($resource->make($user));
+        })->name('api.me');
         Route::middleware('any-abilities:staff:operator,staff:collector,staff:technician')->group(function (): void {
             Route::get('/customers', [CustomerApiController::class, 'index'])->name('api.customers.index');
             Route::get('/customers/{customer:public_id}', [CustomerApiController::class, 'show'])->name('api.customers.show');
