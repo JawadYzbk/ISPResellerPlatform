@@ -13,7 +13,7 @@ Last updated: 2026-08-10
 | ISP-013 | Model scope plus route-binding isolation proof | foundation delivered |
 | ISP-014 | RTL-aware Inertia app shell and staff navigation | foundation delivered |
 | ISP-020/021 | Customer seed, index/show screen, staff create/edit flows, working list filters/columns, real activity timeline, persisted provisioning details, recent support-ticket context and tenant-isolated search entry point | vertical slice delivered |
-| ISP-010/011/012/015 | Tenant provisioning and capability-gated settings, capability catalog, invitations, Sanctum tokens, 2FA, re-authentication, session devices and audit events | delivered for current tenant/operator scope |
+| ISP-010/011/012/015 | Tenant provisioning and capability-gated settings, operator directory/invitations, capability catalog, Sanctum tokens, 2FA, re-authentication, session devices and audit events | delivered for current tenant/operator scope |
 | ISP-022/023/024 | Versioned plan prices, tenant-safe plan catalog/create workflow, customer creation/phone normalization, service transitions and billing-period arithmetic | delivered |
 | ISP-030/031/032/033 | Historical FX, append-only double-entry ledger, invoice lifecycle, idempotent payments and reversals, staff invoice/payment queues with draft issuance, invoice-balance validation and recent-auth reversal controls | delivered |
 | ISP-034/035/036 | Payment renewal, cash shifts and scheduled tenant-aware idempotent billing runs | delivered |

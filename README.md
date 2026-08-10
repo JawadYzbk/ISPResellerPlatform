@@ -14,6 +14,7 @@ The current foundation is live:
 - Encrypted service credentials and hidden serialization
 - Staff login, 2FA/re-authentication, session devices, dashboard, customer/service/report screens
 - Capability-gated tenant settings for locale, timezone, currencies, display, notification quiet hours and automation defaults
+- Operator directory with role-limited one-time invitations and a public invitation acceptance flow
 - Staff invoice and payment queues with allocation-backed balances, audited reversals, router health registry and network command operations screen
 - Staff ticket conversation/status workflow, customer support history, work-order completion surface, serialized inventory trace/assignment, and plan catalog/create workflow
 - Supplier credential inventory view with secret redaction, tenant-safe assignment and audited reveal boundary
