@@ -16,7 +16,7 @@ it('posts an allowlisted external network command without service credentials', 
         'services.external_network.endpoint' => 'https://oss.example.test/network',
         'services.external_network.token' => 'external-token',
     ]);
-    Http::fake(['https://oss.example.test/network' => Http::response(['accepted' => true], 202)]);
+    Http::fake(['https://oss.example.test/network' => Http::response(['accepted' => true, 'secret' => 'must-not-be-stored'], 202)]);
     $tenant = Tenant::create(['name' => 'Northline', 'slug' => 'northline', 'base_currency' => 'USD', 'collection_currency' => 'USD']);
     app(Tenancy::class)->set($tenant);
     $service = Service::factory()->create([
@@ -33,7 +33,9 @@ it('posts an allowlisted external network command without service credentials', 
 
     $result = app(ExternalDriver::class)->execute($service, $command);
 
-    expect($result->status)->toBe('success');
+    expect($result->status)->toBe('success')
+        ->and($result->data)->toMatchArray(['http_status' => 202])
+        ->and($result->data)->not->toHaveKey('response');
     Http::assertSent(function ($request) use ($service, $command): bool {
         $data = $request->data();
 

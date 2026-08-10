@@ -54,7 +54,7 @@ final class ExternalDriver implements NetworkDriver
         return DriverResult::success('External network command accepted.', [
             'action' => $command->action,
             'command_id' => $command->public_id,
-            'response' => is_array($response->json()) ? $response->json() : [],
+            'http_status' => $response->status(),
         ]);
     }
 
