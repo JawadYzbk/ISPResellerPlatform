@@ -2324,6 +2324,28 @@ paths:
         '200': { description: Webhook accepted and processed idempotently }
         '401': { description: Invalid webhook signature }
         '422': { description: Invalid webhook body }
+  /webhooks/payments/{gateway}:
+    post:
+      security: []
+      summary: Receive a signed online payment gateway webhook
+      parameters:
+        - in: path
+          name: gateway
+          required: true
+          schema: { type: string, enum: [stripe] }
+        - in: header
+          name: Stripe-Signature
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, additionalProperties: true }
+      responses:
+        '200': { description: Payment webhook accepted and settled idempotently }
+        '401': { description: Invalid Stripe webhook signature }
+        '422': { description: Invalid payment webhook body or provider }
 components:
   securitySchemes:
     bearerAuth:
