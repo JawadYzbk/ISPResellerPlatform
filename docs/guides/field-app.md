@@ -75,4 +75,4 @@ Only the assigned technician can read, upload evidence to, record readings/mater
 - Use exponential backoff for `429`, `5xx`, and transport failures, while preserving idempotency keys.
 - Encrypt local customer/payment data, protect the device, and clear cached data on logout or device reassignment.
 
-The complete machine-readable contract is [openapi/isp-platform-v1.yaml](../../openapi/isp-platform-v1.yaml). The mobile client should generate types from that document and cover the collector and technician contract tests before pilot release.
+The complete machine-readable contract is [openapi/isp-platform-v1.yaml](../../openapi/isp-platform-v1.yaml), and the running application serves the same file at `/docs/api`. The mobile client should generate types from that document and cover the collector and technician contract tests before pilot release.
