@@ -1,5 +1,5 @@
 import { Head, Link, router } from '@inertiajs/react';
-import { Search, Wifi } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Search, Wifi } from 'lucide-react';
 import { useState } from 'react';
 
 import { StatusBadge } from '@/components/StatusBadge';
@@ -11,12 +11,13 @@ type Props = PageProps & { services: Paginator<Service>; filters: { search?: str
 
 export default function ServicesIndex({ services, filters }: Props) {
     const [search, setSearch] = useState(filters.search ?? '');
+    const [status, setStatus] = useState(filters.status ?? '');
 
     const submitSearch = (event: React.FormEvent) => {
         event.preventDefault();
         router.get(
             '/services',
-            { search: search || undefined, status: filters.status || undefined },
+            { search: search || undefined, status: status || undefined },
             { preserveState: true, replace: true },
         );
     };
@@ -30,17 +31,33 @@ export default function ServicesIndex({ services, filters }: Props) {
                 <p className="page-subtitle">Track entitlement, expiry, and network state from one queue.</p>
             </div>
             <div className="mt-8 card overflow-hidden">
-                <div className="border-b border-line px-5 py-4">
-                    <form onSubmit={submitSearch} className="relative max-w-md">
-                        <Search size={17} className="pointer-events-none absolute start-3 top-3 text-muted" />
-                        <input
-                            value={search}
-                            onChange={(event) => setSearch(event.target.value)}
-                            placeholder="Search username or customer"
-                            className="field ps-10"
-                        />
-                    </form>
-                </div>
+                <form onSubmit={submitSearch} className="flex flex-col gap-4 border-b border-line px-5 py-4 sm:flex-row sm:items-end">
+                    <label className="block sm:min-w-80">
+                        <span className="field-label">Search username or customer</span>
+                        <div className="relative">
+                            <Search size={17} className="pointer-events-none absolute start-3 top-3 text-muted" />
+                            <input
+                                value={search}
+                                onChange={(event) => setSearch(event.target.value)}
+                                placeholder="Username, customer name, phone"
+                                className="field ps-10"
+                            />
+                        </div>
+                    </label>
+                    <label className="block sm:min-w-48">
+                        <span className="field-label">Service status</span>
+                        <select className="field" value={status} onChange={(event) => setStatus(event.target.value)}>
+                            <option value="">All statuses</option>
+                            <option value="pending">Pending</option>
+                            <option value="active">Active</option>
+                            <option value="suspended">Suspended</option>
+                            <option value="terminated">Terminated</option>
+                        </select>
+                    </label>
+                    <button type="submit" className="button-primary">
+                        Apply filters
+                    </button>
+                </form>
                 <div className="overflow-x-auto">
                     <table className="w-full min-w-[760px] text-start">
                         <thead>
@@ -62,12 +79,16 @@ export default function ServicesIndex({ services, filters }: Props) {
                                         </p>
                                     </td>
                                     <td className="px-5 py-4 text-sm">
-                                        <Link
-                                            href={`/customers/${service.customer?.public_id}`}
-                                            className="font-semibold hover:text-brand"
-                                        >
-                                            {service.customer?.first_name} {service.customer?.last_name ?? ''}
-                                        </Link>
+                                        {service.customer ? (
+                                            <Link
+                                                href={`/customers/${service.customer.public_id}`}
+                                                className="font-semibold hover:text-brand"
+                                            >
+                                                {service.customer.first_name} {service.customer.last_name ?? ''}
+                                            </Link>
+                                        ) : (
+                                            <span className="text-muted">Customer unavailable</span>
+                                        )}
                                     </td>
                                     <td className="px-5 py-4 text-sm text-muted">{service.plan.name}</td>
                                     <td className="px-5 py-4 text-sm text-muted">{formatDate(service.expires_at)}</td>
@@ -90,8 +111,32 @@ export default function ServicesIndex({ services, filters }: Props) {
                         </tbody>
                     </table>
                 </div>
-                <div className="border-t border-line px-5 py-4 text-sm text-muted">
-                    {services.total.toLocaleString()} service(s)
+                <div className="flex items-center justify-between border-t border-line px-5 py-4">
+                    <p className="text-xs text-muted">
+                        {services.total.toLocaleString()} service(s) · Page {services.current_page} of {services.last_page}
+                    </p>
+                    <div className="flex items-center gap-1">
+                        {services.links.map((link, index) => {
+                            const isPrevious = index === 0;
+                            const isNext = index === services.links.length - 1;
+                            if (!link.url) {
+                                return (
+                                    <span key={index} className="grid size-8 place-items-center text-muted/40">
+                                        {isPrevious ? <ChevronLeft size={16} /> : isNext ? <ChevronRight size={16} /> : link.label}
+                                    </span>
+                                );
+                            }
+                            return (
+                                <Link
+                                    key={index}
+                                    href={link.url}
+                                    className={`grid size-8 place-items-center rounded-lg text-xs ${link.active ? 'bg-brand text-white' : 'text-muted hover:bg-sand'}`}
+                                >
+                                    {isPrevious ? <ChevronLeft size={16} /> : isNext ? <ChevronRight size={16} /> : link.label}
+                                </Link>
+                            );
+                        })}
+                    </div>
                 </div>
             </div>
         </AppLayout>
