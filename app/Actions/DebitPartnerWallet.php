@@ -32,7 +32,7 @@ final readonly class DebitPartnerWallet implements Action
             $walletAccount = LedgerAccount::query()->where('code', '1210')->firstOrFail();
             $revenue = LedgerAccount::query()->where('code', '4000')->firstOrFail();
             $transaction = WalletTransaction::create(['wallet_id' => $locked->id, 'type' => 'renewal', 'direction' => 'debit', 'amount' => $amount, 'balance_after' => $locked->balance_amount - $amount, 'idempotency_key' => $idempotencyKey, 'actor_id' => $actor?->id]);
-            $entry = $this->journal->post('Partner wallet renewal debit', [new JournalLineInput($walletAccount->id, $locked->currency, debitAmount: $amount), new JournalLineInput($revenue->id, $locked->currency, creditAmount: $amount)], actor: $actor, sourceType: WalletTransaction::class, sourceId: (string) $transaction->id);
+            $entry = $this->journal->post('Partner wallet renewal debit', [new JournalLineInput($walletAccount->id, $locked->currency, debitAmount: $amount, partnerId: $locked->partner_id), new JournalLineInput($revenue->id, $locked->currency, creditAmount: $amount)], actor: $actor, sourceType: WalletTransaction::class, sourceId: (string) $transaction->id);
             $transaction->forceFill(['journal_entry_id' => $entry->id])->save();
             $locked->forceFill(['balance_amount' => $transaction->balance_after])->save();
 

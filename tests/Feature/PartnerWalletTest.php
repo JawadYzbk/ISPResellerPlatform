@@ -4,6 +4,7 @@ use App\Actions\CreatePartner;
 use App\Actions\DebitPartnerWallet;
 use App\Actions\FundPartnerWallet;
 use App\Models\JournalEntry;
+use App\Models\JournalLine;
 use App\Models\Partner;
 use App\Models\Tenant;
 use App\Models\WalletTransaction;
@@ -37,7 +38,8 @@ it('funds and debits a wallet with journal references and idempotent replays', f
         ->and($debited->balance_after)->toBe(600)
         ->and($wallet->refresh()->balance_amount)->toBe(600)
         ->and(WalletTransaction::count())->toBe(2)
-        ->and(JournalEntry::count())->toBe(2);
+        ->and(JournalEntry::count())->toBe(2)
+        ->and(JournalLine::query()->where('partner_id', $partner->id)->count())->toBe(2);
 });
 
 it('blocks debit beyond the partner credit limit before journal posting', function (): void {

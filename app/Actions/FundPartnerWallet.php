@@ -28,7 +28,7 @@ final readonly class FundPartnerWallet implements Action
             $cash = LedgerAccount::query()->where('code', '1000')->firstOrFail();
             $walletAccount = LedgerAccount::query()->where('code', '1210')->firstOrFail();
             $transaction = WalletTransaction::create(['wallet_id' => $locked->id, 'type' => 'top_up', 'direction' => 'credit', 'amount' => $amount, 'balance_after' => $locked->balance_amount + $amount, 'idempotency_key' => $idempotencyKey, 'actor_id' => $actor?->id]);
-            $entry = $this->journal->post('Partner wallet top-up', [new JournalLineInput($cash->id, $locked->currency, debitAmount: $amount), new JournalLineInput($walletAccount->id, $locked->currency, creditAmount: $amount)], actor: $actor, sourceType: WalletTransaction::class, sourceId: (string) $transaction->id);
+            $entry = $this->journal->post('Partner wallet top-up', [new JournalLineInput($cash->id, $locked->currency, debitAmount: $amount), new JournalLineInput($walletAccount->id, $locked->currency, creditAmount: $amount, partnerId: $locked->partner_id)], actor: $actor, sourceType: WalletTransaction::class, sourceId: (string) $transaction->id);
             $transaction->forceFill(['journal_entry_id' => $entry->id])->save();
             $locked->forceFill(['balance_amount' => $transaction->balance_after])->save();
 
