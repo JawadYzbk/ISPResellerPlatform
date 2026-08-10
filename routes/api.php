@@ -29,6 +29,8 @@ Route::prefix('v1')->group(function (): void {
         Route::post('/payments', [PaymentApiController::class, 'store'])->middleware('idempotency')->name('api.payments.store');
         Route::post('/collector/payments/batch', [CollectorPaymentController::class, 'store'])->middleware('idempotency')->name('api.collector.payments.batch');
         Route::post('/network/commands/{command}/retry', [NetworkCommandController::class, 'retry'])->middleware('idempotency')->name('api.network.commands.retry');
+        Route::get('/technician/work-orders', [TechnicianWorkOrderController::class, 'index'])->name('api.technician.work-orders.index');
+        Route::get('/technician/work-orders/{workOrder}', [TechnicianWorkOrderController::class, 'show'])->name('api.technician.work-orders.show');
         Route::post('/technician/work-orders/{workOrder}/complete', [TechnicianWorkOrderController::class, 'complete'])->middleware('idempotency')->name('api.technician.work-orders.complete');
     });
 });
