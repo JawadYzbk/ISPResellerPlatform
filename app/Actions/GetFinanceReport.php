@@ -112,8 +112,7 @@ final readonly class GetFinanceReport implements Action
                 if ($end->lessThan($start)) {
                     return;
                 }
-                $days = $start->diffInDays($end) + 1;
-                $cost = (int) round($link->monthly_cost_amount * ($days / $start->daysInMonth));
+                $cost = $this->proratedMonthlyCost($link->monthly_cost_amount, $start, $end);
                 $pop = (string) ($link->pop?->getAttribute('code') ?? 'unassigned');
                 $costByPop[$pop][$link->currency] = ($costByPop[$pop][$link->currency] ?? 0) + $cost;
             });
@@ -135,6 +134,19 @@ final readonly class GetFinanceReport implements Action
         }
 
         return $report;
+    }
+
+    private function proratedMonthlyCost(int $monthlyCost, CarbonImmutable $start, CarbonImmutable $end): int
+    {
+        $total = 0;
+        for ($month = $start->startOfMonth(); $month->lessThanOrEqualTo($end); $month = $month->addMonth()->startOfMonth()) {
+            $monthStart = $month->greaterThan($start) ? $month : $start;
+            $monthEnd = $month->endOfMonth()->lessThan($end) ? $month->endOfMonth() : $end;
+            $days = $monthStart->startOfDay()->diffInDays($monthEnd->startOfDay()) + 1;
+            $total += (int) round($monthlyCost * ($days / $month->daysInMonth));
+        }
+
+        return $total;
     }
 
     /** @return array{active_at_period_start: int, terminated_services: int, retention_rate_percent: float|null} */

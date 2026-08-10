@@ -104,3 +104,14 @@ it('reports POP margin and collector performance from posted records', function 
         ->and($report['collector_performance'][0]['totals_by_currency']['USD'])->toBe(3500)
         ->and(app(ExportFinanceReportCsv::class)->handle($from, $to))->toContain('margin_by_pop:CENTRAL,USD,2500');
 });
+
+it('prorates upstream costs separately for each calendar month', function (): void {
+    $tenant = Tenant::create(['name' => 'Eastline', 'slug' => 'eastline', 'base_currency' => 'USD', 'collection_currency' => 'USD']);
+    app(Tenancy::class)->set($tenant);
+    $pop = Pop::create(['name' => 'East POP', 'code' => 'EAST']);
+    UpstreamLink::create(['pop_id' => $pop->id, 'provider_name' => 'Transit Provider', 'capacity_mbps' => 1000, 'monthly_cost_amount' => 1000, 'currency' => 'USD', 'contract_start' => '2026-01-01', 'contract_end' => '2026-02-28']);
+
+    $report = app(GetFinanceReport::class)->handle(CarbonImmutable::parse('2026-01-01'), CarbonImmutable::parse('2026-02-28'));
+
+    expect($report['margin_by_pop']['EAST']['upstream_cost_by_currency']['USD'])->toBe(2000);
+});
