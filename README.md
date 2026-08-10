@@ -18,7 +18,7 @@ The current foundation is live:
 - Operator directory with role-limited one-time invitations and a public invitation acceptance flow
 - Staff invoice and payment queues with allocation-backed balances, audited reversals, router health registry and network command operations screen
 - Tenant-safe invoice detail and payment receipt views with posted allocation trails and browser print layouts
-- Staff ticket conversation/status workflow, customer support history, work-order completion surface, serialized inventory trace/assignment, and plan catalog/create workflow
+- Staff ticket conversation/status workflow, customer support history, work-order calendar/completion surface with readings, signatures and bulk materials, serialized inventory trace/assignment, and plan catalog/create workflow
 - Supplier credential inventory view with secret redaction, tenant-safe assignment and audited reveal boundary
 - Capability catalog, invitations, tenant isolation, audit events and API tokens
 - Historical FX conversion, double-entry ledger, invoices, payments, cash-shift reconciliation and billing runs
@@ -36,7 +36,7 @@ The current foundation is live:
 - Scheduled RouterOS subscriber reconciliation with report-only defaults and explicit device-side healing
 - Supplier credential workflows with permission, re-authentication and audit controls
 - Cursor-paginated customer API, idempotent payment API, collector batches, customer portal OTP/session flow, OpenAPI slice and finance reporting
-- Role-scoped Sanctum abilities, app version/maintenance config, technician diagnostics, van inventory and assigned work-order evidence media APIs
+- Role-scoped Sanctum abilities, app version/maintenance config, technician diagnostics, van inventory, assigned work-order evidence/signature/readings/material APIs
 - Collector offline bootstrap/delta sync with signed cursors and per-payment created/replayed/rejected results
 - Customer, plan, service and serialized-equipment CSV imports with preview, partial success and guarded rollback
 - Staff import workspace with CSV/XLSX preview, row-level reports, tenant-scoped history and controlled rollback
