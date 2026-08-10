@@ -1536,6 +1536,44 @@ paths:
       responses:
         '200': { description: Per-item success/error results }
         '409': { description: Idempotency key reused for a different request }
+  /collector/payments/whish:
+    post:
+      summary: Create a collector Whish payment attempt and QR payload
+      parameters:
+        - in: header
+          name: X-Idempotency-Key
+          required: true
+          schema: { type: string, maxLength: 120 }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [customer_id, amount, currency]
+              properties:
+                customer_id: { type: string, description: Customer public ULID }
+                invoice_id: { type: string, nullable: true, description: Invoice public ULID }
+                amount: { type: integer, minimum: 1, description: Amount in minor currency units }
+                currency: { type: string, enum: [USD, LBP, AED] }
+      responses:
+        '201': { description: Pending Whish collect URL and SVG QR data URI }
+        '403': { description: Missing collector ability }
+        '422': { description: Invalid customer, invoice, currency, or Whish configuration }
+        '502': { description: Whish did not return a usable collection URL }
+  /collector/payments/whish/{attempt}:
+    get:
+      summary: Poll and verify a collector Whish payment attempt
+      parameters:
+        - in: path
+          name: attempt
+          required: true
+          schema: { type: string, description: Payment attempt public ULID }
+      responses:
+        '200': { description: Verified terminal or pending Whish attempt status }
+        '403': { description: Missing collector ability }
+        '404': { description: Payment attempt not found }
+        '502': { description: Whish status could not be verified or posted }
   /collector/shift:
     get:
       summary: Read the authenticated collector's open cash shift
@@ -2346,6 +2384,44 @@ paths:
         '200': { description: Payment webhook accepted and settled idempotently }
         '401': { description: Invalid Stripe webhook signature }
         '422': { description: Invalid payment webhook body or provider }
+  /webhooks/payments/whish/success:
+    get:
+      security: []
+      summary: Verify a Whish success redirect/callback and settle the attempt
+      parameters:
+        - in: query
+          name: externalId
+          required: true
+          schema: { type: string, pattern: '^[1-9][0-9]*$' }
+        - in: query
+          name: currency
+          required: true
+          schema: { type: string, enum: [USD, LBP, AED] }
+      responses:
+        '200': { description: Provider-confirmed Whish payment settled idempotently }
+        '202': { description: Whish payment remains pending }
+        '404': { description: Payment attempt not found }
+        '422': { description: Invalid or mismatched callback identifiers }
+        '502': { description: Whish status could not be verified or posted }
+  /webhooks/payments/whish/failure:
+    get:
+      security: []
+      summary: Verify a Whish failure redirect/callback without trusting query status
+      parameters:
+        - in: query
+          name: externalId
+          required: true
+          schema: { type: string, pattern: '^[1-9][0-9]*$' }
+        - in: query
+          name: currency
+          required: true
+          schema: { type: string, enum: [USD, LBP, AED] }
+      responses:
+        '200': { description: Provider-confirmed Whish payment settled idempotently }
+        '202': { description: Whish payment remains pending }
+        '404': { description: Payment attempt not found }
+        '422': { description: Provider-confirmed failed or mismatched callback identifiers }
+        '502': { description: Whish status could not be verified or posted }
 components:
   securitySchemes:
     bearerAuth:
