@@ -23,7 +23,7 @@ final class TenantProvisioner
                 ['name' => 'Default Zone'],
             );
 
-            foreach (['customer', 'invoice', 'receipt', 'payment', 'ticket', 'credit_note'] as $key) {
+            foreach (['customer', 'invoice', 'receipt', 'payment', 'ticket', 'credit_note', 'work_order'] as $key) {
                 DocumentSequence::firstOrCreate([
                     'branch_id' => $branch->id,
                     'key' => $key,

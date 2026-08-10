@@ -22,6 +22,8 @@ use App\Http\Requests\CustomerRequest;
 use App\Models\Customer;
 use App\Models\CustomerSavedView;
 use App\Models\Invoice;
+use App\Models\Plan;
+use App\Models\Router;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Models\Zone;
@@ -42,7 +44,14 @@ final class CustomerController extends Controller
         $user = $request->user();
         abort_unless($user?->tenant instanceof Tenant, 403);
 
-        return Inertia::render('Customers/Create', ['zones' => Zone::query()->orderBy('name')->get(['id', 'name', 'code'])]);
+        $canCreateService = $user->can('services.create');
+
+        return Inertia::render('Customers/Create', [
+            'zones' => Zone::query()->orderBy('name')->get(['id', 'name', 'code']),
+            'canCreateService' => $canCreateService,
+            'plans' => $canCreateService ? Plan::query()->where('status', 'active')->orderBy('name')->get(['id', 'public_id', 'name', 'download_kbps', 'upload_kbps', 'duration_days', 'amount_minor', 'currency']) : [],
+            'routers' => $canCreateService ? Router::query()->orderBy('name')->get(['id', 'public_id', 'name']) : [],
+        ]);
     }
 
     public function store(CustomerRequest $request, CreateCustomer $createCustomer): RedirectResponse
@@ -50,7 +59,8 @@ final class CustomerController extends Controller
         $this->authorize('create', Customer::class);
         $user = $request->user();
         abort_unless($user?->tenant instanceof Tenant, 403);
-        $customer = $createCustomer->handle($request, $user->tenant);
+        abort_unless(! $request->boolean('create_service') || $user->can('services.create'), 403);
+        $customer = $createCustomer->handle($request, $user->tenant, $user);
 
         return redirect()->route('customers.show', $customer->public_id)->with('success', 'Customer created.');
     }
