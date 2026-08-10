@@ -5,10 +5,15 @@ namespace App\Models;
 use App\Enums\CredentialStatus;
 use App\Models\Concerns\Auditable;
 use App\Models\Concerns\BelongsToTenant;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
+/**
+ * @property CredentialStatus $status
+ * @property Carbon|null $expires_at
+ */
 class UpstreamCredential extends Model
 {
     use Auditable, BelongsToTenant;
@@ -27,11 +32,13 @@ class UpstreamCredential extends Model
         return $this->belongsTo(Tenant::class);
     }
 
+    /** @return BelongsTo<CredentialBatch, $this> */
     public function batch(): BelongsTo
     {
         return $this->belongsTo(CredentialBatch::class, 'credential_batch_id');
     }
 
+    /** @return BelongsTo<Service, $this> */
     public function assignedService(): BelongsTo
     {
         return $this->belongsTo(Service::class, 'assigned_service_id');

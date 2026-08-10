@@ -24,6 +24,7 @@ class CredentialBatch extends Model
         return $this->belongsTo(Tenant::class);
     }
 
+    /** @return BelongsTo<Supplier, $this> */
     public function supplier(): BelongsTo
     {
         return $this->belongsTo(Supplier::class);
