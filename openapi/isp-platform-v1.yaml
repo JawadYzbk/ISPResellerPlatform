@@ -106,6 +106,57 @@ paths:
                   maintenance: { type: boolean }
                   message: { type: string, nullable: true }
                   force_update: { type: boolean }
+  /plans:
+    get:
+      summary: List tenant plans with current effective prices
+      parameters:
+        - in: query
+          name: filter[status]
+          schema: { type: string, enum: [active, inactive] }
+        - in: query
+          name: filter[search]
+          schema: { type: string }
+        - in: query
+          name: cursor
+          schema: { type: string }
+      responses:
+        '200': { description: Cursor-paginated plan list }
+        '403': { description: Missing plan management capability }
+    post:
+      summary: Create a tenant plan and its first effective price
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, download_kbps, upload_kbps, duration_days, amount_minor, currency, effective_from, status]
+              properties:
+                name: { type: string, maxLength: 255 }
+                slug: { type: string, maxLength: 255, nullable: true }
+                download_kbps: { type: integer, minimum: 0 }
+                upload_kbps: { type: integer, minimum: 0 }
+                duration_days: { type: integer, minimum: 1 }
+                amount_minor: { type: integer, minimum: 0 }
+                currency: { type: string, minLength: 3, maxLength: 3 }
+                effective_from: { type: string, format: date }
+                status: { type: string, enum: [active, inactive] }
+      responses:
+        '201': { description: Created plan with current price }
+        '403': { description: Missing plan management capability }
+        '422': { description: Validation failure or duplicate slug }
+  /plans/{plan}:
+    get:
+      summary: Read one tenant plan with its current effective price
+      parameters:
+        - in: path
+          name: plan
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: Plan resource }
+        '403': { description: Missing plan management capability }
+        '404': { description: Plan not found }
   /me:
     get:
       summary: Read the authenticated staff identity
