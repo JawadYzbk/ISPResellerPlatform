@@ -48,8 +48,7 @@ final readonly class AccruePartnerCommission implements Action
             }
 
             $amount = $this->calculator->handle($item);
-            $rule = $item->commissionRule()->first();
-            $ruleVersion = $rule?->version ?? 0;
+            $ruleVersion = $item->commission_rule_id === null ? 0 : $item->commissionRule->version;
             $entry = CommissionEntry::create([
                 'partner_id' => $partner->id,
                 'source_type' => $sourceType,
