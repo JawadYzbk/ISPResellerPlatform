@@ -188,6 +188,7 @@ Route::prefix('v1')->group(function (): void {
             Route::get('/collector/summary', [CollectorApiController::class, 'summary'])->name('api.collector.summary');
             Route::post('/collector/payments/batch', [CollectorPaymentController::class, 'store'])->middleware('idempotency')->name('api.collector.payments.batch');
             Route::post('/collector/payments/whish', [CollectorPaymentController::class, 'createWhish'])->middleware('idempotency')->name('api.collector.payments.whish');
+            Route::get('/collector/payments/whish/{attempt}', [CollectorPaymentController::class, 'whishStatus'])->name('api.collector.payments.whish.status');
             Route::get('/collector/sync/bootstrap', [CollectorSyncController::class, 'bootstrap'])->name('api.collector.sync.bootstrap');
             Route::get('/collector/sync/delta', [CollectorSyncController::class, 'delta'])->name('api.collector.sync.delta');
             Route::post('/collector/sync/push', [CollectorSyncController::class, 'push'])->middleware('idempotency')->name('api.collector.sync.push');

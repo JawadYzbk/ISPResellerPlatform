@@ -4,9 +4,12 @@ namespace App\Http\Controllers\Api;
 
 use App\Actions\CreateWhishPaymentAttempt;
 use App\Actions\RecordCollectorPaymentBatch;
+use App\Actions\SettleWhishPaymentAttempt;
+use App\Enums\PaymentAttemptStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Customer;
 use App\Models\Invoice;
+use App\Models\PaymentAttempt;
 use App\Models\User;
 use App\Support\QrCodeRenderer;
 use DomainException;
@@ -69,5 +72,32 @@ final class CollectorPaymentController extends Controller
                 'invoice_id' => $invoice?->public_id,
             ],
         ], $attempt->wasRecentlyCreated ? 201 : 200);
+    }
+
+    public function whishStatus(Request $request, string $attemptId, SettleWhishPaymentAttempt $settle): JsonResponse
+    {
+        abort_unless($request->user()?->can('payments.collect'), 403);
+        $attempt = PaymentAttempt::query()->where('gateway', 'whish')->where('public_id', $attemptId)->firstOrFail();
+
+        try {
+            $attempt = $settle->handle($attempt);
+        } catch (DomainException $exception) {
+            return response()->json(['message' => $exception->getMessage()], 502);
+        } catch (\Throwable) {
+            return response()->json(['message' => 'Whish payment status could not be verified.'], 502);
+        }
+
+        return response()->json(['data' => [
+            'id' => $attempt->public_id,
+            'status' => $attempt->status->value,
+            'external_id' => $attempt->external_id,
+            'amount' => $attempt->amount,
+            'currency' => $attempt->currency,
+            'collect_url' => $attempt->collect_url,
+            'payment_id' => $attempt->payment?->public_id,
+            'provider_transaction_id' => $attempt->provider_transaction_id,
+            'last_checked_at' => $attempt->last_checked_at?->toIso8601String(),
+            'terminal' => in_array($attempt->status, [PaymentAttemptStatus::Succeeded, PaymentAttemptStatus::Failed, PaymentAttemptStatus::SettlementFailed], true),
+        ]]);
     }
 }
