@@ -16,9 +16,13 @@ it('lists sessions and revokes only another device', function (): void {
         ['id' => 'old-session', 'user_id' => $user->id, 'ip_address' => '10.0.0.1', 'user_agent' => 'Mobile', 'payload' => '', 'last_activity' => now()->subHour()->timestamp],
     ]);
 
-    expect(app(ListSessionDevices::class)->handle($user, 'current-session'))->toHaveCount(2)
-        ->and(app(RevokeSessionDevice::class)->handle($user, 'current-session', 'current-session'))->toBeFalse()
-        ->and(app(RevokeSessionDevice::class)->handle($user, 'old-session', 'current-session'))->toBeTrue()
+    $sessions = app(ListSessionDevices::class)->handle($user, 'current-session');
+
+    expect($sessions)->toHaveCount(2)
+        ->and($sessions[0]['id'])->not->toBe('current-session')
+        ->and(app(RevokeSessionDevice::class)->handle($user, $sessions[0]['id'], 'current-session'))->toBeFalse()
+        ->and(app(RevokeSessionDevice::class)->handle($user, $sessions[1]['id'], 'current-session'))->toBeTrue()
+        ->and(app(RevokeSessionDevice::class)->handle($user, 'invalid-token', 'current-session'))->toBeFalse()
         ->and(DB::table('sessions')->where('user_id', $user->id)->count())->toBe(1);
 });
 
