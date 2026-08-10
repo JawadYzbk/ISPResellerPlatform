@@ -30,3 +30,17 @@ it('rejects capabilities that are not in the catalog', function (): void {
     expect(fn (): mixed => PermissionCatalog::assertKnown('billing.make_up_a_permission'))
         ->toThrow(InvalidArgumentException::class);
 });
+
+it('reconciles a legacy admin account with the full tenant role', function (): void {
+    $tenant = Tenant::create(['name' => 'North', 'slug' => 'north', 'base_currency' => 'USD', 'collection_currency' => 'USD']);
+    $admin = User::create(['tenant_id' => $tenant->id, 'name' => 'Legacy Admin', 'email' => 'legacy-admin@example.test', 'password' => 'password', 'role' => 'admin']);
+
+    app(CapabilitySeeder::class)->run();
+    app(Tenancy::class)->set($tenant);
+
+    expect($admin->refresh()->hasRole('admin'))->toBeTrue()
+        ->and($admin->can('customers.view'))->toBeTrue()
+        ->and($admin->can('billing.invoices.view'))->toBeTrue()
+        ->and($admin->can('network.disconnect'))->toBeTrue()
+        ->and($admin->requiresTwoFactor())->toBeTrue();
+});

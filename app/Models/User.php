@@ -40,7 +40,7 @@ class User extends Authenticatable
 
     public function requiresTwoFactor(): bool
     {
-        return in_array($this->role, ['platform_operator', 'tenant_owner', 'operations_manager', 'billing_manager', 'network_administrator', 'reseller_owner'], true);
+        return in_array($this->role, ['admin', 'platform_operator', 'tenant_owner', 'operations_manager', 'billing_manager', 'network_administrator', 'reseller_owner'], true);
     }
 
     public function tenant(): BelongsTo

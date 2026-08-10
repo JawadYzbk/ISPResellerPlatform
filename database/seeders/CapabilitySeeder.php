@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Authorization\PermissionCatalog;
 use App\Models\Tenant;
+use App\Models\User;
 use App\Support\Tenancy;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Permission;
@@ -13,6 +14,7 @@ class CapabilitySeeder extends Seeder
 {
     /** @var array<string, list<string>> */
     private const ROLE_PERMISSIONS = [
+        'admin' => PermissionCatalog::ALL,
         'platform_operator' => PermissionCatalog::ALL,
         'tenant_owner' => PermissionCatalog::ALL,
         'operations_manager' => [
@@ -53,10 +55,15 @@ class CapabilitySeeder extends Seeder
         }
 
         Tenant::query()->each(function (Tenant $tenant): void {
-            app(Tenancy::class)->run($tenant, function (): void {
+            app(Tenancy::class)->run($tenant, function () use ($tenant): void {
                 foreach (self::ROLE_PERMISSIONS as $roleName => $permissions) {
                     $role = Role::findOrCreate($roleName, 'web');
                     $role->syncPermissions($permissions);
+
+                    User::query()
+                        ->where('tenant_id', $tenant->id)
+                        ->where('role', $roleName)
+                        ->each(fn (User $user): mixed => $user->assignRole($roleName));
                 }
             });
         });
