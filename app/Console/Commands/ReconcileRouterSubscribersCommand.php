@@ -8,15 +8,15 @@ use Illuminate\Console\Command;
 
 final class ReconcileRouterSubscribersCommand extends Command
 {
-    protected $signature = 'routers:reconcile-subscribers';
+    protected $signature = 'routers:reconcile-subscribers {--heal : Enable active platform services that are disabled on RouterOS}';
 
-    protected $description = 'Compare RouterOS PPP subscribers with platform services without mutating either side.';
+    protected $description = 'Compare RouterOS PPP subscribers with platform services; healing is opt-in.';
 
     public function handle(ReconcileRouterSubscribers $reconcile): int
     {
         $failed = false;
         Router::query()->each(function (Router $router) use ($reconcile, &$failed): void {
-            $result = $reconcile->handle($router);
+            $result = $reconcile->handle($router, (bool) $this->option('heal'));
             $this->line($router->name.': '.$result['status'].' ('.count($result['platform_only']).' platform-only, '.count($result['router_only']).' router-only)');
             $failed = $failed || $result['status'] !== 'in_sync';
         });
