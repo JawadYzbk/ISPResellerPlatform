@@ -63,6 +63,8 @@ Route::middleware(['auth', 'tenant', '2fa'])->group(function (): void {
     Route::get('/settings/users', [UserOperationsController::class, 'index'])->name('settings.users');
     Route::post('/settings/users/invite', [UserOperationsController::class, 'invite'])->middleware('recent-auth')->name('settings.users.invite');
     Route::get('/customers', [CustomerController::class, 'index'])->name('customers.index');
+    Route::post('/customers/saved-views', [CustomerController::class, 'storeSavedView'])->name('customers.saved-views.store');
+    Route::delete('/customers/saved-views/{savedView}', [CustomerController::class, 'destroySavedView'])->middleware('recent-auth')->name('customers.saved-views.destroy');
     Route::get('/customers/create', [CustomerController::class, 'create'])->name('customers.create');
     Route::post('/customers', [CustomerController::class, 'store'])->name('customers.store');
     Route::get('/customers/{customer:public_id}/edit', [CustomerController::class, 'edit'])->name('customers.edit');

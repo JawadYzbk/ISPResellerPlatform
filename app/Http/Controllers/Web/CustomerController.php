@@ -4,9 +4,12 @@ namespace App\Http\Controllers\Web;
 
 use App\Actions\AnonymizeCustomer;
 use App\Actions\CreateCustomer;
+use App\Actions\DeleteCustomerView;
 use App\Actions\GetCustomerDetails;
 use App\Actions\ListCustomers;
+use App\Actions\ListCustomerSavedViews;
 use App\Actions\RecordPayment;
+use App\Actions\SaveCustomerView;
 use App\Actions\UpdateCustomer;
 use App\Enums\InvoiceStatus;
 use App\Enums\PaymentStatus;
@@ -15,6 +18,7 @@ use App\Http\Requests\CollectPaymentRequest;
 use App\Http\Requests\CustomerIndexRequest;
 use App\Http\Requests\CustomerRequest;
 use App\Models\Customer;
+use App\Models\CustomerSavedView;
 use App\Models\Invoice;
 use App\Models\Tenant;
 use App\Models\User;
@@ -137,7 +141,39 @@ final class CustomerController extends Controller
             ),
             'filters' => $request->only(['search', 'status', 'zone_id', 'expires_from', 'expires_to']),
             'zones' => Zone::query()->orderBy('name')->get(['id', 'name', 'code']),
+            'savedViews' => $request->user() instanceof User
+                ? app(ListCustomerSavedViews::class)->handle($request->user())->map(fn (CustomerSavedView $view): array => [
+                    'id' => $view->id,
+                    'name' => $view->name,
+                    'filters' => $view->filters,
+                    'columns' => $view->columns,
+                ])->values()
+                : [],
         ]);
+    }
+
+    public function storeSavedView(Request $request, SaveCustomerView $save): RedirectResponse
+    {
+        $user = $request->user();
+        abort_unless($user instanceof User && $user->can('customers.view'), 403);
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:120'],
+            'filters' => ['nullable', 'array'],
+            'columns' => ['nullable', 'array', 'max:5'],
+            'columns.*' => ['string', 'max:32'],
+        ]);
+        $save->handle($user, $validated);
+
+        return redirect()->route('customers.index')->with('success', 'Customer view saved.');
+    }
+
+    public function destroySavedView(Request $request, CustomerSavedView $savedView, DeleteCustomerView $delete): RedirectResponse
+    {
+        $user = $request->user();
+        abort_unless($user instanceof User && $user->can('customers.view'), 403);
+        $delete->handle($user, $savedView);
+
+        return redirect()->route('customers.index')->with('success', 'Customer view deleted.');
     }
 
     public function show(Request $request, Customer $customer, GetCustomerDetails $getCustomerDetails): Response
