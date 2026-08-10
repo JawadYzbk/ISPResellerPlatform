@@ -83,6 +83,12 @@ class Customer extends Model
         return $this->hasMany(Payment::class);
     }
 
+    /** @return HasMany<Ticket, $this> */
+    public function tickets(): HasMany
+    {
+        return $this->hasMany(Ticket::class);
+    }
+
     public function getFullNameAttribute(): string
     {
         return trim($this->first_name.' '.$this->last_name);

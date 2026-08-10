@@ -17,6 +17,7 @@ final readonly class GetCustomerDetails implements Action
             'services.events' => fn ($query) => $query->latest()->limit(10),
             'invoices' => fn ($query) => $query->latest('issued_at')->limit(20),
             'payments' => fn ($query) => $query->latest('received_at')->limit(20),
+            'tickets' => fn ($query) => $query->latest('updated_at')->limit(10),
         ]);
 
         $timeline = collect([
@@ -93,6 +94,15 @@ final readonly class GetCustomerDetails implements Action
                 'amount' => $payment->amount,
                 'method' => $payment->method,
                 'received_at' => $payment->received_at?->toIso8601String(),
+            ])->values()->all(),
+            'tickets' => $customer->tickets->map(fn ($ticket): array => [
+                'public_id' => $ticket->public_id,
+                'number' => $ticket->number,
+                'subject' => $ticket->subject,
+                'priority' => $ticket->priority,
+                'status' => $ticket->status->value,
+                'due_at' => $ticket->due_at?->toIso8601String(),
+                'updated_at' => $ticket->updated_at?->toIso8601String(),
             ])->values()->all(),
             'timeline' => $timeline->sortByDesc('created_at')->values()->all(),
         ];
