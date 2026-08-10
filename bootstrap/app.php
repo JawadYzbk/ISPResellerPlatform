@@ -33,6 +33,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $schedule->command('radius:mark-stale-sessions')->everyFifteenMinutes();
         $schedule->command('tickets:auto-close-resolved')->hourlyAt(20);
         $schedule->command('billing:generate-invoices')->dailyAt('01:20');
+        $schedule->command('radius:enforce-quotas')->dailyAt('01:40');
     })
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->web(append: [
