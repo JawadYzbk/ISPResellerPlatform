@@ -28,11 +28,13 @@ class InventoryUnit extends Model
         return $this->belongsTo(InventoryItem::class, 'inventory_item_id');
     }
 
+    /** @return BelongsTo<Warehouse, $this> */
     public function warehouse(): BelongsTo
     {
         return $this->belongsTo(Warehouse::class);
     }
 
+    /** @return BelongsTo<Service, $this> */
     public function service(): BelongsTo
     {
         return $this->belongsTo(Service::class);
