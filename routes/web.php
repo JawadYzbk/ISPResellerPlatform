@@ -7,6 +7,7 @@ use App\Http\Controllers\Auth\TwoFactorController;
 use App\Http\Controllers\Web\CustomerController;
 use App\Http\Controllers\Web\DashboardController;
 use App\Http\Controllers\Web\SecurityController;
+use App\Http\Controllers\Web\ServiceController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', fn () => redirect()->route(auth()->check() ? 'dashboard' : 'login'));
@@ -35,4 +36,5 @@ Route::middleware(['auth', 'tenant', '2fa'])->group(function (): void {
     Route::get('/customers/create', [CustomerController::class, 'create'])->name('customers.create');
     Route::post('/customers', [CustomerController::class, 'store'])->name('customers.store');
     Route::get('/customers/{customer:public_id}', [CustomerController::class, 'show'])->name('customers.show');
+    Route::get('/services', [ServiceController::class, 'index'])->name('services.index');
 });
