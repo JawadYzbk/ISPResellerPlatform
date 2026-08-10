@@ -21,7 +21,10 @@ php artisan migrate --force
 php artisan optimize:clear
 php artisan config:cache
 php artisan route:cache
+php artisan platform:preflight --production
 ```
+
+`platform:preflight --production` must pass before traffic is admitted. It checks the application key, database connectivity, migration state, production environment, debug mode, public HTTPS URL, secure session cookies, asynchronous queue, and persistent cache configuration. It does not replace the scheduler, queue-worker, backup-restore, or external alert checks below.
 
 Start or restart the long-running processes from the deployment supervisor:
 
@@ -35,7 +38,7 @@ Use the supervisor’s managed equivalents in production. Do not run duplicate q
 
 ## Verification
 
-1. Check `php artisan migrate:status`.
+1. Check `php artisan platform:preflight --production` and `php artisan migrate:status`.
 2. Check `/up` and `/api/v1/health`.
 3. Run `php artisan ledger:check-invariants`.
 4. Confirm a queue job is processed and the worker heartbeat becomes fresh.
