@@ -23,7 +23,7 @@ import {
 import { StatusBadge } from '@/components/StatusBadge';
 import MapView from '@/components/MapView';
 import AppLayout from '@/layouts/AppLayout';
-import { formatDate, formatMoney } from '@/lib/format';
+import { formatDate, formatDuration, formatMoney } from '@/lib/format';
 import type { Customer, PageProps } from '@/types';
 
 type Props = PageProps & {
@@ -216,6 +216,11 @@ export default function CustomerShow({
                                             <p className="mt-1 text-xs text-muted">
                                                 {service.session?.framed_ip ?? service.session?.nasname ?? 'No active session'}
                                             </p>
+                                            {service.session && (
+                                                <p className="mt-1 text-xs text-muted">
+                                                    Uptime {formatDuration(service.session.started_at, service.session.last_seen_at)}
+                                                </p>
+                                            )}
                                         </div>
                                         <div className="lg:col-span-4">
                                             <p className="text-xs text-muted">Equipment</p>
