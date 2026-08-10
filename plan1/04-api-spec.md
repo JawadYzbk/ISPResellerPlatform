@@ -81,7 +81,7 @@ Mutating a resource sends `If-Match: <etag>` where the client has one. Server re
 | GET | `/me/invoices/{uuid}` | detail + line items |
 | GET | `/me/invoices/{uuid}/pdf` | signed short-lived URL, not the bytes |
 | GET | `/me/payments` | receipt history |
-| POST | `/me/payments/intent` | `{amount, currency, method}` → gateway payload (when a gateway is configured) |
+| POST | `/me/payments/intent` | `{invoice_id, amount}` + `X-Idempotency-Key` → gateway payload (when a gateway is configured); fails closed when no gateway is configured |
 | GET | `/me/tickets` / POST `/me/tickets` | open a ticket `{category, subject, description, attachments[]}` |
 | GET | `/me/tickets/{uuid}` / POST `/me/tickets/{uuid}/messages` | |
 | GET | `/me/notices` | active incidents affecting the customer's zone/POP |
@@ -211,6 +211,8 @@ GET/POST   /partners                         GET /partners/{uuid}/wallets
 GET        /partners/{uuid}/wallet-transactions
 POST       /partners/{uuid}/wallet-top-ups   (Idempotency-Key; approval per policy)
 GET        /partners/{uuid}/settlements
+GET        /partners/{uuid}/catalog
+POST       /imports/routers/{router}/subscribers
 GET/POST   /suppliers                        GET/POST /supplier-contracts
 GET/POST   /credential-batches               (import upstream accounts/vouchers)
 GET        /upstream-credentials             ?filter[state]=available

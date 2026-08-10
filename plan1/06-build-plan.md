@@ -212,7 +212,7 @@ Expiry reminders (configurable day offsets, tenant-local send hour), payment rec
 ### ISP-090 · Partners / resellers (basic) — `partners` (adjacency tree with `path`/`depth`), `partner_wallets` (journal-derived), `wallet_transactions` referencing posted entries, top-ups with approval, renewal-from-wallet using the plan's `reseller_amount` (`02 §5`) with an atomic funds check, simple commission = retail − reseller price, credit limits + low-balance threshold, reseller-scoped UI/API via a tested hierarchy service.
 **AC:** a reseller sees only their own descendants; a child cannot see a parent's cost/margin or a sibling; insufficient funds/credit blocks activation *before* any entitlement change; two concurrent debits cannot overspend; wallet statement reconciles to the journal.
 
-> **Full price books, versioned commission rules, and settlement statements are deferred to P1** (see the Post-v1 backlog below). v1 ships the basic wallet + `reseller_amount` pricing above, which is enough for a single-level reseller to operate.
+> **Delivered in the current build:** full price books, versioned commission rules, and settlement statements now supersede the original basic-wallet pricing path. The remaining plan work is XLSX workflow coverage and external provider/lab acceptance.
 
 ### ISP-091 · Reports — revenue (by period/zone/plan/collector), collections and collection rate, aging, churn and retention, ARPU, top usage, margin by POP (revenue vs `upstream_links` cost), collector performance, tax summary. All exportable to CSV/XLSX, all base-currency with transaction-currency detail.
 **AC:** each report reconciles exactly to the ledger; a spot-check test compares a report total to a hand-computed fixture.
@@ -249,7 +249,7 @@ Expiry reminders (configurable day offsets, tenant-local send hour), payment rec
 
 ## Post-v1 backlog (P1) — deferred to protect the v1 timeline
 
-These are fully specified in `08-suppliers-credentials-wallets.md` and gated behind v1 shipping. They add the supplier supply-chain and the advanced reseller commercial machinery. None of them is on the money-loop critical path, so they wait.
+These are fully specified in `08-suppliers-credentials-wallets.md`. ISP-P1-01 remains a post-v1 supplier extension; ISP-P1-02 is implemented in the current build and is retained here as the original specification and acceptance record.
 
 **Prerequisite already in v1:** the `services.provisioning_mode` enum already includes `upstream_credential`, and the double-entry journal already supports supplier-cost and settlement accounts — so P1 is additive, no core migration churn.
 
