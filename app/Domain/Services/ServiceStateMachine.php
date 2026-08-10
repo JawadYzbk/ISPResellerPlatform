@@ -6,6 +6,7 @@ use App\Domain\Radius\RadiusSyncService;
 use App\Enums\NetworkState;
 use App\Enums\ProvisioningMode;
 use App\Enums\ServiceStatus;
+use App\Events\ServiceStatusChanged;
 use App\Models\Service;
 use App\Models\ServiceEvent;
 use App\Models\User;
@@ -54,6 +55,7 @@ final class ServiceStateMachine
                 'to_status' => $target->value,
                 'metadata' => $metadata,
             ]);
+            event(new ServiceStatusChanged($locked->tenant_id, $locked->public_id, $from->value, $target->value));
 
             if ($locked->provisioning_mode === ProvisioningMode::Radius) {
                 app(RadiusSyncService::class)->sync($locked);
