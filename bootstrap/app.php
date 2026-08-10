@@ -30,6 +30,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $schedule->command('services:suspend-overdue')->hourlyAt(5);
         $schedule->command('metrics:prune')->dailyAt('02:10');
         $schedule->command('notifications:expiry-reminders')->hourlyAt(10);
+        $schedule->command('radius:mark-stale-sessions')->everyFifteenMinutes();
     })
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->web(append: [
