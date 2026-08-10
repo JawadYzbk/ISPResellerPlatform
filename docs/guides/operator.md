@@ -28,8 +28,11 @@ For ordinary service state changes, use the service action or API endpoint rathe
 - `POST /api/v1/services/{service}/activate`
 - `POST /api/v1/services/{service}/suspend`
 - `POST /api/v1/services/{service}/resume`
+- `POST /api/v1/services/{service}/terminate`
 
 Automatic overdue suspension runs hourly at minute 5. A renewal from `auto_overdue` suspension resets the period counters, activates the service, queues a network activation, and sends a reactivation notice. A terminated service requires an explicit reactivation workflow.
+
+Termination requires the `services.terminate` capability. It preserves the service, billing, and audit history, returns assigned serialized equipment to recovery custody, and queues a network disconnect; it does not prove that the router has completed the disconnect until the network command finishes.
 
 ## Payments and collections
 
@@ -73,7 +76,7 @@ Network changes are queued through the outbox and executed by the queue worker. 
 
 For RouterOS/RADIUS/CoA behavior, use the lab acceptance procedure before enabling a new device driver in production. A platform state of `active` is not proof that the router has accepted the command.
 
-On a customer service card, **Activate**, **Suspend**, **Resume** and **Re-sync service** queue commands from the current commercial state. They confirm that work was queued, not that a real device accepted it; inspect the resulting command and network state after the worker runs.
+On a customer service card, **Activate**, **Suspend**, **Resume**, **Terminate** and **Re-sync service** queue commands from the current commercial state. Termination is irreversible through the normal UI and starts equipment recovery. These controls confirm that work was queued, not that a real device accepted it; inspect the resulting command and network state after the worker runs.
 
 Use **Plans** to create a catalog plan and its first effective price, maintain recurring or one-off add-ons, and create time-bounded promotion codes. Prices are integer minor units and effective-date windows; do not overwrite an issued invoice to reflect a later price. Percentage promotion values use basis points (1000 equals 10%), and archiving a catalog entry preserves its history.
 
