@@ -1131,6 +1131,26 @@ paths:
       responses:
         '200': { description: Descendant-scoped partner wallets }
         '403': { description: Missing wallet view capability }
+    post:
+      summary: Create a visible partner account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, code, currency]
+              properties:
+                name: { type: string, maxLength: 255 }
+                code: { type: string, maxLength: 32, pattern: '^[A-Za-z0-9_-]+$' }
+                currency: { type: string, minLength: 3, maxLength: 3 }
+                parent_id: { type: string, nullable: true, description: Visible parent partner public ULID }
+                credit_limit: { type: integer, minimum: 0, default: 0 }
+                low_balance_threshold: { type: integer, minimum: 0, default: 0 }
+      responses:
+        '201': { description: Created partner and empty wallet summary }
+        '403': { description: Missing partner management capability }
+        '422': { description: Invalid partner data or duplicate code }
   /partners/{partner}:
     get:
       summary: Read a visible partner and wallet statement
