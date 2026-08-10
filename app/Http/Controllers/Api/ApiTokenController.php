@@ -37,6 +37,7 @@ final class ApiTokenController extends Controller
         } catch (\DomainException $exception) {
             abort(403, $exception->getMessage());
         }
+        $user->forceFill(['last_authenticated_at' => now()])->save();
         $token = $user->createToken($validated['device_name'], $tokenAbilities);
 
         return response()->json(['token' => $token->plainTextToken, 'type' => 'Bearer', 'abilities' => $tokenAbilities]);

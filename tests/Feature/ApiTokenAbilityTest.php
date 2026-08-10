@@ -3,6 +3,7 @@
 use App\Models\Tenant;
 use App\Models\User;
 use App\Support\Tenancy;
+use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 
@@ -21,6 +22,7 @@ it('issues role-derived API abilities and allows a narrower requested scope', fu
     ]);
 
     $response->assertOk()->assertJsonPath('abilities.0', 'api')->assertJsonPath('abilities.1', 'staff:collector');
+    expect($user->refresh()->last_authenticated_at)->toBeInstanceOf(Carbon::class);
 });
 
 it('blocks a collector token from technician routes', function (): void {
