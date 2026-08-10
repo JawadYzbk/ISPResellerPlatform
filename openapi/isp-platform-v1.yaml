@@ -603,6 +603,82 @@ paths:
       responses:
         '200': { description: Per-item success/error results }
         '409': { description: Idempotency key reused for a different request }
+  /collector/shift:
+    get:
+      summary: Read the authenticated collector's open cash shift
+      responses:
+        '200': { description: Open shift, opening float, running totals and payment count; data is null when no shift is open }
+        '403': { description: Missing collector ability }
+  /collector/shift/open:
+    post:
+      summary: Open the authenticated collector's cash shift
+      parameters:
+        - in: header
+          name: X-Idempotency-Key
+          required: true
+          schema: { type: string, maxLength: 120 }
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                opening_float:
+                  type: object
+                  additionalProperties: { type: integer, minimum: 0 }
+                  description: Opening cash by ISO currency in minor units
+      responses:
+        '201': { description: Shift opened }
+        '409': { description: Idempotency key reused for a different request }
+        '422': { description: Collector already has an open shift or the opening float is invalid }
+  /collector/shift/close:
+    post:
+      summary: Close and reconcile the authenticated collector's cash shift
+      parameters:
+        - in: header
+          name: X-Idempotency-Key
+          required: true
+          schema: { type: string, maxLength: 120 }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [declared_totals]
+              properties:
+                declared_totals:
+                  type: object
+                  additionalProperties: { type: integer, minimum: 0 }
+                variance_note: { type: string, maxLength: 2000, nullable: true }
+      responses:
+        '200': { description: Closed shift with normalized system and declared totals }
+        '409': { description: No open shift or idempotency key conflict }
+        '422': { description: Variance note missing or totals invalid }
+  /collector/payments:
+    get:
+      summary: List the authenticated collector's posted payments
+      parameters:
+        - in: query
+          name: date
+          schema: { type: string, format: date }
+        - in: query
+          name: per_page
+          schema: { type: integer, minimum: 1, maximum: 100, default: 50 }
+      responses:
+        '200': { description: Cursor-paginated collector receipts and allocations }
+        '403': { description: Missing collector ability }
+  /collector/summary:
+    get:
+      summary: Read the authenticated collector's daily payment totals
+      parameters:
+        - in: query
+          name: date
+          schema: { type: string, format: date }
+      responses:
+        '200': { description: Payment count and totals by currency }
+        '403': { description: Missing collector ability }
   /collector/sync/bootstrap:
     get:
       summary: Bootstrap the collector's offline cache

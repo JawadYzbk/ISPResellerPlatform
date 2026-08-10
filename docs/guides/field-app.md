@@ -10,11 +10,13 @@ Supported token abilities are `staff:collector`, `staff:technician`, `staff:oper
 
 ## Collector flow
 
-1. `GET /api/v1/collector/sync/bootstrap?zone=<zone>` downloads the initial customer/service/payment snapshot and a signed cursor.
-2. Store the cursor securely on the device. Request changes with `GET /api/v1/collector/sync/delta?since=<cursor>&zone=<zone>`.
-3. Queue offline payments locally with a stable idempotency key per payment attempt.
-4. Push at most 100 queued items at a time with `POST /api/v1/collector/sync/push` or `POST /api/v1/collector/payments/batch`.
-5. Persist each item’s `created`, `replayed`, or `rejected` result. A replay is not a new payment; surface a rejected item for operator resolution.
+1. Open a shift with `POST /api/v1/collector/shift/open`, optionally sending `opening_float` by currency. A collector cannot create a new payment without an open shift.
+2. `GET /api/v1/collector/sync/bootstrap?zone=<zone>` downloads the initial customer/service/payment snapshot and a signed cursor.
+3. Store the cursor securely on the device. Request changes with `GET /api/v1/collector/sync/delta?since=<cursor>&zone=<zone>`.
+4. Queue offline payments locally with a stable idempotency key per payment attempt.
+5. Push at most 100 queued items at a time with `POST /api/v1/collector/sync/push` or `POST /api/v1/collector/payments/batch`.
+6. Persist each item’s `created`, `replayed`, or `rejected` result. A replay is not a new payment; surface a rejected item for operator resolution.
+7. Read `GET /api/v1/collector/shift`, `GET /api/v1/collector/payments?date=YYYY-MM-DD`, and `GET /api/v1/collector/summary?date=YYYY-MM-DD` for reconciliation. Close with `POST /api/v1/collector/shift/close`; a variance requires `variance_note`.
 
 The online single-payment contract is:
 
