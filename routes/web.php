@@ -35,6 +35,13 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', fn () => redirect()->route(auth()->check() ? 'dashboard' : 'login'));
 
+Route::get('/docs/api', function () {
+    return response()->file(base_path('openapi/isp-platform-v1.yaml'), [
+        'Content-Type' => 'application/yaml; charset=UTF-8',
+        'Content-Disposition' => 'inline; filename="isp-platform-v1.yaml"',
+    ]);
+})->name('docs.api');
+
 Route::prefix('portal/{tenant:slug}')->group(function (): void {
     Route::get('/', [PortalPageController::class, 'signIn'])->name('portal.sign-in');
     Route::get('/dashboard', [PortalPageController::class, 'dashboard'])->name('portal.dashboard');
