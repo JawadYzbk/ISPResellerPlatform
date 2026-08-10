@@ -274,16 +274,27 @@ export default function CustomerShow({
                             <h2 className="section-title">Timeline</h2>
                         </div>
                         <div className="mt-5 border-s border-line ps-4">
-                            <div className="relative pb-6">
-                                <span className="absolute -start-[21px] top-1 size-2 rounded-full bg-brand ring-4 ring-brand-soft" />
-                                <p className="text-sm font-semibold">Customer record created</p>
-                                <p className="mt-1 text-xs text-muted">Account is ready for operations</p>
-                            </div>
-                            <div className="relative">
-                                <span className="absolute -start-[21px] top-1 size-2 rounded-full bg-line" />
-                                <p className="text-sm font-semibold">No payments recorded</p>
-                                <p className="mt-1 text-xs text-muted">Payment activity will appear here</p>
-                            </div>
+                            {customer.timeline.map((item, index) => (
+                                <div
+                                    key={`${item.type}-${item.created_at}-${index}`}
+                                    className="relative pb-6 last:pb-0"
+                                >
+                                    <span
+                                        className={`absolute -start-[21px] top-1 size-2 rounded-full ring-4 ${index === 0 ? 'bg-brand ring-brand-soft' : 'bg-line ring-canvas'}`}
+                                    />
+                                    <p className="text-sm font-semibold">{item.title}</p>
+                                    <p className="mt-1 text-xs text-muted">
+                                        {item.detail}
+                                        {item.amount !== undefined && item.currency
+                                            ? ` · ${formatMoney(item.amount, item.currency)}`
+                                            : ''}
+                                    </p>
+                                    <p className="mt-1 text-[11px] text-muted">{formatDate(item.created_at)}</p>
+                                </div>
+                            ))}
+                            {customer.timeline.length === 0 && (
+                                <p className="text-sm text-muted">No activity recorded yet.</p>
+                            )}
                         </div>
                     </div>
                 </aside>

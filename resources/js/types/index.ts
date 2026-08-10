@@ -197,6 +197,32 @@ export type Customer = {
     balance_currency: string;
     zone: Zone | null;
     services: Service[];
+    invoices: {
+        public_id: string;
+        number: string;
+        status: string;
+        currency: string;
+        total_amount: number;
+        due_at: string | null;
+        issued_at: string | null;
+    }[];
+    payments: {
+        public_id: string;
+        number: string;
+        status: string;
+        currency: string;
+        amount: number;
+        method: string;
+        received_at: string | null;
+    }[];
+    timeline: {
+        type: string;
+        title: string;
+        detail: string;
+        created_at: string | null;
+        amount?: number;
+        currency?: string;
+    }[];
 };
 
 export type Paginator<T> = {
