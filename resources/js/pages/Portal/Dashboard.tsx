@@ -1,16 +1,20 @@
 import { Head, Link } from '@inertiajs/react';
-import { LogOut, RefreshCw, Wifi } from 'lucide-react';
+import { AlertTriangle, LogOut, RefreshCw, Send, Wifi } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import { StatusBadge } from '@/components/StatusBadge';
 import { formatDate } from '@/lib/format';
-import type { Customer, PortalBilling, PublicTenant } from '@/types';
+import type { Customer, PortalBilling, PortalNotice, PortalTicket, PublicTenant } from '@/types';
 
 type Props = { tenant: PublicTenant };
 
 export default function PortalDashboard({ tenant }: Props) {
     const [customer, setCustomer] = useState<Customer | null>(null);
     const [billing, setBilling] = useState<PortalBilling | null>(null);
+    const [notices, setNotices] = useState<PortalNotice[]>([]);
+    const [tickets, setTickets] = useState<PortalTicket[]>([]);
+    const [ticketForm, setTicketForm] = useState({ category: 'other', subject: '', description: '' });
+    const [ticketBusy, setTicketBusy] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const tokenKey = `portal_token:${tenant.slug}`;
 
@@ -23,14 +27,18 @@ export default function PortalDashboard({ tenant }: Props) {
         Promise.all([
             fetch(`/api/v1/portal/${tenant.slug}/me`, { headers: { Authorization: `Bearer ${token}` } }),
             fetch(`/api/v1/portal/${tenant.slug}/billing`, { headers: { Authorization: `Bearer ${token}` } }),
+            fetch(`/api/v1/portal/${tenant.slug}/me/notices`, { headers: { Authorization: `Bearer ${token}` } }),
+            fetch(`/api/v1/portal/${tenant.slug}/me/tickets`, { headers: { Authorization: `Bearer ${token}` } }),
         ])
-            .then(async ([customerResponse, billingResponse]) => {
-                if (!customerResponse.ok || !billingResponse.ok) {
+            .then(async ([customerResponse, billingResponse, noticesResponse, ticketsResponse]) => {
+                if (!customerResponse.ok || !billingResponse.ok || !noticesResponse.ok || !ticketsResponse.ok) {
                     window.location.assign(`/portal/${tenant.slug}`);
                     return;
                 }
                 setCustomer(await customerResponse.json());
                 setBilling(await billingResponse.json());
+                setNotices((await noticesResponse.json()).data ?? []);
+                setTickets((await ticketsResponse.json()).data ?? []);
             })
             .catch(() => setError('The portal could not be loaded.'));
     }, [tenant.slug, tokenKey]);
@@ -38,6 +46,30 @@ export default function PortalDashboard({ tenant }: Props) {
     const signOut = () => {
         sessionStorage.removeItem(tokenKey);
         window.location.assign(`/portal/${tenant.slug}`);
+    };
+
+    const submitTicket = async (event: React.FormEvent) => {
+        event.preventDefault();
+        const token = sessionStorage.getItem(tokenKey);
+        if (!token || !ticketForm.subject.trim() || !ticketForm.description.trim()) return;
+        setTicketBusy(true);
+        setError(null);
+        const response = await fetch(`/api/v1/portal/${tenant.slug}/me/tickets`, {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify(ticketForm),
+        });
+        if (response.ok) {
+            const refreshed = await fetch(`/api/v1/portal/${tenant.slug}/me/tickets`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            setTickets((await refreshed.json()).data ?? []);
+            setTicketForm({ category: 'other', subject: '', description: '' });
+        } else {
+            const payload = await response.json();
+            setError(payload.detail ?? 'We could not open your ticket.');
+        }
+        setTicketBusy(false);
     };
 
     return (
@@ -69,6 +101,30 @@ export default function PortalDashboard({ tenant }: Props) {
                             </h1>
                             <p className="page-subtitle">Your connections and service status at a glance.</p>
                         </div>
+                        {notices.length > 0 && (
+                            <section className="mt-8 space-y-3" aria-labelledby="notices-heading">
+                                <div className="flex items-center gap-2">
+                                    <AlertTriangle size={17} className="text-amber-600" />
+                                    <h2 id="notices-heading" className="section-title">
+                                        Service notices
+                                    </h2>
+                                </div>
+                                {notices.map((notice) => (
+                                    <article
+                                        key={notice.uuid}
+                                        className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-amber-950"
+                                    >
+                                        <p className="text-xs font-bold uppercase tracking-[0.16em]">
+                                            {notice.severity}
+                                        </p>
+                                        <h3 className="mt-1 font-semibold">{notice.title}</h3>
+                                        {notice.description && (
+                                            <p className="mt-1 text-sm text-amber-900/80">{notice.description}</p>
+                                        )}
+                                    </article>
+                                ))}
+                            </section>
+                        )}
                         <section className="mt-8 space-y-4">
                             {customer.services.map((service) => (
                                 <article key={service.public_id} className="card p-6">
@@ -150,6 +206,78 @@ export default function PortalDashboard({ tenant }: Props) {
                                 </div>
                             </section>
                         )}
+                        <section className="mt-8 grid gap-6 md:grid-cols-[1fr_0.9fr]" aria-labelledby="support-heading">
+                            <div className="card p-6">
+                                <h2 id="support-heading" className="section-title">
+                                    Support tickets
+                                </h2>
+                                <div className="mt-4 divide-y divide-line">
+                                    {tickets.map((ticket) => (
+                                        <div
+                                            key={ticket.uuid}
+                                            className="flex items-center justify-between gap-4 py-3 text-sm"
+                                        >
+                                            <span>
+                                                <b>{ticket.subject}</b>
+                                                <small className="mt-1 block text-muted">
+                                                    {ticket.number} · {ticket.status}
+                                                </small>
+                                            </span>
+                                            <span className="text-xs text-muted">{ticket.message_count} messages</span>
+                                        </div>
+                                    ))}
+                                    {tickets.length === 0 && (
+                                        <p className="py-3 text-sm text-muted">No support tickets yet.</p>
+                                    )}
+                                </div>
+                            </div>
+                            <form onSubmit={submitTicket} className="card space-y-4 p-6">
+                                <h2 className="section-title">Open a ticket</h2>
+                                <label className="block">
+                                    <span className="field-label">Category</span>
+                                    <select
+                                        className="field"
+                                        value={ticketForm.category}
+                                        onChange={(event) =>
+                                            setTicketForm({ ...ticketForm, category: event.target.value })
+                                        }
+                                    >
+                                        <option value="no_service">No service</option>
+                                        <option value="slow">Slow connection</option>
+                                        <option value="billing">Billing</option>
+                                        <option value="relocation">Relocation</option>
+                                        <option value="other">Other</option>
+                                    </select>
+                                </label>
+                                <label className="block">
+                                    <span className="field-label">Subject</span>
+                                    <input
+                                        required
+                                        className="field"
+                                        value={ticketForm.subject}
+                                        onChange={(event) =>
+                                            setTicketForm({ ...ticketForm, subject: event.target.value })
+                                        }
+                                    />
+                                </label>
+                                <label className="block">
+                                    <span className="field-label">What happened?</span>
+                                    <textarea
+                                        required
+                                        rows={4}
+                                        className="field"
+                                        value={ticketForm.description}
+                                        onChange={(event) =>
+                                            setTicketForm({ ...ticketForm, description: event.target.value })
+                                        }
+                                    />
+                                </label>
+                                <button disabled={ticketBusy} className="button-primary w-full justify-center">
+                                    <Send size={16} />
+                                    {ticketBusy ? 'Sending…' : 'Send ticket'}
+                                </button>
+                            </form>
+                        </section>
                     </>
                 )}
             </main>

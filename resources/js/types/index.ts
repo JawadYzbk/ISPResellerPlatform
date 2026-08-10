@@ -125,6 +125,27 @@ export type PortalBilling = {
     }[];
 };
 
+export type PortalNotice = {
+    uuid: string;
+    type: string;
+    severity: 'critical' | 'warning' | 'info' | string;
+    title: string;
+    description: string | null;
+    opened_at: string | null;
+};
+
+export type PortalTicket = {
+    uuid: string;
+    number: string;
+    subject: string;
+    category: string;
+    priority: string;
+    status: string;
+    due_at: string | null;
+    updated_at: string | null;
+    message_count: number;
+};
+
 export type Zone = {
     id: number;
     name: string;
