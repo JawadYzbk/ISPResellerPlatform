@@ -37,6 +37,8 @@ Collector devices use the offline sync flow in the [field-app guide](field-app.m
 
 ## Tickets, incidents, and notifications
 
+Use **Operations -> Tickets** to search by ticket/customer, filter the SLA queue, change an allowed status, and post a public reply. Closed tickets are immutable from the reply form. A reply to a resolved ticket records the return to in-progress before adding the message.
+
 Support agents should keep ticket status and customer-facing messages current. Customer portal tickets are tenant- and customer-scoped; never copy an internal note into a public reply.
 
 Router incidents can broadcast notices only to customers affected by the router, POP, zone, or service scope recorded on the incident. A recovery closes the matching outage notice. If a provider is unavailable, the notification manager records the attempted and fallback channels; investigate the provider outage instead of resending manually without an idempotency key.
@@ -50,6 +52,10 @@ Network changes are queued through the outbox and executed by the queue worker. 
 For RouterOS/RADIUS/CoA behavior, use the lab acceptance procedure before enabling a new device driver in production. A platform state of `active` is not proof that the router has accepted the command.
 
 On a customer service card, **Activate**, **Suspend**, **Resume** and **Re-sync service** queue commands from the current commercial state. They confirm that work was queued, not that a real device accepted it; inspect the resulting command and network state after the worker runs.
+
+Use **Plans** to create a catalog plan and its first effective price. Prices are integer minor units and effective-date windows; do not overwrite an issued invoice to reflect a later price.
+
+Use **Operations -> Work orders** to complete assigned installations or repairs. Installation completion activates the linked service and queues network activation. Use **Operations -> Inventory** to trace serialized equipment and confirm whether a unit is still available or assigned to a service.
 
 On a customer service card, **Re-sync service** queues an `activate` or `suspend` command from the current commercial state. It confirms that work was queued, not that a real device accepted it; inspect the resulting command and network state after the worker runs. Terminated services are not re-synced.
 
