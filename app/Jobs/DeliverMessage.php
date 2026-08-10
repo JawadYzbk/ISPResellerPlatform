@@ -33,7 +33,7 @@ final class DeliverMessage extends TenantAwareJob implements ShouldQueue
             'sent_at' => $result->status === 'sent' ? now() : null,
             'failed_at' => $result->status === 'failed' ? now() : null,
             'failure_reason' => $result->status === 'failed' ? $result->message : null,
-            'metadata' => $result->metadata,
+            'metadata' => [...($message->metadata ?? []), ...$result->metadata],
         ])->save();
 
         if ($result->status === 'failed' && $message->delivery_attempts < $this->tries) {

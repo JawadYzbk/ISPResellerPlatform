@@ -1,16 +1,20 @@
 <?php
 
+use App\Actions\QueueCustomerNotification;
 use App\Actions\QueueMessage;
 use App\Domain\Communications\FakeMessageProvider;
 use App\Domain\Communications\MessageDeliveryResult;
 use App\Domain\Communications\MessageProviderManager;
 use App\Domain\Communications\TemplateRenderer;
 use App\Jobs\DeliverMessage;
+use App\Models\Customer;
 use App\Models\Message;
 use App\Models\MessageTemplate;
 use App\Models\Tenant;
 use App\Support\Tenancy;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Queue;
 
 uses(RefreshDatabase::class);
@@ -57,4 +61,37 @@ it('records provider delivery and retries failures without duplicating a message
     })->toThrow(RuntimeException::class);
     expect($failed->refresh()->delivery_attempts)->toBe(1)
         ->and($failed->status->value)->toBe('failed');
+});
+
+it('falls back to the next configured notification channel after a provider failure', function (): void {
+    Queue::fake();
+    Http::fake(['https://sms.example.test/send' => Http::response([], 503)]);
+    Mail::fake();
+    config([
+        'services.sms.endpoint' => 'https://sms.example.test/send',
+        'services.sms.token' => 'test-sms-token',
+        'services.notifications.email_enabled' => true,
+    ]);
+
+    $tenant = Tenant::create(['name' => 'Fallbackline', 'slug' => 'fallbackline', 'base_currency' => 'USD', 'collection_currency' => 'USD']);
+    app(Tenancy::class)->set($tenant);
+    $customer = Customer::factory()->create(['notification_preferences' => ['channels' => ['sms', 'email']]]);
+    MessageTemplate::create(['key' => 'payment.receipt', 'channel' => 'sms', 'locale' => 'en', 'body' => 'SMS receipt {{ receipt_number }}']);
+    MessageTemplate::create(['key' => 'payment.receipt', 'channel' => 'email', 'locale' => 'en', 'body' => 'Email receipt {{ receipt_number }}']);
+
+    $message = app(QueueCustomerNotification::class)->handle($customer, 'payment.receipt', 'fallback-001', ['receipt_number' => 'RCT-FALLBACK']);
+    expect($message)->toBeInstanceOf(Message::class);
+    if (! $message instanceof Message) {
+        throw new RuntimeException('Expected a queued message.');
+    }
+    expect($message->metadata['fallback_channels'])->toBe(['email']);
+
+    (new DeliverMessage($message->id, $tenant->id))->handle(app(MessageProviderManager::class));
+
+    expect($message->refresh()->status->value)->toBe('sent')
+        ->and($message->provider)->toBe('email')
+        ->and($message->metadata['delivered_channel'])->toBe('email')
+        ->and($message->metadata['fallback_from'])->toBe('sms')
+        ->and($message->metadata['attempted_channels'])->toBe(['sms', 'email']);
+    Http::assertSentCount(1);
 });

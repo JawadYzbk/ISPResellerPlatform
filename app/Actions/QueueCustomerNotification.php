@@ -52,7 +52,9 @@ final readonly class QueueCustomerNotification implements Action
                 continue;
             }
 
-            return $this->queueMessage->handle($template, $recipient, $channel, $locale, $idempotencyKey, $variables, $customer);
+            $fallbackChannels = array_values(array_filter($selectedChannels, static fn (string $selected): bool => $selected !== $channel));
+
+            return $this->queueMessage->handle($template, $recipient, $channel, $locale, $idempotencyKey, $variables, $customer, ['fallback_channels' => $fallbackChannels]);
         }
 
         return null;

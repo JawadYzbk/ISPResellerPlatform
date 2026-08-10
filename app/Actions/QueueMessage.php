@@ -15,15 +15,15 @@ final readonly class QueueMessage implements Action
 {
     public function __construct(private TemplateRenderer $renderer) {}
 
-    /** @param array<string, scalar|null> $variables */
-    public function handle(MessageTemplate $template, string $recipient, string $channel, string $locale, string $idempotencyKey, array $variables = [], ?Customer $customer = null): Message
+    /** @param array<string, scalar|null> $variables @param array<string, mixed> $metadata */
+    public function handle(MessageTemplate $template, string $recipient, string $channel, string $locale, string $idempotencyKey, array $variables = [], ?Customer $customer = null, array $metadata = []): Message
     {
         $existing = Message::query()->where('idempotency_key', $idempotencyKey)->first();
         if ($existing instanceof Message) {
             return $existing;
         }
 
-        return DB::transaction(function () use ($template, $recipient, $channel, $locale, $idempotencyKey, $variables, $customer): Message {
+        return DB::transaction(function () use ($template, $recipient, $channel, $locale, $idempotencyKey, $variables, $customer, $metadata): Message {
             $message = Message::create([
                 'customer_id' => $customer?->id,
                 'channel' => $channel,
@@ -34,6 +34,7 @@ final readonly class QueueMessage implements Action
                 'body' => $this->renderer->render($template, $variables),
                 'status' => MessageStatus::Queued,
                 'idempotency_key' => $idempotencyKey,
+                'metadata' => $metadata,
             ]);
             DeliverMessage::dispatch($message->id)->afterCommit();
 

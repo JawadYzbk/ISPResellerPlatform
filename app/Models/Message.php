@@ -9,6 +9,9 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Str;
 
+/**
+ * @property Customer|null $customer
+ */
 class Message extends Model
 {
     use Auditable, BelongsToTenant;
