@@ -1,5 +1,6 @@
 import { Head, Link, router } from '@inertiajs/react';
 import { ArrowLeft, CalendarDays, CircleAlert, Network, RefreshCw, Wifi, WifiOff } from 'lucide-react';
+import { useEffect } from 'react';
 
 import { StatusBadge, type Status } from '@/components/StatusBadge';
 import AppLayout from '@/layouts/AppLayout';
@@ -54,6 +55,22 @@ export default function ServiceShow({
     canTerminate = false,
     canDisconnectSession = false,
 }: Props) {
+    useEffect(() => {
+        const reloadWhenVisible = () => {
+            if (document.visibilityState !== 'visible') return;
+            router.reload({
+                only: ['service', 'liveSession', 'usageLast24h', 'routerHealth', 'recentCommands'],
+                });
+        };
+        const interval = window.setInterval(reloadWhenVisible, 10_000);
+        document.addEventListener('visibilitychange', reloadWhenVisible);
+
+        return () => {
+            window.clearInterval(interval);
+            document.removeEventListener('visibilitychange', reloadWhenVisible);
+        };
+    }, []);
+
     return (
         <AppLayout>
             <Head title={service.username} />

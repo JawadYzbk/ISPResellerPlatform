@@ -1,6 +1,6 @@
 import { Head, Link, router } from '@inertiajs/react';
 import { AlertTriangle, ChevronLeft, ChevronRight, RefreshCw, Terminal } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import StatusBadge from '@/components/StatusBadge';
 import AppLayout from '@/layouts/AppLayout';
@@ -35,6 +35,20 @@ const titleize = (value: string) => value.replaceAll('_', ' ').replace(/\b\w/g, 
 export default function NetworkCommandsPage({ commands, filters, canRetry = false }: Props) {
     const [status, setStatus] = useState(filters.status ?? '');
     const [networkState, setNetworkState] = useState(filters.network_state ?? '');
+
+    useEffect(() => {
+        const reloadWhenVisible = () => {
+            if (document.visibilityState !== 'visible') return;
+                router.reload({ only: ['commands'] });
+        };
+        const interval = window.setInterval(reloadWhenVisible, 10_000);
+        document.addEventListener('visibilitychange', reloadWhenVisible);
+
+        return () => {
+            window.clearInterval(interval);
+            document.removeEventListener('visibilitychange', reloadWhenVisible);
+        };
+    }, []);
 
     const applyFilters = (event: React.FormEvent) => {
         event.preventDefault();
