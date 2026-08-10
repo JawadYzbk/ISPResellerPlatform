@@ -24,11 +24,11 @@ class Payment extends Model
 {
     use Auditable, BelongsToTenant;
 
-    protected $fillable = ['tenant_id', 'public_id', 'number', 'customer_id', 'invoice_id', 'cash_shift_id', 'status', 'amount', 'currency', 'method', 'idempotency_key', 'received_at', 'reversed_at', 'reversal_of_id', 'metadata', 'actor_id'];
+    protected $fillable = ['tenant_id', 'public_id', 'number', 'customer_id', 'invoice_id', 'cash_shift_id', 'status', 'amount', 'ledger_amount', 'ledger_currency', 'base_amount', 'currency', 'fx_rate_numerator', 'fx_rate_denominator', 'fx_rate_overridden', 'fx_override_reason', 'reference', 'method', 'idempotency_key', 'received_at', 'reversed_at', 'reversal_of_id', 'metadata', 'actor_id'];
 
     protected function casts(): array
     {
-        return ['status' => PaymentStatus::class, 'amount' => 'integer', 'received_at' => 'datetime', 'reversed_at' => 'datetime', 'metadata' => 'array'];
+        return ['status' => PaymentStatus::class, 'amount' => 'integer', 'ledger_amount' => 'integer', 'base_amount' => 'integer', 'fx_rate_numerator' => 'integer', 'fx_rate_denominator' => 'integer', 'fx_rate_overridden' => 'boolean', 'received_at' => 'datetime', 'reversed_at' => 'datetime', 'metadata' => 'array'];
     }
 
     protected static function booted(): void
