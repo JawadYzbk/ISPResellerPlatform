@@ -20,7 +20,6 @@ return new class extends Migration
             $table->json('metadata')->nullable();
             $table->timestamps();
             $table->unique(['tenant_id', 'base_currency', 'quote_currency', 'effective_from']);
-            $table->index(['tenant_id', 'base_currency', 'quote_currency', 'effective_from']);
         });
     }
 
