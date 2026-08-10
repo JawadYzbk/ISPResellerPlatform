@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Actions\RequestPortalOtp;
 use App\Actions\RevokePortalSession;
 use App\Actions\VerifyPortalOtp;
+use App\Actions\VerifyPortalOtpByPhone;
 use App\Http\Controllers\Controller;
 use App\Models\PortalSession;
 use App\Models\Tenant;
@@ -41,7 +42,7 @@ final class PortalAuthController extends Controller
         return response()->json(['expires_in' => 300, 'resend_after' => 60]);
     }
 
-    public function verifyCustomerOtp(Request $request, VerifyPortalOtp $verifyOtp): JsonResponse
+    public function verifyCustomerOtp(Request $request, VerifyPortalOtpByPhone $verifyOtp): JsonResponse
     {
         $tenant = $request->attributes->get('portal_tenant');
         abort_unless($tenant instanceof Tenant, 400, 'A tenant context is required for customer authentication.');
@@ -52,7 +53,7 @@ final class PortalAuthController extends Controller
         ]);
 
         try {
-            $result = $verifyOtp->handleByPhone($tenant, $validated['phone'], $validated['code'], $request->userAgent(), $request->ip(), $validated['device_id']);
+            $result = $verifyOtp->handle($tenant, $validated['phone'], $validated['code'], $request->userAgent(), $request->ip(), $validated['device_id']);
         } catch (DomainException $exception) {
             return response()->json(['message' => $exception->getMessage()], 422);
         }
