@@ -22,8 +22,11 @@ it('keeps customer API resources tenant-scoped', function (): void {
 
     $token = $user->createToken('api-test', ['api', 'staff:operator'])->plainTextToken;
 
-    $this->withToken($token)->getJson('/api/v1/customers')->assertOk()->assertJsonPath('data.0.id', $northCustomer->id);
-    $this->withToken($token)->getJson('/api/v1/customers/'.$northCustomer->public_id)->assertOk()->assertJsonPath('id', $northCustomer->id);
+    $this->withToken($token)->getJson('/api/v1/customers')->assertOk()->assertJsonPath('data.0.id', $northCustomer->public_id);
+    $this->withToken($token)->getJson('/api/v1/customers/'.$northCustomer->public_id)
+        ->assertOk()
+        ->assertJsonPath('id', $northCustomer->public_id)
+        ->assertJsonMissingPath('services.0.password_encrypted');
     $southCustomer = Customer::withoutGlobalScopes()->where('tenant_id', $south->id)->firstOrFail();
     $this->withToken($token)->getJson('/api/v1/customers/'.$southCustomer->public_id)->assertNotFound();
 });

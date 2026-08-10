@@ -9,6 +9,7 @@ use App\Enums\ServiceStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Service;
 use App\Models\User;
+use App\Support\Api\ServiceApiResource;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -21,12 +22,12 @@ final class ServiceApiController extends Controller
         return response()->json($listServices->handle($request, $request->integer('per_page', 20)));
     }
 
-    public function show(Request $request, string $service): JsonResponse
+    public function show(Request $request, string $service, ServiceApiResource $resource): JsonResponse
     {
         $service = $this->find($service);
         $this->authorize('view', $service);
 
-        return response()->json($service->load(['customer', 'plan', 'router', 'events']));
+        return response()->json($resource->make($service));
     }
 
     public function activate(Request $request, string $service, TransitionService $transition, EnqueueNetworkCommand $enqueue): JsonResponse
@@ -63,7 +64,7 @@ final class ServiceApiController extends Controller
         $updated = $transition->handle($service, $target, $actor, $metadata);
         $command = $enqueue->handle($updated, $action, $metadata);
 
-        return response()->json(['id' => $updated->public_id, 'status' => $updated->status->value, 'network_state' => $updated->network_state->value, 'command_id' => $command->id], 202);
+        return response()->json(['id' => $updated->public_id, 'status' => $updated->status->value, 'network_state' => $updated->network_state->value, 'command_id' => $command->public_id], 202);
     }
 
     private function find(string $publicId): Service

@@ -23,7 +23,10 @@ it('lists services and idempotently queues a suspend command', function (): void
     $service = Service::factory()->create(['status' => ServiceStatus::Active]);
     $token = $user->createToken('service-api', ['api', 'staff:operator'])->plainTextToken;
 
-    $this->withToken($token)->getJson('/api/v1/services?filter[status]=active')->assertOk()->assertJsonPath('data.0.id', $service->id);
+    $this->withToken($token)->getJson('/api/v1/services?filter[status]=active')
+        ->assertOk()
+        ->assertJsonPath('data.0.id', $service->public_id)
+        ->assertJsonMissingPath('data.0.password_encrypted');
 
     $headers = ['X-Idempotency-Key' => 'service-suspend-001'];
     $first = $this->withToken($token)->withHeaders($headers)->postJson('/api/v1/services/'.$service->public_id.'/suspend', ['reason' => 'manual']);
