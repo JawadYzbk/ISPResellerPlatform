@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\CustomerApiController;
 use App\Http\Controllers\Api\CustomerImportController;
 use App\Http\Controllers\Api\EquipmentImportController;
 use App\Http\Controllers\Api\HealthController;
+use App\Http\Controllers\Api\InvoiceApiController;
 use App\Http\Controllers\Api\MessageWebhookController;
 use App\Http\Controllers\Api\NetworkCommandController;
 use App\Http\Controllers\Api\PartnerApiController;
@@ -80,6 +81,8 @@ Route::prefix('v1')->group(function (): void {
             Route::get('/services/{service}', [ServiceApiController::class, 'show'])->name('api.services.show');
             Route::get('/plans', [PlanApiController::class, 'index'])->name('api.plans.index');
             Route::get('/plans/{plan}', [PlanApiController::class, 'show'])->name('api.plans.show');
+            Route::get('/invoices', [InvoiceApiController::class, 'index'])->name('api.invoices.index');
+            Route::get('/invoices/{invoice}', [InvoiceApiController::class, 'show'])->name('api.invoices.show');
             Route::get('/services/{service}/network-commands', [ServiceApiController::class, 'networkCommands'])->name('api.services.network-commands');
             Route::post('/services/{service}/plan-change-previews', [ServiceApiController::class, 'planChangePreview'])->name('api.services.plan-change-previews');
             Route::post('/payments', [PaymentApiController::class, 'store'])->middleware('idempotency')->name('api.payments.store');
