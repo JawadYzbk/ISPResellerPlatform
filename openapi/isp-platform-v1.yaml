@@ -187,6 +187,30 @@ paths:
       responses:
         '202': { description: Commercial state changed and network command queued }
         '403': { description: Missing activation or force-resume capability }
+  /services/{service}/terminate:
+    post:
+      summary: Terminate a service and enqueue network disconnect
+      parameters:
+        - in: path
+          name: service
+          required: true
+          schema: { type: string }
+        - in: header
+          name: X-Idempotency-Key
+          required: true
+          schema: { type: string, maxLength: 120 }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [reason]
+              properties:
+                reason: { type: string, maxLength: 5000 }
+      responses:
+        '202': { description: Service terminated, assigned equipment returned to recovery custody, and network disconnect queued }
+        '403': { description: Missing termination capability }
   /payments:
     post:
       summary: Record a customer payment
