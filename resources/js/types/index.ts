@@ -61,6 +61,18 @@ export type FinanceReport = {
     customer_balances_by_currency: Record<string, number>;
 };
 
+export type OperationsReport = {
+    generated_at: string;
+    service_counts_by_status: Record<string, number>;
+    expiring_services: number;
+    work_order_counts_by_status: Record<string, number>;
+    incident_counts_by_status: Record<string, number>;
+    active_sessions: number;
+    offline_routers: number;
+    network_drift: number;
+    failed_commands: number;
+};
+
 export type PublicTenant = { slug: string; name: string };
 
 export type PortalBilling = {

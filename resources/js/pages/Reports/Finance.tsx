@@ -31,10 +31,15 @@ export default function FinanceReportPage({ report }: Props) {
                         Issued invoices and posted payments for {report.from} through {report.to}.
                     </p>
                 </div>
-                <a href="/reports/finance?format=csv" className="button-quiet">
-                    <Download size={15} />
-                    Download CSV
-                </a>
+                <div className="flex gap-2">
+                    <Link href="/reports/operations" className="button-quiet">
+                        Operations report
+                    </Link>
+                    <a href="/reports/finance?format=csv" className="button-quiet">
+                        <Download size={15} />
+                        Download CSV
+                    </a>
+                </div>
             </div>
             <div className="mt-8 grid gap-4 md:grid-cols-3">
                 <div className="card p-5">

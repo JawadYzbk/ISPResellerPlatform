@@ -45,4 +45,5 @@ Route::middleware(['auth', 'tenant', '2fa'])->group(function (): void {
     Route::get('/customers/{customer:public_id}', [CustomerController::class, 'show'])->name('customers.show');
     Route::get('/services', [ServiceController::class, 'index'])->name('services.index');
     Route::get('/reports/finance', [ReportController::class, 'finance'])->name('reports.finance');
+    Route::get('/reports/operations', [ReportController::class, 'operations'])->name('reports.operations');
 });

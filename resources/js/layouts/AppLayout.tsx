@@ -22,7 +22,7 @@ export default function AppLayout({ children }: PropsWithChildren) {
         { label: 'Overview', href: '/dashboard', icon: LayoutDashboard },
         { label: 'Customers', href: '/customers', icon: Users },
         { label: 'Services', href: '/services', icon: Wifi },
-        { label: 'Reports', href: '/reports/finance', icon: BarChart3 },
+        { label: 'Reports', href: '/reports/operations', icon: BarChart3 },
     ];
 
     return (

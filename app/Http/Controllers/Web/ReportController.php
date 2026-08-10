@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Web;
 
 use App\Actions\ExportFinanceReportCsv;
+use App\Actions\ExportOperationsReportCsv;
 use App\Actions\GetFinanceReport;
+use App\Actions\GetOperationsReport;
 use App\Http\Controllers\Controller;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
@@ -27,5 +29,18 @@ final class ReportController extends Controller
         }
 
         return Inertia::render('Reports/Finance', ['report' => $report->handle($from, $to)]);
+    }
+
+    public function operations(Request $request, GetOperationsReport $report, ExportOperationsReportCsv $export): Response|StreamedResponse
+    {
+        abort_unless($request->user()?->can('reports.operations'), 403);
+
+        if ($request->string('format')->lower()->toString() === 'csv') {
+            return response()->streamDownload(function () use ($export): void {
+                echo $export->handle();
+            }, 'operations-report-'.now()->toDateString().'.csv', ['Content-Type' => 'text/csv']);
+        }
+
+        return Inertia::render('Reports/Operations', ['report' => $report->handle()]);
     }
 }
