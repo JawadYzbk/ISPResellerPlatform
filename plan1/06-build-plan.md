@@ -80,6 +80,10 @@ Migration/model/factory per `02 §4`, phone normalisation via `propaganistas/lar
 `exchange_rates` CRUD with history, `FxConverter` resolving the rate effective at a given instant, rate-change audit.
 **AC:** converting a historical amount uses the historical rate; a new rate today never changes yesterday's numbers (test).
 
+### ISP-030A · Lebanon multi-currency rate ingestion
+Add an opt-in Frankfurter rate provider for tenant-configured currency pairs, including USD/LBP collection for the Lebanon use case. Store every imported quote as an effective-dated exact ratio with provider/date metadata; keep manual operator rates available when a market or treasury rate is preferred. Conversion must expose explicit rounding policies (`half_up`, `floor`, `ceil`) and payment recording must persist the exact rate, source, effective date and rounding policy used so historical receipts never re-derive from a newer quote.
+**AC:** a scheduled/import command upserts a Frankfurter quote without floating-point storage; USD/LBP is available when Frankfurter returns it; unavailable or stale quotes fail safely without deleting the last known rate; floor conversion is deterministic for positive and negative amounts; a payment receipt contains the saved rate/source/date/rounding snapshot.
+
 ### ISP-031 · Double-entry journal + ledger projection
 `ledger_accounts` (seeded chart of accounts per tenant), `journal_entries` + `journal_lines` (balanced per currency, `CHECK` one-of debit/credit), append-only with an observer that throws on update/delete plus a PostgreSQL trigger. `ledger_entries` per-customer statement projection derived in the same transaction; running `balance_after` under a customer row lock; `customers.balance_amount` cache maintained in the same transaction. `AssertLedgerIntegrity` command asserting per-entry balance, receivable == customer balance == projection, and wallet cache == wallet lines.
 **AC:** 100 concurrent entries for one customer produce a correct running balance and balanced journal (parallel test); every posted entry balances per currency; attempting an update/delete throws at both the model and DB layer; integrity assertion passes on the seeded dataset.
@@ -143,6 +147,10 @@ Full implementation per `03 §5.2` against RouterOS v7 REST. Comment-tagging wit
 ### ISP-051 · Channels
 Driver-based gateway layer: WhatsApp Business Cloud API, a pluggable SMS gateway, email, FCM push. `messages` outbound log with delivery status via provider callbacks. Per-provider rate limiting and cost tracking. `[H — needs Meta Business account + approved templates; ~2 weeks lead time. Start this procurement at the beginning of Phase 2, not here.]`
 **AC:** send/queue/deliver/fail states tracked; a provider outage degrades to the next configured channel rather than losing the message; sends are idempotent per `(customer, template, period)`.
+
+### ISP-051A · WhatsApp Web.js bridge
+Add an opt-in Node.js integration service using `whatsapp-web.js` with persistent `LocalAuth` session storage, QR/status endpoints, authenticated message submission, idempotent delivery keys, and signed delivery callbacks into the Laravel message webhook. Route the existing `whatsapp` channel through Cloud API or Web.js by configuration, keep the bridge on the private service network, and document the unofficial-client/QR-session operational and account-blocking risks. The production topology must include a supervised bridge with a persistent auth volume, but remain disabled until an operator explicitly enables and pairs it.
+**AC:** the bridge reports `qr`, `authenticated`, `ready`, `disconnected` and failure states; a queued message is sent once per idempotency key and its provider message ID is stored; signed sent/delivered/failed callbacks update the outbound log idempotently; an unavailable bridge falls back to the configured next channel; no QR/session secret is exposed through public application routes.
 
 ### ISP-052 · Automations
 Expiry reminders (configurable day offsets, tenant-local send hour), payment receipts, suspension and reactivation notices, welcome messages, outage broadcasts by zone/POP.
