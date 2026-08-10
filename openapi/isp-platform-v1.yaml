@@ -111,6 +111,29 @@ paths:
       responses:
         '200': { description: Customer profile and services }
         '401': { description: Invalid portal session }
+  /collector/payments/batch:
+    post:
+      summary: Record collector payments in a partial-success batch
+      parameters:
+        - in: header
+          name: X-Idempotency-Key
+          required: true
+          schema: { type: string, maxLength: 120 }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [items]
+              properties:
+                items:
+                  type: array
+                  maxItems: 100
+                  items: { $ref: '#/components/schemas/PaymentRequest' }
+      responses:
+        '200': { description: Per-item success/error results }
+        '409': { description: Idempotency key reused for a different request }
 components:
   securitySchemes:
     bearerAuth:
@@ -127,3 +150,4 @@ components:
         amount: { type: integer, minimum: 1, description: Amount in minor currency units }
         currency: { type: string, minLength: 3, maxLength: 3 }
         method: { type: string, maxLength: 40 }
+        idempotency_key: { type: string, description: Required for collector batch items }
