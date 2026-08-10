@@ -24,7 +24,19 @@ final class PartnerController extends Controller
         $userPartnerId = $user->partner_id === null ? null : $user->partner->public_id;
         $selectedId = $request->string('partner')->toString() ?: (string) ($userPartnerId ?? $partners->first()?->public_id);
         $partner = $partners->firstWhere('public_id', $selectedId);
-        abort_unless($partner instanceof Partner, 404);
+        if (! $partner instanceof Partner && $user->partner_id !== null) {
+            abort(404);
+        }
+
+        if (! $partner instanceof Partner) {
+            return Inertia::render('Partners/Commercial', [
+                'partners' => [],
+                'selectedPartner' => null,
+                'catalog' => [],
+                'settlements' => [],
+                'showCost' => false,
+            ]);
+        }
         $showCost = $user->partner_id === null && $user->can('settlements.approve');
         $catalog = [];
 

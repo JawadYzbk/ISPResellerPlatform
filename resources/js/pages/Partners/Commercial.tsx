@@ -29,7 +29,7 @@ type Settlement = {
 
 type Props = PageProps & {
     partners: Partner[];
-    selectedPartner: Partner;
+    selectedPartner: Partner | null;
     catalog: CatalogItem[];
     settlements: Settlement[];
     showCost: boolean;
@@ -51,7 +51,7 @@ export default function Commercial({ partners, selectedPartner, catalog, settlem
                     <p className="eyebrow">Partner commercial</p>
                     <h1 className="page-title">Prices and settlements</h1>
                     <p className="page-subtitle">
-                        {selectedPartner.name} · {selectedPartner.code}
+                        {selectedPartner ? `${selectedPartner.name} · ${selectedPartner.code}` : 'No partner accounts configured'}
                     </p>
                 </div>
                 {partners.length > 1 && (
@@ -60,7 +60,7 @@ export default function Commercial({ partners, selectedPartner, catalog, settlem
                             <Link
                                 key={partner.id}
                                 href={`/partners/commercial?partner=${partner.id}`}
-                                className={`button-quiet ${partner.id === selectedPartner.id ? 'bg-brand-soft text-brand' : ''}`}
+                                className={`button-quiet ${partner.id === selectedPartner?.id ? 'bg-brand-soft text-brand' : ''}`}
                             >
                                 {partner.code}
                             </Link>
@@ -68,7 +68,7 @@ export default function Commercial({ partners, selectedPartner, catalog, settlem
                     </div>
                 )}
             </div>
-            <div className="mt-8 grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
+            {selectedPartner ? <div className="mt-8 grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
                 <section className="card overflow-hidden">
                     <div className="flex items-center gap-3 border-b border-line px-6 py-5">
                         <div className="grid size-10 place-items-center rounded-xl bg-brand-soft text-brand">
@@ -147,7 +147,12 @@ export default function Commercial({ partners, selectedPartner, catalog, settlem
                         )}
                     </div>
                 </section>
-            </div>
+            </div> : (
+                <div className="card mt-8 p-6">
+                    <h2 className="section-title">Partner setup required</h2>
+                    <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">No partner accounts exist for this tenant yet. Create a partner through the partner provisioning workflow before maintaining reseller prices or settlement statements.</p>
+                </div>
+            )}
         </AppLayout>
     );
 }

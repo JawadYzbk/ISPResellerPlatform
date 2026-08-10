@@ -29,3 +29,16 @@ it('renders the partner commercial workspace without reseller costs', function (
         ->assertOk()
         ->assertInertia(fn ($page) => $page->component('Partners/Commercial')->where('catalog.0.sell_amount_minor', 3500)->where('catalog.0.buy_amount_minor', null));
 });
+
+it('shows partner setup guidance when an owner has no partner accounts', function (): void {
+    $tenant = Tenant::create(['name' => 'Northline', 'slug' => 'northline', 'base_currency' => 'USD', 'collection_currency' => 'USD']);
+    app(Tenancy::class)->set($tenant);
+    $user = User::create(['tenant_id' => $tenant->id, 'name' => 'Owner', 'email' => 'commercial-empty@example.test', 'password' => Hash::make('password'), 'role' => 'tenant_owner']);
+    app(CapabilitySeeder::class)->run();
+    $user->assignRole('tenant_owner');
+    $user->givePermissionTo('wallets.view');
+
+    $this->actingAs($user)->get('/partners/commercial')
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page->component('Partners/Commercial')->where('selectedPartner', null)->where('partners', []));
+});
