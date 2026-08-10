@@ -16,7 +16,7 @@ Last updated: 2026-08-10
 | ISP-011/012/015 | Capability catalog, invitations, Sanctum tokens, 2FA, re-authentication, session devices and audit events | delivered |
 | ISP-022/023/024 | Versioned plan prices, customer creation/phone normalization, service transitions and billing-period arithmetic | delivered |
 | ISP-030/031/032/033 | Historical FX, append-only double-entry ledger, invoice lifecycle, idempotent payments and reversals | delivered |
-| ISP-034/035/036 | Payment renewal, cash shifts and tenant-aware idempotent billing runs | delivered |
+| ISP-034/035/036 | Payment renewal, cash shifts and scheduled tenant-aware idempotent billing runs | delivered |
 | ISP-041/043/044 | Driver boundary, post-commit network outbox, stale guards, retries, overdue suspension and reactivation | delivered with manual/fake drivers |
 | ISP-050/051/052 | Template rendering, idempotent message queueing, provider delivery boundary and tenant-local expiry reminders with opt-out/quiet-hour handling | delivered with null/fake providers |
 | ISP-060/061/062 | Ticket lifecycle, tenant-timezone business-hours SLA clock, scheduled resolved-ticket auto-close, work-order completion and serialized inventory assignment | delivered |
