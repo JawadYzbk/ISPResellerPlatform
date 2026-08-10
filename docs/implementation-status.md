@@ -23,7 +23,7 @@ Last updated: 2026-08-10
 | ISP-070/071/072 | Sanctum API, cursor pagination, query whitelists, idempotency middleware, customer portal OTP/session flow, collector batches and OpenAPI slice | delivered for current customer/payment scope |
 | ISP-073 | Technician-assigned work-order list/detail endpoints and idempotent completion | delivered for current work-order scope |
 | ISP-080/082/083 | FreeRADIUS sync, current sessions, stale-session handling and daily usage rollups | delivered |
-| ISP-040/063 | POP/router inventory, encrypted connection tests and repeated-failure incidents | foundation delivered |
+| ISP-040/063 | POP/router inventory, encrypted connection tests, repeated-failure incidents and bounded router health observations | foundation delivered |
 | ISP-090/091 | Basic partner hierarchy/wallets and tenant finance report | foundation delivered |
 | ISP-092 | Manager attention queue with deep links plus live NOC signal panels for routers, sessions, commands, drift and incidents | delivered for current dashboard scope |
 | ISP-P1-01 | Supplier credential inventory, import, assignment and audited reveal | foundation delivered |
@@ -34,7 +34,7 @@ Last updated: 2026-08-10
 - Provider integrations (WhatsApp/SMS/email/FCM), callbacks, fallback policy and notification automations.
 - Customer self-service payments and realtime events.
 - Full reseller price books/commissions/settlements, XLSX/import workflows and expanded reports.
-- Monitoring retention/alerts and full deferred owner dashboard/panel streaming.
+- Monitoring alerts and full deferred owner dashboard/panel streaming.
 - Security operations: key rotation, backup/restore rehearsal, dependency audit and Sentry wiring.
 
 ## Deliberately not claimed yet
