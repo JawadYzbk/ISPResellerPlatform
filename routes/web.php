@@ -93,6 +93,7 @@ Route::middleware(['auth', 'tenant', '2fa'])->group(function (): void {
     Route::post('/services/{service:public_id}/disconnect-session', [ServiceController::class, 'disconnectSession'])->name('services.disconnect-session');
     Route::post('/services/{service:public_id}/equipment/{unit}/return', [ServiceController::class, 'returnEquipment'])->middleware('recent-auth')->name('services.equipment.return');
     Route::post('/services/{service:public_id}/resync', [ServiceController::class, 'resync'])->name('services.resync');
+    Route::post('/services/{service:public_id}/change-plan', [ServiceController::class, 'changePlan'])->name('services.change-plan');
     Route::get('/operations/network-commands', [NetworkOperationsController::class, 'index'])->name('operations.network-commands');
     Route::post('/operations/network-commands/{command:public_id}/retry', [NetworkOperationsController::class, 'retry'])->name('operations.network-commands.retry');
     Route::get('/operations/sessions', [SessionOperationsController::class, 'index'])->name('operations.sessions');

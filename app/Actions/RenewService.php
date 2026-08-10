@@ -5,7 +5,9 @@ namespace App\Actions;
 use App\Contracts\Action;
 use App\Domain\Billing\BillingPeriod;
 use App\Enums\ServiceStatus;
+use App\Models\Plan;
 use App\Models\Service;
+use App\Models\ServiceEvent;
 use App\Models\User;
 use Carbon\CarbonImmutable;
 use DomainException;
@@ -17,10 +19,29 @@ final readonly class RenewService implements Action
 
     public function handle(Service $service, ?User $actor = null): Service
     {
-        return DB::transaction(function () use ($service, $actor): Service {
+        $planSyncRequired = false;
+        $updated = DB::transaction(function () use ($service, $actor, &$planSyncRequired): Service {
             $locked = Service::query()->with(['plan', 'tenant'])->lockForUpdate()->findOrFail($service->id);
             if ($locked->status === ServiceStatus::Terminated) {
                 throw new DomainException('Terminated services require an explicit reactivation workflow.');
+            }
+
+            $pending = $locked->metadata['pending_plan_change'] ?? null;
+            if (is_array($pending) && isset($pending['plan_id'])) {
+                $pendingPlan = Plan::query()->whereKey((int) $pending['plan_id'])->where('status', 'active')->first();
+                if ($pendingPlan instanceof Plan && $pendingPlan->tenant_id === $locked->tenant_id) {
+                    $metadata = $locked->metadata ?? [];
+                    unset($metadata['pending_plan_change']);
+                    $locked->forceFill(['plan_id' => $pendingPlan->id, 'metadata' => $metadata])->save();
+                    $locked->setRelation('plan', $pendingPlan);
+                    $planSyncRequired = $locked->status === ServiceStatus::Active;
+                    $locked->loadMissing('customer');
+                    ServiceEvent::create([
+                        'service_id' => $locked->id,
+                        'event_type' => 'plan_changed',
+                        'metadata' => ['from_plan_id' => $service->plan_id, 'to_plan_id' => $pendingPlan->id, 'effective' => 'next_cycle'],
+                    ]);
+                }
             }
 
             $settings = $locked->tenant->settingsData();
@@ -50,5 +71,11 @@ final readonly class RenewService implements Action
 
             return $updated->refresh();
         });
+
+        if ($planSyncRequired) {
+            $this->enqueue->handle($updated, 'change_plan', ['reason' => 'renewal_plan_change', 'plan_id' => $updated->plan_id]);
+        }
+
+        return $updated->refresh();
     }
 }

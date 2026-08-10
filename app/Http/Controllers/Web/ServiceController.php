@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Web;
 
+use App\Actions\ChangeServicePlan;
 use App\Actions\CreateService;
 use App\Actions\EnqueueNetworkCommand;
 use App\Actions\GetTechnicianServiceDiagnostics;
@@ -42,7 +43,7 @@ final class ServiceController extends Controller
                 'provisioning_mode' => $service->provisioning_mode->value,
                 'expires_at' => $service->expires_at?->toIso8601String(),
                 'customer' => $service->customer?->only(['public_id', 'code', 'first_name', 'last_name']),
-                'plan' => $service->plan?->only(['public_id', 'name', 'download_kbps', 'upload_kbps', 'amount_minor', 'currency']),
+                'plan' => $service->plan?->only(['id', 'public_id', 'name', 'download_kbps', 'upload_kbps', 'amount_minor', 'currency']),
                 'router' => $service->router?->only(['public_id', 'name', 'status']),
                 'usage' => [
                     'used_bytes' => $service->current_period_bytes,
@@ -62,8 +63,36 @@ final class ServiceController extends Controller
             'canActivate' => request()->user()?->can('services.activate') === true,
             'canSuspend' => request()->user()?->can('services.suspend') === true,
             'canTerminate' => request()->user()?->can('services.terminate') === true,
+            'canChangePlan' => request()->user()?->can('services.change_plan') === true,
             'canDisconnectSession' => request()->user()?->can('network.disconnect') === true,
+            'plans' => Plan::query()
+                ->where('status', 'active')
+                ->where('id', '<>', $service->plan_id)
+                ->orderBy('name')
+                ->get(['id', 'public_id', 'name', 'download_kbps', 'upload_kbps', 'duration_days', 'amount_minor', 'currency']),
         ]);
+    }
+
+    public function changePlan(Request $request, Service $service, ChangeServicePlan $change): RedirectResponse
+    {
+        $this->authorize('changePlan', $service);
+        $validated = $request->validate([
+            'plan_id' => ['required', 'integer', 'exists:plans,id'],
+            'effective' => ['required', 'string', 'in:immediate,next_cycle'],
+        ]);
+        $user = $request->user();
+        abort_unless($user instanceof User, 401);
+        $plan = Plan::query()->whereKey((int) $validated['plan_id'])->where('status', 'active')->firstOrFail();
+
+        try {
+            $change->handle($service, $plan, (string) $validated['effective'], $user);
+        } catch (DomainException $exception) {
+            throw ValidationException::withMessages(['plan_id' => $exception->getMessage()]);
+        }
+
+        return $this->redirectToCustomer($service, $validated['effective'] === 'immediate'
+            ? 'Service plan changed and network synchronization queued.'
+            : 'Service plan change scheduled for the next renewal.');
     }
 
     public function create(Customer $customer): Response
