@@ -9,7 +9,7 @@ use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
 final class ServiceStatusChanged implements ShouldBroadcast, ShouldDispatchAfterCommit
 {
     public function __construct(
-        public readonly int $tenantId,
+        public readonly string $tenantPublicId,
         public readonly string $serviceId,
         public readonly string $fromStatus,
         public readonly string $toStatus,
@@ -17,7 +17,7 @@ final class ServiceStatusChanged implements ShouldBroadcast, ShouldDispatchAfter
 
     public function broadcastOn(): array
     {
-        return [new PrivateChannel('tenant.'.$this->tenantId)];
+        return [new PrivateChannel('tenant.'.$this->tenantPublicId)];
     }
 
     public function broadcastAs(): string

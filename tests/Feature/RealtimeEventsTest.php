@@ -27,5 +27,6 @@ it('broadcasts service status changes only after the state transaction commits',
 
     expect($event)->toBeInstanceOf(ServiceStatusChanged::class)
         ->and($event->broadcastAs())->toBe('service.status.changed')
-        ->and($event->broadcastOn()[0]->name)->toBe('private-tenant.'.$tenant->id);
+        ->and($event->tenantPublicId)->toBe($tenant->public_id)
+        ->and($event->broadcastOn()[0]->name)->toBe('private-tenant.'.$tenant->public_id);
 });

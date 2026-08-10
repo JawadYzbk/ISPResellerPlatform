@@ -55,7 +55,8 @@ final class ServiceStateMachine
                 'to_status' => $target->value,
                 'metadata' => $metadata,
             ]);
-            event(new ServiceStatusChanged($locked->tenant_id, $locked->public_id, $from->value, $target->value));
+            $locked->loadMissing('tenant');
+            event(new ServiceStatusChanged($locked->tenant->public_id, $locked->public_id, $from->value, $target->value));
 
             if ($locked->provisioning_mode === ProvisioningMode::Radius) {
                 app(RadiusSyncService::class)->sync($locked);
