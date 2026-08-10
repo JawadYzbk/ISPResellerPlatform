@@ -22,7 +22,7 @@ Last updated: 2026-08-10
 | ISP-060/061/062 | Ticket lifecycle, tenant-timezone business-hours SLA clock, scheduled resolved-ticket auto-close, work-order completion and serialized inventory assignment | delivered |
 | ISP-070/071/072 | Sanctum API, cursor pagination, query whitelists, idempotency middleware, customer portal OTP/session and billing history, collector batches, service discovery/state actions and OpenAPI slice | delivered for current customer/payment/service scope |
 | ISP-073 | Technician-assigned work-order list/detail endpoints and idempotent completion | delivered for current work-order scope |
-| ISP-080/082/083 | FreeRADIUS sync, current sessions, scheduled stale-session cleanup, daily usage rollups and cycle quota/FUP command foundation | foundation delivered |
+| ISP-080/082/083 | FreeRADIUS sync, current sessions, scheduled stale-session cleanup, daily usage rollups, cycle quota/FUP command foundation and idempotent warning notifications | foundation delivered |
 | ISP-040/063 | POP/router inventory, encrypted connection tests, repeated-failure incidents and bounded router health observations | foundation delivered |
 | ISP-090/091 | Basic partner hierarchy/wallets, tenant finance report and CSV export | foundation delivered |
 | ISP-092 | Manager attention queue with deep links plus live NOC signal panels for routers, sessions, commands, drift and incidents | delivered for current dashboard scope |
@@ -34,7 +34,7 @@ Last updated: 2026-08-10
 - Real RouterOS/CoA integration against a CHR lab, automatic reconciliation and device inventory healing.
 - Provider integrations (WhatsApp/SMS/email/FCM), callbacks, fallback policy and full notification automation coverage.
 - Customer self-service online payments through a real gateway and realtime events.
-- Quota-threshold customer notifications and router-specific FUP profile integration.
+- Router-specific FUP profile integration.
 - Full reseller price books/commissions/settlements, service/plan/balance/equipment import coverage, XLSX workflows and expanded reports beyond finance.
 - Monitoring alerts and full deferred owner dashboard/panel streaming.
 - Security operations: key rotation, backup/restore rehearsal, dependency audit and Sentry wiring.
