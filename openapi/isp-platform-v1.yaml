@@ -294,6 +294,49 @@ paths:
         '403': { description: Missing service plan-change capability }
         '409': { description: Idempotency key reused for a different request }
         '422': { description: Plan change cannot be applied }
+  /services/{service}/renewal-previews:
+    post:
+      summary: Preview a service renewal before issuing its invoice
+      parameters:
+        - in: path
+          name: service
+          required: true
+          schema: { type: string, description: Service public ULID }
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                periods: { type: integer, minimum: 1, maximum: 12, default: 1 }
+      responses:
+        '200': { description: Signed short-lived preview with amount and new expiry }
+        '403': { description: Missing service view capability }
+        '422': { description: Renewal cannot be previewed }
+  /services/{service}/renewals:
+    post:
+      summary: Issue an invoice for a previously previewed service renewal
+      parameters:
+        - in: path
+          name: service
+          required: true
+          schema: { type: string, description: Service public ULID }
+        - in: header
+          name: X-Idempotency-Key
+          required: true
+          schema: { type: string, maxLength: 120 }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RenewalRequest'
+      responses:
+        '202': { description: Renewal invoice issued; service is extended after full payment }
+        '403': { description: Missing service view capability }
+        '409': { description: Idempotency key reused for a different request }
+        '422': { description: Preview is invalid or expired }
   /payments:
     post:
       summary: Record a customer payment
@@ -1101,6 +1144,12 @@ components:
       properties:
         plan_uuid: { type: string, description: Target plan public ULID }
         effective: { type: string, enum: [immediate, next_cycle] }
+    RenewalRequest:
+      type: object
+      required: [preview_id, periods]
+      properties:
+        preview_id: { type: string, description: Signed short-lived renewal preview token }
+        periods: { type: integer, minimum: 1, maximum: 12 }
     CollectorSyncPayment:
       type: object
       required: [customer_uuid, amount, currency, method, idempotency_key]
