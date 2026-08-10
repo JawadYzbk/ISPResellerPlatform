@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\CustomerApiController;
 use App\Http\Controllers\Api\CustomerImportController;
 use App\Http\Controllers\Api\HealthController;
 use App\Http\Controllers\Api\NetworkCommandController;
+use App\Http\Controllers\Api\PartnerApiController;
 use App\Http\Controllers\Api\PaymentApiController;
 use App\Http\Controllers\Api\PortalAuthController;
 use App\Http\Controllers\Api\PortalBillingController;
@@ -38,6 +39,9 @@ Route::prefix('v1')->group(function (): void {
         Route::post('/imports/customers', [CustomerImportController::class, 'store'])->name('api.imports.customers.store');
         Route::post('/imports/{import}/rollback', [CustomerImportController::class, 'rollback'])->name('api.imports.rollback');
         Route::post('/payments', [PaymentApiController::class, 'store'])->middleware('idempotency')->name('api.payments.store');
+        Route::get('/partners', [PartnerApiController::class, 'index'])->name('api.partners.index');
+        Route::get('/partners/{partner}', [PartnerApiController::class, 'show'])->name('api.partners.show');
+        Route::post('/partners/{partner}/wallet-top-ups', [PartnerApiController::class, 'topUp'])->middleware('idempotency')->name('api.partners.wallet-top-ups');
         Route::post('/collector/payments/batch', [CollectorPaymentController::class, 'store'])->middleware('idempotency')->name('api.collector.payments.batch');
         Route::post('/network/commands/{command}/retry', [NetworkCommandController::class, 'retry'])->middleware('idempotency')->name('api.network.commands.retry');
         Route::get('/technician/work-orders', [TechnicianWorkOrderController::class, 'index'])->name('api.technician.work-orders.index');
