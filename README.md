@@ -93,6 +93,8 @@ npm run typecheck
 npm run build
 ```
 
+For browser acceptance, install Chromium once with `npx playwright install chromium`, then run `npm run e2e` against the local seeded application.
+
 ## Architecture
 
 The code is a modular monolith. Controllers validate and delegate to one Action. Actions own domain transactions. Tenant-owned models use `BelongsToTenant`, which adds a global scope and stamps writes from the explicit `Tenancy` context. Provisioning side effects use the outbox and queue; an explicit operator-triggered router connection test is the one bounded synchronous diagnostic and has a five-second timeout.

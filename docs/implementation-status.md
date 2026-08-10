@@ -6,7 +6,7 @@ Last updated: 2026-08-10
 
 | Ticket | Slice | Status |
 |---|---|---|
-| ISP-001 | Laravel 13 runtime, React/Inertia frontend, Docker, CI with dependency audits, PHP/JavaScript formatting, PCOV coverage output and API-contract artifacts | foundation delivered |
+| ISP-001 | Laravel 13 runtime, React/Inertia frontend, Docker, CI with dependency audits, PHP/JavaScript formatting, PCOV coverage output, API-contract artifacts, and scheduled Chromium browser acceptance | foundation delivered |
 | ISP-002 | Tenant context and integer money primitive | foundation delivered |
 | ISP-003 | Initial architecture conventions and tests | foundation delivered |
 | ISP-010 | Tenant, branch, zone and document-sequence schema | foundation delivered |
@@ -34,7 +34,7 @@ Last updated: 2026-08-10
 | ISP-011 | Capability seeding now reconciles legacy tenant users whose `role` column contains any supported role, including the full permission set and two-factor policy | delivered; run `php artisan db:seed --class=CapabilitySeeder` once on an existing environment |
 | ISP-102/103 | Encrypted backup package configuration, dependency health, scheduler/queue-worker heartbeats, daily ledger invariant checks and privacy-safe Sentry wiring | repository wiring delivered; local encrypted SQLite and disposable Docker PostgreSQL/MinIO backup/restore rehearsals passed; off-site retention, production secret recovery, second-person restore and external alert routing remain |
 | ISP-101 | Lazy Inertia page chunks and production frontend bundle audit | coherent 200-customer demo seed plus reproducible 50k-service seed/benchmark commands delivered; isolated PostgreSQL 18.4 and PostgreSQL 17 50k data/query-plan benchmarks passed; production-shaped pool and external cold-cache acceptance remain |
-| ISP-104 | Administrator, operator and field-app guides, mobile API handover, deployment runbook and incident runbook | repository documentation plus screenshot-led local operator walkthrough delivered; approved-tenant execution, production sign-off and pilot handover remain |
+| ISP-104 | Administrator, operator and field-app guides, mobile API handover, deployment runbook and incident runbook, plus seeded staff browser acceptance journeys | repository documentation, screenshot-led local operator walkthrough, and Chromium checks for login, partner workspace, customer/settings access, and RTL layout delivered; approved-tenant execution, production sign-off and pilot handover remain |
 
 ## In progress
 
