@@ -5,13 +5,17 @@ namespace App\Http\Controllers\Web;
 use App\Actions\CompleteWorkOrder;
 use App\Actions\GetWorkOrderDetails;
 use App\Actions\ListWorkOrders;
+use App\Actions\ScheduleWorkOrder;
 use App\Http\Controllers\Controller;
+use App\Models\Tenant;
 use App\Models\User;
 use App\Models\WorkOrder;
 use Carbon\CarbonImmutable;
+use DomainException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -75,10 +79,27 @@ final class WorkOrderOperationsController extends Controller
         return redirect()->route('operations.work-orders')->with('success', "Work order {$workOrder->number} completed.");
     }
 
+    public function schedule(Request $request, WorkOrder $workOrder, ScheduleWorkOrder $schedule): RedirectResponse
+    {
+        $user = $request->user();
+        abort_unless($user instanceof User && $user->can('workorders.complete'), 403);
+        $validated = $request->validate(['scheduled_at' => ['required', 'date']]);
+        $timezone = $this->tenantTimezone($user);
+        try {
+            $schedule->handle($workOrder, $user, CarbonImmutable::parse((string) $validated['scheduled_at'], $timezone)->utc());
+        } catch (DomainException $exception) {
+            throw ValidationException::withMessages(['scheduled_at' => $exception->getMessage()]);
+        }
+
+        return redirect()->route('operations.work-orders.show', $workOrder->public_id)->with('success', "Work order {$workOrder->number} scheduled.");
+    }
+
     public function show(Request $request, WorkOrder $workOrder, GetWorkOrderDetails $getDetails): Response
     {
-        abort_unless($request->user()?->can('workorders.complete') === true, 403);
+        $user = $request->user();
+        abort_unless($user instanceof User && $user->can('workorders.complete'), 403);
         $workOrder = $getDetails->handle($workOrder);
+        $timezone = $this->tenantTimezone($user);
 
         return Inertia::render('Operations/WorkOrderShow', [
             'workOrder' => [
@@ -104,11 +125,25 @@ final class WorkOrderOperationsController extends Controller
                     'created_at' => $event->created_at?->toIso8601String(),
                 ])->values(),
             ],
+            'scheduledAtLocal' => $this->localDate($workOrder->scheduled_at, $timezone),
+            'timezone' => $timezone,
         ]);
     }
 
     private function isoDate(mixed $value): ?string
     {
         return $value === null ? null : CarbonImmutable::parse((string) $value)->toIso8601String();
+    }
+
+    private function localDate(mixed $value, string $timezone): ?string
+    {
+        return $value === null ? null : CarbonImmutable::parse((string) $value)->setTimezone($timezone)->format('Y-m-d\TH:i');
+    }
+
+    private function tenantTimezone(User $user): string
+    {
+        $tenant = $user->tenant()->first();
+
+        return $tenant instanceof Tenant && filled($tenant->timezone) ? $tenant->timezone : 'UTC';
     }
 }

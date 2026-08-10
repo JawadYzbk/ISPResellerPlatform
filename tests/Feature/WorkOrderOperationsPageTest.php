@@ -7,6 +7,7 @@ use App\Models\Service;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Models\WorkOrder;
+use App\Models\WorkOrderEvent;
 use App\Support\Tenancy;
 use Database\Seeders\CapabilitySeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -80,4 +81,22 @@ it('does not expose work orders from another tenant', function (): void {
     $this->actingAs($user)->get(route('operations.work-orders'))->assertOk()->assertInertia(fn ($page) => $page->where('workOrders.total', 0));
     $this->actingAs($user)->get(route('operations.work-orders.show', $order->public_id))->assertNotFound();
     $this->actingAs($user)->post(route('operations.work-orders.complete', $order->public_id))->assertNotFound();
+});
+
+it('reschedules an active work order and records the schedule change', function (): void {
+    $tenant = Tenant::create(['name' => 'Northline', 'slug' => 'northline', 'base_currency' => 'USD', 'collection_currency' => 'USD', 'timezone' => 'Asia/Beirut']);
+    $user = User::create(['tenant_id' => $tenant->id, 'name' => 'Operations manager', 'email' => 'operations-schedule@example.test', 'password' => Hash::make('password'), 'role' => 'operations_manager']);
+    app(CapabilitySeeder::class)->run();
+    app(Tenancy::class)->set($tenant);
+    $user->assignRole('operations_manager');
+    $user->forceFill(['last_authenticated_at' => now()])->save();
+    $order = WorkOrder::create(['number' => 'WO-SCHEDULE-001', 'type' => 'repair', 'status' => WorkOrderStatus::Assigned, 'scheduled_at' => '2026-08-10 08:00:00']);
+
+    $this->actingAs($user)
+        ->post(route('operations.work-orders.schedule', $order->public_id), ['scheduled_at' => '2026-08-12T15:30'])
+        ->assertRedirect(route('operations.work-orders.show', $order->public_id));
+
+    app(Tenancy::class)->set($tenant);
+    expect($order->refresh()->scheduled_at?->toIso8601String())->toBe('2026-08-12T12:30:00+00:00')
+        ->and(WorkOrderEvent::query()->where('work_order_id', $order->id)->where('event_type', 'rescheduled')->count())->toBe(1);
 });
