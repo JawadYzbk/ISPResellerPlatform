@@ -20,9 +20,10 @@ final class ServiceStateMachine
 
     /** @var array<string, list<string>> */
     private const TRANSITIONS = [
-        'pending' => ['active', 'suspended', 'terminated'],
-        'active' => ['suspended', 'terminated'],
+        'pending' => ['active', 'suspended', 'paused', 'terminated'],
+        'active' => ['suspended', 'paused', 'terminated'],
         'suspended' => ['active', 'terminated'],
+        'paused' => ['active', 'terminated'],
         'terminated' => [],
     ];
 
@@ -47,7 +48,8 @@ final class ServiceStateMachine
                 'network_state' => NetworkState::PendingSync,
                 'desired_state_version' => $locked->desired_state_version + 1,
                 'activated_at' => $target === ServiceStatus::Active ? ($locked->activated_at ?? now()) : $locked->activated_at,
-                'suspension_reason' => $target === ServiceStatus::Suspended ? ($metadata['reason'] ?? $locked->suspension_reason) : null,
+                'suspension_reason' => in_array($target, [ServiceStatus::Suspended, ServiceStatus::Paused], true) ? ($metadata['reason'] ?? $locked->suspension_reason) : null,
+                'paused_until' => $target === ServiceStatus::Paused ? ($metadata['resume_at'] ?? null) : null,
             ])->save();
 
             ServiceEvent::create([

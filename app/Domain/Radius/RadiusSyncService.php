@@ -14,7 +14,7 @@ final class RadiusSyncService
     public function sync(Service $service): void
     {
         $service->loadMissing('plan');
-        $group = $service->status === ServiceStatus::Suspended ? 'suspended' : 'plan-'.$service->plan_id;
+        $group = in_array($service->status, [ServiceStatus::Suspended, ServiceStatus::Paused], true) ? 'suspended' : 'plan-'.$service->plan_id;
         DB::transaction(function () use ($service, $group): void {
             RadiusUser::updateOrCreate(
                 ['service_id' => $service->id, 'username' => $service->username, 'attribute' => 'Cleartext-Password'],

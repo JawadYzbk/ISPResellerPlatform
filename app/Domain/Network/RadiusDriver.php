@@ -18,7 +18,7 @@ final class RadiusDriver implements NetworkDriver
         $service->loadMissing(['plan', 'router']);
         $this->sync->sync($service);
 
-        if (! in_array($command->action, ['suspend', 'disconnect', 'throttle', 'change_plan'], true)) {
+        if (! in_array($command->action, ['suspend', 'pause', 'disconnect', 'throttle', 'change_plan'], true)) {
             return DriverResult::success('RADIUS state synchronized.', ['action' => $command->action, 'coa_status' => 'not_required']);
         }
         if ($service->router === null) {

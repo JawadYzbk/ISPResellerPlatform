@@ -36,3 +36,21 @@ it('requires an explicit reactivation for terminated services', function (): voi
     expect(app(ServiceStateMachine::class)->transition($service, ServiceStatus::Active, explicitReactivation: true)->status)
         ->toBe(ServiceStatus::Active);
 });
+
+it('pauses an active service without changing its billing expiry', function (): void {
+    $tenant = Tenant::create(['name' => 'Eastline', 'slug' => 'eastline', 'base_currency' => 'USD', 'collection_currency' => 'USD']);
+    app(Tenancy::class)->set($tenant);
+    $expiresAt = now()->addDays(14)->startOfSecond();
+    $resumeAt = now()->addDays(3)->startOfSecond();
+    $service = Service::factory()->create(['status' => ServiceStatus::Active, 'expires_at' => $expiresAt]);
+
+    $updated = app(ServiceStateMachine::class)->transition($service, ServiceStatus::Paused, metadata: [
+        'reason' => 'customer_requested',
+        'resume_at' => $resumeAt->toDateTimeString(),
+    ]);
+
+    expect($updated->status)->toBe(ServiceStatus::Paused)
+        ->and($updated->suspension_reason)->toBe('customer_requested')
+        ->and($updated->paused_until?->equalTo($resumeAt))->toBeTrue()
+        ->and($updated->expires_at?->equalTo($expiresAt))->toBeTrue();
+});

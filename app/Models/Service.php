@@ -25,6 +25,7 @@ use Illuminate\Support\Str;
  * @property int $current_period_bytes
  * @property array<string, mixed>|null $metadata
  * @property string|null $suspension_reason
+ * @property Carbon|null $paused_until
  * @property Carbon|null $activated_at
  * @property Carbon|null $fup_applied_at
  * @property Carbon|null $expires_at
@@ -34,13 +35,13 @@ class Service extends Model
     /** @use HasFactory<ServiceFactory> */
     use Auditable, BelongsToTenant, HasFactory, SoftDeletes;
 
-    protected $fillable = ['tenant_id', 'customer_id', 'plan_id', 'router_id', 'username', 'password_encrypted', 'status', 'provisioning_mode', 'network_state', 'desired_state_version', 'current_period_bytes', 'fup_applied_at', 'activated_at', 'expires_at', 'suspension_reason', 'metadata'];
+    protected $fillable = ['tenant_id', 'customer_id', 'plan_id', 'router_id', 'username', 'password_encrypted', 'status', 'provisioning_mode', 'network_state', 'desired_state_version', 'current_period_bytes', 'fup_applied_at', 'activated_at', 'expires_at', 'suspension_reason', 'paused_until', 'metadata'];
 
     protected $hidden = ['password_encrypted'];
 
     protected function casts(): array
     {
-        return ['status' => ServiceStatus::class, 'provisioning_mode' => ProvisioningMode::class, 'network_state' => NetworkState::class, 'password_encrypted' => 'encrypted', 'metadata' => 'array', 'activated_at' => 'datetime', 'expires_at' => 'datetime', 'fup_applied_at' => 'datetime', 'desired_state_version' => 'integer', 'current_period_bytes' => 'integer'];
+        return ['status' => ServiceStatus::class, 'provisioning_mode' => ProvisioningMode::class, 'network_state' => NetworkState::class, 'password_encrypted' => 'encrypted', 'metadata' => 'array', 'activated_at' => 'datetime', 'expires_at' => 'datetime', 'paused_until' => 'datetime', 'fup_applied_at' => 'datetime', 'desired_state_version' => 'integer', 'current_period_bytes' => 'integer'];
     }
 
     protected static function booted(): void
