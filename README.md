@@ -30,7 +30,7 @@ The current foundation is live:
 - Router/POP inventory and onboarding, encrypted connection tests and repeated-failure incidents
 - Tenant-safe POP administration, upstream-link records, and capability-gated IP pool/address inventory
 - Personal customer saved views for repeatable zone, status, and expiry queues
-- Browser-assisted customer GPS capture with validated coordinates and OpenStreetMap handoff
+- Browser-assisted customer GPS capture with validated coordinates, Leaflet/OpenStreetMap map views and external handoff
 - Tenant-private customer document upload and download with recent-authentication, classification and retention controls
 - Append-only credit notes with ledger-backed invoice balance reduction
 - Scheduled RouterOS subscriber reconciliation with report-only defaults and explicit device-side healing
@@ -43,6 +43,7 @@ The current foundation is live:
 - Basic reseller hierarchy and journal-linked wallet funding/debiting with credit limits
 - Operations report with service/network/work-order/incident status, low-stock signals and CSV export
 - Finance report with collection rate, allocation-based aging, plan/zone/POP revenue, upstream cost and margin, collector performance, retention, ARPU and top-usage breakdowns
+- Server-generated A4 invoice and receipt PDFs with tenant-scoped billing authorization
 - Deferred owner dashboard metrics and manager attention panels with server-rendered loading fallbacks
 - Transactional APP_KEY rotation command with an operator runbook for encrypted credentials
 - Coherent demo tenant seed with 200 customers/services, billing history, routers/POPs, tickets, work orders and serialized stock
