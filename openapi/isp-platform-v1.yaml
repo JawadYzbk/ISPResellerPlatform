@@ -1101,7 +1101,7 @@ paths:
           schema: { type: string, format: date }
         - in: query
           name: status
-          schema: { type: string, enum: [scheduled, assigned, en_route, in_progress, completed, cancelled, failed] }
+          schema: { type: string, enum: [pending, assigned, en_route, in_progress, completed, cancelled, failed] }
       responses:
         '200': { description: Assigned work-order summaries }
         '403': { description: Missing work-order capability }
@@ -1213,6 +1213,55 @@ paths:
         '404': { description: Work order is not assigned to the authenticated technician }
         '409': { description: Insufficient stock or material cannot be consumed }
         '422': { description: Invalid material payload }
+  /technician/work-orders/{workOrder}/status:
+    post:
+      summary: Update the assigned technician's work-order progress
+      parameters:
+        - in: path
+          name: workOrder
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              properties:
+                status: { type: string, enum: [en_route, in_progress] }
+                at: { type: string, format: date-time }
+      responses:
+        '200': { description: Updated work-order progress }
+        '403': { description: Missing work-order capability }
+        '404': { description: Work order is not assigned to the authenticated technician }
+        '409': { description: Invalid work-order status transition }
+        '422': { description: Invalid status payload }
+  /technician/work-orders/{workOrder}/fail:
+    post:
+      summary: Mark an assigned work order as failed
+      parameters:
+        - in: path
+          name: workOrder
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [reason]
+              properties:
+                reason: { type: string, maxLength: 1000 }
+                notes: { type: string, maxLength: 5000 }
+                reschedule_at: { type: string, format: date-time }
+      responses:
+        '200': { description: Failed work order with optional reschedule time }
+        '403': { description: Missing work-order capability }
+        '404': { description: Work order is not assigned to the authenticated technician }
+        '409': { description: Work order cannot be failed from its current state }
+        '422': { description: Invalid failure payload }
   /technician/work-orders/{workOrder}/complete:
     post:
       summary: Complete an assigned work order idempotently
