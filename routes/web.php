@@ -5,6 +5,7 @@ use App\Http\Controllers\Auth\LogoutController;
 use App\Http\Controllers\Auth\ReauthenticateController;
 use App\Http\Controllers\Auth\TwoFactorController;
 use App\Http\Controllers\Web\BillingController;
+use App\Http\Controllers\Web\CashShiftOperationsController;
 use App\Http\Controllers\Web\CredentialOperationsController;
 use App\Http\Controllers\Web\CustomerController;
 use App\Http\Controllers\Web\DashboardController;
@@ -80,6 +81,9 @@ Route::middleware(['auth', 'tenant', '2fa'])->group(function (): void {
     Route::get('/billing/invoices', [BillingController::class, 'invoices'])->name('billing.invoices');
     Route::post('/billing/invoices/{invoice:public_id}/issue', [BillingController::class, 'issue'])->name('billing.invoices.issue');
     Route::get('/billing/payments', [BillingController::class, 'payments'])->name('billing.payments');
+    Route::get('/billing/shifts', [CashShiftOperationsController::class, 'index'])->name('billing.shifts');
+    Route::post('/billing/shifts/open', [CashShiftOperationsController::class, 'open'])->name('billing.shifts.open');
+    Route::post('/billing/shifts/{shift:public_id}/close', [CashShiftOperationsController::class, 'close'])->middleware('recent-auth')->name('billing.shifts.close');
     Route::post('/billing/payments/{payment:public_id}/reverse', [BillingController::class, 'reversePayment'])->middleware('recent-auth')->name('billing.payments.reverse');
     Route::get('/operations/tickets', [TicketOperationsController::class, 'index'])->name('operations.tickets');
     Route::get('/operations/tickets/{ticket:public_id}', [TicketOperationsController::class, 'show'])->name('operations.tickets.show');

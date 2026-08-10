@@ -5,12 +5,22 @@ namespace App\Models;
 use App\Enums\CashShiftStatus;
 use App\Models\Concerns\Auditable;
 use App\Models\Concerns\BelongsToTenant;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
-/** @property User $user */
+/**
+ * @property User $user
+ * @property CashShiftStatus $status
+ * @property Carbon|null $opened_at
+ * @property Carbon|null $closed_at
+ * @property array<string, int>|null $system_totals
+ * @property array<string, int>|null $declared_totals
+ * @property bool $variance
+ * @property string|null $variance_note
+ */
 class CashShift extends Model
 {
     use Auditable, BelongsToTenant;

@@ -20,6 +20,19 @@ final readonly class CloseCashShift implements Action
                 throw new DomainException('The cash shift is already closed.');
             }
             $systemTotals = $locked->payments()->where('status', 'posted')->selectRaw('currency, sum(amount) as total')->groupBy('currency')->pluck('total', 'currency')->map(fn ($value): int => (int) $value)->all();
+            $currencies = array_unique([...array_keys($systemTotals), ...array_keys($declaredTotals)]);
+            $systemTotals = array_reduce($currencies, function (array $totals, string $currency) use ($systemTotals): array {
+                $totals[$currency] = $systemTotals[$currency] ?? 0;
+
+                return $totals;
+            }, []);
+            $declaredTotals = array_reduce($currencies, function (array $totals, string $currency) use ($declaredTotals): array {
+                $totals[$currency] = (int) ($declaredTotals[$currency] ?? 0);
+
+                return $totals;
+            }, []);
+            ksort($systemTotals);
+            ksort($declaredTotals);
             $variance = $systemTotals !== $declaredTotals;
             if ($variance && blank($varianceNote)) {
                 throw new DomainException('A variance note is required when declared cash does not match the system total.');
