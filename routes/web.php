@@ -9,6 +9,7 @@ use App\Http\Controllers\Web\CredentialOperationsController;
 use App\Http\Controllers\Web\CustomerController;
 use App\Http\Controllers\Web\DashboardController;
 use App\Http\Controllers\Web\InventoryOperationsController;
+use App\Http\Controllers\Web\InvitationController;
 use App\Http\Controllers\Web\NetworkOperationsController;
 use App\Http\Controllers\Web\PartnerController;
 use App\Http\Controllers\Web\PlanOperationsController;
@@ -19,6 +20,7 @@ use App\Http\Controllers\Web\SecurityController;
 use App\Http\Controllers\Web\ServiceController;
 use App\Http\Controllers\Web\SettingsController;
 use App\Http\Controllers\Web\TicketOperationsController;
+use App\Http\Controllers\Web\UserOperationsController;
 use App\Http\Controllers\Web\WorkOrderOperationsController;
 use Illuminate\Support\Facades\Route;
 
@@ -32,6 +34,8 @@ Route::prefix('portal/{tenant:slug}')->group(function (): void {
 Route::middleware('guest')->group(function (): void {
     Route::get('/login', [LoginController::class, 'create'])->name('login');
     Route::post('/login', [LoginController::class, 'store'])->middleware('throttle:login')->name('login.store');
+    Route::get('/invite/{token}', [InvitationController::class, 'show'])->name('invitations.show');
+    Route::post('/invite/{token}', [InvitationController::class, 'accept'])->name('invitations.accept');
 });
 
 Route::middleware(['auth', 'tenant'])->group(function (): void {
@@ -51,6 +55,8 @@ Route::middleware(['auth', 'tenant', '2fa'])->group(function (): void {
     Route::get('/dashboard', DashboardController::class)->name('dashboard');
     Route::get('/settings/general', [SettingsController::class, 'general'])->name('settings.general');
     Route::put('/settings/general', [SettingsController::class, 'updateGeneral'])->middleware('recent-auth')->name('settings.general.update');
+    Route::get('/settings/users', [UserOperationsController::class, 'index'])->name('settings.users');
+    Route::post('/settings/users/invite', [UserOperationsController::class, 'invite'])->middleware('recent-auth')->name('settings.users.invite');
     Route::get('/customers', [CustomerController::class, 'index'])->name('customers.index');
     Route::get('/customers/create', [CustomerController::class, 'create'])->name('customers.create');
     Route::post('/customers', [CustomerController::class, 'store'])->name('customers.store');
