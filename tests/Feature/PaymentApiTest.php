@@ -3,6 +3,7 @@
 use App\Actions\CreateInvoice;
 use App\Actions\IssueInvoice;
 use App\Models\Customer;
+use App\Models\ExchangeRate;
 use App\Models\Payment;
 use App\Models\Plan;
 use App\Models\Tenant;
@@ -60,4 +61,40 @@ it('rejects a reused API idempotency key with a different request', function ():
 
     $this->withToken($token)->withHeaders($headers)->postJson('/api/v1/payments', $payload)->assertCreated();
     $this->withToken($token)->withHeaders($headers)->postJson('/api/v1/payments', [...$payload, 'amount' => 200])->assertStatus(409);
+});
+
+it('records a multi-currency API payment with the FX snapshot and audit fields', function (): void {
+    $tenant = Tenant::create(['name' => 'Lebanon', 'slug' => 'lebanon', 'base_currency' => 'USD', 'collection_currency' => 'LBP']);
+    app(Tenancy::class)->set($tenant);
+    ExchangeRate::create(['base_currency' => 'USD', 'quote_currency' => 'LBP', 'rate_numerator' => 90_000, 'rate_denominator' => 1, 'effective_from' => now()->subDay(), 'source' => 'treasury']);
+    $user = User::create(['tenant_id' => $tenant->id, 'name' => 'Cashier', 'email' => 'fx-api@example.test', 'password' => Hash::make('password'), 'role' => 'cashier']);
+    app(CapabilitySeeder::class)->run();
+    $user->assignRole('cashier');
+    $customer = Customer::factory()->create(['balance_currency' => 'USD']);
+    $plan = Plan::factory()->create(['amount_minor' => 100, 'currency' => 'USD']);
+    $plan->prices()->create(['currency' => 'USD', 'amount_minor' => 100, 'effective_from' => now()->subDay()]);
+    $invoice = app(IssueInvoice::class)->handle(app(CreateInvoice::class)->handle($customer, $plan));
+    $token = $user->createToken('fx-api', ['api', 'staff:operator'])->plainTextToken;
+
+    $response = $this->withToken($token)->withHeader('X-Idempotency-Key', 'fx-api-001')->postJson('/api/v1/payments', [
+        'customer_id' => $customer->public_id,
+        'invoice_id' => $invoice->public_id,
+        'amount' => 10_000_000,
+        'currency' => 'LBP',
+        'method' => 'cash',
+        'fx_override' => true,
+        'fx_rate_numerator' => 1,
+        'fx_rate_denominator' => 100_000,
+        'fx_override_reason' => 'Approved counter rate',
+        'reference' => 'counter-001',
+    ]);
+
+    $response->assertCreated()
+        ->assertJsonPath('amount', 10_000_000)
+        ->assertJsonPath('currency', 'LBP')
+        ->assertJsonPath('ledger_amount', 100)
+        ->assertJsonPath('ledger_currency', 'USD')
+        ->assertJsonPath('base_amount', 100)
+        ->assertJsonPath('fx_rate_overridden', true)
+        ->assertJsonPath('reference', 'counter-001');
 });
