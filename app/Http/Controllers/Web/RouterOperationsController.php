@@ -3,9 +3,13 @@
 namespace App\Http\Controllers\Web;
 
 use App\Actions\CheckRouterHealth;
+use App\Actions\CreateRouter;
 use App\Actions\ListRouters;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\CreateRouterRequest;
+use App\Models\Pop;
 use App\Models\Router;
+use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -51,7 +55,27 @@ final class RouterOperationsController extends Controller
             'routers' => $routers,
             'filters' => $request->only(['status']),
             'canCheckHealth' => $user->can('network.view'),
+            'canCreate' => $user->can('network.provision'),
         ]);
+    }
+
+    public function create(Request $request): Response
+    {
+        abort_unless($request->user()?->can('network.provision') === true, 403);
+
+        return Inertia::render('Operations/RouterCreate', [
+            'pops' => Pop::query()->where('status', 'active')->orderBy('name')->get(['id', 'name', 'code']),
+        ]);
+    }
+
+    public function store(CreateRouterRequest $request, CreateRouter $createRouter): RedirectResponse
+    {
+        abort_unless($request->user()?->can('network.provision') === true, 403);
+        $user = $request->user();
+        abort_unless($user instanceof User && $user->tenant instanceof Tenant, 403);
+        $router = $createRouter->handle($request->validated(), $user->tenant);
+
+        return redirect()->route('operations.routers')->with('success', "Router {$router->name} registered.");
     }
 
     public function health(Request $request, Router $router, CheckRouterHealth $check): RedirectResponse

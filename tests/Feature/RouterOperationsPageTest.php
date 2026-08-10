@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Pop;
 use App\Models\Router;
 use App\Models\Service;
 use App\Models\Tenant;
@@ -56,4 +57,43 @@ it('does not expose routers from another tenant', function (): void {
 
     $this->actingAs($user)->get(route('operations.routers'))->assertOk()->assertInertia(fn ($page) => $page->where('routers.total', 0));
     $this->actingAs($user)->post(route('operations.routers.health', $router->public_id))->assertNotFound();
+});
+
+it('registers a router through the capability-gated web form without echoing secrets', function (): void {
+    $tenant = Tenant::create(['name' => 'Northline', 'slug' => 'northline', 'base_currency' => 'USD', 'collection_currency' => 'USD']);
+    $user = User::create(['tenant_id' => $tenant->id, 'name' => 'Network admin', 'email' => 'router-create@example.test', 'password' => Hash::make('password'), 'role' => 'tenant_owner']);
+    app(CapabilitySeeder::class)->run();
+    app(Tenancy::class)->set($tenant);
+    $user->assignRole('tenant_owner');
+    $pop = Pop::create(['name' => 'Central POP', 'code' => 'POP-CENTRAL', 'status' => 'active']);
+    $user->forceFill(['last_authenticated_at' => now()])->save();
+
+    $this->actingAs($user)
+        ->get(route('operations.routers.create'))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->component('Operations/RouterCreate')
+            ->where('pops.0.id', $pop->id)
+            ->missing('pops.0.password')
+        );
+
+    app(Tenancy::class)->set($tenant);
+    $response = $this->actingAs($user)
+        ->post(route('operations.routers.store'), [
+            'name' => 'Central MikroTik',
+            'host' => 'router.example.test',
+            'api_port' => 443,
+            'username' => 'api-user',
+            'password' => 'long-router-password',
+            'radius_secret' => 'long-radius-secret',
+            'coa_port' => 1700,
+            'tls_verify' => true,
+            'pop_id' => $pop->id,
+        ]);
+    $response->assertRedirect(route('operations.routers'));
+
+    app(Tenancy::class)->set($tenant);
+    $router = Router::query()->where('host', 'router.example.test')->firstOrFail();
+    expect($router->password_encrypted)->toBe('long-router-password')
+        ->and($router->radius_secret_encrypted)->toBe('long-radius-secret');
 });
