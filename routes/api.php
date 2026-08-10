@@ -13,6 +13,7 @@ use App\Http\Controllers\Api\PortalAuthController;
 use App\Http\Controllers\Api\PortalBillingController;
 use App\Http\Controllers\Api\PortalController;
 use App\Http\Controllers\Api\ServiceApiController;
+use App\Http\Controllers\Api\ServiceImportController;
 use App\Http\Controllers\Api\TechnicianWorkOrderController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -40,6 +41,8 @@ Route::prefix('v1')->group(function (): void {
         Route::post('/imports/customers', [CustomerImportController::class, 'store'])->name('api.imports.customers.store');
         Route::post('/imports/plans', [PlanImportController::class, 'store'])->name('api.imports.plans.store');
         Route::post('/imports/plans/{import}/rollback', [PlanImportController::class, 'rollback'])->name('api.imports.plans.rollback');
+        Route::post('/imports/services', [ServiceImportController::class, 'store'])->name('api.imports.services.store');
+        Route::post('/imports/services/{import}/rollback', [ServiceImportController::class, 'rollback'])->name('api.imports.services.rollback');
         Route::post('/imports/{import}/rollback', [CustomerImportController::class, 'rollback'])->name('api.imports.rollback');
         Route::post('/payments', [PaymentApiController::class, 'store'])->middleware('idempotency')->name('api.payments.store');
         Route::get('/partners', [PartnerApiController::class, 'index'])->name('api.partners.index');
