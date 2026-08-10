@@ -18,6 +18,7 @@ class CapabilitySeeder extends Seeder
         'operations_manager' => [
             'customers.view', 'customers.create', 'customers.update', 'customers.export',
             'services.view', 'services.create', 'services.activate', 'services.suspend', 'services.change_plan',
+            'plans.manage',
             'tickets.view', 'tickets.create', 'tickets.assign', 'tickets.close', 'workorders.complete',
             'reports.operations', 'reports.export', 'users.manage', 'audit.view',
         ],

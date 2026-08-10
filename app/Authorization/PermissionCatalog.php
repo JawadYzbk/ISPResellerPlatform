@@ -11,6 +11,7 @@ final class PermissionCatalog
         'customers.view', 'customers.create', 'customers.update', 'customers.export',
         'services.view', 'services.create', 'services.activate', 'services.suspend',
         'services.change_plan', 'services.force_resume',
+        'plans.manage',
         'billing.invoices.view', 'billing.invoices.issue', 'billing.adjustments.create',
         'payments.collect', 'payments.backdate', 'payments.void', 'refunds.approve',
         'wallets.view', 'wallets.fund', 'settlements.approve',

@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\HealthController;
 use App\Http\Controllers\Api\NetworkCommandController;
 use App\Http\Controllers\Api\PartnerApiController;
 use App\Http\Controllers\Api\PaymentApiController;
+use App\Http\Controllers\Api\PlanImportController;
 use App\Http\Controllers\Api\PortalAuthController;
 use App\Http\Controllers\Api\PortalBillingController;
 use App\Http\Controllers\Api\PortalController;
@@ -37,6 +38,8 @@ Route::prefix('v1')->group(function (): void {
         Route::post('/services/{service}/suspend', [ServiceApiController::class, 'suspend'])->middleware('idempotency')->name('api.services.suspend');
         Route::post('/services/{service}/resume', [ServiceApiController::class, 'resume'])->middleware('idempotency')->name('api.services.resume');
         Route::post('/imports/customers', [CustomerImportController::class, 'store'])->name('api.imports.customers.store');
+        Route::post('/imports/plans', [PlanImportController::class, 'store'])->name('api.imports.plans.store');
+        Route::post('/imports/plans/{import}/rollback', [PlanImportController::class, 'rollback'])->name('api.imports.plans.rollback');
         Route::post('/imports/{import}/rollback', [CustomerImportController::class, 'rollback'])->name('api.imports.rollback');
         Route::post('/payments', [PaymentApiController::class, 'store'])->middleware('idempotency')->name('api.payments.store');
         Route::get('/partners', [PartnerApiController::class, 'index'])->name('api.partners.index');

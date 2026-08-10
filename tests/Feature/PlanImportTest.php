@@ -2,6 +2,7 @@
 
 use App\Actions\ImportPlansCsv;
 use App\Actions\RollbackImport;
+use App\Models\Customer;
 use App\Models\Plan;
 use App\Models\Tenant;
 use App\Support\Tenancy;
@@ -64,7 +65,7 @@ it('rolls back imported plans while protecting plans already in use', function (
     ]), 'plans.csv');
     $plan = Plan::query()->where('slug', 'business-100')->firstOrFail();
     $plan->services()->create([
-        'customer_id' => \App\Models\Customer::factory()->create()->id,
+        'customer_id' => Customer::factory()->create()->id,
         'username' => 'business.100',
         'status' => 'active',
         'provisioning_mode' => 'manual',
@@ -72,5 +73,5 @@ it('rolls back imported plans while protecting plans already in use', function (
     ]);
 
     expect(fn (): int => app(RollbackImport::class)->handle($inUseBatch))
-        ->toThrow(\DomainException::class, 'already assigned to a service');
+        ->toThrow(DomainException::class, 'already assigned to a service');
 });
