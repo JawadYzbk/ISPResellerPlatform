@@ -33,6 +33,8 @@ Automatic overdue suspension runs hourly at minute 5. A renewal from `auto_overd
 
 Use **Billing -> Invoices** to search draft and issued invoices. A billing user with the invoice-issue capability can issue a draft from the queue; an issued invoice links to the customer payment form and shows the outstanding allocation-backed balance. Do not treat a displayed invoice as settled until the posted allocation is visible.
 
+Open an invoice number to inspect its immutable line snapshots, posted payment trail and outstanding balance. Use **Print invoice** for the current browser print layout. Open a receipt number from **Billing -> Payments** to inspect its allocation trail and use **Print receipt**; a reversed receipt stays visible and is never deleted.
+
 Use **Billing -> Payments** to search receipts by customer, status, or method. Reversed receipts remain visible for audit history and no longer count toward an invoice's outstanding balance. Reversing a posted receipt requires the payment-void capability and recent authentication; confirm the receipt number before submitting.
 
 Owners and staff with settings capability can use **Billing -> FX rates** to add an effective-dated ratio. Enter the exact numerator and denominator rather than a rounded decimal; add a new dated row when the market rate changes. Historical invoices and ledger entries keep their recorded FX snapshot, so changing the current rate does not rewrite past amounts.
