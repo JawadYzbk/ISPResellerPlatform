@@ -37,3 +37,37 @@ it('keeps direct persistence and transaction calls out of controllers', function
         expect($contents)->not->toMatch('/\\bDB::|::transaction\\(|::create\\(|->save\\(|->delete\\(/');
     }
 });
+
+it('keeps environment reads inside configuration files', function (): void {
+    foreach (['app', 'bootstrap', 'database', 'routes'] as $directory) {
+        foreach (File::allFiles(base_path($directory)) as $file) {
+            expect($file->getContents())->not->toMatch('/\\benv\\s*\\(/');
+        }
+    }
+});
+
+it('keeps Actions to one public handle method', function (): void {
+    foreach (File::allFiles(app_path('Actions')) as $file) {
+        $class = 'App\\Actions\\'.str_replace(['/', '\\', '.php'], ['\\', '\\', ''], $file->getRelativePathname());
+        if (! class_exists($class)) {
+            continue;
+        }
+
+        $reflection = new ReflectionClass($class);
+        $publicMethods = collect($reflection->getMethods(ReflectionMethod::IS_PUBLIC))
+            ->filter(fn (ReflectionMethod $method): bool => $method->getDeclaringClass()->getName() === $class && ! $method->isConstructor() && ! $method->isDestructor())
+            ->map(fn (ReflectionMethod $method): string => $method->getName())
+            ->values()
+            ->all();
+
+        expect($publicMethods)->toBe(['handle']);
+    }
+});
+
+it('keeps money columns in integer or rational representations', function (): void {
+    $moneyColumn = '/->(?:decimal|float)\\s*\\(\\s*[\'\"](?:[^\'\"]*(?:amount|balance|price|cost|fee|tax|rate)[^\'\"]*)[\'\"]/i';
+
+    foreach (File::allFiles(database_path('migrations')) as $file) {
+        expect($file->getContents())->not->toMatch($moneyColumn);
+    }
+});
