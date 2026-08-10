@@ -31,7 +31,7 @@ The current foundation is live:
 - Tenant-safe POP administration, upstream-link records, and capability-gated IP pool/address inventory
 - Personal customer saved views for repeatable zone, status, and expiry queues
 - Browser-assisted customer GPS capture with validated coordinates and OpenStreetMap handoff
-- Tenant-private customer document upload and download with recent-authentication controls
+- Tenant-private customer document upload and download with recent-authentication, classification and retention controls
 - Append-only credit notes with ledger-backed invoice balance reduction
 - Scheduled RouterOS subscriber reconciliation with report-only defaults and explicit device-side healing
 - Supplier credential workflows with permission, re-authentication and audit controls
