@@ -25,7 +25,7 @@ Last updated: 2026-08-10
 | ISP-080/082/083 | FreeRADIUS sync, current sessions, stale-session handling and daily usage rollups | delivered |
 | ISP-040/063 | POP/router inventory, encrypted connection tests and repeated-failure incidents | foundation delivered |
 | ISP-090/091 | Basic partner hierarchy/wallets and tenant finance report | foundation delivered |
-| ISP-092 | Manager attention queue with deep links for expired services, paid provisioning failures, unallocated payments, stale sessions and low reseller balances | delivered for current dashboard scope |
+| ISP-092 | Manager attention queue with deep links plus live NOC signal panels for routers, sessions, commands, drift and incidents | delivered for current dashboard scope |
 | ISP-P1-01 | Supplier credential inventory, import, assignment and audited reveal | foundation delivered |
 
 ## In progress
@@ -34,7 +34,7 @@ Last updated: 2026-08-10
 - Provider integrations (WhatsApp/SMS/email/FCM), callbacks, fallback policy and notification automations.
 - Customer self-service payments and realtime events.
 - Full reseller price books/commissions/settlements, XLSX/import workflows and expanded reports.
-- Monitoring retention/alerts and expanded owner/NOC dashboard panels.
+- Monitoring retention/alerts and full deferred owner dashboard/panel streaming.
 - Security operations: key rotation, backup/restore rehearsal, dependency audit and Sentry wiring.
 
 ## Deliberately not claimed yet
