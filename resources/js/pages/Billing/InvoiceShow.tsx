@@ -1,5 +1,5 @@
-import { Head, Link } from '@inertiajs/react';
-import { ArrowLeft, Printer, ReceiptText } from 'lucide-react';
+import { Head, Link, useForm } from '@inertiajs/react';
+import { ArrowLeft, FilePlus2, Printer, ReceiptText } from 'lucide-react';
 
 import StatusBadge from '@/components/StatusBadge';
 import AppLayout from '@/layouts/AppLayout';
@@ -14,6 +14,7 @@ type Invoice = {
     tax_amount: number;
     total_amount: number;
     allocated_amount: number;
+    credited_amount: number;
     outstanding_amount: number;
     due_at: string | null;
     issued_at: string | null;
@@ -38,9 +39,17 @@ type Invoice = {
         received_at: string | null;
         collector: string | null;
     }[];
+    credit_notes: { public_id: string; number: string; amount: number; currency: string; reason: string; issued_at: string | null; creator: string | null }[];
 };
 
-export default function InvoiceShowPage({ invoice }: { invoice: Invoice }) {
+export default function InvoiceShowPage({ invoice, canCredit }: { invoice: Invoice; canCredit: boolean }) {
+    const creditForm = useForm({ amount: '', reason: '' });
+
+    const submitCreditNote = (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        creditForm.post('/billing/invoices/' + invoice.public_id + '/credit-notes', { onSuccess: () => creditForm.reset() });
+    };
+
     return (
         <AppLayout>
             <Head title={invoice.number} />
@@ -113,8 +122,17 @@ export default function InvoiceShowPage({ invoice }: { invoice: Invoice }) {
                         <div className="flex justify-between gap-4"><dt className="text-muted">Tax</dt><dd>{formatMoney(invoice.tax_amount, invoice.currency)}</dd></div>
                         <div className="flex justify-between gap-4 border-t border-line pt-3 font-semibold"><dt>Total</dt><dd>{formatMoney(invoice.total_amount, invoice.currency)}</dd></div>
                         <div className="flex justify-between gap-4"><dt className="text-muted">Posted payments</dt><dd className="text-emerald-700">− {formatMoney(invoice.allocated_amount, invoice.currency)}</dd></div>
+                        <div className="flex justify-between gap-4"><dt className="text-muted">Credit notes</dt><dd className="text-emerald-700">− {formatMoney(invoice.credited_amount, invoice.currency)}</dd></div>
                         <div className="flex justify-between gap-4 border-t border-line pt-3 font-semibold"><dt>Outstanding</dt><dd className={invoice.outstanding_amount > 0 ? 'text-coral' : 'text-emerald-700'}>{formatMoney(invoice.outstanding_amount, invoice.currency)}</dd></div>
                     </dl>
+                    {canCredit && (
+                        <form onSubmit={submitCreditNote} className="mt-6 space-y-3 border-t border-line pt-5">
+                            <div className="flex items-center gap-2"><FilePlus2 size={16} className="text-brand" /><p className="text-sm font-semibold">Issue credit note</p></div>
+                            <label><span className="field-label">Amount (minor units)</span><input type="number" min="1" className="field" value={creditForm.data.amount} onChange={(event) => creditForm.setData('amount', event.target.value)} placeholder="1000" />{creditForm.errors.amount && <p className="field-error">{creditForm.errors.amount}</p>}</label>
+                            <label><span className="field-label">Reason</span><textarea className="field min-h-20" value={creditForm.data.reason} onChange={(event) => creditForm.setData('reason', event.target.value)} placeholder="Service interruption" />{creditForm.errors.reason && <p className="field-error">{creditForm.errors.reason}</p>}</label>
+                            <button type="submit" className="button-secondary w-full" disabled={creditForm.processing}>Issue credit note</button>
+                        </form>
+                    )}
                 </div>
             </div>
 
@@ -134,6 +152,13 @@ export default function InvoiceShowPage({ invoice }: { invoice: Invoice }) {
                         </Link>
                     ))}
                     {invoice.payments.length === 0 && <p className="px-5 py-10 text-center text-sm text-muted">No posted payments have been allocated to this invoice.</p>}
+                </div>
+            </div>
+            <div className="card mt-6 overflow-hidden">
+                <div className="flex items-center gap-2 border-b border-line px-5 py-4"><FilePlus2 size={17} className="text-brand" /><p className="text-sm font-semibold">Credit notes</p></div>
+                <div className="divide-y divide-line">
+                    {invoice.credit_notes.map((note) => <div key={note.public_id} className="flex flex-col gap-2 px-5 py-4 sm:flex-row sm:items-center sm:justify-between"><div><p className="text-sm font-semibold">{note.number}</p><p className="mt-1 text-xs text-muted">{note.reason} · {note.creator ?? 'System'} · {formatDate(note.issued_at)}</p></div><p className="text-sm font-semibold text-emerald-700">− {formatMoney(note.amount, note.currency)}</p></div>)}
+                    {invoice.credit_notes.length === 0 && <p className="px-5 py-10 text-center text-sm text-muted">No credit notes have been issued.</p>}
                 </div>
             </div>
         </AppLayout>
