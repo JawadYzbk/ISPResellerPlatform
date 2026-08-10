@@ -15,7 +15,7 @@ use RuntimeException;
 
 final readonly class StoreMediaUpload implements Action
 {
-    public function handle(UploadedFile $file, User $actor, ?WorkOrder $workOrder = null, string $purpose = 'evidence', ?Customer $customer = null): MediaUpload
+    public function handle(UploadedFile $file, User $actor, ?WorkOrder $workOrder = null, string $purpose = 'evidence', ?Customer $customer = null, ?string $documentType = null, ?string $retentionUntil = null): MediaUpload
     {
         $tenantId = app(Tenancy::class)->requireId();
         if ($workOrder !== null && $customer !== null) {
@@ -50,6 +50,8 @@ final readonly class StoreMediaUpload implements Action
                 'size_bytes' => (int) $file->getSize(),
                 'sha256' => (string) hash_file('sha256', $file->getRealPath()),
                 'purpose' => $purpose,
+                'document_type' => $documentType,
+                'retention_until' => $retentionUntil,
             ]);
         } catch (\Throwable $exception) {
             Storage::disk($disk)->delete($path);

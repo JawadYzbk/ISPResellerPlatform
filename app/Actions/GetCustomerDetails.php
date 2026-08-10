@@ -111,6 +111,8 @@ final readonly class GetCustomerDetails implements Action
                 'filename' => $media->original_name,
                 'mime_type' => $media->mime_type,
                 'size_bytes' => $media->size_bytes,
+                'document_type' => $media->document_type,
+                'retention_until' => $media->retention_until?->toDateString(),
                 'created_at' => $media->created_at?->toIso8601String(),
                 'download_url' => route('operations.media.download', $media->public_id),
             ])->values()->all(),

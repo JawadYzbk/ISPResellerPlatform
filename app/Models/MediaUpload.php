@@ -3,21 +3,25 @@
 namespace App\Models;
 
 use App\Models\Concerns\BelongsToTenant;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Str;
 
+/**
+ * @property Carbon|null $retention_until
+ */
 class MediaUpload extends Model
 {
     use BelongsToTenant;
 
-    protected $fillable = ['tenant_id', 'uploaded_by_id', 'customer_id', 'work_order_id', 'public_id', 'disk', 'path', 'original_name', 'mime_type', 'size_bytes', 'sha256', 'purpose'];
+    protected $fillable = ['tenant_id', 'uploaded_by_id', 'customer_id', 'work_order_id', 'public_id', 'disk', 'path', 'original_name', 'mime_type', 'size_bytes', 'sha256', 'purpose', 'document_type', 'retention_until'];
 
     protected $hidden = ['path', 'sha256'];
 
     protected function casts(): array
     {
-        return ['size_bytes' => 'integer'];
+        return ['size_bytes' => 'integer', 'retention_until' => 'date'];
     }
 
     protected static function booted(): void

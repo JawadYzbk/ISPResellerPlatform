@@ -27,6 +27,7 @@ final class MediaDownloadController extends Controller
         } else {
             abort_unless($user->can('workorders.complete'), 403);
         }
+        abort_if($upload->retention_until?->isBefore(today()) === true, 410, 'This document is outside its retention period.');
         abort_unless(Storage::disk($upload->disk)->exists($upload->path), 404);
 
         return Storage::disk($upload->disk)->download($upload->path, $upload->original_name, [

@@ -29,6 +29,7 @@ use App\Support\Tenancy;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -79,10 +80,12 @@ final class CustomerController extends Controller
         abort_unless($user instanceof User && $user->can('customers.update'), 403);
         $request->validate([
             'file' => ['required', 'file', 'max:20480', 'mimetypes:application/pdf,image/jpeg,image/png,image/webp'],
+            'document_type' => ['required', 'string', Rule::in(['contract', 'identity', 'proof_of_address', 'other'])],
+            'retention_until' => ['nullable', 'date_format:Y-m-d', 'after_or_equal:today'],
         ]);
         $file = $request->file('file');
         abort_unless($file instanceof UploadedFile, 422, 'A document file is required.');
-        $store->handle($file, $user, null, 'document', $customer);
+        $store->handle($file, $user, null, 'document', $customer, (string) $request->string('document_type'), $request->string('retention_until')->toString() ?: null);
 
         return redirect()->route('customers.show', $customer->public_id)->with('success', 'Customer document uploaded.');
     }
