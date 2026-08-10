@@ -4,9 +4,11 @@ namespace App\Http\Controllers\Api;
 
 use App\Actions\CompleteWorkOrder;
 use App\Actions\ConsumeWorkOrderMaterial;
+use App\Actions\FailWorkOrder;
 use App\Actions\GetTechnicianServiceDiagnostics;
 use App\Actions\ListTechnicianInventory;
 use App\Actions\RecordWorkOrderReadings;
+use App\Actions\UpdateWorkOrderStatus;
 use App\Enums\WorkOrderStatus;
 use App\Http\Controllers\Controller;
 use App\Models\InventoryItem;
@@ -15,6 +17,7 @@ use App\Models\Service;
 use App\Models\Warehouse;
 use App\Models\WorkOrder;
 use App\Models\WorkOrderMaterial;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -79,6 +82,57 @@ final class TechnicianWorkOrderController extends Controller
         $completed->loadMissing('service');
 
         return response()->json(['id' => $completed->public_id, 'status' => $completed->status->value, 'service_id' => $completed->service?->public_id], 200);
+    }
+
+    public function status(Request $request, string $workOrder, UpdateWorkOrderStatus $update): JsonResponse
+    {
+        $this->ensureTechnician($request);
+        $validated = $request->validate([
+            'status' => ['required', Rule::in([WorkOrderStatus::EnRoute->value, WorkOrderStatus::InProgress->value])],
+            'at' => ['nullable', 'date'],
+        ]);
+        $order = $this->assignedQuery($request)->where('public_id', $workOrder)->firstOrFail();
+        try {
+            $updated = $update->handle(
+                $order,
+                $request->user(),
+                WorkOrderStatus::from((string) $validated['status']),
+                isset($validated['at']) ? CarbonImmutable::parse((string) $validated['at']) : null,
+            );
+        } catch (\DomainException $exception) {
+            return response()->json(['message' => $exception->getMessage()], 409);
+        }
+
+        return response()->json(['id' => $updated->public_id, 'status' => $updated->status->value, 'started_at' => $updated->started_at?->toIso8601String()]);
+    }
+
+    public function fail(Request $request, string $workOrder, FailWorkOrder $fail): JsonResponse
+    {
+        $this->ensureTechnician($request);
+        $validated = $request->validate([
+            'reason' => ['required', 'string', 'max:1000'],
+            'notes' => ['nullable', 'string', 'max:5000'],
+            'reschedule_at' => ['nullable', 'date'],
+        ]);
+        $order = $this->assignedQuery($request)->where('public_id', $workOrder)->firstOrFail();
+        try {
+            $updated = $fail->handle(
+                $order,
+                $request->user(),
+                (string) $validated['reason'],
+                isset($validated['notes']) ? (string) $validated['notes'] : null,
+                isset($validated['reschedule_at']) ? CarbonImmutable::parse((string) $validated['reschedule_at']) : null,
+            );
+        } catch (\DomainException $exception) {
+            return response()->json(['message' => $exception->getMessage()], 409);
+        }
+
+        return response()->json([
+            'id' => $updated->public_id,
+            'status' => $updated->status->value,
+            'failure_reason' => $updated->failure_reason,
+            'scheduled_at' => $updated->scheduled_at?->toIso8601String(),
+        ]);
     }
 
     public function readings(Request $request, string $workOrder, RecordWorkOrderReadings $record): JsonResponse

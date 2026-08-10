@@ -22,11 +22,17 @@ final readonly class ScheduleWorkOrder implements Action
             }
 
             $previous = $locked->scheduled_at?->toIso8601String();
-            $locked->forceFill(['scheduled_at' => $scheduledAt])->save();
+            $fromStatus = $locked->status;
+            $locked->forceFill([
+                'scheduled_at' => $scheduledAt,
+                'status' => $locked->status === WorkOrderStatus::Failed ? WorkOrderStatus::Assigned : $locked->status,
+            ])->save();
             WorkOrderEvent::create([
                 'work_order_id' => $locked->id,
                 'actor_id' => $actor->id,
                 'event_type' => 'rescheduled',
+                'from_status' => $fromStatus === $locked->status ? null : $fromStatus->value,
+                'to_status' => $fromStatus === $locked->status ? null : $locked->status->value,
                 'metadata' => ['previous_scheduled_at' => $previous, 'scheduled_at' => $scheduledAt->toIso8601String()],
             ]);
 

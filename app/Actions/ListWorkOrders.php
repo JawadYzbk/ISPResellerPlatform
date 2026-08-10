@@ -26,7 +26,7 @@ final readonly class ListWorkOrders implements Action
                             ->orWhere('last_name', 'like', "%{$term}%"));
                 });
             })
-            ->orderByRaw("case when status in ('assigned', 'in_progress') then 0 else 1 end")
+            ->orderByRaw("case when status in ('assigned', 'en_route', 'in_progress') then 0 else 1 end")
             ->orderBy('scheduled_at')
             ->orderByDesc('created_at')
             ->paginate(min(max($perPage, 10), 100))

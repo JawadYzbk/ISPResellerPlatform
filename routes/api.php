@@ -123,7 +123,9 @@ Route::prefix('v1')->group(function (): void {
             Route::post('/technician/work-orders/{workOrder}/signature', [TechnicianMediaController::class, 'storeSignature'])->name('api.technician.work-orders.signature.store');
             Route::post('/technician/work-orders/{workOrder}/readings', [TechnicianWorkOrderController::class, 'readings'])->name('api.technician.work-orders.readings.store');
             Route::post('/technician/work-orders/{workOrder}/materials', [TechnicianWorkOrderController::class, 'materials'])->name('api.technician.work-orders.materials.store');
+            Route::post('/technician/work-orders/{workOrder}/status', [TechnicianWorkOrderController::class, 'status'])->name('api.technician.work-orders.status');
             Route::post('/technician/work-orders/{workOrder}/complete', [TechnicianWorkOrderController::class, 'complete'])->middleware('idempotency')->name('api.technician.work-orders.complete');
+            Route::post('/technician/work-orders/{workOrder}/fail', [TechnicianWorkOrderController::class, 'fail'])->name('api.technician.work-orders.fail');
         });
     });
 });

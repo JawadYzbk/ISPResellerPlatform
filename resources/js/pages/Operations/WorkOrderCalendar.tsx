@@ -4,7 +4,7 @@ import { ArrowLeft, CalendarDays, ChevronLeft, ChevronRight } from 'lucide-react
 import StatusBadge from '@/components/StatusBadge';
 import AppLayout from '@/layouts/AppLayout';
 
-type WorkOrderStatus = 'pending' | 'assigned' | 'in_progress' | 'completed' | 'failed' | 'cancelled';
+type WorkOrderStatus = 'pending' | 'assigned' | 'en_route' | 'in_progress' | 'completed' | 'failed' | 'cancelled';
 type WorkOrder = {
     public_id: string;
     number: string;

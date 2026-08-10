@@ -11,7 +11,7 @@ type WorkOrder = {
     public_id: string;
     number: string;
     type: string;
-    status: 'pending' | 'assigned' | 'in_progress' | 'completed' | 'failed' | 'cancelled';
+    status: 'pending' | 'assigned' | 'en_route' | 'in_progress' | 'completed' | 'failed' | 'cancelled';
     scheduled_at: string | null;
     started_at: string | null;
     completed_at: string | null;
@@ -74,6 +74,7 @@ export default function WorkOrdersPage({ workOrders, filters }: Props) {
                         <option value="">All statuses</option>
                         <option value="pending">Pending</option>
                         <option value="assigned">Assigned</option>
+                        <option value="en_route">En route</option>
                         <option value="in_progress">In progress</option>
                         <option value="completed">Completed</option>
                         <option value="failed">Failed</option>

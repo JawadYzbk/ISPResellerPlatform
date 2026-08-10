@@ -10,7 +10,7 @@ type WorkOrder = {
     public_id: string;
     number: string;
     type: string;
-    status: 'pending' | 'assigned' | 'in_progress' | 'completed' | 'failed' | 'cancelled';
+    status: 'pending' | 'assigned' | 'en_route' | 'in_progress' | 'completed' | 'failed' | 'cancelled';
     scheduled_at: string | null;
     started_at: string | null;
     completed_at: string | null;
