@@ -145,6 +145,11 @@ export type PortalBilling = {
     }[];
 };
 
+export type PortalBalance = {
+    balance: { amount: number; currency: string };
+    next_due: { invoice_id: string; number: string; amount: number; currency: string; due_at: string | null } | null;
+};
+
 export type PortalNotice = {
     uuid: string;
     type: string;
@@ -183,7 +188,7 @@ export type Plan = {
 };
 
 export type Service = {
-    id: number;
+    id?: number;
     public_id: string;
     username: string;
     status: 'pending' | 'active' | 'suspended' | 'paused' | 'terminated';
@@ -223,12 +228,13 @@ export type ServiceEvent = {
 };
 
 export type Customer = {
-    id: number;
+    id?: number;
     public_id: string;
     code: string;
     first_name: string;
     last_name: string | null;
     phone: string;
+    phone_normalized?: string;
     email: string | null;
     address: string | null;
     latitude: number | null;
@@ -238,6 +244,7 @@ export type Customer = {
     anonymized_at?: string | null;
     balance_amount: number;
     balance_currency: string;
+    notification_preferences?: Record<string, unknown> | null;
     zone: Zone | null;
     services: Service[];
     invoices: {

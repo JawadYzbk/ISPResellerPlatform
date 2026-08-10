@@ -1,20 +1,25 @@
 import { Head, Link } from '@inertiajs/react';
-import { AlertTriangle, LogOut, RefreshCw, Send, Wifi } from 'lucide-react';
+import { AlertTriangle, Check, LogOut, RefreshCw, Send, UserRound, Wifi } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import { StatusBadge } from '@/components/StatusBadge';
 import { formatDate } from '@/lib/format';
-import type { Customer, PortalBilling, PortalNotice, PortalTicket, PublicTenant } from '@/types';
+import type { Customer, PortalBalance, PortalBilling, PortalNotice, PortalTicket, PublicTenant } from '@/types';
 
 type Props = { tenant: PublicTenant };
 
 export default function PortalDashboard({ tenant }: Props) {
     const [customer, setCustomer] = useState<Customer | null>(null);
+    const [balance, setBalance] = useState<PortalBalance | null>(null);
     const [billing, setBilling] = useState<PortalBilling | null>(null);
     const [notices, setNotices] = useState<PortalNotice[]>([]);
     const [tickets, setTickets] = useState<PortalTicket[]>([]);
     const [ticketForm, setTicketForm] = useState({ category: 'other', subject: '', description: '' });
+    const [profileForm, setProfileForm] = useState({ email: '', address: '' });
     const [ticketBusy, setTicketBusy] = useState(false);
+    const [profileBusy, setProfileBusy] = useState(false);
+    const [profileSaved, setProfileSaved] = useState(false);
+    const [restartBusy, setRestartBusy] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
     const tokenKey = `portal_token:${tenant.slug}`;
 
@@ -26,16 +31,26 @@ export default function PortalDashboard({ tenant }: Props) {
         }
         Promise.all([
             fetch(`/api/v1/portal/${tenant.slug}/me`, { headers: { Authorization: `Bearer ${token}` } }),
+            fetch(`/api/v1/portal/${tenant.slug}/me/balance`, { headers: { Authorization: `Bearer ${token}` } }),
             fetch(`/api/v1/portal/${tenant.slug}/billing`, { headers: { Authorization: `Bearer ${token}` } }),
             fetch(`/api/v1/portal/${tenant.slug}/me/notices`, { headers: { Authorization: `Bearer ${token}` } }),
             fetch(`/api/v1/portal/${tenant.slug}/me/tickets`, { headers: { Authorization: `Bearer ${token}` } }),
         ])
-            .then(async ([customerResponse, billingResponse, noticesResponse, ticketsResponse]) => {
-                if (!customerResponse.ok || !billingResponse.ok || !noticesResponse.ok || !ticketsResponse.ok) {
+            .then(async ([customerResponse, balanceResponse, billingResponse, noticesResponse, ticketsResponse]) => {
+                if (
+                    !customerResponse.ok ||
+                    !balanceResponse.ok ||
+                    !billingResponse.ok ||
+                    !noticesResponse.ok ||
+                    !ticketsResponse.ok
+                ) {
                     window.location.assign(`/portal/${tenant.slug}`);
                     return;
                 }
-                setCustomer(await customerResponse.json());
+                const customerPayload = await customerResponse.json();
+                setCustomer(customerPayload);
+                setProfileForm({ email: customerPayload.email ?? '', address: customerPayload.address ?? '' });
+                setBalance(await balanceResponse.json());
                 setBilling(await billingResponse.json());
                 setNotices((await noticesResponse.json()).data ?? []);
                 setTickets((await ticketsResponse.json()).data ?? []);
@@ -53,6 +68,48 @@ export default function PortalDashboard({ tenant }: Props) {
         }
         sessionStorage.removeItem(tokenKey);
         window.location.assign(`/portal/${tenant.slug}`);
+    };
+
+    const saveProfile = async (event: React.FormEvent) => {
+        event.preventDefault();
+        const token = sessionStorage.getItem(tokenKey);
+        if (!token) return;
+        setProfileBusy(true);
+        setProfileSaved(false);
+        setError(null);
+        const response = await fetch(`/api/v1/portal/${tenant.slug}/me/profile`, {
+            method: 'PATCH',
+            headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify(profileForm),
+        });
+        if (response.ok) {
+            const payload = await response.json();
+            setCustomer((current) => (current ? { ...current, ...payload.data } : current));
+            setProfileSaved(true);
+        } else {
+            const payload = await response.json();
+            setError(payload.detail ?? payload.message ?? 'We could not update your profile.');
+        }
+        setProfileBusy(false);
+    };
+
+    const restartService = async (serviceId: string) => {
+        const token = sessionStorage.getItem(tokenKey);
+        if (!token) return;
+        setRestartBusy(serviceId);
+        setError(null);
+        const response = await fetch(`/api/v1/portal/${tenant.slug}/me/services/${serviceId}/restart-session`, {
+            method: 'POST',
+            headers: {
+                Authorization: `Bearer ${token}`,
+                'X-Idempotency-Key': `portal-restart-${crypto.randomUUID()}`,
+            },
+        });
+        if (!response.ok) {
+            const payload = await response.json();
+            setError(payload.detail ?? payload.message ?? 'We could not restart this connection.');
+        }
+        setRestartBusy(null);
     };
 
     const submitTicket = async (event: React.FormEvent) => {
@@ -108,6 +165,30 @@ export default function PortalDashboard({ tenant }: Props) {
                             </h1>
                             <p className="page-subtitle">Your connections and service status at a glance.</p>
                         </div>
+                        <section className="mt-8 grid gap-4 sm:grid-cols-2" aria-label="Account summary">
+                            <div className="card p-6">
+                                <p className="eyebrow">Current balance</p>
+                                <p
+                                    className={`mt-3 text-3xl font-semibold ${customer.balance_amount > 0 ? 'text-rose-700' : 'text-ink'}`}
+                                >
+                                    {(customer.balance_amount / 100).toFixed(2)} {customer.balance_currency}
+                                </p>
+                                <p className="mt-2 text-sm text-muted">
+                                    {balance?.next_due
+                                        ? `Next due ${formatDate(balance.next_due.due_at)}`
+                                        : 'No outstanding balance'}
+                                </p>
+                            </div>
+                            <div className="card p-6">
+                                <p className="eyebrow">Account</p>
+                                <p className="mt-3 text-3xl font-semibold">{customer.services.length}</p>
+                                <p className="mt-2 text-sm text-muted">
+                                    {customer.services.length === 1
+                                        ? 'active connection'
+                                        : 'connections linked to this account'}
+                                </p>
+                            </div>
+                        </section>
                         {notices.length > 0 && (
                             <section className="mt-8 space-y-3" aria-labelledby="notices-heading">
                                 <div className="flex items-center gap-2">
@@ -142,17 +223,58 @@ export default function PortalDashboard({ tenant }: Props) {
                                             </div>
                                             <div>
                                                 <h2 className="font-semibold">{service.plan.name}</h2>
-                                                <p className="mt-1 text-sm text-muted">{service.username}</p>
+                                                <p className="mt-1 text-sm text-muted">
+                                                    {service.plan.download_kbps / 1000} Mbps down ·{' '}
+                                                    {service.plan.upload_kbps / 1000} Mbps up
+                                                </p>
                                             </div>
                                         </div>
                                         <StatusBadge status={service.status} />
                                     </div>
-                                    <div className="mt-5 flex items-center justify-between border-t border-line pt-4 text-sm">
-                                        <span className="text-muted">Expires {formatDate(service.expires_at)}</span>
-                                        <span className="inline-flex items-center gap-1.5 text-muted">
-                                            <RefreshCw size={14} />
-                                            {service.network_state.replace('_', ' ')}
-                                        </span>
+                                    <div className="mt-5 grid gap-4 border-t border-line pt-4 sm:grid-cols-[1fr_auto] sm:items-center">
+                                        <div>
+                                            <div className="flex items-center justify-between text-sm">
+                                                <span className="text-muted">Usage this period</span>
+                                                <span className="font-semibold">
+                                                    {Math.round((service.usage.used_bytes / 1_000_000_000) * 10) / 10} /{' '}
+                                                    {service.usage.quota_bytes > 0
+                                                        ? Math.round((service.usage.quota_bytes / 1_000_000_000) * 10) /
+                                                          10
+                                                        : '∞'}{' '}
+                                                    GB
+                                                </span>
+                                            </div>
+                                            <div className="mt-2 h-2 overflow-hidden rounded-full bg-sand">
+                                                <div
+                                                    className="h-full rounded-full bg-brand"
+                                                    style={{
+                                                        width: `${Math.min(100, service.usage.quota_bytes > 0 ? (service.usage.used_bytes / service.usage.quota_bytes) * 100 : 0)}%`,
+                                                    }}
+                                                />
+                                            </div>
+                                            <p className="mt-2 text-sm text-muted">
+                                                Expires {formatDate(service.expires_at)}
+                                            </p>
+                                        </div>
+                                        <div className="flex flex-wrap items-center gap-3 sm:justify-end">
+                                            <span className="inline-flex items-center gap-1.5 text-sm text-muted">
+                                                <RefreshCw size={14} />
+                                                {service.network_state.replace('_', ' ')}
+                                            </span>
+                                            {service.status === 'active' && (
+                                                <button
+                                                    type="button"
+                                                    disabled={restartBusy === service.public_id}
+                                                    onClick={() => restartService(service.public_id)}
+                                                    className="button-secondary"
+                                                >
+                                                    <RefreshCw size={15} />
+                                                    {restartBusy === service.public_id
+                                                        ? 'Restarting…'
+                                                        : 'Restart connection'}
+                                                </button>
+                                            )}
+                                        </div>
                                     </div>
                                 </article>
                             ))}
@@ -213,6 +335,48 @@ export default function PortalDashboard({ tenant }: Props) {
                                 </div>
                             </section>
                         )}
+                        <form
+                            onSubmit={saveProfile}
+                            className="card mt-8 space-y-5 p-6"
+                            aria-labelledby="profile-heading"
+                        >
+                            <div className="flex items-center gap-2">
+                                <UserRound size={17} className="text-brand" />
+                                <h2 id="profile-heading" className="section-title">
+                                    Contact details
+                                </h2>
+                            </div>
+                            <div className="grid gap-5 sm:grid-cols-2">
+                                <label className="block">
+                                    <span className="field-label">Email</span>
+                                    <input
+                                        type="email"
+                                        className="field"
+                                        value={profileForm.email}
+                                        onChange={(event) =>
+                                            setProfileForm({ ...profileForm, email: event.target.value })
+                                        }
+                                    />
+                                </label>
+                                <label className="block">
+                                    <span className="field-label">Address</span>
+                                    <input
+                                        className="field"
+                                        value={profileForm.address}
+                                        onChange={(event) =>
+                                            setProfileForm({ ...profileForm, address: event.target.value })
+                                        }
+                                    />
+                                </label>
+                            </div>
+                            <div className="flex items-center justify-between gap-4">
+                                <p className="text-sm text-muted">Phone: {customer.phone}</p>
+                                <button disabled={profileBusy} className="button-primary">
+                                    {profileSaved ? <Check size={16} /> : null}
+                                    {profileBusy ? 'Saving…' : profileSaved ? 'Saved' : 'Save details'}
+                                </button>
+                            </div>
+                        </form>
                         <section className="mt-8 grid gap-6 md:grid-cols-[1fr_0.9fr]" aria-labelledby="support-heading">
                             <div className="card p-6">
                                 <h2 id="support-heading" className="section-title">
