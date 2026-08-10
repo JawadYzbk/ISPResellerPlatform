@@ -13,6 +13,7 @@ use App\Http\Controllers\Web\DashboardController;
 use App\Http\Controllers\Web\InventoryOperationsController;
 use App\Http\Controllers\Web\ImportOperationsController;
 use App\Http\Controllers\Web\InvitationController;
+use App\Http\Controllers\Web\IpPoolOperationsController;
 use App\Http\Controllers\Web\NetworkOperationsController;
 use App\Http\Controllers\Web\PartnerController;
 use App\Http\Controllers\Web\PlanOperationsController;
@@ -85,6 +86,9 @@ Route::middleware(['auth', 'tenant', '2fa'])->group(function (): void {
     Route::post('/operations/routers/{router:public_id}/health', [RouterOperationsController::class, 'health'])->name('operations.routers.health');
     Route::get('/operations/pops', [PopOperationsController::class, 'index'])->name('operations.pops');
     Route::get('/operations/pops/{pop}', [PopOperationsController::class, 'show'])->name('operations.pops.show');
+    Route::get('/operations/ip-pools', [IpPoolOperationsController::class, 'index'])->name('operations.ip-pools');
+    Route::post('/operations/ip-pools', [IpPoolOperationsController::class, 'storePool'])->middleware('recent-auth')->name('operations.ip-pools.store');
+    Route::post('/operations/ip-pools/{pool}/addresses', [IpPoolOperationsController::class, 'storeAddress'])->middleware('recent-auth')->name('operations.ip-pools.addresses.store');
     Route::get('/billing/invoices', [BillingController::class, 'invoices'])->name('billing.invoices');
     Route::get('/billing/invoices/{invoice:public_id}', [BillingController::class, 'showInvoice'])->name('billing.invoices.show');
     Route::post('/billing/invoices/{invoice:public_id}/issue', [BillingController::class, 'issue'])->name('billing.invoices.issue');
