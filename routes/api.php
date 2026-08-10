@@ -16,6 +16,7 @@ use App\Http\Controllers\Api\PlanImportController;
 use App\Http\Controllers\Api\PortalAuthController;
 use App\Http\Controllers\Api\PortalBillingController;
 use App\Http\Controllers\Api\PortalController;
+use App\Http\Controllers\Api\RouterSubscriberImportController;
 use App\Http\Controllers\Api\ServiceApiController;
 use App\Http\Controllers\Api\ServiceImportController;
 use App\Http\Controllers\Api\TechnicianMediaController;
@@ -57,6 +58,7 @@ Route::prefix('v1')->group(function (): void {
             Route::post('/imports/equipment/{import}/rollback', [EquipmentImportController::class, 'rollback'])->name('api.imports.equipment.rollback');
             Route::post('/imports/balances', [BalanceImportController::class, 'store'])->name('api.imports.balances.store');
             Route::post('/imports/balances/{import}/rollback', [BalanceImportController::class, 'rollback'])->name('api.imports.balances.rollback');
+            Route::post('/imports/routers/{router}/subscribers', [RouterSubscriberImportController::class, 'store'])->name('api.imports.routers.subscribers.store');
             Route::post('/imports/{import}/rollback', [CustomerImportController::class, 'rollback'])->name('api.imports.rollback');
             Route::get('/partners', [PartnerApiController::class, 'index'])->name('api.partners.index');
             Route::get('/partners/{partner}', [PartnerApiController::class, 'show'])->name('api.partners.show');
