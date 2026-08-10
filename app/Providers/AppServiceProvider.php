@@ -10,6 +10,7 @@ use App\Domain\Network\SubscriberWriter;
 use App\Domain\Payments\NullPaymentGateway;
 use App\Domain\Payments\PaymentGateway;
 use App\Domain\Payments\StripePaymentGateway;
+use App\Domain\Payments\LaravelWhishTransport;
 use App\Domain\Radius\RadiusTransport;
 use App\Domain\Radius\UdpRadiusTransport;
 use App\Models\Customer;
@@ -27,6 +28,7 @@ use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
+use WhishPay\WhishHttpTransport;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -40,6 +42,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(RadiusTransport::class, UdpRadiusTransport::class);
         $this->app->bind(SubscriberReader::class, MikrotikSubscriberReader::class);
         $this->app->bind(SubscriberWriter::class, MikrotikSubscriberReader::class);
+        $this->app->bind(WhishHttpTransport::class, LaravelWhishTransport::class);
         $this->app->bind(PaymentGateway::class, function (): PaymentGateway {
             return (string) config('services.payments.driver', 'null') === 'stripe'
                 ? app(StripePaymentGateway::class)

@@ -60,6 +60,20 @@ return [
         'timeout' => max(1, (int) env('STRIPE_TIMEOUT', 15)),
     ],
 
+    'whish' => [
+        'enabled' => env('WHISH_ENABLED', false),
+        'environment' => env('WHISH_ENVIRONMENT', 'sandbox'),
+        'channel' => env('WHISH_CHANNEL'),
+        'secret' => env('WHISH_SECRET'),
+        'website_url' => env('WHISH_WEBSITE_URL'),
+        'endpoint' => env('WHISH_ENDPOINT'),
+        'timeout' => max(1, (int) env('WHISH_TIMEOUT', 15)),
+        'success_callback_url' => env('WHISH_SUCCESS_CALLBACK_URL'),
+        'failure_callback_url' => env('WHISH_FAILURE_CALLBACK_URL'),
+        'success_redirect_url' => env('WHISH_SUCCESS_REDIRECT_URL'),
+        'failure_redirect_url' => env('WHISH_FAILURE_REDIRECT_URL'),
+    ],
+
     'fx' => [
         'rounding_mode' => env('FX_ROUNDING_MODE', 'half_up'),
     ],
