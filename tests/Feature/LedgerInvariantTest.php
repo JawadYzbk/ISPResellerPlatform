@@ -9,6 +9,7 @@ use App\Models\Tenant;
 use App\Support\Tenancy;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 
 uses(RefreshDatabase::class);
 
@@ -49,5 +50,14 @@ it('keeps the demo seed ledger projections consistent', function (): void {
     $result = app(Tenancy::class)->run($tenant, fn (): array => app(CheckLedgerInvariants::class)->handle());
 
     expect($result['status'])->toBe('ok')
-        ->and($result['violations'])->toBeEmpty();
+        ->and($result['violations'])->toBeEmpty()
+        ->and(DB::table('customers')->count())->toBe(200)
+        ->and(DB::table('services')->count())->toBe(200)
+        ->and(DB::table('pops')->count())->toBe(2)
+        ->and(DB::table('routers')->count())->toBe(2)
+        ->and(DB::table('invoices')->count())->toBe(1200)
+        ->and(DB::table('payments')->count())->toBe(1091)
+        ->and(DB::table('tickets')->count())->toBe(12)
+        ->and(DB::table('work_orders')->count())->toBe(24)
+        ->and(DB::table('inventory_units')->count())->toBe(50);
 });
