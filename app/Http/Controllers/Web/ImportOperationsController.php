@@ -49,7 +49,7 @@ final class ImportOperationsController extends Controller
         ],
         'router_subscribers' => [
             'label' => 'Router subscriber discovery',
-            'permission' => 'network.view',
+            'permission' => 'network.provision',
             'columns' => 'RouterOS PPP secrets; no file required',
         ],
     ];
