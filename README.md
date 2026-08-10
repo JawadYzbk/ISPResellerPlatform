@@ -32,7 +32,7 @@ The current foundation is live:
 - Finance report with collection rate, allocation-based aging, plan/zone/POP revenue, upstream cost and margin, collector performance, retention, ARPU and top-usage breakdowns
 - Deferred owner dashboard metrics and manager attention panels with server-rendered loading fallbacks
 - Transactional APP_KEY rotation command with an operator runbook for encrypted credentials
-- Demo tenant seed with customers, plans and services
+- Coherent demo tenant seed with 200 customers/services, billing history, routers/POPs, tickets, work orders and serialized stock
 - Money value object backed by `brick/money`
 - Pest tests for money arithmetic, authentication and tenant isolation
 - Docker Compose services for PHP, PostgreSQL 17, Redis 7, Mailpit and MinIO
