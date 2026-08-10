@@ -9,6 +9,7 @@ import {
     LogOut,
     Store,
     Search,
+    Router,
     Users,
     Wifi,
     Wrench,
@@ -28,6 +29,7 @@ export default function AppLayout({ children }: PropsWithChildren) {
         { label: 'Partners', href: '/partners/commercial', icon: Store },
         { label: 'Reports', href: '/reports/operations', icon: BarChart3 },
         { label: 'Network queue', href: '/operations/network-commands', icon: Wrench },
+        { label: 'Routers', href: '/operations/routers', icon: Router },
     ];
 
     return (

@@ -3,12 +3,21 @@
 namespace App\Models;
 
 use App\Models\Concerns\BelongsToTenant;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
-/** @property string $public_id */
+/**
+ * @property string $public_id
+ * @property int $api_port
+ * @property bool $tls_verify
+ * @property string $status
+ * @property Carbon|null $last_seen_at
+ * @property array<string, mixed>|null $metadata
+ * @property int $services_count
+ */
 class Router extends Model
 {
     use BelongsToTenant;

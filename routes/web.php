@@ -10,6 +10,7 @@ use App\Http\Controllers\Web\NetworkOperationsController;
 use App\Http\Controllers\Web\PartnerController;
 use App\Http\Controllers\Web\PortalPageController;
 use App\Http\Controllers\Web\ReportController;
+use App\Http\Controllers\Web\RouterOperationsController;
 use App\Http\Controllers\Web\SecurityController;
 use App\Http\Controllers\Web\ServiceController;
 use Illuminate\Support\Facades\Route;
@@ -57,6 +58,8 @@ Route::middleware(['auth', 'tenant', '2fa'])->group(function (): void {
     Route::post('/services/{service:public_id}/resync', [ServiceController::class, 'resync'])->name('services.resync');
     Route::get('/operations/network-commands', [NetworkOperationsController::class, 'index'])->name('operations.network-commands');
     Route::post('/operations/network-commands/{command:public_id}/retry', [NetworkOperationsController::class, 'retry'])->name('operations.network-commands.retry');
+    Route::get('/operations/routers', [RouterOperationsController::class, 'index'])->name('operations.routers');
+    Route::post('/operations/routers/{router:public_id}/health', [RouterOperationsController::class, 'health'])->name('operations.routers.health');
     Route::get('/customers/{customer:public_id}/services/create', [ServiceController::class, 'create'])->name('services.create');
     Route::post('/customers/{customer:public_id}/services', [ServiceController::class, 'store'])->name('services.store');
     Route::get('/partners/commercial', [PartnerController::class, 'commercial'])->name('partners.commercial');

@@ -14,7 +14,9 @@ type Status =
     | 'completed'
     | 'awaiting_confirmation'
     | 'abandoned'
-    | 'stale';
+    | 'stale'
+    | 'online'
+    | 'offline';
 
 const styles: Record<Status, string> = {
     active: 'bg-emerald-50 text-emerald-700 ring-emerald-600/20',
@@ -33,6 +35,8 @@ const styles: Record<Status, string> = {
     awaiting_confirmation: 'bg-amber-50 text-amber-700 ring-amber-600/20',
     abandoned: 'bg-rose-50 text-rose-700 ring-rose-600/20',
     stale: 'bg-slate-100 text-slate-600 ring-slate-500/20',
+    online: 'bg-emerald-50 text-emerald-700 ring-emerald-600/20',
+    offline: 'bg-rose-50 text-rose-700 ring-rose-600/20',
 };
 
 export function StatusBadge({ status }: { status: Status }) {
