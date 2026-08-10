@@ -36,4 +36,9 @@ final class ServicePolicy
     {
         return $user->tenant_id === $service->tenant_id && $user->can('services.terminate');
     }
+
+    public function disconnect(User $user, Service $service): bool
+    {
+        return $user->tenant_id === $service->tenant_id && $user->can('network.disconnect');
+    }
 }

@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\ServiceStatus;
+use App\Models\CurrentSession;
 use App\Models\NetworkCommand;
 use App\Models\Service;
 use App\Models\Tenant;
@@ -58,4 +59,28 @@ it('idempotently terminates a service through the operator API', function (): vo
     app(Tenancy::class)->set($tenant);
     expect($service->refresh()->status)->toBe(ServiceStatus::Terminated)
         ->and(NetworkCommand::query()->where('service_id', $service->id)->where('action', 'disconnect')->count())->toBe(1);
+});
+
+it('queues an idempotent current-session disconnect with the live session id', function (): void {
+    Queue::fake();
+    $tenant = Tenant::create(['name' => 'Northline', 'slug' => 'northline', 'base_currency' => 'USD', 'collection_currency' => 'USD']);
+    app(Tenancy::class)->set($tenant);
+    $user = User::create(['tenant_id' => $tenant->id, 'name' => 'Network', 'email' => 'service-disconnect-api@example.test', 'password' => Hash::make('password'), 'role' => 'network_administrator']);
+    app(CapabilitySeeder::class)->run();
+    $user->assignRole('network_administrator');
+    $service = Service::factory()->create(['status' => ServiceStatus::Active]);
+    CurrentSession::create(['service_id' => $service->id, 'username' => $service->username, 'acct_session_id' => 'live-session-001', 'nasname' => 'router-01', 'last_seen_at' => now()]);
+    $token = $user->createToken('service-disconnect-api', ['api', 'staff:operator'])->plainTextToken;
+    $headers = ['X-Idempotency-Key' => 'service-disconnect-001'];
+
+    $first = $this->withToken($token)->withHeaders($headers)->postJson('/api/v1/services/'.$service->public_id.'/disconnect-session');
+    $second = $this->withToken($token)->withHeaders($headers)->postJson('/api/v1/services/'.$service->public_id.'/disconnect-session');
+
+    $first->assertStatus(202)
+        ->assertJsonPath('status', 'disconnect_queued')
+        ->assertJsonPath('session_id', 'live-session-001');
+    $second->assertStatus(202)->assertJsonPath('command_id', $first->json('command_id'));
+    app(Tenancy::class)->set($tenant);
+    expect(NetworkCommand::query()->where('service_id', $service->id)->where('action', 'disconnect')->count())->toBe(1)
+        ->and(NetworkCommand::query()->where('service_id', $service->id)->firstOrFail()->payload['session_id'])->toBe('live-session-001');
 });

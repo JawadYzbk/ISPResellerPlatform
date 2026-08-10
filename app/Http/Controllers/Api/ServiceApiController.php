@@ -7,6 +7,7 @@ use App\Actions\ListServicesApi;
 use App\Actions\TransitionService;
 use App\Enums\ServiceStatus;
 use App\Http\Controllers\Controller;
+use App\Models\CurrentSession;
 use App\Models\Service;
 use App\Models\User;
 use App\Support\Api\ServiceApiResource;
@@ -65,6 +66,30 @@ final class ServiceApiController extends Controller
         $validated = $request->validate(['reason' => ['required', 'string', 'max:5000']]);
 
         return $this->transition($service, ServiceStatus::Terminated, 'disconnect', $request->user(), $transition, $enqueue, $validated);
+    }
+
+    public function disconnectSession(Request $request, string $service, EnqueueNetworkCommand $enqueue): JsonResponse
+    {
+        $service = $this->find($service);
+        $this->authorize('disconnect', $service);
+        $session = CurrentSession::query()
+            ->where('service_id', $service->id)
+            ->whereNull('stopped_at')
+            ->latest('last_seen_at')
+            ->first();
+        $payload = array_filter([
+            'reason' => 'operator_disconnect',
+            'session_id' => $session?->acct_session_id,
+        ], static fn (mixed $value): bool => $value !== null && $value !== '');
+        $command = $enqueue->handle($service, 'disconnect', $payload);
+
+        return response()->json([
+            'id' => $service->public_id,
+            'status' => 'disconnect_queued',
+            'network_state' => $service->network_state->value,
+            'command_id' => $command->public_id,
+            'session_id' => $session?->acct_session_id,
+        ], 202);
     }
 
     /** @param array<string, mixed> $metadata */

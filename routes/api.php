@@ -69,6 +69,7 @@ Route::prefix('v1')->group(function (): void {
             Route::post('/services/{service}/suspend', [ServiceApiController::class, 'suspend'])->middleware('idempotency')->name('api.services.suspend');
             Route::post('/services/{service}/resume', [ServiceApiController::class, 'resume'])->middleware('idempotency')->name('api.services.resume');
             Route::post('/services/{service}/terminate', [ServiceApiController::class, 'terminate'])->middleware('idempotency')->name('api.services.terminate');
+            Route::post('/services/{service}/disconnect-session', [ServiceApiController::class, 'disconnectSession'])->middleware('idempotency')->name('api.services.disconnect-session');
             Route::post('/imports/customers', [CustomerImportController::class, 'store'])->name('api.imports.customers.store');
             Route::post('/imports/plans', [PlanImportController::class, 'store'])->name('api.imports.plans.store');
             Route::post('/imports/plans/{import}/rollback', [PlanImportController::class, 'rollback'])->name('api.imports.plans.rollback');
