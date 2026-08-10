@@ -109,7 +109,7 @@ paths:
       parameters:
         - in: query
           name: filter[status]
-          schema: { type: string, enum: [pending, active, suspended, terminated] }
+          schema: { type: string, enum: [pending, active, suspended, paused, terminated] }
         - in: query
           name: filter[search]
           schema: { type: string }
@@ -214,6 +214,32 @@ paths:
       responses:
         '202': { description: Commercial state changed and network command queued }
         '403': { description: Missing activation or force-resume capability }
+  /services/{service}/pause:
+    post:
+      summary: Pause an active service while preserving its billing expiry
+      parameters:
+        - in: path
+          name: service
+          required: true
+          schema: { type: string }
+        - in: header
+          name: X-Idempotency-Key
+          required: true
+          schema: { type: string, maxLength: 120 }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [reason]
+              properties:
+                reason: { type: string, maxLength: 64 }
+                resume_at: { type: string, format: date-time, nullable: true }
+      responses:
+        '202': { description: Service paused and network enforcement queued }
+        '403': { description: Missing pause capability }
+        '422': { description: Only active services can be paused }
   /services/{service}/terminate:
     post:
       summary: Terminate a service and enqueue network disconnect
@@ -1228,6 +1254,21 @@ paths:
   /network/commands/{command}/retry:
     post:
       summary: Retry a failed network command
+      parameters:
+        - in: path
+          name: command
+          required: true
+          schema: { type: string, description: Network command public ULID }
+        - in: header
+          name: X-Idempotency-Key
+          required: true
+          schema: { type: string, maxLength: 120 }
+      responses:
+        '202': { description: Replacement network command queued }
+        '403': { description: Missing network provision capability }
+  /provisioning-commands/{command}/retries:
+    post:
+      summary: Retry a failed provisioning command
       parameters:
         - in: path
           name: command
