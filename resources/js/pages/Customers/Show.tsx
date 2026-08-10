@@ -1,14 +1,38 @@
 import { Head, Link, router } from '@inertiajs/react';
-import { ArrowLeft, CalendarDays, CreditCard, Edit3, MapPin, MessageCircle, Phone, Plus, RefreshCw, ShieldOff, Wifi } from 'lucide-react';
+import {
+    ArrowLeft,
+    CalendarDays,
+    CreditCard,
+    Edit3,
+    MapPin,
+    MessageCircle,
+    Phone,
+    Plus,
+    RefreshCw,
+    ShieldOff,
+    Wifi,
+} from 'lucide-react';
 
 import { StatusBadge } from '@/components/StatusBadge';
 import AppLayout from '@/layouts/AppLayout';
 import { formatDate, formatMoney } from '@/lib/format';
 import type { Customer, PageProps } from '@/types';
 
-type Props = PageProps & { customer: Customer; canAnonymize?: boolean; canCreateService?: boolean; canEdit?: boolean };
+type Props = PageProps & {
+    customer: Customer;
+    canAnonymize?: boolean;
+    canCreateService?: boolean;
+    canEdit?: boolean;
+    canCollectPayment?: boolean;
+};
 
-export default function CustomerShow({ customer, canAnonymize = false, canCreateService = false, canEdit = false }: Props) {
+export default function CustomerShow({
+    customer,
+    canAnonymize = false,
+    canCreateService = false,
+    canEdit = false,
+    canCollectPayment = false,
+}: Props) {
     const fullName = `${customer.first_name} ${customer.last_name ?? ''}`.trim();
     return (
         <AppLayout>
@@ -45,16 +69,20 @@ export default function CustomerShow({ customer, canAnonymize = false, canCreate
                         <MessageCircle size={16} />
                         WhatsApp
                     </a>
-                    <button type="button" className="button-primary" disabled title="Payment collection is available through the billing workflow.">
-                        <CreditCard size={16} />
-                        Take payment
-                    </button>
+                    {canCollectPayment && (
+                        <Link href={`/customers/${customer.public_id}/payments/create`} className="button-primary">
+                            <CreditCard size={16} />
+                            Take payment
+                        </Link>
+                    )}
                     {canAnonymize && !customer.anonymized_at && (
                         <button
                             type="button"
                             className="button-secondary text-coral"
                             onClick={() => {
-                                if (window.confirm('Anonymize this customer record? Personal data cannot be recovered.')) {
+                                if (
+                                    window.confirm('Anonymize this customer record? Personal data cannot be recovered.')
+                                ) {
                                     router.post(`/customers/${customer.public_id}/anonymize`);
                                 }
                             }}
@@ -93,7 +121,10 @@ export default function CustomerShow({ customer, canAnonymize = false, canCreate
                                 <p className="mt-1 text-sm text-muted">Every connection belonging to this customer.</p>
                             </div>
                             {canCreateService && (
-                                <Link href={`/customers/${customer.public_id}/services/create`} className="button-secondary">
+                                <Link
+                                    href={`/customers/${customer.public_id}/services/create`}
+                                    className="button-secondary"
+                                >
                                     <Plus size={16} />
                                     Add service
                                 </Link>
@@ -153,7 +184,10 @@ export default function CustomerShow({ customer, canAnonymize = false, canCreate
                         <div className="flex items-center justify-between">
                             <h2 className="section-title">Customer details</h2>
                             {canEdit && (
-                                <Link href={`/customers/${customer.public_id}/edit`} className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand">
+                                <Link
+                                    href={`/customers/${customer.public_id}/edit`}
+                                    className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand"
+                                >
                                     <Edit3 size={14} /> Edit
                                 </Link>
                             )}

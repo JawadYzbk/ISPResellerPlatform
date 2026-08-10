@@ -45,6 +45,8 @@ Route::middleware(['auth', 'tenant', '2fa'])->group(function (): void {
     Route::post('/customers', [CustomerController::class, 'store'])->name('customers.store');
     Route::get('/customers/{customer:public_id}/edit', [CustomerController::class, 'edit'])->name('customers.edit');
     Route::put('/customers/{customer:public_id}', [CustomerController::class, 'update'])->name('customers.update');
+    Route::get('/customers/{customer:public_id}/payments/create', [CustomerController::class, 'createPayment'])->name('customers.payments.create');
+    Route::post('/customers/{customer:public_id}/payments', [CustomerController::class, 'storePayment'])->name('customers.payments.store');
     Route::get('/customers/{customer:public_id}', [CustomerController::class, 'show'])->name('customers.show');
     Route::post('/customers/{customer:public_id}/anonymize', [CustomerController::class, 'anonymize'])->middleware('recent-auth')->name('customers.anonymize');
     Route::get('/services', [ServiceController::class, 'index'])->name('services.index');
