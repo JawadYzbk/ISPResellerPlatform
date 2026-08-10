@@ -24,7 +24,7 @@ Last updated: 2026-08-10
 | ISP-073 | Technician-assigned work-order list/detail endpoints and idempotent completion | delivered for current work-order scope |
 | ISP-080/082/083 | FreeRADIUS sync, current sessions, stale-session handling and daily usage rollups | delivered |
 | ISP-040/063 | POP/router inventory, encrypted connection tests, repeated-failure incidents and bounded router health observations | foundation delivered |
-| ISP-090/091 | Basic partner hierarchy/wallets and tenant finance report | foundation delivered |
+| ISP-090/091 | Basic partner hierarchy/wallets, tenant finance report and CSV export | foundation delivered |
 | ISP-092 | Manager attention queue with deep links plus live NOC signal panels for routers, sessions, commands, drift and incidents | delivered for current dashboard scope |
 | ISP-093 | Customer CSV import preview, row-level validation, partial-success commit and reversible rollback API | delivered for customer scope |
 | ISP-P1-01 | Supplier credential inventory, import, assignment and audited reveal | foundation delivered |
@@ -34,7 +34,7 @@ Last updated: 2026-08-10
 - Real RouterOS/CoA integration against a CHR lab, automatic reconciliation and device inventory healing.
 - Provider integrations (WhatsApp/SMS/email/FCM), callbacks, fallback policy and notification automations.
 - Customer self-service payments and realtime events.
-- Full reseller price books/commissions/settlements, service/plan/balance/equipment import coverage, XLSX workflows and expanded reports.
+- Full reseller price books/commissions/settlements, service/plan/balance/equipment import coverage, XLSX workflows and expanded reports beyond finance.
 - Monitoring alerts and full deferred owner dashboard/panel streaming.
 - Security operations: key rotation, backup/restore rehearsal, dependency audit and Sentry wiring.
 
