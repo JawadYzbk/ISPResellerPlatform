@@ -6,9 +6,9 @@ import AppLayout from '@/layouts/AppLayout';
 import { formatDate, formatMoney } from '@/lib/format';
 import type { Customer, PageProps } from '@/types';
 
-type Props = PageProps & { customer: Customer; canAnonymize?: boolean };
+type Props = PageProps & { customer: Customer; canAnonymize?: boolean; canCreateService?: boolean };
 
-export default function CustomerShow({ customer, canAnonymize = false }: Props) {
+export default function CustomerShow({ customer, canAnonymize = false, canCreateService = false }: Props) {
     const fullName = `${customer.first_name} ${customer.last_name ?? ''}`.trim();
     return (
         <AppLayout>
@@ -92,10 +92,12 @@ export default function CustomerShow({ customer, canAnonymize = false }: Props) 
                                 <h2 className="section-title">Services</h2>
                                 <p className="mt-1 text-sm text-muted">Every connection belonging to this customer.</p>
                             </div>
-                            <button className="button-secondary">
-                                <Plus size={16} />
-                                Add service
-                            </button>
+                            {canCreateService && (
+                                <Link href={`/customers/${customer.public_id}/services/create`} className="button-secondary">
+                                    <Plus size={16} />
+                                    Add service
+                                </Link>
+                            )}
                         </div>
                         <div className="divide-y divide-line">
                             {customer.services.map((service) => (

@@ -52,7 +52,11 @@ final class CustomerController extends Controller
     {
         $this->authorize('view', $customer);
 
-        return Inertia::render('Customers/Show', ['customer' => $getCustomerDetails->handle($customer), 'canAnonymize' => $request->user()?->can('customers.anonymize') === true]);
+        return Inertia::render('Customers/Show', [
+            'customer' => $getCustomerDetails->handle($customer),
+            'canAnonymize' => $request->user()?->can('customers.anonymize') === true,
+            'canCreateService' => $request->user()?->can('services.create') === true,
+        ]);
     }
 
     public function anonymize(Request $request, Customer $customer, AnonymizeCustomer $anonymize): RedirectResponse
