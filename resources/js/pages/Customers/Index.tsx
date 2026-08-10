@@ -1,5 +1,5 @@
 import { Head, Link, router, useForm } from '@inertiajs/react';
-import { CalendarClock, ChevronLeft, ChevronRight, Filter, Search, SlidersHorizontal, Users } from 'lucide-react';
+import { CalendarClock, CheckSquare, ChevronLeft, ChevronRight, Download, Filter, Search, SlidersHorizontal, Users } from 'lucide-react';
 import { useState } from 'react';
 
 import { StatusBadge } from '@/components/StatusBadge';
@@ -10,7 +10,7 @@ import type { Customer, PageProps, Paginator } from '@/types';
 type Zone = { id: number; name: string; code: string };
 type ColumnKey = 'zone' | 'services' | 'balance' | 'expiry' | 'status';
 type SavedView = { id: number; name: string; filters: { search?: string; status?: string; zone_id?: string; expires_from?: string; expires_to?: string }; columns: ColumnKey[] };
-type Props = PageProps & { customers: Paginator<Customer>; filters: { search?: string; status?: string; zone_id?: string; expires_from?: string; expires_to?: string }; zones: Zone[]; savedViews: SavedView[] };
+type Props = PageProps & { customers: Paginator<Customer>; filters: { search?: string; status?: string; zone_id?: string; expires_from?: string; expires_to?: string }; zones: Zone[]; savedViews: SavedView[]; canExport?: boolean };
 
 const columnOptions: { key: ColumnKey; label: string }[] = [
     { key: 'zone', label: 'Zone' },
@@ -27,7 +27,7 @@ function getNextExpiry(customer: Customer): string | null {
         .sort()[0] ?? null;
 }
 
-export default function CustomersIndex({ customers, filters, zones, savedViews }: Props) {
+export default function CustomersIndex({ customers, filters, zones, savedViews, canExport = false }: Props) {
     const [search, setSearch] = useState(filters.search ?? '');
     const [status, setStatus] = useState(filters.status ?? '');
     const [zoneId, setZoneId] = useState(filters.zone_id?.toString() ?? '');
@@ -37,6 +37,7 @@ export default function CustomersIndex({ customers, filters, zones, savedViews }
     const [showColumns, setShowColumns] = useState(false);
     const [visibleColumns, setVisibleColumns] = useState<ColumnKey[]>(columnOptions.map(({ key }) => key));
     const [selectedViewId, setSelectedViewId] = useState('');
+    const [selectedCustomerIds, setSelectedCustomerIds] = useState<string[]>([]);
     const saveViewForm = useForm({ name: '' });
 
     const applyFilters = () => {
@@ -84,6 +85,25 @@ export default function CustomersIndex({ customers, filters, zones, savedViews }
             columns: visibleColumns,
         }));
         saveViewForm.post('/customers/saved-views', { onSuccess: () => saveViewForm.reset() });
+    };
+
+    const pageCustomerIds = customers.data.map((customer) => customer.public_id);
+    const allPageSelected = pageCustomerIds.length > 0 && pageCustomerIds.every((id) => selectedCustomerIds.includes(id));
+    const toggleCustomer = (publicId: string) => {
+        setSelectedCustomerIds((current) => current.includes(publicId) ? current.filter((id) => id !== publicId) : [...current, publicId]);
+    };
+    const togglePage = () => {
+        setSelectedCustomerIds((current) => allPageSelected ? current.filter((id) => !pageCustomerIds.includes(id)) : [...new Set([...current, ...pageCustomerIds])]);
+    };
+    const exportCustomers = () => {
+        const params = new URLSearchParams();
+        if (search) params.set('search', search);
+        if (status) params.set('status', status);
+        if (zoneId) params.set('zone_id', zoneId);
+        if (expiresFrom) params.set('expires_from', expiresFrom);
+        if (expiresTo) params.set('expires_to', expiresTo);
+        selectedCustomerIds.forEach((id) => params.append('selected[]', id));
+        window.location.assign(`/customers/export?${params.toString()}`);
     };
 
     return (
@@ -149,6 +169,12 @@ export default function CustomersIndex({ customers, filters, zones, savedViews }
                         </button>
                     </div>
                 </div>
+                {canExport && (
+                    <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line bg-sand/20 px-5 py-3">
+                        <p className="text-sm text-muted">{selectedCustomerIds.length ? `${selectedCustomerIds.length} customer(s) selected across pages` : 'Export all customers matching the current filters'}</p>
+                        <button type="button" className="button-secondary" onClick={exportCustomers}><Download size={16} /> Export CSV</button>
+                    </div>
+                )}
                 {(showFilters || showColumns) && (
                     <div className="flex flex-col gap-5 border-b border-line bg-sand/30 px-5 py-4 sm:flex-row sm:items-end">
                         {showFilters && (
@@ -207,6 +233,7 @@ export default function CustomersIndex({ customers, filters, zones, savedViews }
                     <table className="w-full min-w-[760px] text-start">
                         <thead>
                             <tr className="border-b border-line bg-sand/50 text-xs font-semibold uppercase tracking-wider text-muted">
+                                <th className="w-12 px-5 py-3.5 text-start"><button type="button" onClick={togglePage} aria-label={allPageSelected ? 'Clear current page selection' : 'Select current page'}><CheckSquare size={16} className={allPageSelected ? 'text-brand' : 'text-muted'} /></button></th>
                                 <th className="px-5 py-3.5 text-start">Customer</th>
                                 {visibleColumns.includes('zone') && <th className="px-5 py-3.5 text-start">Zone</th>}
                                 {visibleColumns.includes('services') && (
@@ -228,6 +255,7 @@ export default function CustomersIndex({ customers, filters, zones, savedViews }
 
                                 return (
                                     <tr key={customer.public_id} className="group transition hover:bg-sand/30">
+                                        <td className="px-5 py-4"><input type="checkbox" aria-label={`Select ${customer.first_name} ${customer.last_name}`} checked={selectedCustomerIds.includes(customer.public_id)} onChange={() => toggleCustomer(customer.public_id)} /></td>
                                         <td className="px-5 py-4">
                                         <Link
                                             href={`/customers/${customer.public_id}`}
@@ -288,7 +316,7 @@ export default function CustomersIndex({ customers, filters, zones, savedViews }
                             })}
                             {customers.data.length === 0 && (
                                 <tr>
-                                    <td colSpan={visibleColumns.length + 2} className="px-5 py-16 text-center">
+                                    <td colSpan={visibleColumns.length + 3} className="px-5 py-16 text-center">
                                         <Users className="mx-auto text-muted" size={28} />
                                         <p className="mt-3 font-semibold">No customers found</p>
                                         <p className="mt-1 text-sm text-muted">
