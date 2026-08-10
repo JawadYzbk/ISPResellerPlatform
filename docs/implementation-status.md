@@ -34,7 +34,7 @@ Last updated: 2026-08-10
 
 ## In progress
 
-- Real RouterOS/CoA integration against a CHR lab, automatic reconciliation and device inventory healing.
+- Real RouterOS/CoA integration against a CHR lab and device inventory healing; scheduled subscriber reconciliation now reports drift without mutation.
 - Provider integrations (WhatsApp/SMS/email/FCM), callbacks, fallback policy and full notification automation coverage.
 - Customer self-service online payments through a real gateway and realtime transport deployment.
 - Expanded reports beyond the current finance/operations foundations.
