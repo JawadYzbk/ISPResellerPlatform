@@ -32,7 +32,7 @@ Last updated: 2026-08-10
 | ISP-100 | Security headers, dependency audits, session hardening, transactional APP_KEY credential re-encryption command and audited customer PII anonymization | key rotation and PII anonymization delivered; disposable local APP_KEY rotation rehearsal passed; coordinated staging rotation, permission-matrix proof and remaining launch controls remain |
 | ISP-102/103 | Encrypted backup package configuration, dependency health, scheduler/queue-worker heartbeats, daily ledger invariant checks and privacy-safe Sentry wiring | repository wiring delivered; local encrypted SQLite backup/restore and supervised worker/health rehearsal passed; off-site storage, PostgreSQL/object-media restore rehearsal and external alert routing remain |
 | ISP-101 | Lazy Inertia page chunks and production frontend bundle audit | coherent 200-customer demo seed plus reproducible 50k-service seed/benchmark commands delivered; isolated PostgreSQL 18.4 50k benchmark passed locally; PostgreSQL 17 production-shaped acceptance and EXPLAIN review remain |
-| ISP-104 | Administrator, operator and field-app guides, mobile API handover, deployment runbook and incident runbook | repository documentation delivered; screenshot-led walkthrough, production sign-off and pilot handover remain |
+| ISP-104 | Administrator, operator and field-app guides, mobile API handover, deployment runbook and incident runbook | repository documentation plus screenshot-led local operator walkthrough delivered; approved-tenant execution, production sign-off and pilot handover remain |
 
 ## In progress
 
