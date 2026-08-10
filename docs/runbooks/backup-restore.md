@@ -51,6 +51,17 @@ php artisan backup:clean
 
 The backup package sends success, failure, cleanup and health notifications to `BACKUP_NOTIFY_TO`. A successful `backup:list` is not a restore rehearsal; the monthly isolated restore remains a release gate.
 
+## Local rehearsal evidence
+
+On 2026-08-10, the repository wiring was exercised with `BACKUP_DISK=local` and a temporary process-only archive password:
+
+1. `backup:run --only-db --disable-notifications --tries=1` created and verified a 15.03 KB encrypted SQLite archive.
+2. The archive was extracted into a new temporary directory with the rehearsal password.
+3. The SQL dump was replayed into a clean temporary SQLite database; 54 migrations, 1 tenant, and 1 user were readable afterward.
+4. The temporary archive and restored database were removed after verification.
+
+This proves the package wiring, archive verification, encryption password path, and SQLite replay. It does not close the deployment gate for PostgreSQL, object-storage media, off-site retention, or a second-person production-shaped restore rehearsal.
+
 ## Failure handling
 
 If the database restore succeeds but media is incomplete, keep the restored application offline and restore the object snapshot before allowing technician uploads or work-order completion. If the dump checksum fails, discard it and select the previous verified backup; never attempt a partial SQL repair on a corrupted archive.
