@@ -13,9 +13,9 @@ use Illuminate\Support\Facades\DB;
 
 final readonly class ReplyStaffTicket implements Action
 {
-    public function handle(Ticket $ticket, User $actor, string $body): TicketMessage
+    public function handle(Ticket $ticket, User $actor, string $body, string $visibility = 'public'): TicketMessage
     {
-        return DB::transaction(function () use ($ticket, $actor, $body): TicketMessage {
+        return DB::transaction(function () use ($ticket, $actor, $body, $visibility): TicketMessage {
             $locked = Ticket::query()->lockForUpdate()->findOrFail($ticket->id);
             if ($locked->status === TicketStatus::Closed) {
                 throw new DomainException('Closed tickets cannot receive new replies.');
@@ -38,13 +38,13 @@ final readonly class ReplyStaffTicket implements Action
                 'author_type' => 'staff',
                 'author_id' => $actor->id,
                 'body' => trim($body),
-                'visibility' => 'public',
+                'visibility' => $visibility,
             ]);
             TicketEvent::create([
                 'ticket_id' => $locked->id,
                 'actor_id' => $actor->id,
                 'event_type' => 'message_added',
-                'metadata' => ['author_type' => 'staff'],
+                'metadata' => ['author_type' => 'staff', 'visibility' => $visibility],
             ]);
 
             return $message->refresh();

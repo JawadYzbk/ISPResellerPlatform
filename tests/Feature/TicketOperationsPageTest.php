@@ -18,6 +18,10 @@ it('renders staff tickets and applies status and public reply workflows', functi
     app(CapabilitySeeder::class)->run();
     app(Tenancy::class)->set($tenant);
     $user->assignRole('support_agent');
+    $assignee = User::create(['tenant_id' => $tenant->id, 'name' => 'Field technician', 'email' => 'ticket-tech@example.test', 'password' => Hash::make('password'), 'role' => 'technician']);
+    $assignee->assignRole('technician');
+    $assigner = User::create(['tenant_id' => $tenant->id, 'name' => 'Operations manager', 'email' => 'ticket-manager@example.test', 'password' => Hash::make('password'), 'role' => 'operations_manager']);
+    $assigner->assignRole('operations_manager');
     $customer = Customer::factory()->create();
     $ticket = Ticket::create([
         'number' => 'TCK-00001',
@@ -52,6 +56,13 @@ it('renders staff tickets and applies status and public reply workflows', functi
         );
 
     app(Tenancy::class)->set($tenant);
+    $this->actingAs($assigner)
+        ->post(route('operations.tickets.assignee', $ticket->public_id), ['assignee_id' => $assignee->id])
+        ->assertRedirect(route('operations.tickets.show', $ticket->public_id));
+    app(Tenancy::class)->set($tenant);
+    expect($ticket->refresh()->assigned_to)->toBe($assignee->id);
+
+    app(Tenancy::class)->set($tenant);
     $this->actingAs($user)
         ->post(route('operations.tickets.status', $ticket->public_id), ['status' => 'in_progress'])
         ->assertRedirect(route('operations.tickets.show', $ticket->public_id));
@@ -63,6 +74,12 @@ it('renders staff tickets and applies status and public reply workflows', functi
         ->assertRedirect(route('operations.tickets.show', $ticket->public_id));
     app(Tenancy::class)->set($tenant);
     expect(TicketMessage::query()->where('ticket_id', $ticket->id)->latest('id')->value('body'))->toBe('We are checking the access node.');
+
+    $this->actingAs($user)
+        ->post(route('operations.tickets.messages', $ticket->public_id), ['body' => 'Keep this for the next operator.', 'visibility' => 'internal'])
+        ->assertRedirect(route('operations.tickets.show', $ticket->public_id));
+    app(Tenancy::class)->set($tenant);
+    expect(TicketMessage::query()->where('ticket_id', $ticket->id)->latest('id')->value('visibility'))->toBe('internal');
 });
 
 it('does not expose tickets from another tenant', function (): void {

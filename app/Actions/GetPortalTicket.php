@@ -13,7 +13,7 @@ final readonly class GetPortalTicket implements Action
     /** @return array<string, mixed> */
     public function handle(Customer $customer, string $publicId): array
     {
-        $ticket = Ticket::query()->where('customer_id', $customer->id)->where('public_id', $publicId)->with('messages')->first();
+        $ticket = Ticket::query()->where('customer_id', $customer->id)->where('public_id', $publicId)->with(['messages' => fn ($query) => $query->where('visibility', 'public')])->first();
         if ($ticket === null) {
             throw new NotFoundHttpException;
         }

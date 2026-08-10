@@ -11,7 +11,7 @@ final readonly class ListPortalTickets implements Action
     /** @return list<array<string, mixed>> */
     public function handle(Customer $customer): array
     {
-        $tickets = Ticket::query()->where('customer_id', $customer->id)->withCount('messages')->latest()->limit(50)->get();
+        $tickets = Ticket::query()->where('customer_id', $customer->id)->withCount(['messages as public_messages_count' => fn ($query) => $query->where('visibility', 'public')])->latest()->limit(50)->get();
         $payload = [];
         foreach ($tickets as $ticket) {
             $payload[] = [
@@ -23,7 +23,7 @@ final readonly class ListPortalTickets implements Action
                 'status' => $ticket->status->value,
                 'due_at' => $ticket->due_at?->toIso8601String(),
                 'updated_at' => $ticket->updated_at?->toIso8601String(),
-                'message_count' => $ticket->messages_count,
+                'message_count' => $ticket->public_messages_count,
             ];
         }
 

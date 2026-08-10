@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Web;
 
+use App\Actions\AssignTicket;
 use App\Actions\ListTickets;
 use App\Actions\ReplyStaffTicket;
 use App\Domain\Support\TicketStateMachine;
@@ -57,6 +58,13 @@ final class TicketOperationsController extends Controller
         $user = $request->user();
         abort_unless($user instanceof User && $user->can('tickets.view'), 403);
         $ticket->load(['customer', 'service', 'assignee', 'messages']);
+        $assignees = User::query()
+            ->where('tenant_id', $user->tenant_id)
+            ->whereIn('role', ['tenant_owner', 'operations_manager', 'support_agent', 'technician', 'network_administrator', 'reseller_owner'])
+            ->orderBy('name')
+            ->get(['id', 'name', 'role'])
+            ->filter(fn (User $candidate): bool => $candidate->can('tickets.view'))
+            ->values();
 
         return Inertia::render('Operations/TicketShow', [
             'ticket' => [
@@ -70,6 +78,8 @@ final class TicketOperationsController extends Controller
                     'created_at' => $message->created_at?->toIso8601String(),
                 ])->values()->all(),
             ],
+            'assignees' => $assignees,
+            'canAssign' => $user->can('tickets.assign'),
             'canMutate' => $user->can('tickets.create'),
             'canClose' => $user->can('tickets.close'),
         ]);
@@ -93,10 +103,26 @@ final class TicketOperationsController extends Controller
     {
         $user = $request->user();
         abort_unless($user instanceof User && $user->can('tickets.create'), 403);
-        $validated = $request->validate(['body' => ['required', 'string', 'max:10000']]);
-        $reply->handle($ticket, $user, $validated['body']);
+        $validated = $request->validate([
+            'body' => ['required', 'string', 'max:10000'],
+            'visibility' => ['nullable', Rule::in(['public', 'internal'])],
+        ]);
+        $reply->handle($ticket, $user, $validated['body'], $validated['visibility'] ?? 'public');
 
         return redirect()->route('operations.tickets.show', $ticket->public_id)->with('success', 'Reply posted.');
+    }
+
+    public function assign(Request $request, Ticket $ticket, AssignTicket $assign): RedirectResponse
+    {
+        $user = $request->user();
+        abort_unless($user instanceof User && $user->can('tickets.assign'), 403);
+        $validated = $request->validate(['assignee_id' => ['nullable', 'integer', 'min:1']]);
+        $assignee = isset($validated['assignee_id'])
+            ? User::query()->where('tenant_id', $ticket->tenant_id)->findOrFail($validated['assignee_id'])
+            : null;
+        $assign->handle($ticket, $assignee, $user);
+
+        return redirect()->route('operations.tickets.show', $ticket->public_id)->with('success', $assignee === null ? 'Ticket unassigned.' : "Ticket assigned to {$assignee->name}.");
     }
 
     /** @return array<string, mixed> */
@@ -121,7 +147,7 @@ final class TicketOperationsController extends Controller
                 'public_id' => $ticket->service->public_id,
                 'username' => $ticket->service->username,
             ],
-            'assignee' => $ticket->assignee === null ? null : ['name' => $ticket->assignee->name],
+            'assignee' => $ticket->assignee === null ? null : ['id' => $ticket->assignee->id, 'name' => $ticket->assignee->name],
         ];
     }
 

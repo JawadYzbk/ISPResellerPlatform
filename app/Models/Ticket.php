@@ -17,6 +17,7 @@ use Illuminate\Support\Str;
  * @property TicketStatus $status
  * @property CarbonInterface|null $due_at
  * @property CarbonInterface|null $resolved_at
+ * @property int $public_messages_count
  */
 class Ticket extends Model
 {
