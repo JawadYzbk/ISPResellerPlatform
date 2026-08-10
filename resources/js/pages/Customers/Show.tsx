@@ -39,6 +39,7 @@ type Props = PageProps & {
     canTerminateServices?: boolean;
     canDisconnectSessions?: boolean;
     canForceResumeServices?: boolean;
+    canManageEquipment?: boolean;
 };
 
 export default function CustomerShow({
@@ -54,6 +55,7 @@ export default function CustomerShow({
     canTerminateServices = false,
     canDisconnectSessions = false,
     canForceResumeServices = false,
+    canManageEquipment = false,
 }: Props) {
     const fullName = `${customer.first_name} ${customer.last_name ?? ''}`.trim();
     const nextExpiry = customer.services
@@ -262,15 +264,27 @@ export default function CustomerShow({
                                             {service.equipment.length > 0 ? (
                                                 <div className="mt-2 flex flex-wrap gap-2">
                                                     {service.equipment.map((unit) => (
-                                                        <span
+                                                        <div
                                                             key={unit.serial_number}
-                                                            className="inline-flex items-center gap-1.5 rounded-full bg-sand px-3 py-1.5 text-xs font-semibold"
+                                                            className="inline-flex items-center gap-2 rounded-full bg-sand px-3 py-1.5 text-xs font-semibold"
                                                         >
                                                             {unit.item?.name ?? 'Serialized equipment'} · {unit.serial_number}
                                                             <span className="font-normal text-muted">
                                                                 · Assigned {formatDate(unit.assigned_at)}
                                                             </span>
-                                                        </span>
+                                                            {canManageEquipment && (
+                                                                <button
+                                                                    type="button"
+                                                                    className="font-semibold text-coral hover:underline"
+                                                                    onClick={() =>
+                                                                        window.confirm(`Mark ${unit.serial_number} as returned?`) &&
+                                                                        router.post(`/services/${service.public_id}/equipment/${unit.id}/return`)
+                                                                    }
+                                                                >
+                                                                    Return
+                                                                </button>
+                                                            )}
+                                                        </div>
                                                     ))}
                                                 </div>
                                             ) : (

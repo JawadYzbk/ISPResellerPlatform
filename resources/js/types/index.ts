@@ -194,6 +194,7 @@ export type Service = {
     router?: { public_id: string; name: string } | null;
     usage: { used_bytes: number; quota_bytes: number };
     equipment: {
+        id: number;
         serial_number: string;
         status: string;
         assigned_at: string | null;
