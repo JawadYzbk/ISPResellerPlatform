@@ -20,13 +20,13 @@ class Customer extends Model
     /** @use HasFactory<CustomerFactory> */
     use Auditable, BelongsToTenant, HasFactory, SoftDeletes;
 
-    protected $fillable = ['tenant_id', 'zone_id', 'code', 'first_name', 'last_name', 'phone', 'phone_normalized', 'email', 'address', 'latitude', 'longitude', 'status', 'balance_amount', 'balance_currency', 'notes'];
+    protected $fillable = ['tenant_id', 'zone_id', 'code', 'first_name', 'last_name', 'phone', 'phone_normalized', 'email', 'address', 'latitude', 'longitude', 'status', 'balance_amount', 'balance_currency', 'notes', 'notification_preferences'];
 
     protected $hidden = ['notes'];
 
     protected function casts(): array
     {
-        return ['status' => CustomerStatus::class, 'balance_amount' => 'integer'];
+        return ['status' => CustomerStatus::class, 'balance_amount' => 'integer', 'notification_preferences' => 'array'];
     }
 
     protected static function booted(): void
