@@ -123,6 +123,29 @@ it('queues an idempotent current-session disconnect with the live session id', f
         ->and(NetworkCommand::query()->where('service_id', $service->id)->firstOrFail()->payload['session_id'])->toBe('live-session-001');
 });
 
+it('queues a tenant-safe service resync without changing commercial status', function (): void {
+    Queue::fake();
+    $tenant = Tenant::create(['name' => 'Northline', 'slug' => 'northline', 'base_currency' => 'USD', 'collection_currency' => 'USD']);
+    app(Tenancy::class)->set($tenant);
+    $user = User::create(['tenant_id' => $tenant->id, 'name' => 'Operations', 'email' => 'service-resync-api@example.test', 'password' => Hash::make('password'), 'role' => 'operations_manager']);
+    app(CapabilitySeeder::class)->run();
+    $user->assignRole('operations_manager');
+    $service = Service::factory()->create(['status' => ServiceStatus::Active]);
+    $token = $user->createToken('service-resync-api', ['api', 'staff:operator'])->plainTextToken;
+
+    $this->withToken($token)
+        ->withHeaders(['X-Idempotency-Key' => 'service-resync-001'])
+        ->postJson('/api/v1/services/'.$service->public_id.'/resync')
+        ->assertStatus(202)
+        ->assertJsonPath('id', $service->public_id)
+        ->assertJsonPath('status', 'active');
+
+    app(Tenancy::class)->set($tenant);
+    expect($service->refresh()->status)->toBe(ServiceStatus::Active)
+        ->and(NetworkCommand::query()->where('service_id', $service->id)->where('action', 'activate')->count())->toBe(1)
+        ->and(NetworkCommand::query()->firstOrFail()->payload['reason'])->toBe('manual_resync');
+});
+
 it('previews and idempotently applies a service plan change through the operator API', function (): void {
     Queue::fake();
     $tenant = Tenant::create(['name' => 'Northline', 'slug' => 'northline', 'base_currency' => 'USD', 'collection_currency' => 'USD']);

@@ -133,6 +133,27 @@ final class ServiceApiController extends Controller
         ], 202);
     }
 
+    public function resync(Request $request, string $service, EnqueueNetworkCommand $enqueue): JsonResponse
+    {
+        $service = $this->find($service);
+        abort_if($service->status === ServiceStatus::Terminated, 422, 'Terminated services cannot be re-synced.');
+        $action = match ($service->status) {
+            ServiceStatus::Suspended => 'suspend',
+            ServiceStatus::Paused => 'pause',
+            default => 'activate',
+        };
+        $this->authorize($action, $service);
+        $command = $enqueue->handle($service, $action, ['reason' => 'manual_resync']);
+
+        return response()->json([
+            'id' => $service->public_id,
+            'status' => $service->status->value,
+            'network_state' => $service->network_state->value,
+            'paused_until' => $service->paused_until?->toIso8601String(),
+            'command_id' => $command->public_id,
+        ], 202);
+    }
+
     public function planChangePreview(Request $request, string $service, PreviewServicePlanChange $preview): JsonResponse
     {
         $service = $this->find($service);

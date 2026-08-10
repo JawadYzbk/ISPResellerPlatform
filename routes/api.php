@@ -85,6 +85,7 @@ Route::prefix('v1')->group(function (): void {
             Route::post('/services/{service}/renewal-previews', [ServiceApiController::class, 'renewalPreview'])->name('api.services.renewal-previews');
             Route::post('/services/{service}/renewals', [ServiceApiController::class, 'renewal'])->middleware('idempotency')->name('api.services.renewals');
             Route::post('/services/{service}/disconnect-session', [ServiceApiController::class, 'disconnectSession'])->middleware('idempotency')->name('api.services.disconnect-session');
+            Route::post('/services/{service}/resync', [ServiceApiController::class, 'resync'])->middleware('idempotency')->name('api.services.resync');
             Route::post('/imports/customers', [CustomerImportController::class, 'store'])->name('api.imports.customers.store');
             Route::post('/imports/plans', [PlanImportController::class, 'store'])->name('api.imports.plans.store');
             Route::post('/imports/plans/{import}/rollback', [PlanImportController::class, 'rollback'])->name('api.imports.plans.rollback');
