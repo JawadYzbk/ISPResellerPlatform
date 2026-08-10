@@ -1,9 +1,11 @@
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link, router, useForm } from '@inertiajs/react';
 import {
     ArrowLeft,
     CalendarDays,
     CreditCard,
+    Download,
     Edit3,
+    FileText,
     MapPin,
     MessageCircle,
     MessageSquare,
@@ -13,6 +15,7 @@ import {
     Play,
     RefreshCw,
     ShieldOff,
+    Upload,
     Wifi,
 } from 'lucide-react';
 
@@ -45,6 +48,15 @@ export default function CustomerShow({
     canForceResumeServices = false,
 }: Props) {
     const fullName = `${customer.first_name} ${customer.last_name ?? ''}`.trim();
+    const documentForm = useForm<{ file: File | null }>({ file: null });
+    const submitDocument = (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        documentForm.post('/customers/' + customer.public_id + '/documents', {
+            forceFormData: true,
+            onSuccess: () => documentForm.reset(),
+        });
+    };
+
     return (
         <AppLayout>
             <Head title={fullName} />
@@ -282,6 +294,33 @@ export default function CustomerShow({
                                 </div>
                             )}
                         </dl>
+                    </div>
+                    <div className="card overflow-hidden">
+                        <div className="flex items-center gap-2 border-b border-line px-6 py-5">
+                            <FileText size={18} className="text-brand" />
+                            <div>
+                                <h2 className="section-title">Documents</h2>
+                                <p className="mt-1 text-sm text-muted">Private files attached to this customer.</p>
+                            </div>
+                        </div>
+                        {canEdit && (
+                            <form onSubmit={submitDocument} className="space-y-3 border-b border-line px-6 py-5">
+                                <label><span className="field-label">Add PDF or image</span><input type="file" accept="application/pdf,image/jpeg,image/png,image/webp" className="field" onChange={(event) => documentForm.setData('file', event.target.files?.[0] ?? null)} />{documentForm.errors.file && <p className="field-error">{documentForm.errors.file}</p>}</label>
+                                <button type="submit" className="button-secondary" disabled={documentForm.processing || !documentForm.data.file}><Upload size={15} /> Upload document</button>
+                            </form>
+                        )}
+                        <div className="divide-y divide-line">
+                            {customer.documents.map((document) => (
+                                <div key={document.id} className="flex items-center justify-between gap-4 px-6 py-4">
+                                    <div className="min-w-0">
+                                        <p className="truncate text-sm font-semibold">{document.filename}</p>
+                                        <p className="mt-1 text-xs text-muted">{document.mime_type} · {document.size_bytes} bytes · {formatDate(document.created_at)}</p>
+                                    </div>
+                                    <a href={document.download_url} className="button-secondary shrink-0" download><Download size={15} /> Download</a>
+                                </div>
+                            ))}
+                            {customer.documents.length === 0 && <p className="px-6 py-8 text-sm text-muted">No customer documents have been uploaded.</p>}
+                        </div>
                     </div>
                     <div className="card overflow-hidden">
                         <div className="flex items-center justify-between border-b border-line px-6 py-5">
