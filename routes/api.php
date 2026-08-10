@@ -18,6 +18,7 @@ use App\Http\Controllers\Api\PortalBillingController;
 use App\Http\Controllers\Api\PortalController;
 use App\Http\Controllers\Api\ServiceApiController;
 use App\Http\Controllers\Api\ServiceImportController;
+use App\Http\Controllers\Api\TechnicianMediaController;
 use App\Http\Controllers\Api\TechnicianWorkOrderController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -69,6 +70,7 @@ Route::prefix('v1')->group(function (): void {
             Route::post('/collector/sync/push', [CollectorSyncController::class, 'push'])->middleware('idempotency')->name('api.collector.sync.push');
         });
         Route::middleware('abilities:staff:technician')->group(function (): void {
+            Route::post('/technician/uploads', [TechnicianMediaController::class, 'store'])->name('api.technician.uploads.store');
             Route::get('/technician/services/{service}/diagnostics', [TechnicianWorkOrderController::class, 'diagnostics'])->name('api.technician.services.diagnostics');
             Route::get('/technician/inventory', [TechnicianWorkOrderController::class, 'inventory'])->name('api.technician.inventory');
             Route::get('/technician/work-orders', [TechnicianWorkOrderController::class, 'index'])->name('api.technician.work-orders.index');

@@ -65,7 +65,7 @@ return Application::configure(basePath: dirname(__DIR__))
                 return null;
             }
 
-            $status = $exception instanceof HttpExceptionInterface ? $exception->getStatusCode() : 500;
+            $status = $exception instanceof ValidationException ? 422 : ($exception instanceof HttpExceptionInterface ? $exception->getStatusCode() : 500);
             $extra = $exception instanceof ValidationException ? ['errors' => $exception->errors()] : [];
 
             return ProblemDetails::fromThrowable(
