@@ -63,4 +63,10 @@ return [
         ],
     ],
 
+    'external_network' => [
+        'endpoint' => env('EXTERNAL_NETWORK_ENDPOINT'),
+        'token' => env('EXTERNAL_NETWORK_TOKEN'),
+        'timeout' => max(1, (int) env('EXTERNAL_NETWORK_TIMEOUT', 5)),
+    ],
+
 ];

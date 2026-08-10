@@ -7,7 +7,7 @@ use App\Models\Service;
 
 final class DriverManager
 {
-    public function __construct(private ManualDriver $manual, private NullDriver $null, private ?FakeDriver $fake = null, private ?MikrotikApiDriver $mikrotik = null, private ?RadiusDriver $radius = null) {}
+    public function __construct(private ManualDriver $manual, private NullDriver $null, private ?FakeDriver $fake = null, private ?MikrotikApiDriver $mikrotik = null, private ?RadiusDriver $radius = null, private ?ExternalDriver $external = null) {}
 
     public function for(Service $service): NetworkDriver
     {
@@ -19,7 +19,7 @@ final class DriverManager
             ProvisioningMode::Manual, ProvisioningMode::UpstreamCredential => $this->manual,
             ProvisioningMode::Mikrotik => $this->mikrotik ?? $this->null,
             ProvisioningMode::Radius => $this->radius ?? $this->null,
-            default => $this->null,
+            ProvisioningMode::External => $this->external ?? $this->null,
         };
     }
 }

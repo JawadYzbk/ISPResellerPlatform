@@ -1,6 +1,7 @@
 <?php
 
 use App\Domain\Network\DriverManager;
+use App\Domain\Network\ExternalDriver;
 use App\Domain\Network\FakeDriver;
 use App\Domain\Network\ManualDriver;
 use App\Domain\Network\NullDriver;
@@ -22,4 +23,12 @@ it('allows all network tests to use the programmable fake driver', function (): 
     $service = new Service(['provisioning_mode' => ProvisioningMode::Mikrotik]);
 
     expect($manager->for($service))->toBe($fake);
+});
+
+it('resolves external services through the configured external driver', function (): void {
+    $external = new ExternalDriver;
+    $manager = new DriverManager(new ManualDriver, new NullDriver, null, null, null, $external);
+    $service = new Service(['provisioning_mode' => ProvisioningMode::External]);
+
+    expect($manager->for($service))->toBe($external);
 });
