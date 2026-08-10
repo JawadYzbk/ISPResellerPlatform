@@ -39,3 +39,9 @@ php artisan reverb:start
 ```
 
 Verify a service status transition is visible to an authorized tenant client and unavailable to a different tenant. Staff pages reload current Inertia data when `service.status.changed` arrives; the client subscribes only when `VITE_REVERB_ENABLED=true`. Reverb installation and configuration are repository-complete; TLS termination, process supervision and runtime rollout remain deployment work.
+
+## Local runtime evidence
+
+On 2026-08-10, the local seeded application had 38 queued manual-driver/broadcast jobs. Running `platform:heartbeat` followed by `queue:work --stop-when-empty --max-jobs=100 --tries=1` processed all 38 jobs, including the queued worker heartbeat. A subsequent `/api/v1/health` returned `status: ok` for database, cache, queue depth, scheduler heartbeat, and queue-worker heartbeat.
+
+This proves the repository health path and worker contract locally. It does not replace a supervised deployment, failure-injection alert test, or external on-call route.
