@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Actions\ImportBalancesCsv;
+use App\Actions\NormalizeTabularImport;
 use App\Actions\RollbackImport;
 use App\Http\Controllers\Controller;
 use App\Models\ImportBatch;
@@ -13,18 +14,19 @@ use Illuminate\Http\Request;
 
 final class BalanceImportController extends Controller
 {
-    public function store(Request $request, ImportBalancesCsv $import): JsonResponse
+    public function store(Request $request, ImportBalancesCsv $import, NormalizeTabularImport $normalize): JsonResponse
     {
         abort_unless($request->user()?->can('billing.adjustments.create'), 403);
         $validated = $request->validate([
             'filename' => ['nullable', 'string', 'max:255'],
             'csv' => ['nullable', 'string'],
-            'file' => ['nullable', 'file', 'mimes:csv,txt', 'max:10240'],
+            'file' => ['nullable', 'file', 'mimes:csv,txt,xlsx', 'max:10240'],
             'dry_run' => ['sometimes', 'boolean'],
         ]);
         $contents = isset($validated['file']) ? $validated['file']->get() : ($validated['csv'] ?? null);
         abort_if($contents === null, 422, 'Provide either csv text or a file upload.');
         $filename = (string) ($validated['filename'] ?? $validated['file']?->getClientOriginalName() ?? 'balances.csv');
+        $contents = $normalize->handle($contents, $filename);
         $tenant = Tenant::query()->findOrFail(app(Tenancy::class)->requireId());
         $batch = $import->handle($tenant, $contents, $filename, (bool) ($validated['dry_run'] ?? false));
 
