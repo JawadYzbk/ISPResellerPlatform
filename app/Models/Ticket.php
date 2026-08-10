@@ -2,15 +2,22 @@
 
 namespace App\Models;
 
+use App\Domain\Support\TicketSlaClock;
 use App\Enums\TicketStatus;
 use App\Models\Concerns\Auditable;
 use App\Models\Concerns\BelongsToTenant;
+use App\Support\Tenancy;
+use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
-/** @property TicketStatus $status */
+/**
+ * @property TicketStatus $status
+ * @property CarbonInterface|null $due_at
+ * @property CarbonInterface|null $resolved_at
+ */
 class Ticket extends Model
 {
     use Auditable, BelongsToTenant;
@@ -26,6 +33,12 @@ class Ticket extends Model
     {
         static::creating(function (self $ticket): void {
             $ticket->public_id ??= (string) Str::ulid();
+            if ($ticket->due_at === null && app(Tenancy::class)->id() !== null) {
+                $tenant = Tenant::find(app(Tenancy::class)->requireId());
+                if ($tenant !== null) {
+                    $ticket->due_at = app(TicketSlaClock::class)->dueAt($tenant, (string) ($ticket->priority ?: 'normal'), now()->toImmutable());
+                }
+            }
         });
     }
 
