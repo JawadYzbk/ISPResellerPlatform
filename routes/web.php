@@ -11,6 +11,7 @@ use App\Http\Controllers\Web\CustomerController;
 use App\Http\Controllers\Web\DashboardController;
 use App\Http\Controllers\Web\ExchangeRateOperationsController;
 use App\Http\Controllers\Web\ImportOperationsController;
+use App\Http\Controllers\Web\IncidentOperationsController;
 use App\Http\Controllers\Web\InventoryOperationsController;
 use App\Http\Controllers\Web\InvitationController;
 use App\Http\Controllers\Web\IpPoolOperationsController;
@@ -90,6 +91,8 @@ Route::middleware(['auth', 'tenant', '2fa'])->group(function (): void {
     Route::get('/operations/network-commands', [NetworkOperationsController::class, 'index'])->name('operations.network-commands');
     Route::post('/operations/network-commands/{command:public_id}/retry', [NetworkOperationsController::class, 'retry'])->name('operations.network-commands.retry');
     Route::get('/operations/sessions', [SessionOperationsController::class, 'index'])->name('operations.sessions');
+    Route::get('/operations/incidents', [IncidentOperationsController::class, 'index'])->name('operations.incidents');
+    Route::get('/operations/incidents/{incident:public_id}', [IncidentOperationsController::class, 'show'])->name('operations.incidents.show');
     Route::get('/operations/routers', [RouterOperationsController::class, 'index'])->name('operations.routers');
     Route::get('/operations/routers/create', [RouterOperationsController::class, 'create'])->name('operations.routers.create');
     Route::post('/operations/routers', [RouterOperationsController::class, 'store'])->middleware('recent-auth')->name('operations.routers.store');
