@@ -456,6 +456,27 @@ paths:
         '200': { description: Daily input, output and total octets }
         '401': { description: Invalid portal session }
         '404': { description: Service is not owned by the portal customer }
+  /portal/{tenant}/me/services/{service}/restart-session:
+    post:
+      summary: Queue a customer-owned PPP session restart
+      parameters:
+        - in: path
+          name: tenant
+          required: true
+          schema: { type: string }
+        - in: path
+          name: service
+          required: true
+          schema: { type: string, description: Service public ULID }
+        - in: header
+          name: X-Idempotency-Key
+          required: true
+          schema: { type: string, maxLength: 120 }
+      responses:
+        '202': { description: Network disconnect queued for the customer-owned service }
+        '401': { description: Invalid portal session }
+        '404': { description: Service is not owned by the portal customer }
+        '429': { description: Restart limited to once every five minutes }
   /portal/{tenant}/me/notices:
     get:
       summary: Read active incidents affecting the customer's zone or POP
