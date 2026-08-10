@@ -951,6 +951,28 @@ paths:
       responses:
         '200': { description: Cursor-paginated collector receipts and allocations }
         '403': { description: Missing collector ability }
+    post:
+      summary: Record collector payments in a partial-success batch
+      parameters:
+        - in: header
+          name: X-Idempotency-Key
+          required: true
+          schema: { type: string, maxLength: 120 }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [items]
+              properties:
+                items:
+                  type: array
+                  maxItems: 100
+                  items: { $ref: '#/components/schemas/PaymentRequest' }
+      responses:
+        '200': { description: Per-item success/error results }
+        '409': { description: Idempotency key reused for a different request }
   /collector/summary:
     get:
       summary: Read the authenticated collector's daily payment totals
