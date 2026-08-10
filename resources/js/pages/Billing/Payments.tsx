@@ -117,7 +117,7 @@ export default function PaymentsPage({ payments, filters, canReverse = false }: 
                             {payments.data.map((payment) => (
                                 <tr key={payment.public_id} className="hover:bg-sand/30">
                                     <td className="px-5 py-4">
-                                        <p className="text-sm font-semibold">{payment.number}</p>
+                                        <Link href={`/billing/payments/${payment.public_id}`} className="text-sm font-semibold hover:text-brand">{payment.number}</Link>
                                         <p className="mt-1 text-xs text-muted">{payment.collector ?? 'System'}</p>
                                     </td>
                                     <td className="px-5 py-4">

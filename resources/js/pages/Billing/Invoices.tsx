@@ -107,7 +107,7 @@ export default function InvoicesPage({ invoices, filters, canIssue = false }: Pr
                             {invoices.data.map((invoice) => (
                                 <tr key={invoice.public_id} className="hover:bg-sand/30">
                                     <td className="px-5 py-4">
-                                        <p className="text-sm font-semibold">{invoice.number}</p>
+                                        <Link href={`/billing/invoices/${invoice.public_id}`} className="text-sm font-semibold hover:text-brand">{invoice.number}</Link>
                                         <p className="mt-1 text-xs text-muted">Issued {formatDate(invoice.issued_at)}</p>
                                     </td>
                                     <td className="px-5 py-4">
