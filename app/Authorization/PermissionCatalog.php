@@ -14,7 +14,7 @@ final class PermissionCatalog
         'plans.manage',
         'billing.invoices.view', 'billing.invoices.issue', 'billing.adjustments.create',
         'payments.collect', 'payments.backdate', 'payments.void', 'refunds.approve',
-        'wallets.view', 'wallets.fund', 'settlements.approve',
+        'partners.manage', 'wallets.view', 'wallets.fund', 'settlements.approve',
         'network.view', 'network.provision', 'network.disconnect', 'network.credentials.reveal',
         'suppliers.view', 'credentials.import', 'credentials.reserve', 'credentials.assign', 'credentials.reveal',
         'inventory.view', 'inventory.receive', 'inventory.transfer', 'inventory.assign', 'inventory.write_off',

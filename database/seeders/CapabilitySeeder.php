@@ -41,7 +41,7 @@ class CapabilitySeeder extends Seeder
         'reseller_owner' => [
             'customers.view', 'customers.create', 'customers.update', 'services.view', 'services.create',
             'services.activate', 'services.suspend', 'services.change_plan', 'billing.invoices.view',
-            'payments.collect', 'wallets.view', 'wallets.fund', 'tickets.view', 'tickets.create', 'reports.operations',
+            'payments.collect', 'partners.manage', 'wallets.view', 'wallets.fund', 'tickets.view', 'tickets.create', 'reports.operations',
         ],
         'reseller_staff' => ['customers.view', 'customers.create', 'customers.update', 'services.view', 'tickets.view', 'tickets.create'],
         'auditor' => ['customers.view', 'services.view', 'billing.invoices.view', 'wallets.view', 'network.view', 'tickets.view', 'reports.finance', 'reports.operations', 'reports.export', 'audit.view'],

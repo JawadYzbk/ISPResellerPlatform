@@ -1,6 +1,7 @@
 <?php
 
 use App\Actions\CreatePartner;
+use App\Models\Partner;
 use App\Models\Plan;
 use App\Models\PriceBook;
 use App\Models\PriceBookItem;
@@ -45,4 +46,28 @@ it('shows partner setup guidance when an owner has no partner accounts', functio
     $this->actingAs($user)->get('/partners/commercial')
         ->assertOk()
         ->assertInertia(fn ($page) => $page->component('Partners/Commercial')->where('selectedPartner', null)->where('partners', []));
+});
+
+it('creates a descendant partner from the commercial workspace', function (): void {
+    $tenant = Tenant::create(['name' => 'Northline', 'slug' => 'northline', 'base_currency' => 'USD', 'collection_currency' => 'USD']);
+    app(Tenancy::class)->set($tenant);
+    $parent = app(CreatePartner::class)->handle('Parent', 'PARENT', 'USD');
+    $user = User::create(['tenant_id' => $tenant->id, 'partner_id' => $parent->id, 'name' => 'Owner', 'email' => 'commercial-create@example.test', 'password' => Hash::make('password'), 'role' => 'reseller_owner']);
+    app(CapabilitySeeder::class)->run();
+    $user->assignRole('reseller_owner');
+    $user->forceFill(['last_authenticated_at' => now()])->save();
+
+    $this->actingAs($user)->post(route('partners.store'), [
+        'name' => 'Child reseller',
+        'code' => 'child-001',
+        'currency' => 'usd',
+        'credit_limit' => 5000,
+        'low_balance_threshold' => 1000,
+    ])->assertRedirect();
+
+    app(Tenancy::class)->set($tenant);
+    $child = Partner::query()->where('code', 'CHILD-001')->firstOrFail();
+    expect($child->parent_id)->toBe($parent->id)
+        ->and($child->credit_limit)->toBe(5000)
+        ->and($child->wallet)->not->toBeNull();
 });

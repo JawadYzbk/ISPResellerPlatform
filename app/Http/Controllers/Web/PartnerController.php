@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Web;
 
+use App\Actions\CreatePartner;
 use App\Actions\ResolvePartnerPrice;
 use App\Http\Controllers\Controller;
 use App\Models\Partner;
@@ -10,7 +11,9 @@ use App\Models\Settlement;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -35,6 +38,7 @@ final class PartnerController extends Controller
                 'catalog' => [],
                 'settlements' => [],
                 'showCost' => false,
+                'canManage' => $user->can('partners.manage'),
             ]);
         }
         $showCost = $user->partner_id === null && $user->can('settlements.approve');
@@ -76,7 +80,43 @@ final class PartnerController extends Controller
             'catalog' => $catalog,
             'settlements' => $settlements,
             'showCost' => $showCost,
+            'canManage' => $user->can('partners.manage'),
         ]);
+    }
+
+    public function store(Request $request, CreatePartner $create): RedirectResponse
+    {
+        $user = $request->user();
+        abort_unless($user instanceof User && $user->can('partners.manage'), 403);
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'code' => ['required', 'string', 'max:32', 'regex:/^[A-Za-z0-9_-]+$/'],
+            'currency' => ['required', 'string', 'size:3', 'regex:/^[A-Za-z]{3}$/'],
+            'parent_id' => ['nullable', 'string', 'max:26'],
+            'credit_limit' => ['nullable', 'integer', 'min:0'],
+            'low_balance_threshold' => ['nullable', 'integer', 'min:0'],
+        ]);
+        $data['code'] = strtoupper(trim((string) $data['code']));
+        $data['currency'] = strtoupper((string) $data['currency']);
+        if (Partner::query()->whereRaw('UPPER(code) = ?', [$data['code']])->exists()) {
+            throw ValidationException::withMessages(['code' => 'A partner with this code already exists.']);
+        }
+
+        $parentId = ($data['parent_id'] ?? null) ?: ($user->partner_id === null ? null : $user->partner->public_id);
+        $parent = null;
+        if ($parentId !== null) {
+            $parent = $this->visible($user)->where('public_id', $parentId)->firstOrFail();
+        }
+        $partner = $create->handle(
+            (string) $data['name'],
+            $data['code'],
+            $data['currency'],
+            $parent,
+            (int) ($data['credit_limit'] ?? 0),
+            (int) ($data['low_balance_threshold'] ?? 0),
+        );
+
+        return redirect()->route('partners.commercial', ['partner' => $partner->public_id])->with('success', "Partner {$partner->name} created.");
     }
 
     /** @return Builder<Partner> */
