@@ -43,6 +43,41 @@ it('lists services and idempotently queues a suspend command', function (): void
         ->and(NetworkCommand::count())->toBe(1);
 });
 
+it('pauses and resumes a service while preserving its billing expiry', function (): void {
+    Queue::fake();
+    $tenant = Tenant::create(['name' => 'Northline', 'slug' => 'northline', 'base_currency' => 'USD', 'collection_currency' => 'USD']);
+    app(Tenancy::class)->set($tenant);
+    $user = User::create(['tenant_id' => $tenant->id, 'name' => 'Operations', 'email' => 'service-pause-api@example.test', 'password' => Hash::make('password'), 'role' => 'operations_manager']);
+    app(CapabilitySeeder::class)->run();
+    $user->assignRole('operations_manager');
+    $expiresAt = now()->addDays(14)->startOfSecond();
+    $resumeAt = now()->addDays(3)->startOfSecond();
+    $service = Service::factory()->create(['status' => ServiceStatus::Active, 'expires_at' => $expiresAt]);
+    $token = $user->createToken('service-pause-api', ['api', 'staff:operator'])->plainTextToken;
+
+    $first = $this->withToken($token)
+        ->withHeaders(['X-Idempotency-Key' => 'service-pause-001'])
+        ->postJson('/api/v1/services/'.$service->public_id.'/pause', ['reason' => 'customer_requested', 'resume_at' => $resumeAt->toDateTimeString()]);
+    $second = $this->withToken($token)
+        ->withHeaders(['X-Idempotency-Key' => 'service-pause-001'])
+        ->postJson('/api/v1/services/'.$service->public_id.'/pause', ['reason' => 'customer_requested', 'resume_at' => $resumeAt->toDateTimeString()]);
+
+    $first->assertStatus(202)
+        ->assertJsonPath('status', 'paused')
+        ->assertJsonPath('paused_until', $resumeAt->toIso8601String());
+    $second->assertStatus(202)->assertJsonPath('command_id', $first->json('command_id'));
+    app(Tenancy::class)->set($tenant);
+    expect($service->refresh()->status)->toBe(ServiceStatus::Paused)
+        ->and($service->expires_at?->equalTo($expiresAt))->toBeTrue()
+        ->and(NetworkCommand::query()->where('service_id', $service->id)->where('action', 'pause')->count())->toBe(1);
+
+    $this->withToken($token)
+        ->withHeaders(['X-Idempotency-Key' => 'service-resume-paused-001'])
+        ->postJson('/api/v1/services/'.$service->public_id.'/resume')
+        ->assertStatus(202)
+        ->assertJsonPath('status', 'active');
+});
+
 it('idempotently terminates a service through the operator API', function (): void {
     Queue::fake();
     $tenant = Tenant::create(['name' => 'Northline', 'slug' => 'northline', 'base_currency' => 'USD', 'collection_currency' => 'USD']);

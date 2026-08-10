@@ -19,7 +19,7 @@ class CapabilitySeeder extends Seeder
         'tenant_owner' => PermissionCatalog::ALL,
         'operations_manager' => [
             'customers.view', 'customers.create', 'customers.update', 'customers.export',
-            'services.view', 'services.create', 'services.activate', 'services.suspend', 'services.terminate', 'services.change_plan',
+            'services.view', 'services.create', 'services.activate', 'services.suspend', 'services.pause', 'services.terminate', 'services.change_plan',
             'plans.manage',
             'tickets.view', 'tickets.create', 'tickets.assign', 'tickets.close', 'workorders.complete',
             'inventory.view', 'inventory.receive', 'inventory.transfer', 'inventory.assign',
@@ -40,7 +40,7 @@ class CapabilitySeeder extends Seeder
         ],
         'reseller_owner' => [
             'customers.view', 'customers.create', 'customers.update', 'services.view', 'services.create',
-            'services.activate', 'services.suspend', 'services.change_plan', 'billing.invoices.view',
+            'services.activate', 'services.suspend', 'services.pause', 'services.change_plan', 'billing.invoices.view',
             'payments.collect', 'partners.manage', 'wallets.view', 'wallets.fund', 'tickets.view', 'tickets.create', 'reports.operations',
         ],
         'reseller_staff' => ['customers.view', 'customers.create', 'customers.update', 'services.view', 'tickets.view', 'tickets.create'],

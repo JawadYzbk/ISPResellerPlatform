@@ -76,11 +76,24 @@ final class ServiceApiController extends Controller
         return $this->transition($service, ServiceStatus::Suspended, 'suspend', $request->user(), $transition, $enqueue, $validated);
     }
 
+    public function pause(Request $request, string $service, TransitionService $transition, EnqueueNetworkCommand $enqueue): JsonResponse
+    {
+        $service = $this->find($service);
+        $this->authorize('pause', $service);
+        abort_unless($service->status === ServiceStatus::Active, 422, 'Only active services can be paused.');
+        $validated = $request->validate([
+            'reason' => ['required', 'string', 'max:64'],
+            'resume_at' => ['nullable', 'date', 'after:now'],
+        ]);
+
+        return $this->transition($service, ServiceStatus::Paused, 'pause', $request->user(), $transition, $enqueue, $validated);
+    }
+
     public function resume(Request $request, string $service, TransitionService $transition, EnqueueNetworkCommand $enqueue): JsonResponse
     {
         $service = $this->find($service);
         $this->authorize('activate', $service);
-        if ($service->suspension_reason !== 'auto_overdue') {
+        if ($service->status !== ServiceStatus::Paused && $service->suspension_reason !== 'auto_overdue') {
             abort_unless($request->user()?->can('services.force_resume'), 403);
         }
 
@@ -234,7 +247,7 @@ final class ServiceApiController extends Controller
         $updated = $transition->handle($service, $target, $actor, $metadata);
         $command = $enqueue->handle($updated, $action, $metadata);
 
-        return response()->json(['id' => $updated->public_id, 'status' => $updated->status->value, 'network_state' => $updated->network_state->value, 'command_id' => $command->public_id], 202);
+        return response()->json(['id' => $updated->public_id, 'status' => $updated->status->value, 'network_state' => $updated->network_state->value, 'paused_until' => $updated->paused_until?->toIso8601String(), 'command_id' => $command->public_id], 202);
     }
 
     private function find(string $publicId): Service

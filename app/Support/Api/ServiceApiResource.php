@@ -20,6 +20,8 @@ final class ServiceApiResource
             'provisioning_mode' => $service->provisioning_mode->value,
             'expires_at' => $service->expires_at?->toIso8601String(),
             'activated_at' => $service->activated_at?->toIso8601String(),
+            'suspension_reason' => $service->suspension_reason,
+            'paused_until' => $service->paused_until?->toIso8601String(),
             'current_period_bytes' => $service->current_period_bytes,
             'fup_applied_at' => $service->fup_applied_at?->toIso8601String(),
             'customer' => $service->customer === null ? null : [

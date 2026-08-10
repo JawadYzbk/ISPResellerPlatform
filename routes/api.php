@@ -78,6 +78,7 @@ Route::prefix('v1')->group(function (): void {
         Route::middleware('abilities:staff:operator')->group(function (): void {
             Route::post('/services/{service}/activate', [ServiceApiController::class, 'activate'])->middleware('idempotency')->name('api.services.activate');
             Route::post('/services/{service}/suspend', [ServiceApiController::class, 'suspend'])->middleware('idempotency')->name('api.services.suspend');
+            Route::post('/services/{service}/pause', [ServiceApiController::class, 'pause'])->middleware('idempotency')->name('api.services.pause');
             Route::post('/services/{service}/resume', [ServiceApiController::class, 'resume'])->middleware('idempotency')->name('api.services.resume');
             Route::post('/services/{service}/terminate', [ServiceApiController::class, 'terminate'])->middleware('idempotency')->name('api.services.terminate');
             Route::post('/services/{service}/change-plan', [ServiceApiController::class, 'changePlan'])->middleware('idempotency')->name('api.services.change-plan');
