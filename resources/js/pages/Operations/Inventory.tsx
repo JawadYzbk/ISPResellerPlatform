@@ -40,16 +40,19 @@ type Props = PageProps & {
     filters: { status?: string; search?: string };
     canAssign?: boolean;
     canReceive?: boolean;
+    canTransfer?: boolean;
     assignableServices?: AssignableService[];
     bulkBalances: BulkBalance[];
     bulkItems: BulkItem[];
     bulkWarehouses: BulkWarehouse[];
+    transferWarehouses: BulkWarehouse[];
 };
 
-export default function InventoryPage({ units, filters, canAssign = false, canReceive = false, assignableServices = [], bulkBalances, bulkItems, bulkWarehouses }: Props) {
+export default function InventoryPage({ units, filters, canAssign = false, canReceive = false, canTransfer = false, assignableServices = [], bulkBalances, bulkItems, bulkWarehouses, transferWarehouses }: Props) {
     const [search, setSearch] = useState(filters.search ?? '');
     const [status, setStatus] = useState(filters.status ?? '');
     const [selectedServices, setSelectedServices] = useState<Record<number, string>>({});
+    const [selectedWarehouses, setSelectedWarehouses] = useState<Record<number, string>>({});
     const receiveForm = useForm({ inventory_item_id: '', warehouse_id: '', quantity: '', note: '' });
 
     const applyFilters = (event: React.FormEvent) => {
@@ -75,6 +78,11 @@ export default function InventoryPage({ units, filters, canAssign = false, canRe
     const submitReceive = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         receiveForm.post('/operations/inventory/bulk-receive', { onSuccess: () => receiveForm.reset() });
+    };
+
+    const transferUnit = (unit: InventoryUnit) => {
+        const warehouseId = selectedWarehouses[unit.id];
+        if (warehouseId) router.post(`/operations/inventory/${unit.id}/transfer`, { warehouse_id: warehouseId });
     };
 
     return (
@@ -213,6 +221,15 @@ export default function InventoryPage({ units, filters, canAssign = false, canRe
                                                 >
                                                     Assign
                                                 </button>
+                                            </div>
+                                        )}
+                                        {canTransfer && ['available', 'returned'].includes(unit.status) && transferWarehouses.length > 0 && (
+                                            <div className="mt-2 flex items-center justify-end gap-2">
+                                                <select className="field max-w-56 py-2 text-xs" value={selectedWarehouses[unit.id] ?? ''} onChange={(event) => setSelectedWarehouses((current) => ({ ...current, [unit.id]: event.target.value }))}>
+                                                    <option value="">Recover or transfer to</option>
+                                                    {transferWarehouses.filter((warehouse) => warehouse.code !== unit.warehouse?.code).map((warehouse) => <option key={warehouse.id} value={warehouse.id}>{warehouse.code} · {warehouse.name}</option>)}
+                                                </select>
+                                                <button type="button" className="text-sm font-semibold text-brand" onClick={() => transferUnit(unit)}>Transfer</button>
                                             </div>
                                         )}
                                     </td>
