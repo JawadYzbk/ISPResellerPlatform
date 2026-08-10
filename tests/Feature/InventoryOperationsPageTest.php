@@ -1,8 +1,10 @@
 <?php
 
 use App\Models\InventoryItem;
+use App\Models\InventoryMovement;
 use App\Models\InventoryUnit;
 use App\Models\Service;
+use App\Models\StockMovement;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Models\Warehouse;
@@ -23,6 +25,9 @@ it('renders tenant-safe serialized inventory with service assignment context', f
     $warehouse = Warehouse::create(['name' => 'Main warehouse', 'code' => 'MAIN']);
     $service = Service::factory()->create();
     $unit = InventoryUnit::create(['inventory_item_id' => $item->id, 'warehouse_id' => $warehouse->id, 'serial_number' => 'ONU-001', 'status' => 'assigned', 'service_id' => $service->id, 'assigned_at' => now()]);
+    InventoryMovement::create(['inventory_unit_id' => $unit->id, 'from_warehouse_id' => $warehouse->id, 'service_id' => $service->id, 'movement_type' => 'assign', 'actor_id' => $user->id]);
+    $bulkItem = InventoryItem::create(['sku' => 'CABLE-001', 'name' => 'Outdoor cable', 'category' => 'cable', 'is_serialized' => false]);
+    StockMovement::create(['inventory_item_id' => $bulkItem->id, 'warehouse_id' => $warehouse->id, 'actor_id' => $user->id, 'movement_type' => 'receive', 'quantity' => '10.500', 'occurred_at' => now()->subMinute(), 'note' => 'Opening stock']);
 
     $this->actingAs($user)
         ->get(route('operations.inventory', ['status' => 'assigned']))
@@ -32,6 +37,8 @@ it('renders tenant-safe serialized inventory with service assignment context', f
             ->where('units.data.0.serial_number', 'ONU-001')
             ->where('units.data.0.item.sku', 'CPE-ONU')
             ->where('units.data.0.service.username', $service->username)
+            ->where('movements.0.serial_number', 'ONU-001')
+            ->where('movements.1.quantity', '10.500')
             ->where('filters.status', 'assigned')
         );
 });

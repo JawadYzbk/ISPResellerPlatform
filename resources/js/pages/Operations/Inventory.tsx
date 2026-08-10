@@ -34,10 +34,24 @@ type BulkBalance = {
 
 type BulkItem = { id: number; sku: string; name: string };
 type BulkWarehouse = { id: number; code: string; name: string };
+type InventoryMovement = {
+    id: string;
+    movement_type: string;
+    kind: 'serialized' | 'bulk';
+    occurred_at: string | null;
+    item: { sku: string; name: string } | null;
+    serial_number: string | null;
+    from_warehouse: string | null;
+    to_warehouse: string | null;
+    quantity: number | string;
+    reference: string | null;
+    actor: string | null;
+    note: string | null;
+};
 
 type Props = PageProps & {
     units: Paginator<InventoryUnit>;
-    filters: { status?: string; search?: string };
+    filters: { status?: string; search?: string; movement_type?: string };
     canAssign?: boolean;
     canReceive?: boolean;
     canTransfer?: boolean;
@@ -46,11 +60,13 @@ type Props = PageProps & {
     bulkItems: BulkItem[];
     bulkWarehouses: BulkWarehouse[];
     transferWarehouses: BulkWarehouse[];
+    movements: InventoryMovement[];
 };
 
-export default function InventoryPage({ units, filters, canAssign = false, canReceive = false, canTransfer = false, assignableServices = [], bulkBalances, bulkItems, bulkWarehouses, transferWarehouses }: Props) {
+export default function InventoryPage({ units, filters, canAssign = false, canReceive = false, canTransfer = false, assignableServices = [], bulkBalances, bulkItems, bulkWarehouses, transferWarehouses, movements }: Props) {
     const [search, setSearch] = useState(filters.search ?? '');
     const [status, setStatus] = useState(filters.status ?? '');
+    const [movementType, setMovementType] = useState(filters.movement_type ?? '');
     const [selectedServices, setSelectedServices] = useState<Record<number, string>>({});
     const [selectedWarehouses, setSelectedWarehouses] = useState<Record<number, string>>({});
     const receiveForm = useForm({ inventory_item_id: '', warehouse_id: '', quantity: '', note: '' });
@@ -59,7 +75,7 @@ export default function InventoryPage({ units, filters, canAssign = false, canRe
         event.preventDefault();
         router.get(
             '/operations/inventory',
-            { search: search || undefined, status: status || undefined },
+            { search: search || undefined, status: status || undefined, movement_type: movementType || undefined },
             { preserveState: true, replace: true },
         );
     };
@@ -140,6 +156,22 @@ export default function InventoryPage({ units, filters, canAssign = false, canRe
                         <label className="sm:col-span-2 lg:col-span-4"><span className="field-label">Note</span><input className="field" value={receiveForm.data.note} onChange={(event) => receiveForm.setData('note', event.target.value)} placeholder="Optional receiving note" /></label>
                     </form>
                 )}
+            </section>
+
+            <section className="card mt-6 overflow-hidden">
+                <div className="flex items-center justify-between gap-4 border-b border-line px-5 py-4">
+                    <div><p className="section-title">Movement audit</p><p className="mt-1 text-sm text-muted">The latest serialized and bulk stock events, including receiving and work-order consumption.</p></div>
+                    <label className="min-w-40"><span className="sr-only">Movement type</span><select className="field py-2 text-xs" value={movementType} onChange={(event) => setMovementType(event.target.value)}><option value="">All movement types</option><option value="receive">Receive</option><option value="consume">Consume</option><option value="assign">Assign</option><option value="return">Return</option><option value="transfer">Transfer</option></select></label>
+                </div>
+                <div className="overflow-x-auto">
+                    <table className="w-full min-w-[900px] text-start">
+                        <thead><tr className="border-b border-line bg-sand/50 text-xs font-semibold uppercase tracking-wider text-muted"><th className="px-5 py-3.5 text-start">When</th><th className="px-5 py-3.5 text-start">Movement</th><th className="px-5 py-3.5 text-start">Item</th><th className="px-5 py-3.5 text-start">Warehouse</th><th className="px-5 py-3.5 text-end">Quantity</th><th className="px-5 py-3.5 text-start">Reference</th><th className="px-5 py-3.5 text-start">Actor</th></tr></thead>
+                        <tbody className="divide-y divide-line">
+                            {movements.map((movement) => <tr key={movement.id}><td className="px-5 py-4 text-sm text-muted">{formatDate(movement.occurred_at)}</td><td className="px-5 py-4"><span className="inline-flex rounded-full bg-brand-soft px-2.5 py-1 text-xs font-semibold capitalize text-brand">{movement.movement_type}</span><p className="mt-1 text-xs text-muted">{movement.kind}</p></td><td className="px-5 py-4"><p className="text-sm font-semibold">{movement.item?.name ?? 'Unknown item'}</p><p className="mt-1 text-xs text-muted">{movement.serial_number ?? movement.item?.sku ?? '—'}</p></td><td className="px-5 py-4 text-sm text-muted">{movement.from_warehouse ? `${movement.from_warehouse} → ` : ''}{movement.to_warehouse ?? '—'}</td><td className="px-5 py-4 text-end text-sm font-semibold">{movement.quantity}</td><td className="px-5 py-4 text-sm text-muted">{movement.reference ?? movement.note ?? '—'}</td><td className="px-5 py-4 text-sm text-muted">{movement.actor ?? 'System'}</td></tr>)}
+                            {movements.length === 0 && <tr><td colSpan={7} className="px-5 py-12 text-center text-sm text-muted">No inventory movements match this filter.</td></tr>}
+                        </tbody>
+                    </table>
+                </div>
             </section>
 
             <div className="card mt-6 overflow-hidden">

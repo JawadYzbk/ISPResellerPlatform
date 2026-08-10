@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Web;
 
 use App\Actions\AssignInventoryUnit;
 use App\Actions\ListBulkStock;
+use App\Actions\ListInventoryMovements;
 use App\Actions\ListInventoryUnits;
 use App\Actions\ReceiveBulkStock;
 use App\Actions\TransferInventoryUnit;
@@ -24,7 +25,7 @@ use Inertia\Response;
 
 final class InventoryOperationsController extends Controller
 {
-    public function index(Request $request, ListInventoryUnits $listInventoryUnits, ListBulkStock $listBulkStock): Response
+    public function index(Request $request, ListInventoryUnits $listInventoryUnits, ListBulkStock $listBulkStock, ListInventoryMovements $listInventoryMovements): Response
     {
         $user = $request->user();
         abort_unless($user instanceof User && $user->can('inventory.view'), 403);
@@ -102,6 +103,7 @@ final class InventoryOperationsController extends Controller
             'canTransfer' => $canTransfer,
             'assignableServices' => $assignableServices,
             'bulkBalances' => $bulkBalances,
+            'movements' => $listInventoryMovements->handle($request->string('movement_type')->toString() ?: null),
             'bulkItems' => $canReceive
                 ? InventoryItem::query()->where('is_serialized', false)->where('is_active', true)->orderBy('name')->get(['id', 'sku', 'name'])->values()
                 : [],
