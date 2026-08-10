@@ -35,6 +35,8 @@ Use **Billing -> Invoices** to search draft and issued invoices. A billing user 
 
 Use **Billing -> Payments** to search receipts by customer, status, or method. Reversed receipts remain visible for audit history and no longer count toward an invoice's outstanding balance. Reversing a posted receipt requires the payment-void capability and recent authentication; confirm the receipt number before submitting.
 
+Owners and staff with settings capability can use **Billing -> FX rates** to add an effective-dated ratio. Enter the exact numerator and denominator rather than a rounded decimal; add a new dated row when the market rate changes. Historical invoices and ledger entries keep their recorded FX snapshot, so changing the current rate does not rewrite past amounts.
+
 Record the payment against the customer’s public ID and, when applicable, an issued invoice. Amounts are integer minor units; currency must match the customer ledger currency. The action posts the cash-to-receivable journal entry, allocates the invoice, renews services on the invoice, and queues a receipt notice.
 
 Use one stable `X-Idempotency-Key` per client payment attempt. Reusing the same key returns the original payment; do not generate a new key when retrying after a timeout. Never “fix” a duplicate by deleting a payment.
