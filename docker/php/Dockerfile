@@ -5,6 +5,7 @@ RUN apk add --no-cache \
         git \
         icu-dev \
         libzip-dev \
+        postgresql-client \
         postgresql-dev \
         unzip \
     && docker-php-ext-install -j"$(nproc)" intl pdo_pgsql pcntl zip \

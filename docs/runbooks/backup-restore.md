@@ -62,6 +62,16 @@ On 2026-08-10, the repository wiring was exercised with `BACKUP_DISK=local` and 
 
 This proves the package wiring, archive verification, encryption password path, and SQLite replay. It does not close the deployment gate for PostgreSQL, object-storage media, off-site retention, or a second-person production-shaped restore rehearsal.
 
+On 2026-08-10, the repository Docker topology was exercised in a disposable Compose project with PostgreSQL 17, Redis 7 and MinIO:
+
+1. The application image was rebuilt with the PostgreSQL client tools, and the S3 Flysystem adapter was installed as a locked production dependency.
+2. A PostgreSQL 17 schema with one tenant and a media object in MinIO was created. `backup:run` produced a 6.33 MB encrypted archive in the MinIO `isp-backups` bucket; `backup:list` reported the S3 disk reachable and healthy with one backup.
+3. The media object was verified independently in the MinIO `isp-media` bucket.
+4. A direct `pg_dump` was streamed into a fresh `isp_restore` database. The restore completed with 57 migrations and one tenant readable afterward.
+5. The disposable Compose project, volumes and temporary password were removed after verification.
+
+This closes the repository Docker evidence for PostgreSQL dumping, S3-compatible archive delivery, MinIO media presence and direct-dump restore. Off-site retention, production secret-manager recovery and a second-person restore rehearsal remain release gates.
+
 ## Failure handling
 
 If the database restore succeeds but media is incomplete, keep the restored application offline and restore the object snapshot before allowing technician uploads or work-order completion. If the dump checksum fails, discard it and select the previous verified backup; never attempt a partial SQL repair on a corrupted archive.
