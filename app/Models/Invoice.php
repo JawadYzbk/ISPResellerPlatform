@@ -38,6 +38,7 @@ class Invoice extends Model
         return $this->belongsTo(Customer::class);
     }
 
+    /** @return HasMany<InvoiceLine, $this> */
     public function lines(): HasMany
     {
         return $this->hasMany(InvoiceLine::class);

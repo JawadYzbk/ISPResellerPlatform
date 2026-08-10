@@ -33,6 +33,7 @@ class InvoiceLine extends Model
         return $this->belongsTo(Plan::class);
     }
 
+    /** @return BelongsTo<Service, $this> */
     public function service(): BelongsTo
     {
         return $this->belongsTo(Service::class);

@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
+/** @property TicketStatus $status */
 class Ticket extends Model
 {
     use Auditable, BelongsToTenant;

@@ -13,9 +13,9 @@ use Illuminate\Support\Facades\DB;
 
 final readonly class QueueMessage implements Action
 {
-    /** @param array<string, scalar|null> $variables */
     public function __construct(private TemplateRenderer $renderer) {}
 
+    /** @param array<string, scalar|null> $variables */
     public function handle(MessageTemplate $template, string $recipient, string $channel, string $locale, string $idempotencyKey, array $variables = [], ?Customer $customer = null): Message
     {
         $existing = Message::query()->where('idempotency_key', $idempotencyKey)->first();

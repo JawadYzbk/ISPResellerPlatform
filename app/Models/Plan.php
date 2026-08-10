@@ -12,6 +12,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
+/**
+ * @property int $duration_days
+ * @property int $download_kbps
+ * @property int $upload_kbps
+ */
 class Plan extends Model
 {
     /** @use HasFactory<PlanFactory> */
@@ -41,6 +46,7 @@ class Plan extends Model
         return $this->hasMany(Service::class);
     }
 
+    /** @return HasMany<PlanPrice, $this> */
     public function prices(): HasMany
     {
         return $this->hasMany(PlanPrice::class);

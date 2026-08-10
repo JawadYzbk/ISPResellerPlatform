@@ -4,10 +4,15 @@ namespace App\Models;
 
 use App\Models\Concerns\Auditable;
 use App\Models\Concerns\BelongsToTenant;
+use Carbon\Carbon;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @property Carbon $effective_from
+ * @property Carbon|null $effective_to
+ */
 class PlanPrice extends Model
 {
     use Auditable, BelongsToTenant;

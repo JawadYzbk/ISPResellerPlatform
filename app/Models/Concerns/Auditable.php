@@ -2,12 +2,12 @@
 
 namespace App\Models\Concerns;
 
+use App\Models\AuditEvent;
 use App\Support\RequestContext;
 use App\Support\Tenancy;
 use Illuminate\Support\Facades\Auth;
 use LogicException;
 use Spatie\Activitylog\LogOptions;
-use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
 
 trait Auditable
@@ -22,7 +22,7 @@ trait Auditable
             ->dontSubmitEmptyLogs();
     }
 
-    public function tapActivity(Activity $activity, string $eventName): void
+    public function tapActivity(AuditEvent $activity, string $eventName): void
     {
         $activity->tenant_id = app(Tenancy::class)->id();
         $activity->ip_address = app()->bound('request') ? request()->ip() : null;

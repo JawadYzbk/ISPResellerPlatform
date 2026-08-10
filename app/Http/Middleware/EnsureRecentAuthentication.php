@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Models\User;
+use Carbon\CarbonImmutable;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -14,7 +15,7 @@ final class EnsureRecentAuthentication
         $user = $request->user();
         abort_unless($user instanceof User, 401);
 
-        if ($user->last_authenticated_at?->greaterThanOrEqualTo(now()->subMinutes(10))) {
+        if ($user->last_authenticated_at !== null && CarbonImmutable::parse((string) $user->last_authenticated_at)->greaterThanOrEqualTo(now()->subMinutes(10))) {
             return $next($request);
         }
 

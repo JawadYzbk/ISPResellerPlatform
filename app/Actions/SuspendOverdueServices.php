@@ -28,13 +28,13 @@ final readonly class SuspendOverdueServices implements Action
                     foreach ($services as $service) {
                         DB::transaction(function () use ($service, $at, &$suspended): void {
                             $locked = Service::query()->lockForUpdate()->find($service->id);
-                            if ($locked === null || $locked->status !== ServiceStatus::Active || $locked->expires_at === null || $locked->expires_at->isAfter($at)) {
+                            if ($locked === null || $locked->status !== ServiceStatus::Active || $locked->expires_at === null || CarbonImmutable::parse((string) $locked->expires_at)->isAfter($at)) {
                                 return;
                             }
 
                             $updated = $this->transition->handle($locked, ServiceStatus::Suspended, metadata: [
                                 'reason' => 'auto_overdue',
-                                'expired_at' => $locked->expires_at->toIso8601String(),
+                                'expired_at' => CarbonImmutable::parse((string) $locked->expires_at)->toIso8601String(),
                             ]);
                             $this->enqueue->handle($updated, 'suspend', ['reason' => 'auto_overdue']);
                             $suspended++;

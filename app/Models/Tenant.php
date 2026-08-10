@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
+/** @property array<string, mixed>|null $settings */
 class Tenant extends Model
 {
     /** @use HasFactory<TenantFactory> */

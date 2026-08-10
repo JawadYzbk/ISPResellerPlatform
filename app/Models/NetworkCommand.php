@@ -6,6 +6,7 @@ use App\Models\Concerns\BelongsToTenant;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/** @property int $desired_state_version */
 class NetworkCommand extends Model
 {
     use BelongsToTenant;
@@ -22,6 +23,7 @@ class NetworkCommand extends Model
         return $this->belongsTo(Tenant::class);
     }
 
+    /** @return BelongsTo<Service, $this> */
     public function service(): BelongsTo
     {
         return $this->belongsTo(Service::class);

@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
+/** @property WorkOrderStatus $status */
 class WorkOrder extends Model
 {
     use Auditable, BelongsToTenant;
@@ -38,6 +39,7 @@ class WorkOrder extends Model
         return $this->belongsTo(Customer::class);
     }
 
+    /** @return BelongsTo<Service, $this> */
     public function service(): BelongsTo
     {
         return $this->belongsTo(Service::class);
