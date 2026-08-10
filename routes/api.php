@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\ApiTokenController;
 use App\Http\Controllers\Api\AppConfigController;
 use App\Http\Controllers\Api\BalanceImportController;
 use App\Http\Controllers\Api\CollectorPaymentController;
+use App\Http\Controllers\Api\CollectorSyncController;
 use App\Http\Controllers\Api\CustomerApiController;
 use App\Http\Controllers\Api\CustomerImportController;
 use App\Http\Controllers\Api\EquipmentImportController;
@@ -63,6 +64,9 @@ Route::prefix('v1')->group(function (): void {
         });
         Route::middleware('abilities:staff:collector')->group(function (): void {
             Route::post('/collector/payments/batch', [CollectorPaymentController::class, 'store'])->middleware('idempotency')->name('api.collector.payments.batch');
+            Route::get('/collector/sync/bootstrap', [CollectorSyncController::class, 'bootstrap'])->name('api.collector.sync.bootstrap');
+            Route::get('/collector/sync/delta', [CollectorSyncController::class, 'delta'])->name('api.collector.sync.delta');
+            Route::post('/collector/sync/push', [CollectorSyncController::class, 'push'])->middleware('idempotency')->name('api.collector.sync.push');
         });
         Route::middleware('abilities:staff:technician')->group(function (): void {
             Route::get('/technician/services/{service}/diagnostics', [TechnicianWorkOrderController::class, 'diagnostics'])->name('api.technician.services.diagnostics');

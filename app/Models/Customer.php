@@ -6,6 +6,7 @@ use App\Enums\CustomerStatus;
 use App\Models\Concerns\Auditable;
 use App\Models\Concerns\BelongsToTenant;
 use App\Support\PhoneNormalizer;
+use Carbon\Carbon;
 use Database\Factories\CustomerFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -15,6 +16,10 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 
+/**
+ * @property CustomerStatus $status
+ * @property Carbon|null $deleted_at
+ */
 class Customer extends Model
 {
     /** @use HasFactory<CustomerFactory> */
@@ -46,6 +51,7 @@ class Customer extends Model
         return $this->belongsTo(Tenant::class);
     }
 
+    /** @return BelongsTo<Zone, $this> */
     public function zone(): BelongsTo
     {
         return $this->belongsTo(Zone::class);
