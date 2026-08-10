@@ -23,6 +23,7 @@ final class IdentifyTenant
 
         $tenancy = app(Tenancy::class);
         $tenancy->set($tenant);
+        $user->unsetRelation('roles')->unsetRelation('permissions');
         app(RequestContext::class)->add(['tenant_id' => $tenant->id]);
         Log::withContext(['tenant_id' => $tenant->id]);
 
