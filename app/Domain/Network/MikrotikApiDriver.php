@@ -20,6 +20,7 @@ final class MikrotikApiDriver implements NetworkDriver
         $endpoint = match ($command->action) {
             'activate' => '/rest/ppp/secret/add',
             'suspend' => '/rest/ppp/secret/set',
+            'throttle' => '/rest/ppp/secret/set',
             'disconnect' => '/rest/ppp/active/remove',
             default => null,
         };
@@ -30,6 +31,7 @@ final class MikrotikApiDriver implements NetworkDriver
         $payload = match ($command->action) {
             'activate' => ['name' => $service->username, 'password' => (string) $service->password_encrypted, 'profile' => 'plan-'.$service->plan_id, 'disabled' => 'no'],
             'suspend' => ['numbers' => $service->username, 'disabled' => 'yes'],
+            'throttle' => ['numbers' => $service->username, 'profile' => (string) ($command->payload['fup_profile'] ?? 'fup')],
             'disconnect' => ['numbers' => $service->username],
         };
 

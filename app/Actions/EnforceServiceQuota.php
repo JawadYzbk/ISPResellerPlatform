@@ -52,6 +52,9 @@ final readonly class EnforceServiceQuota implements Action
 
             $action = (string) ($locked->plan->metadata['fup_action'] ?? 'throttle');
             $metadata = ['reason' => 'quota', 'quota_bytes' => $quota, 'used_bytes' => $used, 'fup_action' => $action];
+            if ($action !== 'block') {
+                $metadata['fup_profile'] = (string) ($locked->plan->metadata['fup_profile'] ?? 'fup');
+            }
             if ($action === 'block') {
                 $updated = $this->transition->handle($locked, ServiceStatus::Suspended, metadata: $metadata);
                 $this->enqueue->handle($updated, 'suspend', $metadata);
