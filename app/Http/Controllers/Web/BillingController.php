@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Web;
 
+use App\Actions\GenerateInvoicePdf;
+use App\Actions\GeneratePaymentReceiptPdf;
 use App\Actions\GetInvoiceDetails;
 use App\Actions\GetPaymentDetails;
 use App\Actions\IssueCreditNote;
@@ -21,6 +23,7 @@ use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\Response as HttpResponse;
 
 final class BillingController extends Controller
 {
@@ -147,6 +150,14 @@ final class BillingController extends Controller
         ]);
     }
 
+    public function invoicePdf(Request $request, Invoice $invoice, GenerateInvoicePdf $generate): HttpResponse
+    {
+        $user = $request->user();
+        abort_unless($user instanceof User && $user->can('billing.invoices.view'), 403);
+
+        return $generate->handle($invoice);
+    }
+
     public function creditNote(Request $request, Invoice $invoice, IssueCreditNote $issue): RedirectResponse
     {
         $user = $request->user();
@@ -249,5 +260,13 @@ final class BillingController extends Controller
             ],
             'canReverse' => $user->can('payments.void'),
         ]);
+    }
+
+    public function paymentPdf(Request $request, Payment $payment, GeneratePaymentReceiptPdf $generate): HttpResponse
+    {
+        $user = $request->user();
+        abort_unless($user instanceof User && $user->can('payments.collect'), 403);
+
+        return $generate->handle($payment);
     }
 }

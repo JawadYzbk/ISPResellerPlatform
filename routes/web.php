@@ -99,10 +99,12 @@ Route::middleware(['auth', 'tenant', '2fa'])->group(function (): void {
     Route::post('/operations/ip-pools/{pool}/addresses', [IpPoolOperationsController::class, 'storeAddress'])->middleware('recent-auth')->name('operations.ip-pools.addresses.store');
     Route::get('/billing/invoices', [BillingController::class, 'invoices'])->name('billing.invoices');
     Route::get('/billing/invoices/{invoice:public_id}', [BillingController::class, 'showInvoice'])->name('billing.invoices.show');
+    Route::get('/billing/invoices/{invoice:public_id}/pdf', [BillingController::class, 'invoicePdf'])->name('billing.invoices.pdf');
     Route::post('/billing/invoices/{invoice:public_id}/issue', [BillingController::class, 'issue'])->name('billing.invoices.issue');
     Route::post('/billing/invoices/{invoice:public_id}/credit-notes', [BillingController::class, 'creditNote'])->middleware('recent-auth')->name('billing.invoices.credit-notes');
     Route::get('/billing/payments', [BillingController::class, 'payments'])->name('billing.payments');
     Route::get('/billing/payments/{payment:public_id}', [BillingController::class, 'showPayment'])->name('billing.payments.show');
+    Route::get('/billing/payments/{payment:public_id}/pdf', [BillingController::class, 'paymentPdf'])->name('billing.payments.pdf');
     Route::get('/billing/shifts', [CashShiftOperationsController::class, 'index'])->name('billing.shifts');
     Route::post('/billing/shifts/open', [CashShiftOperationsController::class, 'open'])->name('billing.shifts.open');
     Route::post('/billing/shifts/{shift:public_id}/close', [CashShiftOperationsController::class, 'close'])->middleware('recent-auth')->name('billing.shifts.close');
