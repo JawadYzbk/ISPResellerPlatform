@@ -3,9 +3,14 @@
 namespace App\Models;
 
 use App\Models\Concerns\BelongsToTenant;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @property string $username
+ * @property Carbon|null $last_seen_at
+ */
 class CurrentSession extends Model
 {
     use BelongsToTenant;
@@ -24,6 +29,7 @@ class CurrentSession extends Model
         return $this->belongsTo(Tenant::class);
     }
 
+    /** @return BelongsTo<Service, $this> */
     public function service(): BelongsTo
     {
         return $this->belongsTo(Service::class);

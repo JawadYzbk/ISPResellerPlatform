@@ -70,4 +70,10 @@ class Service extends Model
     {
         return $this->hasMany(ServiceEvent::class);
     }
+
+    /** @return HasMany<InvoiceLine, $this> */
+    public function invoiceLines(): HasMany
+    {
+        return $this->hasMany(InvoiceLine::class);
+    }
 }
