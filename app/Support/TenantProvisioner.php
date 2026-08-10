@@ -33,11 +33,11 @@ final class TenantProvisioner
 
             Currency::firstOrCreate(
                 ['code' => $tenant->base_currency],
-                ['name' => $tenant->base_currency, 'decimal_digits' => 2, 'is_base' => true, 'is_active' => true],
+                ['name' => $tenant->base_currency, 'decimal_digits' => $this->decimalDigits($tenant->base_currency), 'is_base' => true, 'is_active' => true],
             );
             Currency::firstOrCreate(
                 ['code' => $tenant->collection_currency],
-                ['name' => $tenant->collection_currency, 'decimal_digits' => 2, 'is_collection' => true, 'is_active' => true],
+                ['name' => $tenant->collection_currency, 'decimal_digits' => $this->decimalDigits($tenant->collection_currency), 'is_collection' => true, 'is_active' => true],
             );
 
             foreach ([
@@ -53,5 +53,10 @@ final class TenantProvisioner
                 LedgerAccount::firstOrCreate(['code' => $account['code']], [...$account, 'is_system' => true]);
             }
         });
+    }
+
+    private function decimalDigits(string $currency): int
+    {
+        return strtoupper($currency) === 'LBP' ? 0 : 2;
     }
 }
