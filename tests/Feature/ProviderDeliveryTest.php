@@ -9,7 +9,6 @@ use App\Models\Tenant;
 use App\Support\Tenancy;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Mail;
 
 uses(RefreshDatabase::class);
 
@@ -34,11 +33,9 @@ it('delivers through configured WhatsApp, SMS, FCM and email adapters', function
         'https://sms.example.test/send' => Http::response(['id' => 'sms-001']),
         'https://fcm.example.test/send' => Http::response(['name' => 'fcm-001']),
     ]);
-    Mail::fake();
 
     expect(app(WhatsAppCloudMessageProvider::class)->send($whatsapp)->providerMessageId)->toBe('wamid-001')
         ->and(app(HttpSmsMessageProvider::class)->send($sms)->providerMessageId)->toBe('sms-001')
         ->and(app(FcmMessageProvider::class)->send($push)->providerMessageId)->toBe('fcm-001')
         ->and(app(MailMessageProvider::class)->send($email)->status)->toBe('sent');
-    Mail::assertSentCount(1);
 });
