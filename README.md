@@ -18,6 +18,7 @@ The current foundation is live:
 - Payment-driven renewal, scheduled overdue suspension and post-commit network command outbox
 - Message templates, provider delivery jobs, tickets, work orders and serialized inventory
 - FreeRADIUS sync, live-session accounting and daily usage rollups
+- Encrypted router RADIUS shared secrets, validated UDP CoA/Disconnect packets and radius driver wiring
 - Router/POP inventory, encrypted connection tests and repeated-failure incidents
 - Supplier credential workflows with permission, re-authentication and audit controls
 - Cursor-paginated customer API, idempotent payment API, collector batches, customer portal OTP/session flow, OpenAPI slice and finance reporting

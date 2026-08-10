@@ -2,7 +2,7 @@ openapi: 3.1.0
 info:
   title: ISP Manager API
   version: 1.0.0
-  description: Versioned mobile and portal contract for tenant-scoped reads, scoped Sanctum abilities, idempotent collection writes, imports and technician operations.
+  description: Versioned mobile and portal contract for tenant-scoped reads, scoped Sanctum abilities, idempotent collection writes, offline collector sync, imports and technician operations.
 servers:
   - url: /api/v1
 security:
