@@ -1,0 +1,183 @@
+x-app-environment: &app-environment
+  APP_ENV: production
+  APP_DEBUG: "false"
+  APP_KEY: ${APP_KEY:-base64:replace-me}
+  APP_URL: ${APP_URL:-https://example.invalid}
+  APP_TIMEZONE: ${APP_TIMEZONE:-UTC}
+  DB_CONNECTION: ${DB_CONNECTION:-pgsql}
+  DB_HOST: ${DB_HOST:-postgres}
+  DB_PORT: ${DB_PORT:-5432}
+  DB_DATABASE: ${DB_DATABASE:-isp_manager}
+  DB_USERNAME: ${DB_USERNAME:-isp_manager}
+  DB_PASSWORD: ${DB_PASSWORD:-change-me}
+  REDIS_CLIENT: ${REDIS_CLIENT:-predis}
+  REDIS_HOST: ${REDIS_HOST:-redis}
+  REDIS_PORT: ${REDIS_PORT:-6379}
+  REDIS_PASSWORD: ${REDIS_PASSWORD:-change-me}
+  CACHE_STORE: ${CACHE_STORE:-redis}
+  SESSION_DRIVER: ${SESSION_DRIVER:-redis}
+  SESSION_SECURE_COOKIE: "true"
+  QUEUE_CONNECTION: ${QUEUE_CONNECTION:-redis}
+  FILESYSTEM_DISK: ${FILESYSTEM_DISK:-s3}
+  AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-minio}
+  AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-change-me}
+  AWS_DEFAULT_REGION: ${AWS_DEFAULT_REGION:-us-east-1}
+  AWS_BUCKET: ${AWS_BUCKET:-isp-media}
+  AWS_ENDPOINT: ${AWS_ENDPOINT:-http://minio:9000}
+  AWS_USE_PATH_STYLE_ENDPOINT: ${AWS_USE_PATH_STYLE_ENDPOINT:-true}
+  LOG_CHANNEL: ${LOG_CHANNEL:-stderr}
+  LOG_LEVEL: ${LOG_LEVEL:-info}
+  BROADCAST_CONNECTION: ${BROADCAST_CONNECTION:-reverb}
+  REVERB_APP_ID: ${REVERB_APP_ID:-isp-manager}
+  REVERB_APP_KEY: ${REVERB_APP_KEY:-replace-me}
+  REVERB_APP_SECRET: ${REVERB_APP_SECRET:-replace-me}
+  REVERB_HOST: ${REVERB_HOST:-example.invalid}
+  REVERB_PORT: ${REVERB_PORT:-443}
+  REVERB_SCHEME: ${REVERB_SCHEME:-https}
+  REVERB_SERVER_HOST: 0.0.0.0
+  REVERB_SERVER_PORT: 8080
+  REVERB_ALLOWED_ORIGINS: ${REVERB_ALLOWED_ORIGINS:-https://example.invalid}
+  MAIL_MAILER: ${MAIL_MAILER:-smtp}
+  MAIL_HOST: ${MAIL_HOST:-mail.example.invalid}
+  MAIL_PORT: ${MAIL_PORT:-587}
+  MAIL_SCHEME: ${MAIL_SCHEME:-tls}
+  MAIL_USERNAME: ${MAIL_USERNAME:-}
+  MAIL_PASSWORD: ${MAIL_PASSWORD:-}
+  MAIL_FROM_ADDRESS: ${MAIL_FROM_ADDRESS:-noreply@example.invalid}
+  MAIL_FROM_NAME: ${MAIL_FROM_NAME:-ISP Manager}
+
+x-app-service: &app-service
+  build:
+    context: .
+    dockerfile: docker/php/Dockerfile.production
+  image: ${APP_IMAGE:-isp-manager-app}:${APP_VERSION:-local}
+  working_dir: /var/www/html
+  init: true
+  restart: unless-stopped
+  environment: *app-environment
+  volumes:
+    - app-bootstrap-cache:/var/www/html/bootstrap/cache
+
+services:
+  app:
+    <<: *app-service
+    command: ["php-fpm", "-F"]
+    healthcheck:
+      test: ["CMD-SHELL", "php-fpm -t"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio-init:
+        condition: service_completed_successfully
+
+  web:
+    build:
+      context: .
+      dockerfile: docker/nginx/Dockerfile
+    image: ${WEB_IMAGE:-isp-manager-web}:${APP_VERSION:-local}
+    init: true
+    restart: unless-stopped
+    ports:
+      - "${HTTP_PORT:-8000}:80"
+    depends_on:
+      app:
+        condition: service_healthy
+      reverb:
+        condition: service_started
+
+  worker:
+    <<: *app-service
+    command:
+      - php
+      - artisan
+      - queue:work
+      - --sleep=1
+      - --tries=3
+      - --timeout=90
+      - --queue=critical,billing,provisioning,notifications,imports,reports,default
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  scheduler:
+    <<: *app-service
+    command: ["php", "artisan", "schedule:work"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  reverb:
+    <<: *app-service
+    command: ["php", "artisan", "reverb:start", "--host=0.0.0.0", "--port=8080"]
+    expose:
+      - "8080"
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_DATABASE:-isp_manager}
+      POSTGRES_USER: ${DB_USERNAME:-isp_manager}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-change-me}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-isp_manager} -d ${DB_DATABASE:-isp_manager}"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes", "--requirepass", "${REDIS_PASSWORD:-change-me}"]
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli -a '${REDIS_PASSWORD:-change-me}' ping | grep PONG"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+  minio:
+    image: minio/minio:latest
+    restart: unless-stopped
+    command: server /data
+    environment:
+      MINIO_ROOT_USER: ${AWS_ACCESS_KEY_ID:-minio}
+      MINIO_ROOT_PASSWORD: ${AWS_SECRET_ACCESS_KEY:-change-me}
+    volumes:
+      - minio-data:/data
+
+  minio-init:
+    image: minio/mc:latest
+    restart: "no"
+    environment:
+      MINIO_ROOT_USER: ${AWS_ACCESS_KEY_ID:-minio}
+      MINIO_ROOT_PASSWORD: ${AWS_SECRET_ACCESS_KEY:-change-me}
+      AWS_BUCKET: ${AWS_BUCKET:-isp-media}
+    entrypoint: ["/bin/sh", "-c"]
+    command: >-
+      until mc alias set local http://minio:9000 "$$MINIO_ROOT_USER" "$$MINIO_ROOT_PASSWORD"; do sleep 2; done;
+      mc mb --ignore-existing "local/$$AWS_BUCKET"
+    depends_on:
+      minio:
+        condition: service_started
+
+volumes:
+  app-bootstrap-cache:
+  postgres-data:
+  redis-data:
+  minio-data:
