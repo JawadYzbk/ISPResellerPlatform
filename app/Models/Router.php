@@ -11,13 +11,15 @@ class Router extends Model
 {
     use BelongsToTenant;
 
-    protected $fillable = ['tenant_id', 'pop_id', 'name', 'host', 'api_port', 'username', 'password_encrypted', 'tls_verify', 'status', 'last_seen_at', 'metadata'];
+    protected $fillable = ['tenant_id', 'pop_id', 'name', 'host', 'api_port', 'username', 'password_encrypted', 'radius_secret_encrypted', 'coa_port', 'tls_verify', 'status', 'last_seen_at', 'metadata'];
 
-    protected $hidden = ['password_encrypted'];
+    protected $hidden = ['password_encrypted', 'radius_secret_encrypted'];
+
+    protected $attributes = ['coa_port' => 1700];
 
     protected function casts(): array
     {
-        return ['api_port' => 'integer', 'password_encrypted' => 'encrypted', 'tls_verify' => 'boolean', 'last_seen_at' => 'datetime', 'metadata' => 'array'];
+        return ['api_port' => 'integer', 'password_encrypted' => 'encrypted', 'radius_secret_encrypted' => 'encrypted', 'coa_port' => 'integer', 'tls_verify' => 'boolean', 'last_seen_at' => 'datetime', 'metadata' => 'array'];
     }
 
     public function tenant(): BelongsTo
