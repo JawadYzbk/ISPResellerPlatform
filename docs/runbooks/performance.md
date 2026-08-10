@@ -8,8 +8,11 @@ Use a PostgreSQL 17 environment with the benchmark dataset loaded and the same i
 
 ```powershell
 php artisan migrate --force
+php artisan platform:seed-usage-benchmark --tenant=benchmark --count=50000 --usage-days=90 --yes
 php artisan platform:benchmark-usage --tenant=benchmark --from=2026-05-13 --to=2026-08-10 --repetitions=10 --json > storage/app/benchmark-usage.json
 ```
+
+The seed command is additive and deterministic: it creates the named benchmark records only when they are missing, and requires `--yes` as an explicit write confirmation. Run it only in an isolated tenant or disposable database.
 
 The command measures these production query shapes inside the tenant scope:
 
