@@ -28,6 +28,7 @@ Last updated: 2026-08-10
 | ISP-092 | Manager attention queue with deep links plus live NOC signal panels for routers, sessions, commands, drift and incidents | delivered for current dashboard scope |
 | ISP-093 | Customer, plan, service, serialized-equipment and journal-backed balance CSV import preview, row-level validation, partial-success commit and guarded/reversing rollback API | delivered for current CSV scope |
 | ISP-P1-01 | Supplier credential inventory, import, assignment and audited reveal | foundation delivered |
+| ISP-100 | Security headers, dependency audits, session hardening and transactional APP_KEY credential re-encryption command | key rotation delivered; remaining launch controls in progress |
 
 ## In progress
 
@@ -36,7 +37,7 @@ Last updated: 2026-08-10
 - Customer self-service online payments through a real gateway and realtime events.
 - Full reseller price books/commissions/settlements, XLSX workflows, router subscriber import and expanded reports beyond the current finance/operations foundations.
 - Monitoring alerts and full deferred owner dashboard/panel streaming.
-- Security operations: key rotation, backup/restore rehearsal, dependency audit and Sentry wiring.
+- Security operations: backup/restore rehearsal, dependency audit automation and Sentry wiring.
 
 ## Deliberately not claimed yet
 

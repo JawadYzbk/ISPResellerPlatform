@@ -26,6 +26,7 @@ The current foundation is live:
 - Customer, plan, service and serialized-equipment CSV imports with preview, partial success and guarded rollback
 - Basic reseller hierarchy and journal-linked wallet funding/debiting with credit limits
 - Operations report with service/network/work-order/incident status, low-stock signals and CSV export
+- Transactional APP_KEY rotation command with an operator runbook for encrypted credentials
 - Demo tenant seed with customers, plans and services
 - Money value object backed by `brick/money`
 - Pest tests for money arithmetic, authentication and tenant isolation
