@@ -99,10 +99,13 @@ Route::prefix('v1')->group(function (): void {
             Route::get('/network-commands/{command}', [NetworkCommandController::class, 'show'])->name('api.network-commands.show');
         });
         Route::middleware('abilities:staff:collector')->group(function (): void {
+            Route::get('/collector/customers', [CollectorApiController::class, 'customers'])->name('api.collector.customers');
+            Route::get('/collector/customers/{customer}', [CollectorApiController::class, 'customer'])->name('api.collector.customers.show');
             Route::get('/collector/shift', [CollectorApiController::class, 'shift'])->name('api.collector.shift');
             Route::post('/collector/shift/open', [CollectorApiController::class, 'openShift'])->middleware('idempotency')->name('api.collector.shift.open');
             Route::post('/collector/shift/close', [CollectorApiController::class, 'closeShift'])->middleware('idempotency')->name('api.collector.shift.close');
             Route::get('/collector/payments', [CollectorApiController::class, 'payments'])->name('api.collector.payments');
+            Route::post('/collector/payments/{payment}/receipt', [CollectorApiController::class, 'resendReceipt'])->middleware('idempotency')->name('api.collector.payments.receipt');
             Route::get('/collector/summary', [CollectorApiController::class, 'summary'])->name('api.collector.summary');
             Route::post('/collector/payments/batch', [CollectorPaymentController::class, 'store'])->middleware('idempotency')->name('api.collector.payments.batch');
             Route::get('/collector/sync/bootstrap', [CollectorSyncController::class, 'bootstrap'])->name('api.collector.sync.bootstrap');
