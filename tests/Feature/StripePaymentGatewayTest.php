@@ -1,5 +1,6 @@
 <?php
 
+use App\Domain\Payments\NullPaymentGateway;
 use App\Domain\Payments\PaymentGateway;
 use App\Domain\Payments\StripePaymentGateway;
 use App\Models\Customer;
@@ -57,7 +58,7 @@ it('creates a Stripe PaymentIntent with tenant-safe metadata and idempotency', f
 });
 
 it('binds the configured payment driver while keeping the null default', function (): void {
-    expect(app(PaymentGateway::class))->toBeInstanceOf(\App\Domain\Payments\NullPaymentGateway::class);
+    expect(app(PaymentGateway::class))->toBeInstanceOf(NullPaymentGateway::class);
 
     config(['services.payments.driver' => 'stripe']);
 

@@ -4,6 +4,7 @@ namespace App\Domain\Payments;
 
 use App\Models\Customer;
 use App\Models\Invoice;
+use App\Models\Tenant;
 use DomainException;
 use Illuminate\Support\Facades\Http;
 
@@ -16,6 +17,11 @@ final class StripePaymentGateway implements PaymentGateway
             throw new DomainException('Stripe is not configured for online payments.');
         }
 
+        $tenantPublicId = Tenant::query()->whereKey($customer->tenant_id)->value('public_id');
+        if (! is_string($tenantPublicId) || $tenantPublicId === '') {
+            throw new DomainException('The customer tenant could not be resolved for Stripe payment metadata.');
+        }
+
         $endpoint = rtrim((string) config('services.stripe.endpoint', 'https://api.stripe.com'), '/').'/v1/payment_intents';
         $response = Http::withBasicAuth($secret, '')
             ->asForm()
@@ -26,7 +32,7 @@ final class StripePaymentGateway implements PaymentGateway
                 'amount' => $amount,
                 'currency' => strtolower($currency),
                 'automatic_payment_methods[enabled]' => 'true',
-                'metadata[tenant_public_id]' => (string) $customer->tenant?->public_id,
+                'metadata[tenant_public_id]' => $tenantPublicId,
                 'metadata[customer_public_id]' => (string) $customer->public_id,
                 'metadata[invoice_public_id]' => (string) $invoice->public_id,
             ]);
