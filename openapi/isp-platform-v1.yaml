@@ -124,6 +124,34 @@ paths:
       responses:
         '204': { description: Token revoked }
         '401': { description: Unauthenticated }
+  /auth/devices/{device}/revoke:
+    post:
+      summary: Revoke all bearer tokens registered to a device
+      parameters:
+        - in: path
+          name: device
+          required: true
+          schema: { type: string, maxLength: 100 }
+      responses:
+        '204': { description: Device tokens revoked }
+        '401': { description: Unauthenticated }
+  /auth/push-token:
+    post:
+      summary: Register or refresh an encrypted push notification token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [token, platform, app]
+              properties:
+                token: { type: string, maxLength: 4096 }
+                platform: { type: string, enum: [android, ios, web] }
+                app: { type: string, maxLength: 100 }
+      responses:
+        '204': { description: Push token registered }
+        '401': { description: Unauthenticated }
   /customers:
     get:
       summary: List tenant customers
