@@ -42,3 +42,9 @@ php artisan security:rotate-app-key --old-key="$env:APP_KEY_NEXT" --new-key="$en
 ```
 
 Only after that command succeeds should `APP_KEY` be switched back and all workers restarted. If either key is unavailable, stop the application and restore the database and deployment secret from the same backup point.
+
+## Local rehearsal evidence
+
+On 2026-08-10, the command was exercised against a disposable copy of the seeded SQLite database with a process-only replacement key. The rotation completed, and service and router encrypted credentials both decrypted successfully under the replacement key. The temporary database copy and key material were removed after the check.
+
+This validates the repository transaction and ciphertext migration path only. It does not replace a coordinated staging rotation with queue workers stopped, deployment-secret update, permission-matrix review, and post-rotation router/2FA checks.
