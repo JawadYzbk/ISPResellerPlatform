@@ -27,3 +27,15 @@ At minimum, alert on:
 - repeated router health incidents.
 
 Route alerts to an external on-call destination with a five-minute response target. The repository provides the signals and health checks; the destination, escalation policy and Sentry project are deployment configuration.
+
+## Realtime transport
+
+The repository includes Laravel Reverb and a private tenant channel authorization rule. Keep local development on `BROADCAST_CONNECTION=log`; enable Reverb only after setting `REVERB_APP_ID`, `REVERB_APP_KEY`, `REVERB_APP_SECRET`, the public host/scheme, and a non-wildcard `REVERB_ALLOWED_ORIGINS` list.
+
+Start the transport under a supervisor in a deployment environment:
+
+```powershell
+php artisan reverb:start
+```
+
+Verify a service status transition is visible to an authorized tenant client and unavailable to a different tenant. Reverb installation and configuration are repository-complete; TLS termination, process supervision and client rollout remain deployment work.

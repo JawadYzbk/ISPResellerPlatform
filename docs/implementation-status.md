@@ -22,7 +22,7 @@ Last updated: 2026-08-10
 | ISP-060/061/062 | Ticket lifecycle, tenant-timezone business-hours SLA clock, scheduled resolved-ticket auto-close, work-order completion and serialized inventory assignment | delivered |
 | ISP-070/071/072 | Sanctum API with role-scoped abilities, cursor pagination, query whitelists, idempotency middleware, app version config, customer portal OTP/session and billing history, collector batches, offline bootstrap/delta/push sync, service discovery/state actions and OpenAPI slice | delivered for current customer/payment/service/collector scope |
 | ISP-073 | Technician-assigned work-order list/detail endpoints, idempotent completion, separate image upload, service diagnostics and van inventory | delivered for current technician scope |
-| ISP-074 | Tenant-private service status broadcast events with after-commit dispatch and channel authorization seam | delivered; realtime transport deployment remains an operations gate |
+| ISP-074 | Tenant-private service status broadcast events with after-commit dispatch, channel authorization and Laravel Reverb transport configuration | delivered in repository; TLS/process supervision/client rollout remain operations gates |
 | ISP-080/081/082/083 | FreeRADIUS sync, encrypted router CoA settings, UDP CoA/Disconnect client with response validation, current sessions, scheduled stale-session cleanup, daily usage rollups, cycle quota/FUP command foundation, RouterOS FUP profile driver path and idempotent warning notifications | foundation delivered; CoA driver path delivered, lab acceptance pending |
 | ISP-040/063 | POP/router inventory, encrypted connection tests, repeated-failure incidents and bounded router health observations | foundation delivered |
 | ISP-090/091 | Partner hierarchy/wallets with descendant-scoped API, effective price books, immutable commission accruals, settlement statements, tenant finance and operations reports with CSV/XLSX export, aging, collection rate, plan/zone/POP revenue, upstream cost/margin, collector performance, retention and usage breakdowns | delivered for current commercial/reporting scope |
@@ -36,7 +36,7 @@ Last updated: 2026-08-10
 
 - Real RouterOS/CoA integration against a CHR lab remains an acceptance gate; scheduled subscriber reconciliation reports drift, while device-side disablement has an explicit opt-in healing command.
 - Real provider credentials/approvals.
-- Customer self-service online payments through a real gateway and realtime transport deployment.
+- Customer self-service online payments through a real gateway and realtime deployment rollout.
 - Monitoring alert routing and external dashboard signal delivery.
 - Security operations: backup/restore rehearsal and Sentry project validation.
 
