@@ -49,7 +49,7 @@ Collector devices use the offline sync flow in the [field-app guide](field-app.m
 
 ## Tickets, incidents, and notifications
 
-Use **Operations -> Tickets** to search by ticket/customer, filter the SLA queue, change an allowed status, and post a public reply. Closed tickets are immutable from the reply form. A reply to a resolved ticket records the return to in-progress before adding the message.
+Use **Operations -> Tickets** to search by ticket/customer, filter the SLA queue, assign an operator, change an allowed status, and post either a public reply or an internal note. Closed tickets are immutable from the reply form. A reply to a resolved ticket records the return to in-progress before adding the message. Internal notes are never returned through the customer portal.
 
 Support agents should keep ticket status and customer-facing messages current. Customer portal tickets are tenant- and customer-scoped; never copy an internal note into a public reply.
 
