@@ -100,6 +100,7 @@ Route::prefix('v1')->group(function (): void {
             Route::post('/tickets', [TicketApiController::class, 'store'])->name('api.tickets.store');
             Route::post('/tickets/{ticket}/messages', [TicketApiController::class, 'message'])->name('api.tickets.messages');
             Route::post('/tickets/{ticket}/status', [TicketApiController::class, 'status'])->name('api.tickets.status');
+            Route::post('/routers', [RouterApiController::class, 'store'])->name('api.routers.store');
             Route::post('/services/{service}/activate', [ServiceApiController::class, 'activate'])->middleware('idempotency')->name('api.services.activate');
             Route::post('/services/{service}/suspend', [ServiceApiController::class, 'suspend'])->middleware('idempotency')->name('api.services.suspend');
             Route::post('/services/{service}/pause', [ServiceApiController::class, 'pause'])->middleware('idempotency')->name('api.services.pause');
