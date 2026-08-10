@@ -148,7 +148,9 @@ export default function Dashboard({ metrics, attentionQueue }: Props) {
                 <div className="flex items-center justify-between border-b border-line px-6 py-5">
                     <div>
                         <h2 className="section-title">Manager attention queue</h2>
-                        <p className="mt-1 text-sm text-muted">The next operational decisions, already linked to their records.</p>
+                        <p className="mt-1 text-sm text-muted">
+                            The next operational decisions, already linked to their records.
+                        </p>
                     </div>
                     <CircleAlert className="text-brand" size={20} />
                 </div>
