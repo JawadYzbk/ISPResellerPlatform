@@ -28,6 +28,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withSchedule(function (Schedule $schedule): void {
         $schedule->command('services:suspend-overdue')->hourlyAt(5);
+        $schedule->command('metrics:prune')->dailyAt('02:10');
     })
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->web(append: [
