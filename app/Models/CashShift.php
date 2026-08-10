@@ -16,6 +16,7 @@ use Illuminate\Support\Str;
  * @property CashShiftStatus $status
  * @property Carbon|null $opened_at
  * @property Carbon|null $closed_at
+ * @property array<string, int>|null $opening_float
  * @property array<string, int>|null $system_totals
  * @property array<string, int>|null $declared_totals
  * @property bool $variance
@@ -25,11 +26,11 @@ class CashShift extends Model
 {
     use Auditable, BelongsToTenant;
 
-    protected $fillable = ['tenant_id', 'public_id', 'user_id', 'status', 'opened_at', 'closed_at', 'system_totals', 'declared_totals', 'variance', 'variance_note'];
+    protected $fillable = ['tenant_id', 'public_id', 'user_id', 'status', 'opened_at', 'closed_at', 'opening_float', 'system_totals', 'declared_totals', 'variance', 'variance_note'];
 
     protected function casts(): array
     {
-        return ['status' => CashShiftStatus::class, 'opened_at' => 'datetime', 'closed_at' => 'datetime', 'system_totals' => 'array', 'declared_totals' => 'array', 'variance' => 'boolean'];
+        return ['status' => CashShiftStatus::class, 'opened_at' => 'datetime', 'closed_at' => 'datetime', 'opening_float' => 'array', 'system_totals' => 'array', 'declared_totals' => 'array', 'variance' => 'boolean'];
     }
 
     protected static function booted(): void

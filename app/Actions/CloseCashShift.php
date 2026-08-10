@@ -19,7 +19,10 @@ final readonly class CloseCashShift implements Action
             if ($locked->status !== CashShiftStatus::Open) {
                 throw new DomainException('The cash shift is already closed.');
             }
-            $systemTotals = $locked->payments()->where('status', 'posted')->selectRaw('currency, sum(amount) as total')->groupBy('currency')->pluck('total', 'currency')->map(fn ($value): int => (int) $value)->all();
+            $systemTotals = array_map('intval', $locked->opening_float ?? []);
+            foreach ($locked->payments()->where('status', 'posted')->selectRaw('currency, sum(amount) as total')->groupBy('currency')->pluck('total', 'currency') as $currency => $total) {
+                $systemTotals[$currency] = ($systemTotals[$currency] ?? 0) + (int) $total;
+            }
             $currencies = array_unique([...array_keys($systemTotals), ...array_keys($declaredTotals)]);
             $systemTotals = array_reduce($currencies, function (array $totals, string $currency) use ($systemTotals): array {
                 $totals[$currency] = $systemTotals[$currency] ?? 0;
