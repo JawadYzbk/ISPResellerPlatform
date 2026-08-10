@@ -8,14 +8,14 @@ use Illuminate\Support\Facades\RateLimiter;
 
 uses(RefreshDatabase::class);
 
-it('requires privileged users to configure two-factor authentication', function (): void {
+it('allows privileged users to reach the dashboard while web two-factor enforcement is disabled', function (): void {
     $tenant = Tenant::create(['name' => 'Northline', 'slug' => 'northline', 'base_currency' => 'USD', 'collection_currency' => 'USD']);
     User::create(['tenant_id' => $tenant->id, 'name' => 'Owner', 'email' => 'owner@example.test', 'password' => Hash::make('password'), 'role' => 'tenant_owner']);
 
     $this->post(route('login.store'), ['email' => 'owner@example.test', 'password' => 'password'])
         ->assertRedirect(route('dashboard'));
 
-    $this->get(route('dashboard'))->assertRedirect(route('two-factor.setup'));
+    $this->get(route('dashboard'))->assertOk();
 });
 
 it('issues and accepts a Sanctum token for a standard operator', function (): void {

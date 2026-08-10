@@ -15,7 +15,7 @@ final class EnsureTwoFactorVerified
         $user = $request->user();
         abort_unless($user instanceof User, 401);
 
-        if (! $user->requiresTwoFactor() || $request->routeIs('two-factor.*')) {
+        if (! config('security.enforce_web_two_factor') || ! $user->requiresTwoFactor() || $request->routeIs('two-factor.*')) {
             return $next($request);
         }
 
