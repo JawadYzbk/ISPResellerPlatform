@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\HealthController;
 use App\Http\Controllers\Api\NetworkCommandController;
 use App\Http\Controllers\Api\PaymentApiController;
 use App\Http\Controllers\Api\PortalAuthController;
+use App\Http\Controllers\Api\PortalBillingController;
 use App\Http\Controllers\Api\PortalController;
 use App\Http\Controllers\Api\ServiceApiController;
 use App\Http\Controllers\Api\TechnicianWorkOrderController;
@@ -21,6 +22,7 @@ Route::prefix('v1')->group(function (): void {
         Route::post('/otp/request', [PortalAuthController::class, 'requestOtp'])->middleware('throttle:login')->name('api.portal.otp.request');
         Route::post('/otp/verify', [PortalAuthController::class, 'verifyOtp'])->middleware('throttle:login')->name('api.portal.otp.verify');
         Route::get('/me', [PortalController::class, 'me'])->middleware('portal.auth')->name('api.portal.me');
+        Route::get('/billing', [PortalBillingController::class, 'show'])->middleware('portal.auth')->name('api.portal.billing');
     });
 
     Route::middleware(['auth:sanctum', 'tenant'])->group(function (): void {
