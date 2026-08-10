@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 
 import { StatusBadge } from '@/components/StatusBadge';
+import MapView from '@/components/MapView';
 import AppLayout from '@/layouts/AppLayout';
 import { formatDate, formatMoney } from '@/lib/format';
 import type { Customer, PageProps } from '@/types';
@@ -291,6 +292,9 @@ export default function CustomerShow({
                                         <span>{customer.latitude.toFixed(7)}, {customer.longitude.toFixed(7)}</span>
                                         <a href={'https://www.openstreetmap.org/?mlat=' + customer.latitude + '&mlon=' + customer.longitude} target="_blank" rel="noreferrer" className="text-brand hover:underline">Open map</a>
                                     </dd>
+                                    <div className="mt-3">
+                                        <MapView latitude={customer.latitude} longitude={customer.longitude} />
+                                    </div>
                                 </div>
                             )}
                         </dl>

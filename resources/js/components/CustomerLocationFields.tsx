@@ -1,6 +1,8 @@
 import { LocateFixed, MapPinned } from 'lucide-react';
 import { useState } from 'react';
 
+import MapPicker from '@/components/MapPicker';
+
 type Props = {
     latitude: string;
     longitude: string;
@@ -61,6 +63,12 @@ export default function CustomerLocationFields({ latitude, longitude, onLatitude
                     <input type="number" step="0.0000001" min="-180" max="180" className="field" value={longitude} onChange={(event) => onLongitudeChange(event.target.value)} placeholder="35.5018" />
                 </label>
             </div>
+            <MapPicker
+                latitude={latitude}
+                longitude={longitude}
+                onLatitudeChange={onLatitudeChange}
+                onLongitudeChange={onLongitudeChange}
+            />
             {locationError && <p className="field-error">{locationError}</p>}
             {mapUrl && <a href={mapUrl} target="_blank" rel="noreferrer" className="inline-flex text-sm font-semibold text-brand hover:underline">Open coordinates in OpenStreetMap</a>}
         </fieldset>
