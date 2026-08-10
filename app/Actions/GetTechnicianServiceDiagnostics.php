@@ -37,6 +37,7 @@ final readonly class GetTechnicianServiceDiagnostics implements Action
                 'acct_session_id' => $session->acct_session_id,
                 'nasname' => $session->nasname,
                 'framed_ip' => $session->framed_ip,
+                'started_at' => $session->acct_start_time?->toIso8601String(),
                 'last_seen_at' => $session->last_seen_at?->toIso8601String(),
                 'input_octets' => $session->input_octets,
                 'output_octets' => $session->output_octets,

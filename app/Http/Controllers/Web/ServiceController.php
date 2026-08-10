@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Web;
 
 use App\Actions\CreateService;
 use App\Actions\EnqueueNetworkCommand;
+use App\Actions\GetTechnicianServiceDiagnostics;
 use App\Actions\ListServices;
 use App\Actions\TransitionService;
 use App\Enums\ServiceStatus;
@@ -22,6 +23,44 @@ use Inertia\Response;
 
 final class ServiceController extends Controller
 {
+    public function show(Service $service, GetTechnicianServiceDiagnostics $diagnostics): Response
+    {
+        $this->authorize('view', $service);
+        $service->load(['customer', 'plan', 'router', 'assignedInventoryUnits.item']);
+        $diagnosticData = $diagnostics->handle($service);
+
+        return Inertia::render('Services/Show', [
+            'service' => [
+                'public_id' => $service->public_id,
+                'username' => $service->username,
+                'status' => $service->status->value,
+                'network_state' => $service->network_state->value,
+                'provisioning_mode' => $service->provisioning_mode->value,
+                'expires_at' => $service->expires_at?->toIso8601String(),
+                'customer' => $service->customer?->only(['public_id', 'code', 'first_name', 'last_name']),
+                'plan' => $service->plan?->only(['public_id', 'name', 'download_kbps', 'upload_kbps', 'amount_minor', 'currency']),
+                'router' => $service->router?->only(['public_id', 'name', 'status']),
+                'usage' => [
+                    'used_bytes' => $service->current_period_bytes,
+                    'quota_bytes' => (int) ($service->plan?->metadata['quota_bytes'] ?? 0),
+                ],
+                'equipment' => $service->assignedInventoryUnits->map(fn ($unit): array => [
+                    'serial_number' => $unit->serial_number,
+                    'assigned_at' => $unit->assigned_at?->toIso8601String(),
+                    'item' => $unit->item?->only(['sku', 'name']),
+                ])->values()->all(),
+            ],
+            'liveSession' => $diagnosticData['live_session'],
+            'usageLast24h' => $diagnosticData['usage_last_24h'],
+            'routerHealth' => $diagnosticData['router_health'],
+            'recentCommands' => $diagnosticData['recent_commands'],
+            'canActivate' => request()->user()?->can('services.activate') === true,
+            'canSuspend' => request()->user()?->can('services.suspend') === true,
+            'canTerminate' => request()->user()?->can('services.terminate') === true,
+            'canDisconnectSession' => request()->user()?->can('network.disconnect') === true,
+        ]);
+    }
+
     public function create(Customer $customer): Response
     {
         $this->authorize('create', Service::class);

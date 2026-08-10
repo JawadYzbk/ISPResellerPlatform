@@ -79,6 +79,7 @@ Route::middleware(['auth', 'tenant', '2fa'])->group(function (): void {
     Route::get('/customers/{customer:public_id}', [CustomerController::class, 'show'])->name('customers.show');
     Route::post('/customers/{customer:public_id}/anonymize', [CustomerController::class, 'anonymize'])->middleware('recent-auth')->name('customers.anonymize');
     Route::get('/services', [ServiceController::class, 'index'])->name('services.index');
+    Route::get('/services/{service:public_id}', [ServiceController::class, 'show'])->name('services.show');
     Route::post('/services/{service:public_id}/activate', [ServiceController::class, 'activate'])->name('services.activate');
     Route::post('/services/{service:public_id}/suspend', [ServiceController::class, 'suspend'])->name('services.suspend');
     Route::post('/services/{service:public_id}/resume', [ServiceController::class, 'resume'])->name('services.resume');

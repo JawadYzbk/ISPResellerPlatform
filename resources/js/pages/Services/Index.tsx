@@ -73,7 +73,9 @@ export default function ServicesIndex({ services, filters }: Props) {
                             {services.data.map((service) => (
                                 <tr key={service.public_id} className="hover:bg-sand/30">
                                     <td className="px-5 py-4">
-                                        <p className="text-sm font-semibold">{service.username}</p>
+                                        <Link href={`/services/${service.public_id}`} className="text-sm font-semibold hover:text-brand">
+                                            {service.username}
+                                        </Link>
                                         <p className="mt-1 text-xs text-muted">
                                             {service.plan.download_kbps / 1000} / {service.plan.upload_kbps / 1000} Mbps
                                         </p>
