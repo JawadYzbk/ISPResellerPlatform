@@ -2,6 +2,7 @@
 
 namespace App\Domain\Services;
 
+use App\Actions\ReturnServiceInventory;
 use App\Domain\Radius\RadiusSyncService;
 use App\Enums\NetworkState;
 use App\Enums\ProvisioningMode;
@@ -15,6 +16,8 @@ use Illuminate\Support\Facades\DB;
 
 final class ServiceStateMachine
 {
+    public function __construct(private readonly ReturnServiceInventory $returnServiceInventory) {}
+
     /** @var array<string, list<string>> */
     private const TRANSITIONS = [
         'pending' => ['active', 'suspended', 'terminated'],
@@ -55,6 +58,9 @@ final class ServiceStateMachine
                 'to_status' => $target->value,
                 'metadata' => $metadata,
             ]);
+            if ($target === ServiceStatus::Terminated) {
+                $this->returnServiceInventory->handle($locked, $actor);
+            }
             $locked->loadMissing('tenant');
             event(new ServiceStatusChanged($locked->tenant->public_id, $locked->public_id, $from->value, $target->value));
 
