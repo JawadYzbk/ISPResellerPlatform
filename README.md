@@ -21,7 +21,7 @@ The current foundation is live:
 - Router/POP inventory, encrypted connection tests and repeated-failure incidents
 - Supplier credential workflows with permission, re-authentication and audit controls
 - Cursor-paginated customer API, idempotent payment API, collector batches, customer portal OTP/session flow, OpenAPI slice and finance reporting
-- Role-scoped Sanctum abilities, app version/maintenance config, technician diagnostics and van inventory APIs
+- Role-scoped Sanctum abilities, app version/maintenance config, technician diagnostics, van inventory and private media upload APIs
 - Collector offline bootstrap/delta sync with signed cursors and per-payment created/replayed/rejected results
 - Customer, plan, service and serialized-equipment CSV imports with preview, partial success and guarded rollback
 - Basic reseller hierarchy and journal-linked wallet funding/debiting with credit limits

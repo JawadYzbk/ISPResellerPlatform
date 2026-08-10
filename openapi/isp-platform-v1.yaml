@@ -373,6 +373,22 @@ paths:
         '201': { description: Wallet transaction created }
         '403': { description: Missing wallet funding capability }
         '409': { description: Idempotency key reused for a different request }
+  /technician/uploads:
+    post:
+      summary: Upload a technician work-order image separately from completion
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file: { type: string, format: binary, description: JPEG, PNG or WebP image up to 20 MB }
+      responses:
+        '201': { description: Public media ID and non-sensitive file metadata }
+        '403': { description: Missing work-order capability }
+        '422': { description: Invalid media type or size }
   /technician/inventory:
     get:
       summary: List equipment in the authenticated technician's van warehouse
