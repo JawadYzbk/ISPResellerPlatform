@@ -6,7 +6,9 @@ it('keeps telemetry privacy-safe and backup destinations explicitly configured',
     expect(config('sentry.send_default_pii'))->toBeFalse()
         ->and(config('backup.backup.destination.disks'))->toBe(['local'])
         ->and(config('backup.backup.verify_backup'))->toBeTrue()
-        ->and(config('backup.backup.encryption'))->toBe('default');
+        ->and(config('backup.backup.encryption'))->toBe('default')
+        ->and(config('broadcasting.connections.reverb.driver'))->toBe('reverb')
+        ->and(config('reverb.apps.apps.0.allowed_origins'))->not->toContain('*');
 
     $event = Event::createEvent()->setRequest([
         'url' => 'https://example.test/health',
