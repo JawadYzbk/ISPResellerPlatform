@@ -34,12 +34,43 @@ it('renders tenant-safe router operations and checks device health', function ()
             ->where('canCheckHealth', true)
         );
 
-    Http::fake(['https://router.example.test/rest/system/resource' => Http::response(['version' => '7.15.2', 'board-name' => 'CHR'])]);
+    app(Tenancy::class)->set($tenant);
+    $this->actingAs($user)
+        ->get(route('operations.routers.show', $router->public_id))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->component('Operations/RouterShow')
+            ->where('router.name', 'Core')
+            ->where('router.services_count', 1)
+            ->missing('router.password')
+            ->where('canEdit', true)
+        );
+
+    $user->forceFill(['last_authenticated_at' => now()])->save();
+    app(Tenancy::class)->set($tenant);
+    $this->actingAs($user)
+        ->put(route('operations.routers.update', $router->public_id), [
+            'name' => 'Core updated',
+            'host' => 'router-updated.example.test',
+            'api_port' => 443,
+            'username' => 'api',
+            'password' => '',
+            'radius_secret' => '',
+            'coa_port' => 1700,
+            'tls_verify' => false,
+            'pop_id' => null,
+        ])
+        ->assertRedirect(route('operations.routers.show', $router->public_id));
+    app(Tenancy::class)->set($tenant);
+    expect($router->refresh()->name)->toBe('Core updated')
+        ->and($router->password_encrypted)->toBe('secret');
+
+    Http::fake(['https://router-updated.example.test/rest/system/resource' => Http::response(['version' => '7.15.2', 'board-name' => 'CHR'])]);
     app(Tenancy::class)->set($tenant);
     $this->actingAs($user)
         ->post(route('operations.routers.health', $router->public_id))
         ->assertRedirect(route('operations.routers'))
-        ->assertSessionHas('success', 'Router Core is reachable.');
+        ->assertSessionHas('success', 'Router Core updated is reachable.');
 
     app(Tenancy::class)->set($tenant);
     expect($router->refresh()->status)->toBe('online')->and($router->last_seen_at)->not->toBeNull();
@@ -56,6 +87,7 @@ it('does not expose routers from another tenant', function (): void {
     $user->assignRole('tenant_owner');
 
     $this->actingAs($user)->get(route('operations.routers'))->assertOk()->assertInertia(fn ($page) => $page->where('routers.total', 0));
+    $this->actingAs($user)->get(route('operations.routers.show', $router->public_id))->assertNotFound();
     $this->actingAs($user)->post(route('operations.routers.health', $router->public_id))->assertNotFound();
 });
 

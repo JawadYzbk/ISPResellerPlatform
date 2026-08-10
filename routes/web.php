@@ -78,6 +78,8 @@ Route::middleware(['auth', 'tenant', '2fa'])->group(function (): void {
     Route::get('/operations/routers', [RouterOperationsController::class, 'index'])->name('operations.routers');
     Route::get('/operations/routers/create', [RouterOperationsController::class, 'create'])->name('operations.routers.create');
     Route::post('/operations/routers', [RouterOperationsController::class, 'store'])->middleware('recent-auth')->name('operations.routers.store');
+    Route::get('/operations/routers/{router:public_id}', [RouterOperationsController::class, 'show'])->name('operations.routers.show');
+    Route::put('/operations/routers/{router:public_id}', [RouterOperationsController::class, 'update'])->middleware('recent-auth')->name('operations.routers.update');
     Route::post('/operations/routers/{router:public_id}/health', [RouterOperationsController::class, 'health'])->name('operations.routers.health');
     Route::get('/billing/invoices', [BillingController::class, 'invoices'])->name('billing.invoices');
     Route::get('/billing/invoices/{invoice:public_id}', [BillingController::class, 'showInvoice'])->name('billing.invoices.show');

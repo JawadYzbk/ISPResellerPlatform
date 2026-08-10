@@ -5,8 +5,10 @@ namespace App\Http\Controllers\Web;
 use App\Actions\CheckRouterHealth;
 use App\Actions\CreateRouter;
 use App\Actions\ListRouters;
+use App\Actions\UpdateRouter;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\CreateRouterRequest;
+use App\Http\Requests\UpdateRouterRequest;
 use App\Models\Pop;
 use App\Models\Router;
 use App\Models\Tenant;
@@ -32,6 +34,7 @@ final class RouterOperationsController extends Controller
 
             return [
                 'public_id' => $router->public_id,
+                'pop_id' => $router->pop_id,
                 'name' => $router->name,
                 'host' => $router->host,
                 'api_port' => $router->api_port,
@@ -87,5 +90,39 @@ final class RouterOperationsController extends Controller
             $incident === null ? 'success' : 'error',
             $incident === null ? "Router {$router->name} is reachable." : "Router {$router->name} is offline.",
         );
+    }
+
+    public function show(Request $request, Router $router): Response
+    {
+        $user = $request->user();
+        abort_unless($user instanceof User && $user->can('network.view'), 403);
+        $router->loadCount('services');
+
+        return Inertia::render('Operations/RouterShow', [
+            'router' => [
+                'public_id' => $router->public_id,
+                'name' => $router->name,
+                'host' => $router->host,
+                'api_port' => $router->api_port,
+                'username' => $router->username,
+                'coa_port' => $router->coa_port,
+                'tls_verify' => $router->tls_verify,
+                'status' => $router->status,
+                'last_seen_at' => $router->last_seen_at?->toIso8601String(),
+                'consecutive_failures' => (int) ($router->metadata['consecutive_failures'] ?? 0),
+                'services_count' => $router->services_count,
+                'pop' => $router->pop === null ? null : ['name' => $router->pop->name, 'code' => $router->pop->code],
+            ],
+            'pops' => Pop::query()->where('status', 'active')->orderBy('name')->get(['id', 'name', 'code']),
+            'canEdit' => $user->can('network.provision'),
+        ]);
+    }
+
+    public function update(UpdateRouterRequest $request, Router $router, UpdateRouter $update): RedirectResponse
+    {
+        abort_unless($request->user()?->can('network.provision') === true, 403);
+        $update->handle($router, $request->validated());
+
+        return redirect()->route('operations.routers.show', $router->public_id)->with('success', "Router {$router->name} updated.");
     }
 }
