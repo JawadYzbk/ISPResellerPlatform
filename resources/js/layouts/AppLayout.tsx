@@ -19,6 +19,7 @@ import {
     Tags,
     Users,
     Wifi,
+    WalletCards,
     Wrench,
 } from 'lucide-react';
 import type { PropsWithChildren } from 'react';
@@ -36,6 +37,7 @@ export default function AppLayout({ children }: PropsWithChildren) {
         { label: 'Services', href: '/services', icon: Wifi },
         { label: 'Billing', href: '/billing/invoices', icon: ReceiptText },
         { label: 'Payments', href: '/billing/payments', icon: CreditCard },
+        { label: 'Cash shifts', href: '/billing/shifts', icon: WalletCards },
         { label: 'Tickets', href: '/operations/tickets', icon: MessageSquare },
         { label: 'Work orders', href: '/operations/work-orders', icon: ClipboardList },
         { label: 'Inventory', href: '/operations/inventory', icon: Package },
