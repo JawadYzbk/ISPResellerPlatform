@@ -47,7 +47,13 @@ Route::prefix('v1')->group(function (): void {
         Route::get('/me/tickets/{ticket}', [PortalTicketController::class, 'show'])->middleware('portal.auth')->name('api.portal.tickets.show');
         Route::post('/me/tickets/{ticket}/messages', [PortalTicketController::class, 'message'])->middleware('portal.auth')->name('api.portal.tickets.messages');
         Route::get('/billing', [PortalBillingController::class, 'show'])->middleware('portal.auth')->name('api.portal.billing');
+        Route::get('/me/balance', [PortalBillingController::class, 'balance'])->middleware('portal.auth')->name('api.portal.balance');
+        Route::get('/me/invoices', [PortalBillingController::class, 'invoices'])->middleware('portal.auth')->name('api.portal.invoices');
+        Route::get('/me/invoices/{invoice}/pdf', [PortalBillingController::class, 'invoicePdf'])->middleware('portal.auth')->name('api.portal.invoices.pdf');
+        Route::get('/me/invoices/{invoice}', [PortalBillingController::class, 'invoice'])->middleware('portal.auth')->name('api.portal.invoices.show');
+        Route::get('/me/payments', [PortalBillingController::class, 'payments'])->middleware('portal.auth')->name('api.portal.payments');
         Route::post('/payments/intent', [PortalBillingController::class, 'intent'])->middleware('portal.auth')->name('api.portal.payments.intent');
+        Route::post('/me/payments/intent', [PortalBillingController::class, 'intent'])->middleware('portal.auth')->name('api.portal.me.payments.intent');
     });
 
     Route::middleware(['auth:sanctum', 'tenant'])->group(function (): void {
