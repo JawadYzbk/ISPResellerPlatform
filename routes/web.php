@@ -24,6 +24,7 @@ use App\Http\Controllers\Web\ReportController;
 use App\Http\Controllers\Web\RouterOperationsController;
 use App\Http\Controllers\Web\SecurityController;
 use App\Http\Controllers\Web\ServiceController;
+use App\Http\Controllers\Web\SessionOperationsController;
 use App\Http\Controllers\Web\SettingsController;
 use App\Http\Controllers\Web\TicketOperationsController;
 use App\Http\Controllers\Web\UserOperationsController;
@@ -88,6 +89,7 @@ Route::middleware(['auth', 'tenant', '2fa'])->group(function (): void {
     Route::post('/services/{service:public_id}/resync', [ServiceController::class, 'resync'])->name('services.resync');
     Route::get('/operations/network-commands', [NetworkOperationsController::class, 'index'])->name('operations.network-commands');
     Route::post('/operations/network-commands/{command:public_id}/retry', [NetworkOperationsController::class, 'retry'])->name('operations.network-commands.retry');
+    Route::get('/operations/sessions', [SessionOperationsController::class, 'index'])->name('operations.sessions');
     Route::get('/operations/routers', [RouterOperationsController::class, 'index'])->name('operations.routers');
     Route::get('/operations/routers/create', [RouterOperationsController::class, 'create'])->name('operations.routers.create');
     Route::post('/operations/routers', [RouterOperationsController::class, 'store'])->middleware('recent-auth')->name('operations.routers.store');
