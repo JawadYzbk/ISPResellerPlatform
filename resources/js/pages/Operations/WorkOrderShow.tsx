@@ -2,6 +2,7 @@ import { Head, Link, router, useForm } from '@inertiajs/react';
 import { ArrowLeft, CalendarClock, CheckCircle2, ClipboardCheck, Clock3, Download, Images, UserRound } from 'lucide-react';
 
 import StatusBadge from '@/components/StatusBadge';
+import SignaturePad from '@/components/SignaturePad';
 import AppLayout from '@/layouts/AppLayout';
 import { formatDate } from '@/lib/format';
 
@@ -21,6 +22,7 @@ type WorkOrder = {
     assignee: { name: string } | null;
     events: { id: number; event_type: string; from_status: string | null; to_status: string | null; actor: string | null; created_at: string | null }[];
     media: { id: string; filename: string; mime_type: string; size_bytes: number; purpose: string; created_at: string | null; download_url: string }[];
+    signature: { id: number; signer_name: string; signed_at: string | null; download_url: string | null } | null;
 };
 
 function checklistLabel(key: string): string {
@@ -48,10 +50,15 @@ type Props = {
 export default function WorkOrderShowPage({ workOrder, scheduledAtLocal, timezone }: Props) {
     const canComplete = ['assigned', 'in_progress'].includes(workOrder.status);
     const scheduleForm = useForm({ scheduled_at: scheduledAtLocal ?? '' });
+    const signatureForm = useForm<{ file: File | null; signer_name: string }>({ file: null, signer_name: '' });
 
     const submitSchedule = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         scheduleForm.post('/operations/work-orders/' + workOrder.public_id + '/schedule');
+    };
+    const submitSignature = (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        signatureForm.post('/operations/work-orders/' + workOrder.public_id + '/signature', { forceFormData: true, onSuccess: () => signatureForm.reset() });
     };
 
     return (
@@ -117,6 +124,25 @@ export default function WorkOrderShowPage({ workOrder, scheduledAtLocal, timezon
                             ))}
                             {Object.keys(workOrder.checklist).length === 0 && <p className="text-sm text-muted">No checklist items were recorded.</p>}
                         </div>
+                    </section>
+                    <section className="card p-6">
+                        <h2 className="section-title">Customer signature</h2>
+                        {workOrder.signature ? (
+                            <div className="mt-5 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm">
+                                <p className="font-semibold">Signed by {workOrder.signature.signer_name}</p>
+                                <p className="mt-1 text-xs text-muted">{formatDate(workOrder.signature.signed_at)}</p>
+                                {workOrder.signature.download_url && <a href={workOrder.signature.download_url} className="mt-2 inline-flex text-sm font-semibold text-brand hover:underline" download>Download signature</a>}
+                            </div>
+                        ) : (
+                            <div className="mt-5 space-y-4">
+                                <SignaturePad onChange={(file) => signatureForm.setData('file', file)} />
+                                <form onSubmit={submitSignature} className="space-y-3 border-t border-line pt-5">
+                                <label><span className="field-label">Signer name</span><input className="field" value={signatureForm.data.signer_name} onChange={(event) => signatureForm.setData('signer_name', event.target.value)} />{signatureForm.errors.signer_name && <p className="field-error">{signatureForm.errors.signer_name}</p>}</label>
+                                {signatureForm.errors.file && <p className="field-error">{signatureForm.errors.file}</p>}
+                                <button type="submit" className="button-secondary" disabled={signatureForm.processing || !signatureForm.data.file || !signatureForm.data.signer_name.trim()}>Save signature</button>
+                                </form>
+                            </div>
+                        )}
                     </section>
                     <section className="card p-6">
                         <div className="flex items-center gap-2"><Images size={17} className="text-brand" /><h2 className="section-title">Site evidence</h2></div>
