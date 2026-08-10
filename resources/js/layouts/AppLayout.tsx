@@ -7,6 +7,7 @@ import {
     Command,
     LayoutDashboard,
     LogOut,
+    Store,
     Search,
     Users,
     Wifi,
@@ -22,6 +23,7 @@ export default function AppLayout({ children }: PropsWithChildren) {
         { label: 'Overview', href: '/dashboard', icon: LayoutDashboard },
         { label: 'Customers', href: '/customers', icon: Users },
         { label: 'Services', href: '/services', icon: Wifi },
+        { label: 'Partners', href: '/partners/commercial', icon: Store },
         { label: 'Reports', href: '/reports/operations', icon: BarChart3 },
     ];
 

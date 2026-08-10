@@ -6,6 +6,7 @@ use App\Http\Controllers\Auth\ReauthenticateController;
 use App\Http\Controllers\Auth\TwoFactorController;
 use App\Http\Controllers\Web\CustomerController;
 use App\Http\Controllers\Web\DashboardController;
+use App\Http\Controllers\Web\PartnerController;
 use App\Http\Controllers\Web\PortalPageController;
 use App\Http\Controllers\Web\ReportController;
 use App\Http\Controllers\Web\SecurityController;
@@ -44,6 +45,7 @@ Route::middleware(['auth', 'tenant', '2fa'])->group(function (): void {
     Route::post('/customers', [CustomerController::class, 'store'])->name('customers.store');
     Route::get('/customers/{customer:public_id}', [CustomerController::class, 'show'])->name('customers.show');
     Route::get('/services', [ServiceController::class, 'index'])->name('services.index');
+    Route::get('/partners/commercial', [PartnerController::class, 'commercial'])->name('partners.commercial');
     Route::get('/reports/finance', [ReportController::class, 'finance'])->name('reports.finance');
     Route::get('/reports/operations', [ReportController::class, 'operations'])->name('reports.operations');
 });
