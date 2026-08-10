@@ -39,6 +39,7 @@ it('serves customer balance, invoice, payment and invoice PDF resources', functi
         ->assertOk()
         ->assertJsonPath('next_due.invoice_id', $invoice->public_id)
         ->assertJsonPath('next_due.amount', 2500);
+    $this->withHeaders($headers)->getJson('/api/v1/portal/northline/me/profile')->assertOk()->assertJsonPath('public_id', $customer->public_id);
     $this->withHeaders($headers)->getJson('/api/v1/portal/northline/me/invoices?per_page=1')
         ->assertOk()
         ->assertJsonPath('data.0.id', $invoice->public_id)

@@ -402,6 +402,16 @@ paths:
         '200': { description: Customer profile and services }
         '401': { description: Invalid portal session }
   /portal/{tenant}/me/profile:
+    get:
+      summary: Read the authenticated customer portal profile
+      parameters:
+        - in: path
+          name: tenant
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: Customer profile and services }
+        '401': { description: Invalid portal session }
     patch:
       summary: Update customer contact and notification preferences
       parameters:

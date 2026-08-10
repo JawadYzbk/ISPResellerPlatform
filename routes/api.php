@@ -37,6 +37,7 @@ Route::prefix('v1')->group(function (): void {
         Route::post('/otp/request', [PortalAuthController::class, 'requestOtp'])->middleware('throttle:login')->name('api.portal.otp.request');
         Route::post('/otp/verify', [PortalAuthController::class, 'verifyOtp'])->middleware('throttle:login')->name('api.portal.otp.verify');
         Route::get('/me', [PortalController::class, 'me'])->middleware('portal.auth')->name('api.portal.me');
+        Route::get('/me/profile', [PortalController::class, 'me'])->middleware('portal.auth')->name('api.portal.profile');
         Route::patch('/me/profile', [PortalController::class, 'updateProfile'])->middleware('portal.auth')->name('api.portal.profile.update');
         Route::get('/me/services', [PortalController::class, 'services'])->middleware('portal.auth')->name('api.portal.services');
         Route::get('/me/services/{service}/usage', [PortalController::class, 'usage'])->middleware('portal.auth')->name('api.portal.services.usage');
