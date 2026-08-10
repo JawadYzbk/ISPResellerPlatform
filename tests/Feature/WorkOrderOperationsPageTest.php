@@ -2,6 +2,7 @@
 
 use App\Enums\ServiceStatus;
 use App\Enums\WorkOrderStatus;
+use App\Models\Customer;
 use App\Models\Service;
 use App\Models\Tenant;
 use App\Models\User;
@@ -22,6 +23,7 @@ it('renders work orders and completes an installation through the existing actio
     app(Tenancy::class)->set($tenant);
     $user->assignRole('operations_manager');
     $service = Service::factory()->create(['status' => ServiceStatus::Pending]);
+    $customer = Customer::query()->findOrFail($service->customer_id);
     $order = WorkOrder::create([
         'number' => 'WO-00001',
         'type' => 'installation',
@@ -41,6 +43,17 @@ it('renders work orders and completes an installation through the existing actio
             ->where('workOrders.data.0.number', 'WO-00001')
             ->where('workOrders.data.0.checklist.signal_verified', true)
             ->where('filters.status', 'assigned')
+        );
+
+    app(Tenancy::class)->set($tenant);
+    $this->actingAs($user)
+        ->get(route('operations.work-orders.show', $order->public_id))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->component('Operations/WorkOrderShow')
+            ->where('workOrder.number', 'WO-00001')
+            ->where('workOrder.checklist.ont_installed', false)
+            ->where('workOrder.customer.public_id', $customer->public_id)
         );
 
     app(Tenancy::class)->set($tenant);
@@ -65,5 +78,6 @@ it('does not expose work orders from another tenant', function (): void {
     $user->assignRole('operations_manager');
 
     $this->actingAs($user)->get(route('operations.work-orders'))->assertOk()->assertInertia(fn ($page) => $page->where('workOrders.total', 0));
+    $this->actingAs($user)->get(route('operations.work-orders.show', $order->public_id))->assertNotFound();
     $this->actingAs($user)->post(route('operations.work-orders.complete', $order->public_id))->assertNotFound();
 });

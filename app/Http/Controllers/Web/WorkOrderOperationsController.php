@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Web;
 
 use App\Actions\CompleteWorkOrder;
+use App\Actions\GetWorkOrderDetails;
 use App\Actions\ListWorkOrders;
 use App\Http\Controllers\Controller;
 use App\Models\User;
@@ -72,6 +73,38 @@ final class WorkOrderOperationsController extends Controller
         $complete->handle($workOrder, $user, $validated['idempotency_key'] ?? null);
 
         return redirect()->route('operations.work-orders')->with('success', "Work order {$workOrder->number} completed.");
+    }
+
+    public function show(Request $request, WorkOrder $workOrder, GetWorkOrderDetails $getDetails): Response
+    {
+        abort_unless($request->user()?->can('workorders.complete') === true, 403);
+        $workOrder = $getDetails->handle($workOrder);
+
+        return Inertia::render('Operations/WorkOrderShow', [
+            'workOrder' => [
+                'public_id' => $workOrder->public_id,
+                'number' => $workOrder->number,
+                'type' => $workOrder->type,
+                'status' => $workOrder->status->value,
+                'scheduled_at' => $this->isoDate($workOrder->scheduled_at),
+                'started_at' => $this->isoDate($workOrder->started_at),
+                'completed_at' => $this->isoDate($workOrder->completed_at),
+                'failure_reason' => $workOrder->failure_reason,
+                'checklist' => $workOrder->checklist ?? [],
+                'metadata' => $workOrder->metadata ?? [],
+                'customer' => $workOrder->customer === null ? null : ['public_id' => $workOrder->customer->public_id, 'code' => $workOrder->customer->code, 'name' => $workOrder->customer->full_name],
+                'service' => $workOrder->service === null ? null : ['public_id' => $workOrder->service->public_id, 'username' => $workOrder->service->username],
+                'assignee' => $workOrder->assignee === null ? null : ['name' => $workOrder->assignee->name],
+                'events' => $workOrder->events->map(fn ($event): array => [
+                    'id' => $event->id,
+                    'event_type' => $event->event_type,
+                    'from_status' => $event->from_status,
+                    'to_status' => $event->to_status,
+                    'actor' => $event->actor?->name,
+                    'created_at' => $event->created_at?->toIso8601String(),
+                ])->values(),
+            ],
+        ]);
     }
 
     private function isoDate(mixed $value): ?string

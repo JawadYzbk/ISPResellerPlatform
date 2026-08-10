@@ -26,4 +26,10 @@ class WorkOrderEvent extends Model
     {
         return $this->belongsTo(WorkOrder::class);
     }
+
+    /** @return BelongsTo<User, $this> */
+    public function actor(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'actor_id');
+    }
 }
