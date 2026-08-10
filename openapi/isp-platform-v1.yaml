@@ -190,6 +190,105 @@ paths:
         '401': { description: Unauthenticated }
         '403': { description: Missing invoice view capability }
         '404': { description: Invoice not found }
+  /tickets:
+    get:
+      summary: List tenant support tickets
+      parameters:
+        - in: query
+          name: filter[status]
+          schema: { type: string, enum: [open, in_progress, pending, resolved, closed] }
+        - in: query
+          name: filter[priority]
+          schema: { type: string, enum: [critical, high, normal, low] }
+        - in: query
+          name: filter[search]
+          schema: { type: string }
+        - in: query
+          name: cursor
+          schema: { type: string }
+      responses:
+        '200': { description: Cursor-paginated support tickets }
+        '401': { description: Unauthenticated }
+        '403': { description: Missing ticket view capability }
+    post:
+      summary: Create a staff support ticket
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [customer_id, subject, description, category, priority]
+              properties:
+                customer_id: { type: string, description: Customer public ULID }
+                service_id: { type: string, description: Service public ULID, nullable: true }
+                subject: { type: string, maxLength: 160 }
+                description: { type: string, maxLength: 10000 }
+                category: { type: string, maxLength: 64 }
+                priority: { type: string, enum: [critical, high, normal, low] }
+      responses:
+        '201': { description: Created support ticket }
+        '401': { description: Unauthenticated }
+        '403': { description: Missing ticket creation capability }
+        '422': { description: Validation failure }
+  /tickets/{ticket}:
+    get:
+      summary: Read one tenant support ticket with messages
+      parameters:
+        - in: path
+          name: ticket
+          required: true
+          schema: { type: string, description: Ticket public ULID }
+      responses:
+        '200': { description: Support ticket resource }
+        '401': { description: Unauthenticated }
+        '403': { description: Missing ticket view capability }
+        '404': { description: Ticket not found }
+  /tickets/{ticket}/messages:
+    post:
+      summary: Add a staff reply to a support ticket
+      parameters:
+        - in: path
+          name: ticket
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [body]
+              properties:
+                body: { type: string, maxLength: 10000 }
+                visibility: { type: string, enum: [public, internal], default: public }
+      responses:
+        '200': { description: Updated support ticket }
+        '403': { description: Missing ticket reply capability }
+        '404': { description: Ticket not found }
+        '422': { description: Closed ticket or validation failure }
+  /tickets/{ticket}/status:
+    post:
+      summary: Change a support ticket status
+      parameters:
+        - in: path
+          name: ticket
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              properties:
+                status: { type: string, enum: [open, in_progress, pending, resolved, closed] }
+      responses:
+        '200': { description: Updated support ticket }
+        '403': { description: Missing ticket transition or close capability }
+        '404': { description: Ticket not found }
+        '422': { description: Invalid transition or validation failure }
   /me:
     get:
       summary: Read the authenticated staff identity
