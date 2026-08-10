@@ -65,9 +65,14 @@ export default function AppLayout({ children }: PropsWithChildren) {
             <div className="lg:ps-64">
                 <header className="sticky top-0 z-10 flex h-20 items-center justify-between border-b border-line bg-canvas/90 px-5 backdrop-blur lg:px-8">
                     <div className="flex items-center gap-3">
-                        <button className="hidden rounded-lg border border-line bg-white p-2 text-muted lg:block">
+                        <Link
+                            href="/customers"
+                            className="hidden rounded-lg border border-line bg-white p-2 text-muted hover:text-brand lg:block"
+                            title="Search customers"
+                            aria-label="Search customers"
+                        >
                             <Command size={17} />
-                        </button>
+                        </Link>
                         <div className="hidden items-center gap-2 text-sm text-muted sm:flex">
                             <Search size={16} />
                             <span>Search customers, services…</span>
@@ -77,10 +82,15 @@ export default function AppLayout({ children }: PropsWithChildren) {
                         </div>
                     </div>
                     <div className="flex items-center gap-3">
-                        <button className="relative rounded-lg p-2.5 text-muted hover:bg-white">
+                        <Link
+                            href="/dashboard#attention"
+                            className="relative rounded-lg p-2.5 text-muted hover:bg-white"
+                            title="Open manager attention queue"
+                            aria-label="Open manager attention queue"
+                        >
                             <Bell size={19} strokeWidth={1.8} />
                             <span className="absolute end-2 top-2 size-1.5 rounded-full bg-coral" />
-                        </button>
+                        </Link>
                         <div className="flex items-center gap-3 border-s border-line ps-3">
                             <div className="grid size-9 place-items-center rounded-full bg-brand-soft text-sm font-bold text-brand">
                                 {auth.user?.name.slice(0, 1).toUpperCase()}

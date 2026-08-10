@@ -193,7 +193,7 @@ export default function Dashboard({ metrics, attentionQueue }: Props) {
             </Deferred>
             <Deferred data="attentionQueue" fallback={<DashboardAttentionFallback />}>
                 {attentionQueue ? (
-                    <div className="card mt-6 overflow-hidden">
+                    <div id="attention" className="card mt-6 overflow-hidden">
                         <div className="flex items-center justify-between border-b border-line px-6 py-5">
                             <div>
                                 <h2 className="section-title">Manager attention queue</h2>
