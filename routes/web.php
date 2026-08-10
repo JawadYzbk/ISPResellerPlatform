@@ -78,6 +78,7 @@ Route::middleware(['auth', 'tenant', '2fa'])->group(function (): void {
     Route::post('/operations/work-orders/{workOrder:public_id}/complete', [WorkOrderOperationsController::class, 'complete'])->name('operations.work-orders.complete');
     Route::get('/operations/inventory', [InventoryOperationsController::class, 'index'])->name('operations.inventory');
     Route::get('/operations/credentials', [CredentialOperationsController::class, 'index'])->name('operations.credentials');
+    Route::post('/operations/credentials/{credential}/assign', [CredentialOperationsController::class, 'assign'])->middleware('recent-auth')->name('operations.credentials.assign');
     Route::get('/plans', [PlanOperationsController::class, 'index'])->name('plans.index');
     Route::get('/plans/create', [PlanOperationsController::class, 'create'])->name('plans.create');
     Route::post('/plans', [PlanOperationsController::class, 'store'])->name('plans.store');

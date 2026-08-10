@@ -23,6 +23,9 @@ final readonly class AssignUpstreamCredential implements Action
             if ($locked->status !== CredentialStatus::Available || $locked->assigned_service_id !== null) {
                 throw new DomainException('The upstream credential is not available.');
             }
+            if (UpstreamCredential::query()->where('assigned_service_id', $service->id)->exists()) {
+                throw new DomainException('The service already has an upstream credential.');
+            }
             $locked->forceFill(['status' => CredentialStatus::Assigned, 'assigned_service_id' => $service->id, 'assigned_at' => now()])->save();
 
             return CredentialAssignment::create(['upstream_credential_id' => $locked->id, 'service_id' => $service->id, 'assigned_by' => $actor?->id, 'assigned_at' => now()]);
