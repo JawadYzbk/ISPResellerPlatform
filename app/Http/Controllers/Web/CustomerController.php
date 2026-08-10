@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Web;
 
 use App\Actions\AnonymizeCustomer;
 use App\Actions\CreateCustomer;
+use App\Actions\CreateRenewalInvoice;
 use App\Actions\DeleteCustomerView;
 use App\Actions\ExportCustomersCsv;
 use App\Actions\GetCustomerDetails;
@@ -24,14 +25,17 @@ use App\Models\CustomerSavedView;
 use App\Models\Invoice;
 use App\Models\Plan;
 use App\Models\Router;
+use App\Models\Service;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Models\Zone;
 use App\Support\Tenancy;
+use DomainException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -135,6 +139,57 @@ final class CustomerController extends Controller
             'customer' => $customer->only(['public_id', 'code', 'first_name', 'last_name', 'balance_amount', 'balance_currency']),
             'invoices' => $invoices,
         ]);
+    }
+
+    public function renew(Request $request, Customer $customer): Response
+    {
+        $this->authorize('view', $customer);
+        abort_unless($request->user()?->can('payments.collect') === true, 403);
+        $services = $customer->services()
+            ->with(['plan.prices'])
+            ->where('status', '!=', 'terminated')
+            ->orderBy('username')
+            ->get()
+            ->map(function (Service $service): array {
+                $price = $service->plan?->priceAt();
+
+                return [
+                    'public_id' => $service->public_id,
+                    'username' => $service->username,
+                    'status' => $service->status->value,
+                    'expires_at' => $service->expires_at?->toIso8601String(),
+                    'plan' => $service->plan?->only(['name', 'duration_days']),
+                    'price' => $price?->only(['amount_minor', 'currency']),
+                ];
+            })
+            ->values();
+
+        return Inertia::render('Customers/Renew', [
+            'customer' => $customer->only(['public_id', 'code', 'first_name', 'last_name', 'balance_currency']),
+            'services' => $services,
+        ]);
+    }
+
+    public function storeRenewal(Request $request, Customer $customer, CreateRenewalInvoice $createRenewalInvoice): RedirectResponse
+    {
+        $this->authorize('view', $customer);
+        abort_unless($request->user()?->can('payments.collect') === true, 403);
+        $validated = $request->validate([
+            'service_id' => [
+                'required',
+                'string',
+                Rule::exists('services', 'public_id')->where(fn ($query) => $query->where('tenant_id', app(Tenancy::class)->requireId())->where('customer_id', $customer->id)),
+            ],
+        ]);
+        $service = Service::query()->with('plan')->where('public_id', $validated['service_id'])->where('customer_id', $customer->id)->firstOrFail();
+
+        try {
+            $invoice = $createRenewalInvoice->handle($customer, $service, $request->user());
+        } catch (DomainException $exception) {
+            throw ValidationException::withMessages(['service_id' => $exception->getMessage()]);
+        }
+
+        return redirect()->route('customers.payments.create', $customer->public_id)->with('success', "Renewal invoice {$invoice->number} is ready for collection.");
     }
 
     public function storePayment(CollectPaymentRequest $request, Customer $customer, RecordPayment $recordPayment): RedirectResponse

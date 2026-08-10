@@ -78,6 +78,8 @@ Route::middleware(['auth', 'tenant', '2fa'])->group(function (): void {
     Route::post('/customers/{customer:public_id}/documents', [CustomerController::class, 'storeDocument'])->middleware('recent-auth')->name('customers.documents.store');
     Route::get('/customers/{customer:public_id}/payments/create', [CustomerController::class, 'createPayment'])->name('customers.payments.create');
     Route::post('/customers/{customer:public_id}/payments', [CustomerController::class, 'storePayment'])->name('customers.payments.store');
+    Route::get('/customers/{customer:public_id}/renew', [CustomerController::class, 'renew'])->name('customers.renew');
+    Route::post('/customers/{customer:public_id}/renew', [CustomerController::class, 'storeRenewal'])->name('customers.renew.store');
     Route::get('/customers/{customer:public_id}/tickets/create', [TicketOperationsController::class, 'create'])->name('operations.tickets.create');
     Route::post('/customers/{customer:public_id}/tickets', [TicketOperationsController::class, 'store'])->name('operations.tickets.store');
     Route::get('/customers/{customer:public_id}', [CustomerController::class, 'show'])->name('customers.show');
