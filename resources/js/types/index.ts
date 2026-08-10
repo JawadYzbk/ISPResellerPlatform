@@ -38,6 +38,14 @@ export type DashboardMetrics = {
     openWorkOrders: number;
 };
 
+export type AttentionQueueItem = {
+    type: string;
+    title: string;
+    detail: string;
+    href: string;
+    severity: 'critical' | 'warning' | 'info';
+};
+
 export type FinanceReport = {
     from: string;
     to: string;

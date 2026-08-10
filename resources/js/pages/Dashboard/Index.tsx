@@ -4,13 +4,14 @@ import { ArrowUpRight, CircleAlert, Clock3, CreditCard, Plus, Users, Wifi } from
 import StatusBadge from '@/components/StatusBadge';
 import AppLayout from '@/layouts/AppLayout';
 import { formatMoney } from '@/lib/format';
-import type { DashboardMetrics, PageProps } from '@/types';
+import type { AttentionQueueItem, DashboardMetrics, PageProps } from '@/types';
 
 type Props = PageProps & {
     metrics: DashboardMetrics;
+    attentionQueue: AttentionQueueItem[];
 };
 
-export default function Dashboard({ metrics }: Props) {
+export default function Dashboard({ metrics, attentionQueue }: Props) {
     const { auth } = usePage<PageProps>().props;
     const cards = [
         {
@@ -142,6 +143,45 @@ export default function Dashboard({ metrics }: Props) {
                         </Link>
                     </div>
                 </div>
+            </div>
+            <div className="card mt-6 overflow-hidden">
+                <div className="flex items-center justify-between border-b border-line px-6 py-5">
+                    <div>
+                        <h2 className="section-title">Manager attention queue</h2>
+                        <p className="mt-1 text-sm text-muted">The next operational decisions, already linked to their records.</p>
+                    </div>
+                    <CircleAlert className="text-brand" size={20} />
+                </div>
+                {attentionQueue.length === 0 ? (
+                    <p className="px-6 py-8 text-sm text-muted">Nothing needs attention right now.</p>
+                ) : (
+                    <div className="divide-y divide-line">
+                        {attentionQueue.map((item) => {
+                            const tone = {
+                                critical: 'bg-rose-50 text-rose-700',
+                                warning: 'bg-amber-50 text-amber-700',
+                                info: 'bg-blue-50 text-blue-700',
+                            }[item.severity];
+
+                            return (
+                                <Link
+                                    key={`${item.type}-${item.href}`}
+                                    href={item.href}
+                                    className="flex items-center gap-4 px-6 py-4 transition hover:bg-sand/30"
+                                >
+                                    <span className={`grid size-9 shrink-0 place-items-center rounded-xl ${tone}`}>
+                                        <CircleAlert size={16} />
+                                    </span>
+                                    <span className="min-w-0 flex-1">
+                                        <span className="block text-sm font-semibold">{item.title}</span>
+                                        <span className="mt-1 block truncate text-xs text-muted">{item.detail}</span>
+                                    </span>
+                                    <ArrowUpRight size={16} className="shrink-0 text-muted" />
+                                </Link>
+                            );
+                        })}
+                    </div>
+                )}
             </div>
         </AppLayout>
     );
