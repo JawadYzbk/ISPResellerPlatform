@@ -29,6 +29,7 @@ final readonly class GetOperationsReport implements Action
             'failed_commands' => NetworkCommand::query()->where('status', 'failed')->count(),
             'low_stock_items' => InventoryItem::query()
                 ->where('is_active', true)
+                ->where('reorder_level', '>', 0)
                 ->withCount(['units as available_units' => fn (Builder $query): Builder => $query->where('status', 'available')])
                 ->get()
                 ->filter(fn (InventoryItem $item): bool => $item->available_units <= $item->reorder_level)
