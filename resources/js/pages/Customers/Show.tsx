@@ -48,7 +48,7 @@ export default function CustomerShow({
     canForceResumeServices = false,
 }: Props) {
     const fullName = `${customer.first_name} ${customer.last_name ?? ''}`.trim();
-    const documentForm = useForm<{ file: File | null }>({ file: null });
+    const documentForm = useForm<{ file: File | null; document_type: string; retention_until: string }>({ file: null, document_type: 'contract', retention_until: '' });
     const submitDocument = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         documentForm.post('/customers/' + customer.public_id + '/documents', {
@@ -306,6 +306,8 @@ export default function CustomerShow({
                         {canEdit && (
                             <form onSubmit={submitDocument} className="space-y-3 border-b border-line px-6 py-5">
                                 <label><span className="field-label">Add PDF or image</span><input type="file" accept="application/pdf,image/jpeg,image/png,image/webp" className="field" onChange={(event) => documentForm.setData('file', event.target.files?.[0] ?? null)} />{documentForm.errors.file && <p className="field-error">{documentForm.errors.file}</p>}</label>
+                                <label><span className="field-label">Document type</span><select className="field" value={documentForm.data.document_type} onChange={(event) => documentForm.setData('document_type', event.target.value)}><option value="contract">Contract</option><option value="identity">Identity</option><option value="proof_of_address">Proof of address</option><option value="other">Other</option></select>{documentForm.errors.document_type && <p className="field-error">{documentForm.errors.document_type}</p>}</label>
+                                <label><span className="field-label">Retain until (optional)</span><input type="date" className="field" value={documentForm.data.retention_until} onChange={(event) => documentForm.setData('retention_until', event.target.value)} />{documentForm.errors.retention_until && <p className="field-error">{documentForm.errors.retention_until}</p>}</label>
                                 <button type="submit" className="button-secondary" disabled={documentForm.processing || !documentForm.data.file}><Upload size={15} /> Upload document</button>
                             </form>
                         )}
@@ -314,7 +316,8 @@ export default function CustomerShow({
                                 <div key={document.id} className="flex items-center justify-between gap-4 px-6 py-4">
                                     <div className="min-w-0">
                                         <p className="truncate text-sm font-semibold">{document.filename}</p>
-                                        <p className="mt-1 text-xs text-muted">{document.mime_type} · {document.size_bytes} bytes · {formatDate(document.created_at)}</p>
+                                        <p className="mt-1 text-xs capitalize text-muted">{document.document_type?.replace('_', ' ') ?? 'other'} · {document.mime_type} · {document.size_bytes} bytes · {formatDate(document.created_at)}</p>
+                                        {document.retention_until && <p className="mt-1 text-xs text-muted">Retained until {formatDate(document.retention_until)}</p>}
                                     </div>
                                     <a href={document.download_url} className="button-secondary shrink-0" download><Download size={15} /> Download</a>
                                 </div>
