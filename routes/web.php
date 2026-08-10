@@ -97,6 +97,7 @@ Route::middleware(['auth', 'tenant', '2fa'])->group(function (): void {
     Route::get('/billing/invoices', [BillingController::class, 'invoices'])->name('billing.invoices');
     Route::get('/billing/invoices/{invoice:public_id}', [BillingController::class, 'showInvoice'])->name('billing.invoices.show');
     Route::post('/billing/invoices/{invoice:public_id}/issue', [BillingController::class, 'issue'])->name('billing.invoices.issue');
+    Route::post('/billing/invoices/{invoice:public_id}/credit-notes', [BillingController::class, 'creditNote'])->middleware('recent-auth')->name('billing.invoices.credit-notes');
     Route::get('/billing/payments', [BillingController::class, 'payments'])->name('billing.payments');
     Route::get('/billing/payments/{payment:public_id}', [BillingController::class, 'showPayment'])->name('billing.payments.show');
     Route::get('/billing/shifts', [CashShiftOperationsController::class, 'index'])->name('billing.shifts');

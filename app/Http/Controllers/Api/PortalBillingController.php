@@ -18,12 +18,14 @@ final class PortalBillingController extends Controller
         $customer = $request->attributes->get('portal_customer');
         abort_unless($customer instanceof Customer, 401);
 
-        $invoices = Invoice::query()->where('customer_id', $customer->id)->with('lines')->latest('issued_at')->limit(20)->get()->map(fn (Invoice $invoice): array => [
+        $invoices = Invoice::query()->where('customer_id', $customer->id)->with(['lines', 'creditNotes'])->latest('issued_at')->limit(20)->get()->map(fn (Invoice $invoice): array => [
             'id' => $invoice->public_id,
             'number' => $invoice->number,
             'status' => $invoice->status->value,
             'currency' => $invoice->currency,
             'total_amount' => $invoice->total_amount,
+            'credited_amount' => $invoice->creditNotes->where('status', 'issued')->sum('amount'),
+            'outstanding_amount' => max(0, $invoice->total_amount - $invoice->creditNotes->where('status', 'issued')->sum('amount')),
             'due_at' => $invoice->due_at?->toIso8601String(),
             'issued_at' => $invoice->issued_at?->toIso8601String(),
             'lines' => $invoice->lines->map(fn (InvoiceLine $line): array => ['description' => $line->description, 'amount' => $line->total_amount, 'currency' => $line->currency])->values(),

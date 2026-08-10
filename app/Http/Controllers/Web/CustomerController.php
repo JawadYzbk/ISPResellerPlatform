@@ -75,7 +75,7 @@ final class CustomerController extends Controller
         $invoices = Invoice::query()
             ->where('customer_id', $customer->id)
             ->where('status', InvoiceStatus::Issued)
-            ->with('payments.allocations')
+            ->with(['payments.allocations', 'creditNotes'])
             ->latest('issued_at')
             ->get(['id', 'public_id', 'number', 'currency', 'total_amount', 'due_at'])
             ->map(function (Invoice $invoice): array {
@@ -84,13 +84,14 @@ final class CustomerController extends Controller
                     ->sum(fn ($payment): int => $payment->allocations
                         ->where('invoice_id', $invoice->id)
                         ->sum('amount'));
+                $credited = $invoice->creditNotes->sum('amount');
 
                 return [
                     'public_id' => $invoice->public_id,
                     'number' => $invoice->number,
                     'currency' => $invoice->currency,
                     'total_amount' => $invoice->total_amount,
-                    'outstanding_amount' => max(0, $invoice->total_amount - $allocated),
+                    'outstanding_amount' => max(0, $invoice->total_amount - $allocated - $credited),
                     'due_at' => $invoice->due_at?->toIso8601String(),
                 ];
             })

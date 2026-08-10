@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Web;
 
 use App\Actions\GetInvoiceDetails;
 use App\Actions\GetPaymentDetails;
+use App\Actions\IssueCreditNote;
 use App\Actions\IssueInvoice;
 use App\Actions\ListInvoices;
 use App\Actions\ListPayments;
@@ -13,9 +14,11 @@ use App\Models\Invoice;
 use App\Models\Payment;
 use App\Models\PaymentAllocation;
 use App\Models\User;
+use DomainException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -36,6 +39,7 @@ final class BillingController extends Controller
             $allocated = $invoice->payments->sum(fn (Payment $payment): int => $payment->allocations
                 ->where('invoice_id', $invoice->id)
                 ->sum('amount'));
+            $credited = $invoice->creditNotes->sum('amount');
 
             return [
                 'public_id' => $invoice->public_id,
@@ -46,7 +50,8 @@ final class BillingController extends Controller
                 'tax_amount' => $invoice->tax_amount,
                 'total_amount' => $invoice->total_amount,
                 'allocated_amount' => $allocated,
-                'outstanding_amount' => max(0, $invoice->total_amount - $allocated),
+                'credited_amount' => $credited,
+                'outstanding_amount' => max(0, $invoice->total_amount - $allocated - $credited),
                 'due_at' => $invoice->due_at?->toIso8601String(),
                 'issued_at' => $invoice->issued_at?->toIso8601String(),
                 'customer' => [
@@ -81,11 +86,13 @@ final class BillingController extends Controller
 
     public function showInvoice(Request $request, Invoice $invoice, GetInvoiceDetails $getDetails): Response
     {
-        abort_unless($request->user()?->can('billing.invoices.view') === true, 403);
+        $user = $request->user();
+        abort_unless($user instanceof User && $user->can('billing.invoices.view'), 403);
         $invoice = $getDetails->handle($invoice);
         $allocated = $invoice->payments->sum(fn (Payment $payment): int => $payment->allocations
             ->where('invoice_id', $invoice->id)
             ->sum('amount'));
+        $credited = $invoice->creditNotes->sum('amount');
 
         return Inertia::render('Billing/InvoiceShow', [
             'invoice' => [
@@ -97,7 +104,8 @@ final class BillingController extends Controller
                 'tax_amount' => $invoice->tax_amount,
                 'total_amount' => $invoice->total_amount,
                 'allocated_amount' => $allocated,
-                'outstanding_amount' => max(0, $invoice->total_amount - $allocated),
+                'credited_amount' => $credited,
+                'outstanding_amount' => max(0, $invoice->total_amount - $allocated - $credited),
                 'due_at' => $invoice->due_at?->toIso8601String(),
                 'issued_at' => $invoice->issued_at?->toIso8601String(),
                 'voided_at' => $invoice->voided_at?->toIso8601String(),
@@ -125,8 +133,32 @@ final class BillingController extends Controller
                     'received_at' => $payment->received_at?->toIso8601String(),
                     'collector' => $payment->actor?->name,
                 ])->values(),
+                'credit_notes' => $invoice->creditNotes->map(fn ($note): array => [
+                    'public_id' => $note->public_id,
+                    'number' => $note->number,
+                    'amount' => $note->amount,
+                    'currency' => $note->currency,
+                    'reason' => $note->reason,
+                    'issued_at' => $note->issued_at?->toIso8601String(),
+                    'creator' => $note->creator?->name,
+                ])->values(),
             ],
+            'canCredit' => $user->can('billing.adjustments.create') && $invoice->status->value === 'issued',
         ]);
+    }
+
+    public function creditNote(Request $request, Invoice $invoice, IssueCreditNote $issue): RedirectResponse
+    {
+        $user = $request->user();
+        abort_unless($user instanceof User && $user->can('billing.adjustments.create'), 403);
+        $validated = $request->validate(['amount' => ['required', 'integer', 'min:1'], 'reason' => ['required', 'string', 'max:2000']]);
+        try {
+            $note = $issue->handle($invoice, (int) $validated['amount'], (string) $validated['reason'], $user);
+        } catch (DomainException $exception) {
+            throw ValidationException::withMessages(['amount' => $exception->getMessage()]);
+        }
+
+        return redirect()->route('billing.invoices.show', $invoice->public_id)->with('success', "Credit note {$note->number} issued.");
     }
 
     public function payments(Request $request, ListPayments $listPayments): Response

@@ -6,6 +6,7 @@ use App\Contracts\Action;
 use App\Domain\Payments\PaymentGateway;
 use App\Domain\Payments\PaymentIntentResult;
 use App\Enums\InvoiceStatus;
+use App\Models\CreditNote;
 use App\Models\Customer;
 use App\Models\Invoice;
 use App\Models\PaymentAllocation;
@@ -30,7 +31,8 @@ final readonly class CreatePortalPaymentIntent implements Action
     private function remaining(Invoice $invoice): int
     {
         $allocated = (int) PaymentAllocation::query()->where('invoice_id', $invoice->id)->sum('amount');
+        $credited = (int) CreditNote::query()->where('invoice_id', $invoice->id)->where('status', 'issued')->sum('amount');
 
-        return max(0, $invoice->total_amount - $allocated);
+        return max(0, $invoice->total_amount - $allocated - $credited);
     }
 }

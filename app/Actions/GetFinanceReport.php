@@ -5,6 +5,7 @@ namespace App\Actions;
 use App\Contracts\Action;
 use App\Enums\InvoiceStatus;
 use App\Enums\PaymentStatus;
+use App\Models\CreditNote;
 use App\Models\Customer;
 use App\Models\Invoice;
 use App\Models\Payment;
@@ -25,7 +26,12 @@ final readonly class GetFinanceReport implements Action
     {
         $invoices = Invoice::query()->where('status', InvoiceStatus::Issued)->whereBetween('issued_at', [$from->startOfDay(), $to->endOfDay()]);
         $payments = Payment::query()->where('status', PaymentStatus::Posted)->whereBetween('received_at', [$from->startOfDay(), $to->endOfDay()]);
-        $invoicedByCurrency = $invoices->clone()->selectRaw('currency, SUM(total_amount) as total')->groupBy('currency')->pluck('total', 'currency')->map(fn ($value): int => (int) $value)->all();
+        $grossInvoicedByCurrency = $invoices->clone()->selectRaw('currency, SUM(total_amount) as total')->groupBy('currency')->pluck('total', 'currency')->map(fn ($value): int => (int) $value)->all();
+        $creditedByCurrency = CreditNote::query()->where('status', 'issued')->whereBetween('issued_at', [$from->startOfDay(), $to->endOfDay()])->selectRaw('currency, SUM(amount) as total')->groupBy('currency')->pluck('total', 'currency')->map(fn ($value): int => (int) $value)->all();
+        $invoicedByCurrency = [];
+        foreach (array_unique([...array_keys($grossInvoicedByCurrency), ...array_keys($creditedByCurrency)]) as $currency) {
+            $invoicedByCurrency[$currency] = max(0, ($grossInvoicedByCurrency[$currency] ?? 0) - ($creditedByCurrency[$currency] ?? 0));
+        }
         $collectedByCurrency = $payments->clone()->selectRaw('currency, SUM(amount) as total')->groupBy('currency')->pluck('total', 'currency')->map(fn ($value): int => (int) $value)->all();
         $collectionRates = [];
         foreach (array_unique([...array_keys($invoicedByCurrency), ...array_keys($collectedByCurrency)]) as $currency) {
@@ -48,6 +54,7 @@ final readonly class GetFinanceReport implements Action
             'invoice_count' => (int) $invoices->count(),
             'payment_count' => (int) $payments->count(),
             'invoiced_by_currency' => $invoicedByCurrency,
+            'credited_by_currency' => $creditedByCurrency,
             'collected_by_currency' => $collectedByCurrency,
             'collection_rate_by_currency' => $collectionRates,
             'aging_by_currency' => $aging['aging_by_currency'],
@@ -221,11 +228,19 @@ final readonly class GetFinanceReport implements Action
             ->groupBy('invoice_id')
             ->pluck('total', 'invoice_id')
             ->map(fn ($value): int => (int) $value);
+        $credited = CreditNote::query()
+            ->whereIn('invoice_id', $invoices->pluck('id'))
+            ->where('status', 'issued')
+            ->where('issued_at', '<=', $asOf->endOfDay())
+            ->selectRaw('invoice_id, SUM(amount) as total')
+            ->groupBy('invoice_id')
+            ->pluck('total', 'invoice_id')
+            ->map(fn ($value): int => (int) $value);
         $buckets = [];
         $outstanding = [];
 
         foreach ($invoices as $invoice) {
-            $amount = max(0, $invoice->total_amount - (int) ($allocated[$invoice->id] ?? 0));
+            $amount = max(0, $invoice->total_amount - (int) ($allocated[$invoice->id] ?? 0) - (int) ($credited[$invoice->id] ?? 0));
             if ($amount === 0) {
                 continue;
             }

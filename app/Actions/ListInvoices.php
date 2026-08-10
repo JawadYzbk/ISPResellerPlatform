@@ -16,7 +16,7 @@ final readonly class ListInvoices implements Action
         return Invoice::query()
             ->with(['customer', 'payments' => fn ($query) => $query
                 ->where('status', PaymentStatus::Posted)
-                ->with('allocations')])
+                ->with('allocations'), 'creditNotes' => fn ($query) => $query->where('status', 'issued')])
             ->when($status, fn (Builder $query) => $query->where('status', $status))
             ->when($search, function (Builder $query) use ($search): void {
                 $term = trim($search);

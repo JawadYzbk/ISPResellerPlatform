@@ -24,6 +24,9 @@ final readonly class VoidInvoice implements Action
                 throw new DomainException('The invoice is already void.');
             }
             if ($invoice->status === InvoiceStatus::Issued) {
+                if ($invoice->creditNotes()->where('status', 'issued')->exists()) {
+                    throw new DomainException('An invoice with issued credit notes cannot be voided.');
+                }
                 $receivable = LedgerAccount::query()->where('code', '1100')->firstOrFail();
                 $revenue = LedgerAccount::query()->where('code', '4000')->firstOrFail();
                 $this->journal->post(

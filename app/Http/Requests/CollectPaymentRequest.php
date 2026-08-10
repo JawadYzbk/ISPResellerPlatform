@@ -50,7 +50,7 @@ final class CollectPaymentRequest extends FormRequest
             $invoice = Invoice::query()
                 ->where('public_id', $invoiceId)
                 ->where('customer_id', $customer->id)
-                ->with('payments.allocations')
+                ->with(['payments.allocations', 'creditNotes'])
                 ->first();
             if (! $invoice instanceof Invoice) {
                 return;
@@ -59,7 +59,8 @@ final class CollectPaymentRequest extends FormRequest
             $allocated = $invoice->payments->sum(fn ($payment): int => $payment->allocations
                 ->where('invoice_id', $invoice->id)
                 ->sum('amount'));
-            $outstanding = max(0, $invoice->total_amount - $allocated);
+            $credited = $invoice->creditNotes->where('status', 'issued')->sum('amount');
+            $outstanding = max(0, $invoice->total_amount - $allocated - $credited);
 
             if ((int) $this->input('amount') > $outstanding) {
                 $validator->errors()->add('amount', 'The payment cannot exceed the selected invoice balance.');

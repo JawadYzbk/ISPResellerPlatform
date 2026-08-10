@@ -14,6 +14,7 @@ final readonly class GetInvoiceDetails implements Action
             'lines.plan',
             'lines.service',
             'payments' => fn ($query) => $query->where('status', 'posted')->with(['actor', 'allocations']),
+            'creditNotes' => fn ($query) => $query->where('status', 'issued')->with('creator'),
         ]);
     }
 }
