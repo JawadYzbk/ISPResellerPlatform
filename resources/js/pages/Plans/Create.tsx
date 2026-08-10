@@ -37,6 +37,7 @@ export default function PlanCreate() {
                     <div><label className="field-label" htmlFor="effective_from">Price effective from</label><input id="effective_from" type="date" className="field" value={form.data.effective_from} onChange={(event) => form.setData('effective_from', event.target.value)} />{form.errors.effective_from && <p className="field-error">{form.errors.effective_from}</p>}</div>
                 </div>
                 <div><label className="field-label" htmlFor="status">Plan status</label><select id="status" className="field" value={form.data.status} onChange={(event) => form.setData('status', event.target.value)}><option value="active">Active</option><option value="inactive">Inactive</option></select></div>
+                <div className="flex items-center gap-2 rounded-xl border border-line bg-sand/40 p-4 text-sm text-muted"><Tags size={17} className="text-brand" /> Router rate-limit preview: <code className="font-semibold text-ink">{form.data.upload_kbps || '0'}k/{form.data.download_kbps || '0'}k</code></div>
                 <div className="flex items-center gap-2 rounded-xl border border-line bg-sand/40 p-4 text-sm text-muted"><Tags size={17} className="text-brand" /> Prices are stored as integer minor units with an effective date.</div>
                 <div className="flex justify-end gap-3 border-t border-line pt-5"><Link href="/plans" className="button-secondary">Cancel</Link><button className="button-primary" disabled={form.processing}><Save size={16} /> Create plan</button></div>
             </form>
