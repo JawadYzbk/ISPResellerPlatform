@@ -25,6 +25,8 @@ The current foundation is live:
 - Capability catalog, invitations, tenant isolation, audit events and API tokens
 - Legacy `admin` accounts are reconciled to a full tenant role by the capability seeder; local web 2FA remains opt-in through `SECURITY_ENFORCE_TWO_FACTOR`
 - Historical FX conversion, double-entry ledger, invoices, payments, cash-shift reconciliation and billing runs
+- Multi-currency collection with inverse-rate lookup, payment FX snapshots, approved override reasons, references and overpayment credit
+- Immediate or next-renewal service plan changes with prorated ledger credit/charge entries and queued RouterOS/RADIUS rate synchronization
 - Payment-driven renewal, scheduled overdue suspension and post-commit network command outbox
 - Message templates, provider delivery jobs, tickets, work orders and serialized inventory
 - Idempotent customer welcome, payment receipt, expiry, suspension and reactivation notifications with channel selection, opt-out handling, provider fallback and scoped outage broadcasts
