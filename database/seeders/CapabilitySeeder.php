@@ -59,14 +59,12 @@ class CapabilitySeeder extends Seeder
                 foreach (self::ROLE_PERMISSIONS as $roleName => $permissions) {
                     $role = Role::findOrCreate($roleName, 'web');
                     $role->syncPermissions($permissions);
-
-                    if ($roleName === 'admin') {
-                        User::query()
-                            ->where('tenant_id', $tenant->id)
-                            ->where('role', 'admin')
-                            ->each(fn (User $user): mixed => $user->assignRole('admin'));
-                    }
                 }
+
+                User::query()
+                    ->where('tenant_id', $tenant->id)
+                    ->whereIn('role', array_keys(self::ROLE_PERMISSIONS))
+                    ->each(fn (User $user): mixed => $user->assignRole((string) $user->role));
             });
         });
     }

@@ -44,3 +44,16 @@ it('reconciles a legacy admin account with the full tenant role', function (): v
         ->and($admin->can('network.disconnect'))->toBeTrue()
         ->and($admin->requiresTwoFactor())->toBeTrue();
 });
+
+it('reconciles the role column for existing tenant owners', function (): void {
+    $tenant = Tenant::create(['name' => 'North', 'slug' => 'north', 'base_currency' => 'USD', 'collection_currency' => 'USD']);
+    $owner = User::create(['tenant_id' => $tenant->id, 'name' => 'Owner', 'email' => 'tenant-owner@example.test', 'password' => 'password', 'role' => 'tenant_owner']);
+
+    app(CapabilitySeeder::class)->run();
+    app(Tenancy::class)->set($tenant);
+
+    expect($owner->refresh()->hasRole('tenant_owner'))->toBeTrue()
+        ->and($owner->can('customers.view'))->toBeTrue()
+        ->and($owner->can('settings.manage'))->toBeTrue()
+        ->and($owner->can('partners.manage'))->toBeTrue();
+});
