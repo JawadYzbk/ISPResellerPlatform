@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Domain\Money\ExchangeRateProvider;
+use App\Domain\Money\FrankfurterExchangeRateProvider;
 use App\Domain\Network\MikrotikSubscriberReader;
 use App\Domain\Network\SubscriberReader;
 use App\Domain\Network\SubscriberWriter;
@@ -38,6 +40,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(SubscriberReader::class, MikrotikSubscriberReader::class);
         $this->app->bind(SubscriberWriter::class, MikrotikSubscriberReader::class);
         $this->app->bind(PaymentGateway::class, NullPaymentGateway::class);
+        $this->app->bind(ExchangeRateProvider::class, FrankfurterExchangeRateProvider::class);
     }
 
     /**
