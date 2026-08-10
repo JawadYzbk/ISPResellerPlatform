@@ -89,6 +89,12 @@ class Customer extends Model
         return $this->hasMany(Ticket::class);
     }
 
+    /** @return HasMany<MediaUpload, $this> */
+    public function mediaUploads(): HasMany
+    {
+        return $this->hasMany(MediaUpload::class);
+    }
+
     public function getFullNameAttribute(): string
     {
         return trim($this->first_name.' '.$this->last_name);

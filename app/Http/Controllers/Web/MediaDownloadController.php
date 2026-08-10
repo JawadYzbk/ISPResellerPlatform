@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Web;
 use App\Http\Controllers\Controller;
 use App\Models\MediaUpload;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -17,8 +18,15 @@ final class MediaDownloadController extends Controller
         abort_unless($user instanceof User && $user->can('workorders.complete'), 403);
         $upload = MediaUpload::query()
             ->where('public_id', $media)
-            ->whereNotNull('work_order_id')
+            ->where(function (Builder $query): void {
+                $query->whereNotNull('work_order_id')->orWhereNotNull('customer_id');
+            })
             ->firstOrFail();
+        if ($upload->customer_id !== null) {
+            abort_unless($user->can('customers.view'), 403);
+        } else {
+            abort_unless($user->can('workorders.complete'), 403);
+        }
         abort_unless(Storage::disk($upload->disk)->exists($upload->path), 404);
 
         return Storage::disk($upload->disk)->download($upload->path, $upload->original_name, [

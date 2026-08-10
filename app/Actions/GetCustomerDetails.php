@@ -4,6 +4,7 @@ namespace App\Actions;
 
 use App\Contracts\Action;
 use App\Models\Customer;
+use App\Models\MediaUpload;
 
 final readonly class GetCustomerDetails implements Action
 {
@@ -18,6 +19,7 @@ final readonly class GetCustomerDetails implements Action
             'invoices' => fn ($query) => $query->latest('issued_at')->limit(20),
             'payments' => fn ($query) => $query->latest('received_at')->limit(20),
             'tickets' => fn ($query) => $query->latest('updated_at')->limit(10),
+            'mediaUploads' => fn ($query) => $query->where('purpose', 'document')->latest(),
         ]);
 
         $timeline = collect([
@@ -103,6 +105,14 @@ final readonly class GetCustomerDetails implements Action
                 'status' => $ticket->status->value,
                 'due_at' => $ticket->due_at?->toIso8601String(),
                 'updated_at' => $ticket->updated_at?->toIso8601String(),
+            ])->values()->all(),
+            'documents' => $customer->mediaUploads->map(fn (MediaUpload $media): array => [
+                'id' => $media->public_id,
+                'filename' => $media->original_name,
+                'mime_type' => $media->mime_type,
+                'size_bytes' => $media->size_bytes,
+                'created_at' => $media->created_at?->toIso8601String(),
+                'download_url' => route('operations.media.download', $media->public_id),
             ])->values()->all(),
             'timeline' => $timeline->sortByDesc('created_at')->values()->all(),
         ];

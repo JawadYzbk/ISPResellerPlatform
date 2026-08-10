@@ -10,6 +10,7 @@ use App\Actions\ListCustomers;
 use App\Actions\ListCustomerSavedViews;
 use App\Actions\RecordPayment;
 use App\Actions\SaveCustomerView;
+use App\Actions\StoreMediaUpload;
 use App\Actions\UpdateCustomer;
 use App\Enums\InvoiceStatus;
 use App\Enums\PaymentStatus;
@@ -25,6 +26,7 @@ use App\Models\User;
 use App\Models\Zone;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -65,6 +67,21 @@ final class CustomerController extends Controller
         $updateCustomer->handle($customer, $request);
 
         return redirect()->route('customers.show', $customer->public_id)->with('success', 'Customer updated.');
+    }
+
+    public function storeDocument(Request $request, Customer $customer, StoreMediaUpload $store): RedirectResponse
+    {
+        $this->authorize('update', $customer);
+        $user = $request->user();
+        abort_unless($user instanceof User && $user->can('customers.update'), 403);
+        $request->validate([
+            'file' => ['required', 'file', 'max:20480', 'mimetypes:application/pdf,image/jpeg,image/png,image/webp'],
+        ]);
+        $file = $request->file('file');
+        abort_unless($file instanceof UploadedFile, 422, 'A document file is required.');
+        $store->handle($file, $user, null, 'document', $customer);
+
+        return redirect()->route('customers.show', $customer->public_id)->with('success', 'Customer document uploaded.');
     }
 
     public function createPayment(Request $request, Customer $customer): Response

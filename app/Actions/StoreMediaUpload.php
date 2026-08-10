@@ -3,6 +3,7 @@
 namespace App\Actions;
 
 use App\Contracts\Action;
+use App\Models\Customer;
 use App\Models\MediaUpload;
 use App\Models\User;
 use App\Models\WorkOrder;
@@ -14,11 +15,17 @@ use RuntimeException;
 
 final readonly class StoreMediaUpload implements Action
 {
-    public function handle(UploadedFile $file, User $actor, ?WorkOrder $workOrder = null, string $purpose = 'evidence'): MediaUpload
+    public function handle(UploadedFile $file, User $actor, ?WorkOrder $workOrder = null, string $purpose = 'evidence', ?Customer $customer = null): MediaUpload
     {
         $tenantId = app(Tenancy::class)->requireId();
+        if ($workOrder !== null && $customer !== null) {
+            throw new \LogicException('A media upload cannot target both a work order and a customer.');
+        }
         if ($workOrder !== null && (int) $workOrder->tenant_id !== $tenantId) {
             throw new \LogicException('The work order does not belong to the active tenant.');
+        }
+        if ($customer !== null && (int) $customer->tenant_id !== $tenantId) {
+            throw new \LogicException('The customer does not belong to the active tenant.');
         }
         $publicId = (string) Str::ulid();
         $extension = $file->guessExtension() ?: 'bin';
@@ -33,6 +40,7 @@ final readonly class StoreMediaUpload implements Action
             return MediaUpload::create([
                 'tenant_id' => $tenantId,
                 'uploaded_by_id' => $actor->id,
+                'customer_id' => $customer?->id,
                 'work_order_id' => $workOrder?->id,
                 'public_id' => $publicId,
                 'disk' => $disk,

@@ -11,7 +11,7 @@ class MediaUpload extends Model
 {
     use BelongsToTenant;
 
-    protected $fillable = ['tenant_id', 'uploaded_by_id', 'work_order_id', 'public_id', 'disk', 'path', 'original_name', 'mime_type', 'size_bytes', 'sha256', 'purpose'];
+    protected $fillable = ['tenant_id', 'uploaded_by_id', 'customer_id', 'work_order_id', 'public_id', 'disk', 'path', 'original_name', 'mime_type', 'size_bytes', 'sha256', 'purpose'];
 
     protected $hidden = ['path', 'sha256'];
 
@@ -31,6 +31,12 @@ class MediaUpload extends Model
     public function uploader(): BelongsTo
     {
         return $this->belongsTo(User::class, 'uploaded_by_id');
+    }
+
+    /** @return BelongsTo<Customer, $this> */
+    public function customer(): BelongsTo
+    {
+        return $this->belongsTo(Customer::class);
     }
 
     /** @return BelongsTo<WorkOrder, $this> */
