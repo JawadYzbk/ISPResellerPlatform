@@ -31,7 +31,7 @@ it('records collector batches with per-item success and error results', function
         ['customer_id' => $second->public_id, 'amount' => 250, 'currency' => 'USD', 'method' => 'cash', 'idempotency_key' => 'batch-004'],
     ];
 
-    $response = $this->withToken($token)->withHeader('X-Idempotency-Key', 'collector-request-001')->postJson('/api/v1/collector/payments/batch', ['items' => $items]);
+    $response = $this->withToken($token)->withHeader('X-Idempotency-Key', 'collector-request-001')->postJson('/api/v1/collector/payments', ['items' => $items]);
 
     $response->assertOk()->assertJsonCount(4, 'results');
     expect($response->json('results.0.status'))->toBe('ok')
