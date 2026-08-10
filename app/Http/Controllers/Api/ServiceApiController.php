@@ -202,7 +202,16 @@ final class ServiceApiController extends Controller
                 throw new DomainException('The renewal preview is invalid or expired.');
             }
 
-            $service->loadMissing('customer');
+            $service->loadMissing(['customer', 'plan']);
+            $price = $service->plan?->priceAt();
+            if (
+                (int) ($preview['plan_id'] ?? 0) !== $service->plan_id
+                || $price === null
+                || (int) ($preview['amount'] ?? 0) !== $price->amount_minor * $periods
+                || strtoupper((string) ($preview['currency'] ?? '')) !== strtoupper($price->currency)
+            ) {
+                throw new DomainException('The renewal preview no longer matches the current plan price.');
+            }
             $invoice = $createRenewalInvoice->handle($service->customer, $service, $request->user(), $periods);
 
             return response()->json([
