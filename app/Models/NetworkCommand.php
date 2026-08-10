@@ -3,10 +3,15 @@
 namespace App\Models;
 
 use App\Models\Concerns\BelongsToTenant;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-/** @property int $desired_state_version */
+/**
+ * @property int $desired_state_version
+ * @property int $attempts
+ * @property Carbon|null $completed_at
+ */
 class NetworkCommand extends Model
 {
     use BelongsToTenant;

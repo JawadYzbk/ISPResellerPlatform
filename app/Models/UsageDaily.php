@@ -3,9 +3,16 @@
 namespace App\Models;
 
 use App\Models\Concerns\BelongsToTenant;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @property Carbon $usage_date
+ * @property int $input_octets
+ * @property int $output_octets
+ * @property int $total_octets
+ */
 class UsageDaily extends Model
 {
     use BelongsToTenant;

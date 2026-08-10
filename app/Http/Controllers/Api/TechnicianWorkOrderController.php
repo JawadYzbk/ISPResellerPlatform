@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\Api;
 
 use App\Actions\CompleteWorkOrder;
+use App\Actions\GetTechnicianServiceDiagnostics;
 use App\Enums\WorkOrderStatus;
 use App\Http\Controllers\Controller;
+use App\Models\Service;
 use App\Models\WorkOrder;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
@@ -13,6 +15,14 @@ use Illuminate\Validation\Rule;
 
 final class TechnicianWorkOrderController extends Controller
 {
+    public function diagnostics(Request $request, string $service, GetTechnicianServiceDiagnostics $diagnostics): JsonResponse
+    {
+        abort_unless($request->user()?->can('services.view'), 403);
+        $model = Service::query()->where('public_id', $service)->firstOrFail();
+
+        return response()->json($diagnostics->handle($model));
+    }
+
     public function index(Request $request): JsonResponse
     {
         $this->ensureTechnician($request);
