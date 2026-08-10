@@ -86,6 +86,7 @@ final readonly class GetCustomerDetails implements Action
                     'quota_bytes' => (int) ($service->plan?->metadata['quota_bytes'] ?? 0),
                 ],
                 'equipment' => $service->assignedInventoryUnits->map(fn (InventoryUnit $unit): array => [
+                    'id' => $unit->id,
                     'serial_number' => $unit->serial_number,
                     'status' => $unit->status,
                     'assigned_at' => $unit->assigned_at?->toIso8601String(),

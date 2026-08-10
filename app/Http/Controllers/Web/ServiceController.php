@@ -6,18 +6,22 @@ use App\Actions\CreateService;
 use App\Actions\EnqueueNetworkCommand;
 use App\Actions\GetTechnicianServiceDiagnostics;
 use App\Actions\ListServices;
+use App\Actions\ReturnInventoryUnit;
 use App\Actions\TransitionService;
 use App\Enums\ServiceStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\CreateServiceRequest;
 use App\Models\CurrentSession;
 use App\Models\Customer;
+use App\Models\InventoryUnit;
 use App\Models\Plan;
 use App\Models\Router;
 use App\Models\Service;
 use App\Models\User;
+use DomainException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -45,6 +49,7 @@ final class ServiceController extends Controller
                     'quota_bytes' => (int) ($service->plan?->metadata['quota_bytes'] ?? 0),
                 ],
                 'equipment' => $service->assignedInventoryUnits->map(fn ($unit): array => [
+                    'id' => $unit->id,
                     'serial_number' => $unit->serial_number,
                     'assigned_at' => $unit->assigned_at?->toIso8601String(),
                     'item' => $unit->item?->only(['sku', 'name']),
@@ -156,6 +161,21 @@ final class ServiceController extends Controller
         $enqueue->handle($service, 'disconnect', $payload);
 
         return $this->redirectToCustomer($service, 'Current network session disconnect queued.');
+    }
+
+    public function returnEquipment(Request $request, Service $service, InventoryUnit $unit, ReturnInventoryUnit $return): RedirectResponse
+    {
+        $this->authorize('view', $service);
+        $user = $request->user();
+        abort_unless($user instanceof User && $user->can('inventory.assign'), 403);
+
+        try {
+            $return->handle($unit, $service, $user);
+        } catch (DomainException $exception) {
+            throw ValidationException::withMessages(['unit' => $exception->getMessage()]);
+        }
+
+        return $this->redirectToCustomer($service, "Equipment {$unit->serial_number} marked returned.");
     }
 
     private function redirectToCustomer(Service $service, string $message): RedirectResponse

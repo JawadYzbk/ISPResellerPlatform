@@ -313,6 +313,7 @@ final class CustomerController extends Controller
             'canTerminateServices' => $request->user()?->can('services.terminate') === true,
             'canDisconnectSessions' => $request->user()?->can('network.disconnect') === true,
             'canForceResumeServices' => $request->user()?->can('services.force_resume') === true,
+            'canManageEquipment' => $request->user()?->can('inventory.assign') === true,
         ]);
     }
 
