@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Api;
 
 use App\Actions\ChangeServicePlan;
+use App\Actions\CreateRenewalInvoice;
 use App\Actions\EnqueueNetworkCommand;
 use App\Actions\ListServicesApi;
 use App\Actions\PreviewServicePlanChange;
+use App\Actions\PreviewServiceRenewal;
 use App\Actions\TransitionService;
 use App\Enums\ServiceStatus;
 use App\Http\Controllers\Controller;
@@ -16,9 +18,13 @@ use App\Models\Service;
 use App\Models\User;
 use App\Support\Api\NetworkCommandApiResource;
 use App\Support\Api\ServiceApiResource;
+use App\Support\Tenancy;
 use DomainException;
+use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Crypt;
+use JsonException;
 
 final class ServiceApiController extends Controller
 {
@@ -157,6 +163,60 @@ final class ServiceApiController extends Controller
             'plan_id' => $plan->public_id,
             'command_id' => $command?->public_id,
         ], 202);
+    }
+
+    public function renewalPreview(Request $request, string $service, PreviewServiceRenewal $preview): JsonResponse
+    {
+        $service = $this->find($service);
+        $this->authorize('view', $service);
+        $validated = $request->validate(['periods' => ['sometimes', 'integer', 'min:1', 'max:12']]);
+
+        try {
+            return response()->json($preview->handle($service, (int) ($validated['periods'] ?? 1)));
+        } catch (DomainException $exception) {
+            return response()->json(['message' => $exception->getMessage()], 422);
+        }
+    }
+
+    public function renewal(Request $request, string $service, CreateRenewalInvoice $createRenewalInvoice): JsonResponse
+    {
+        $service = $this->find($service);
+        $this->authorize('view', $service);
+        $validated = $request->validate([
+            'preview_id' => ['required', 'string'],
+            'periods' => ['required', 'integer', 'min:1', 'max:12'],
+        ]);
+
+        try {
+            $preview = json_decode(Crypt::decryptString((string) $validated['preview_id']), true, 512, JSON_THROW_ON_ERROR);
+            $tenantId = app(Tenancy::class)->requireId();
+            $periods = (int) $validated['periods'];
+            if (
+                ! is_array($preview)
+                || (int) ($preview['tenant_id'] ?? 0) !== $tenantId
+                || (int) ($preview['service_id'] ?? 0) !== $service->id
+                || (string) ($preview['service_public_id'] ?? '') !== $service->public_id
+                || (int) ($preview['periods'] ?? 0) !== $periods
+                || (int) ($preview['expires_at'] ?? 0) < now()->timestamp
+            ) {
+                throw new DomainException('The renewal preview is invalid or expired.');
+            }
+
+            $service->loadMissing('customer');
+            $invoice = $createRenewalInvoice->handle($service->customer, $service, $request->user(), $periods);
+
+            return response()->json([
+                'service_id' => $service->public_id,
+                'invoice_id' => $invoice->public_id,
+                'invoice_number' => $invoice->number,
+                'status' => 'invoice_issued',
+                'amount' => $invoice->total_amount,
+                'currency' => $invoice->currency,
+                'periods' => $periods,
+            ], 202);
+        } catch (DecryptException|DomainException|JsonException $exception) {
+            return response()->json(['message' => $exception instanceof DomainException ? $exception->getMessage() : 'The renewal preview is invalid or expired.'], 422);
+        }
     }
 
     /** @param array<string, mixed> $metadata */

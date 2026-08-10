@@ -3,6 +3,7 @@
 use App\Enums\ServiceStatus;
 use App\Models\CurrentSession;
 use App\Models\Customer;
+use App\Models\Invoice;
 use App\Models\NetworkCommand;
 use App\Models\Plan;
 use App\Models\Service;
@@ -124,4 +125,48 @@ it('previews and idempotently applies a service plan change through the operator
     app(Tenancy::class)->set($tenant);
     expect($service->refresh()->plan_id)->toBe($newPlan->id)
         ->and(NetworkCommand::query()->where('service_id', $service->id)->where('action', 'change_plan')->count())->toBe(1);
+});
+
+it('previews and idempotently issues a multi-period renewal invoice through the operator API', function (): void {
+    $tenant = Tenant::create(['name' => 'Northline', 'slug' => 'northline', 'base_currency' => 'USD', 'collection_currency' => 'USD']);
+    app(Tenancy::class)->set($tenant);
+    $user = User::create(['tenant_id' => $tenant->id, 'name' => 'Operations', 'email' => 'service-renewal-api@example.test', 'password' => Hash::make('password'), 'role' => 'operations_manager']);
+    app(CapabilitySeeder::class)->run();
+    $user->assignRole('operations_manager');
+    $customer = Customer::factory()->create(['balance_currency' => 'USD']);
+    $plan = Plan::factory()->create(['amount_minor' => 100, 'duration_days' => 30, 'currency' => 'USD']);
+    $plan->prices()->create(['currency' => 'USD', 'amount_minor' => 100, 'effective_from' => now()->subDay()]);
+    $service = Service::factory()->for($customer)->for($plan)->create([
+        'status' => ServiceStatus::Active,
+        'expires_at' => now()->addDays(5),
+    ]);
+    $before = $service->expires_at;
+    $token = $user->createToken('service-renewal-api', ['api', 'staff:operator'])->plainTextToken;
+
+    $preview = $this->withToken($token)
+        ->postJson('/api/v1/services/'.$service->public_id.'/renewal-previews', ['periods' => 2])
+        ->assertOk()
+        ->assertJsonPath('service_id', $service->public_id)
+        ->assertJsonPath('plan_id', $plan->public_id)
+        ->assertJsonPath('periods', 2)
+        ->assertJsonPath('amount', 200)
+        ->json('preview_id');
+
+    $headers = ['X-Idempotency-Key' => 'service-renewal-001'];
+    $first = $this->withToken($token)->withHeaders($headers)->postJson('/api/v1/services/'.$service->public_id.'/renewals', ['preview_id' => $preview, 'periods' => 2]);
+    $second = $this->withToken($token)->withHeaders($headers)->postJson('/api/v1/services/'.$service->public_id.'/renewals', ['preview_id' => $preview, 'periods' => 2]);
+
+    $first->assertStatus(202)
+        ->assertJsonPath('service_id', $service->public_id)
+        ->assertJsonPath('status', 'invoice_issued')
+        ->assertJsonPath('amount', 200)
+        ->assertJsonPath('periods', 2);
+    $second->assertStatus(202)->assertJsonPath('invoice_id', $first->json('invoice_id'));
+    app(Tenancy::class)->set($tenant);
+    $invoice = Invoice::query()->where('public_id', $first->json('invoice_id'))->firstOrFail();
+
+    expect(Invoice::count())->toBe(1)
+        ->and($invoice->metadata['renewal_periods'])->toBe(2)
+        ->and($invoice->lines()->firstOrFail()->quantity)->toBe(2)
+        ->and($service->refresh()->expires_at->equalTo($before))->toBeTrue();
 });
