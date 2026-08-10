@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Customer;
+use App\Models\ImportBatch;
 use App\Models\Plan;
 use App\Models\Service;
 use App\Models\Tenant;
@@ -21,13 +22,22 @@ it('imports and rolls back services through the scoped API', function (): void {
     app(CapabilitySeeder::class)->run();
     $user->assignRole('operations_manager');
     $token = $user->createToken('service-importer', ['api', 'staff:operator'])->plainTextToken;
-    $csv = "customer_code,plan_slug,username,status,provisioning_mode,network_state\nCUS-001,home-50,ada.home,active,radius,in_sync";
+    $csv = "customer_code,plan_slug,username,password,status,provisioning_mode,network_state\nCUS-001,home-50,ada.home,do-not-return,active,radius,in_sync";
 
     $response = $this->withToken($token)->postJson('/api/v1/imports/services', ['filename' => 'services.csv', 'csv' => $csv]);
-    $response->assertCreated()->assertJsonPath('type', 'services')->assertJsonPath('successful_rows', 1);
+    $response->assertCreated()
+        ->assertJsonPath('type', 'services')
+        ->assertJsonPath('successful_rows', 1)
+        ->assertJsonMissingPath('report.0.data.password_encrypted')
+        ->assertJsonMissingPath('report.0.data.password')
+        ->assertJsonMissingPath('report.0.data.customer_id')
+        ->assertJsonMissingPath('report.0.data.plan_id')
+        ->assertJsonMissingPath('report.0.service_id');
     app(Tenancy::class)->set($tenant);
     expect(Service::count())->toBe(1)
         ->and(Service::firstOrFail()->customer_id)->toBe($customer->id);
+    $batch = ImportBatch::query()->where('public_id', $response->json('id'))->firstOrFail();
+    expect($batch->report[0]['data'])->not->toHaveKey('password_encrypted');
 
     $this->withToken($token)->postJson('/api/v1/imports/services/'.$response->json('id').'/rollback')
         ->assertOk()

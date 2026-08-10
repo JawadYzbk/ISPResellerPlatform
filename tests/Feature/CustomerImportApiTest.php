@@ -19,7 +19,10 @@ it('runs a customer CSV import and rollback through the API', function (): void 
     $token = $user->createToken('importer', ['api', 'staff:operator'])->plainTextToken;
 
     $response = $this->withToken($token)->postJson('/api/v1/imports/customers', ['filename' => 'customers.csv', 'dry_run' => false, 'csv' => "first_name,phone\nAda,+96170123456"]);
-    $response->assertCreated()->assertJsonPath('status', 'completed')->assertJsonPath('successful_rows', 1);
+    $response->assertCreated()
+        ->assertJsonPath('status', 'completed')
+        ->assertJsonPath('successful_rows', 1)
+        ->assertJsonMissingPath('report.0.customer_id');
     app(Tenancy::class)->set($tenant);
     expect(Customer::count())->toBe(1);
 

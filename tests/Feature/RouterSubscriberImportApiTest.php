@@ -37,6 +37,7 @@ it('imports RouterOS subscribers into a redacted discovery report', function ():
         ->assertJsonPath('successful_rows', 1)
         ->assertJsonPath('failed_rows', 1)
         ->assertJsonPath('report.0.data.username', 'ada.home')
+        ->assertJsonPath('report.0.data.router_id', $router->public_id)
         ->assertJsonMissing(['password' => 'secret-value'])
         ->assertJsonMissing(['password' => 'another-secret']);
 });

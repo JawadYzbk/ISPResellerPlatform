@@ -39,6 +39,11 @@ final readonly class ImportServicesCsv implements Action
                 });
             }
 
+            foreach ($report as &$row) {
+                unset($row['data']['password_encrypted'], $row['data']['password']);
+            }
+            unset($row);
+
             $batch->forceFill([
                 'status' => $dryRun ? 'preview' : 'completed',
                 'successful_rows' => $successful,
