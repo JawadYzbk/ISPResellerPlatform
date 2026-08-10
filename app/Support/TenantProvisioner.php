@@ -45,6 +45,7 @@ final class TenantProvisioner
                 ['code' => '1000', 'name' => 'Cash', 'category' => 'asset', 'normal_balance' => 'debit'],
                 ['code' => '4000', 'name' => 'Service Revenue', 'category' => 'revenue', 'normal_balance' => 'credit'],
                 ['code' => '4900', 'name' => 'FX Gain/Loss', 'category' => 'income', 'normal_balance' => 'credit'],
+                ['code' => '1210', 'name' => 'Partner Wallets', 'category' => 'liability', 'normal_balance' => 'credit'],
             ] as $account) {
                 LedgerAccount::firstOrCreate(['code' => $account['code']], [...$account, 'is_system' => true]);
             }
