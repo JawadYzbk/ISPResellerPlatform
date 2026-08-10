@@ -91,14 +91,14 @@ paths:
         '200': { description: Paginated customer list }
         '401': { description: Unauthenticated }
         '403': { description: Forbidden }
-  /customers/{public_id}:
+  /customers/{customer}:
     get:
       summary: Read one tenant customer
       parameters:
         - in: path
-          name: public_id
+          name: customer
           required: true
-          schema: { type: string }
+          schema: { type: string, description: Customer public ULID }
       responses:
         '200': { description: Customer resource }
         '401': { description: Unauthenticated }
@@ -403,6 +403,33 @@ paths:
       responses:
         '200': { description: Recent invoices, lines and payments }
         '401': { description: Invalid portal session }
+  /portal/{tenant}/payments/intent:
+    post:
+      summary: Create a customer payment intent through the configured gateway
+      parameters:
+        - in: path
+          name: tenant
+          required: true
+          schema: { type: string }
+        - in: header
+          name: X-Idempotency-Key
+          required: true
+          schema: { type: string, maxLength: 120 }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [invoice_id, amount]
+              properties:
+                invoice_id: { type: string, description: Invoice public ULID }
+                amount: { type: integer, minimum: 1, description: Amount in minor currency units }
+      responses:
+        '200': { description: Gateway-specific payment intent payload }
+        '401': { description: Invalid portal session }
+        '404': { description: Invoice not found for this customer }
+        '503': { description: No payment gateway is configured }
   /collector/payments/batch:
     post:
       summary: Record collector payments in a partial-success batch
@@ -545,21 +572,149 @@ paths:
         '200': { description: Rollback result }
         '403': { description: Missing customer capability }
         '409': { description: Import cannot be rolled back safely }
-  /imports/{type}/{import}/rollback:
+  /imports/plans/{import}/rollback:
     post:
-      summary: Roll back an imported plan, service, equipment or balance batch
+      summary: Roll back an imported plan batch
       parameters:
-        - in: path
-          name: type
-          required: true
-          schema: { type: string, enum: [plans, services, equipment, balances] }
         - in: path
           name: import
           required: true
           schema: { type: string }
       responses:
         '200': { description: Rollback result }
-        '403': { description: Missing capability for the imported resource }
+        '403': { description: Missing plan capability }
+        '409': { description: Import cannot be rolled back safely }
+  /imports/services/{import}/rollback:
+    post:
+      summary: Roll back an imported service batch
+      parameters:
+        - in: path
+          name: import
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: Rollback result }
+        '403': { description: Missing service capability }
+        '409': { description: Import cannot be rolled back safely }
+  /imports/equipment/{import}/rollback:
+    post:
+      summary: Roll back an imported equipment batch
+      parameters:
+        - in: path
+          name: import
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: Rollback result }
+        '403': { description: Missing inventory capability }
+        '409': { description: Import cannot be rolled back safely }
+  /imports/balances/{import}/rollback:
+    post:
+      summary: Roll back an imported balance batch
+      parameters:
+        - in: path
+          name: import
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: Reversing journal entries created for the batch }
+        '403': { description: Missing billing adjustment capability }
+        '409': { description: Import cannot be rolled back safely }
+  /imports/routers/{router}/subscribers:
+    post:
+      summary: Discover RouterOS PPP subscribers for an import report
+      parameters:
+        - in: path
+          name: router
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                dry_run: { type: boolean, default: false }
+      responses:
+        '200': { description: Dry-run discovery report }
+        '201': { description: Completed subscriber discovery import }
+        '403': { description: Missing network view capability }
+  /partners/{partner}/catalog:
+    get:
+      summary: Read the effective plan catalog for a visible partner
+      parameters:
+        - in: path
+          name: partner
+          required: true
+          schema: { type: integer }
+      responses:
+        '200': { description: Partner-scoped sell prices and permitted commercial fields }
+        '403': { description: Missing service view capability }
+        '404': { description: Partner not found }
+  /partners/{partner}/settlements:
+    get:
+      summary: List settlements for a visible partner
+      parameters:
+        - in: path
+          name: partner
+          required: true
+          schema: { type: integer }
+      responses:
+        '200': { description: Partner settlement statements }
+        '403': { description: Missing wallet view capability }
+        '404': { description: Partner not found }
+    post:
+      summary: Generate a partner settlement statement
+      parameters:
+        - in: path
+          name: partner
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [period_start, period_end, currency]
+              properties:
+                period_start: { type: string, format: date }
+                period_end: { type: string, format: date }
+                currency: { type: string, minLength: 3, maxLength: 3 }
+      responses:
+        '201': { description: Generated settlement statement }
+        '403': { description: Missing settlement approval capability }
+        '404': { description: Partner not found }
+  /settlements/{settlement}/approve:
+    post:
+      summary: Approve a generated partner settlement
+      parameters:
+        - in: path
+          name: settlement
+          required: true
+          schema: { type: integer }
+      responses:
+        '200': { description: Approved settlement statement }
+        '403': { description: Missing settlement approval capability }
+        '404': { description: Settlement not found or not visible }
+  /settlements/{settlement}/pay:
+    post:
+      summary: Pay an approved partner settlement
+      parameters:
+        - in: path
+          name: settlement
+          required: true
+          schema: { type: integer }
+        - in: header
+          name: X-Idempotency-Key
+          required: true
+          schema: { type: string, maxLength: 120 }
+      responses:
+        '200': { description: Paid settlement statement }
+        '403': { description: Missing settlement approval capability }
+        '404': { description: Settlement not found or not visible }
+        '409': { description: Idempotency key reused for a different request }
         '409': { description: Import cannot be rolled back safely }
   /partners:
     get:
@@ -682,18 +837,40 @@ paths:
       responses:
         '200': { description: Warehouse and serialized unit list }
         '403': { description: Missing technician ability }
-  /technician/services/{public_id}/diagnostics:
+  /technician/services/{service}/diagnostics:
     get:
       summary: Read tenant-scoped service diagnostics
       parameters:
         - in: path
-          name: public_id
+          name: service
           required: true
           schema: { type: string }
       responses:
         '200': { description: Service state, live session, usage and recent command outcomes }
         '403': { description: Missing technician ability }
         '404': { description: Service not found }
+  /webhooks/gateways/{gateway}:
+    post:
+      security: []
+      summary: Receive a signed payment or message gateway webhook
+      parameters:
+        - in: path
+          name: gateway
+          required: true
+          schema: { type: string }
+        - in: header
+          name: X-Webhook-Signature
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, additionalProperties: true }
+      responses:
+        '200': { description: Webhook accepted and processed idempotently }
+        '401': { description: Invalid webhook signature }
+        '422': { description: Invalid webhook body }
 components:
   securitySchemes:
     bearerAuth:
