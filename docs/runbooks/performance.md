@@ -21,6 +21,16 @@ The command measures these production query shapes inside the tenant scope:
 
 It emits p50/p95 timings and the database `EXPLAIN` output. The command exits non-zero if p95 exceeds 200 ms for live sessions or 500 ms for the usage chart. The JSON artifact belongs in the release evidence, not in Git.
 
+## Local scale evidence
+
+On 2026-08-10, the benchmark was run in a disposable PostgreSQL 18.4 cluster with 50,000 services and 4,500,000 daily usage rows:
+
+- `live_sessions`: p50 0.84 ms, p95 2.69 ms, 50 rows; passed the 200 ms threshold.
+- `usage_chart`: p50 1.30 ms, p95 2.62 ms, 90 rows; passed the 500 ms threshold.
+- `EXPLAIN` selected `sessions_current_tenant_id_last_seen_at_index` and `usage_daily_tenant_id_service_id_usage_date_unique`; neither query used a full table scan.
+
+This closes the repository-side scale smoke test only. PostgreSQL 17, a production-shaped connection pool, and a documented cold-cache run are still required before the performance acceptance gate is closed.
+
 ## Evidence review
 
 The reviewer must confirm:
