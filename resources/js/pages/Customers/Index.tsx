@@ -1,4 +1,4 @@
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link, router, useForm } from '@inertiajs/react';
 import { CalendarClock, ChevronLeft, ChevronRight, Filter, Search, SlidersHorizontal, Users } from 'lucide-react';
 import { useState } from 'react';
 
@@ -8,8 +8,9 @@ import { formatDate, formatMoney } from '@/lib/format';
 import type { Customer, PageProps, Paginator } from '@/types';
 
 type Zone = { id: number; name: string; code: string };
-type Props = PageProps & { customers: Paginator<Customer>; filters: { search?: string; status?: string; zone_id?: string; expires_from?: string; expires_to?: string }; zones: Zone[] };
 type ColumnKey = 'zone' | 'services' | 'balance' | 'expiry' | 'status';
+type SavedView = { id: number; name: string; filters: { search?: string; status?: string; zone_id?: string; expires_from?: string; expires_to?: string }; columns: ColumnKey[] };
+type Props = PageProps & { customers: Paginator<Customer>; filters: { search?: string; status?: string; zone_id?: string; expires_from?: string; expires_to?: string }; zones: Zone[]; savedViews: SavedView[] };
 
 const columnOptions: { key: ColumnKey; label: string }[] = [
     { key: 'zone', label: 'Zone' },
@@ -26,7 +27,7 @@ function getNextExpiry(customer: Customer): string | null {
         .sort()[0] ?? null;
 }
 
-export default function CustomersIndex({ customers, filters, zones }: Props) {
+export default function CustomersIndex({ customers, filters, zones, savedViews }: Props) {
     const [search, setSearch] = useState(filters.search ?? '');
     const [status, setStatus] = useState(filters.status ?? '');
     const [zoneId, setZoneId] = useState(filters.zone_id?.toString() ?? '');
@@ -35,6 +36,8 @@ export default function CustomersIndex({ customers, filters, zones }: Props) {
     const [showFilters, setShowFilters] = useState(false);
     const [showColumns, setShowColumns] = useState(false);
     const [visibleColumns, setVisibleColumns] = useState<ColumnKey[]>(columnOptions.map(({ key }) => key));
+    const [selectedViewId, setSelectedViewId] = useState('');
+    const saveViewForm = useForm({ name: '' });
 
     const applyFilters = () => {
         router.get(
@@ -55,6 +58,34 @@ export default function CustomersIndex({ customers, filters, zones }: Props) {
         );
     };
 
+    const applySavedView = () => {
+        const view = savedViews.find((item) => item.id.toString() === selectedViewId);
+        if (!view) return;
+        setSearch(view.filters.search ?? '');
+        setStatus(view.filters.status ?? '');
+        setZoneId(view.filters.zone_id ?? '');
+        setExpiresFrom(view.filters.expires_from ?? '');
+        setExpiresTo(view.filters.expires_to ?? '');
+        setVisibleColumns(view.columns);
+        router.get('/customers', view.filters, { preserveState: true, replace: true });
+    };
+
+    const submitSavedView = (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        saveViewForm.transform(() => ({
+            name: saveViewForm.data.name,
+            filters: {
+                search: search || undefined,
+                status: status || undefined,
+                zone_id: zoneId || undefined,
+                expires_from: expiresFrom || undefined,
+                expires_to: expiresTo || undefined,
+            },
+            columns: visibleColumns,
+        }));
+        saveViewForm.post('/customers/saved-views', { onSuccess: () => saveViewForm.reset() });
+    };
+
     return (
         <AppLayout>
             <Head title="Customers" />
@@ -68,6 +99,23 @@ export default function CustomersIndex({ customers, filters, zones }: Props) {
                     <Users size={17} />
                     Add customer
                 </Link>
+            </div>
+            <div className="card mt-6 flex flex-col gap-4 p-5 lg:flex-row lg:items-end lg:justify-between">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+                    <label className="block min-w-56">
+                        <span className="field-label">Saved view</span>
+                        <select className="field" value={selectedViewId} onChange={(event) => setSelectedViewId(event.target.value)}>
+                            <option value="">Choose a saved view</option>
+                            {savedViews.map((view) => <option key={view.id} value={view.id}>{view.name}</option>)}
+                        </select>
+                    </label>
+                    <button type="button" className="button-secondary" onClick={applySavedView} disabled={!selectedViewId}>Apply view</button>
+                    <button type="button" className="button-secondary text-coral" onClick={() => { if (selectedViewId) router.delete('/customers/saved-views/' + selectedViewId, { onSuccess: () => setSelectedViewId('') }); }} disabled={!selectedViewId}>Delete</button>
+                </div>
+                <form onSubmit={submitSavedView} className="flex flex-col gap-3 sm:flex-row sm:items-end">
+                    <label className="block sm:min-w-56"><span className="field-label">Save current filters and columns</span><input className="field" value={saveViewForm.data.name} onChange={(event) => saveViewForm.setData('name', event.target.value)} placeholder="Renewal queue" />{saveViewForm.errors.name && <p className="field-error">{saveViewForm.errors.name}</p>}</label>
+                    <button type="submit" className="button-secondary" disabled={saveViewForm.processing}>Save view</button>
+                </form>
             </div>
             <div className="mt-8 card overflow-hidden">
                 <div className="flex flex-col gap-4 border-b border-line px-5 py-4 md:flex-row md:items-center md:justify-between">
