@@ -9,7 +9,8 @@ use LogicException;
 
 /**
  * @property int $account_id
- * @property int $customer_id
+ * @property int|null $customer_id
+ * @property int|null $partner_id
  * @property string $currency
  * @property int $debit_amount
  * @property int $credit_amount
@@ -18,7 +19,7 @@ class JournalLine extends Model
 {
     use BelongsToTenant;
 
-    protected $fillable = ['tenant_id', 'journal_entry_id', 'account_id', 'customer_id', 'currency', 'debit_amount', 'credit_amount', 'memo'];
+    protected $fillable = ['tenant_id', 'journal_entry_id', 'account_id', 'customer_id', 'partner_id', 'currency', 'debit_amount', 'credit_amount', 'memo'];
 
     protected function casts(): array
     {
@@ -49,5 +50,10 @@ class JournalLine extends Model
     public function customer(): BelongsTo
     {
         return $this->belongsTo(Customer::class);
+    }
+
+    public function partner(): BelongsTo
+    {
+        return $this->belongsTo(Partner::class);
     }
 }

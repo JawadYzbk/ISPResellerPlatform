@@ -56,6 +56,7 @@ final class PostJournalEntry
                     'journal_entry_id' => $entry->id,
                     'account_id' => $account->id,
                     'customer_id' => $input->customerId,
+                    'partner_id' => $input->partnerId,
                     'currency' => $input->currency,
                     'debit_amount' => $input->debitAmount,
                     'credit_amount' => $input->creditAmount,

@@ -5,6 +5,7 @@ use App\Domain\Ledger\PostJournalEntry;
 use App\Models\Customer;
 use App\Models\JournalEntry;
 use App\Models\LedgerAccount;
+use App\Models\Partner;
 use App\Models\Tenant;
 use App\Support\Tenancy;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -44,4 +45,23 @@ it('rejects unbalanced entries and protects posted records from mutation', funct
 
     expect(fn (): bool => $entry->update(['description' => 'tampered']))->toThrow(LogicException::class)
         ->and(fn (): bool => $entry->delete())->toThrow(LogicException::class);
+});
+
+it('attributes commercial journal lines to a partner without changing customer projections', function (): void {
+    $tenant = Tenant::create(['name' => 'Eastline', 'slug' => 'eastline', 'base_currency' => 'USD', 'collection_currency' => 'USD']);
+    app(Tenancy::class)->set($tenant);
+    $partner = Partner::create(['name' => 'Eastline Reseller', 'code' => 'EAST', 'path' => '/', 'currency' => 'USD', 'status' => 'active']);
+    $wallets = LedgerAccount::where('code', '1210')->firstOrFail();
+    $revenue = LedgerAccount::where('code', '4000')->firstOrFail();
+
+    $entry = app(PostJournalEntry::class)->post('Reseller plan sale', [
+        new JournalLineInput($wallets->id, 'USD', debitAmount: 2500),
+        new JournalLineInput($revenue->id, 'USD', creditAmount: 2500, partnerId: $partner->id),
+    ]);
+
+    $line = $entry->lines->firstWhere('partner_id', $partner->id);
+
+    expect($line)->not->toBeNull()
+        ->and($line->partner->is($partner))->toBeTrue()
+        ->and($entry->lines->whereNotNull('customer_id'))->toBeEmpty();
 });

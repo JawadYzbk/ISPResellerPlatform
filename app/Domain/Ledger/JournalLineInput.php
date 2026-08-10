@@ -12,6 +12,7 @@ final readonly class JournalLineInput
         public int $debitAmount = 0,
         public int $creditAmount = 0,
         public ?int $customerId = null,
+        public ?int $partnerId = null,
         public ?string $memo = null,
     ) {
         if (($debitAmount > 0) === ($creditAmount > 0)) {
