@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\CustomerApiController;
 use App\Http\Controllers\Api\CustomerImportController;
 use App\Http\Controllers\Api\EquipmentImportController;
 use App\Http\Controllers\Api\HealthController;
+use App\Http\Controllers\Api\MessageWebhookController;
 use App\Http\Controllers\Api\NetworkCommandController;
 use App\Http\Controllers\Api\PartnerApiController;
 use App\Http\Controllers\Api\PaymentApiController;
@@ -26,6 +27,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function (): void {
     Route::get('/health', [HealthController::class, 'show'])->name('api.health');
+    Route::post('/webhooks/gateways/{gateway}', MessageWebhookController::class)->name('api.webhooks.gateways');
     Route::post('/tokens', [ApiTokenController::class, 'store'])->middleware('throttle:login')->name('api.tokens.store');
     Route::prefix('portal/{tenant:slug}')->middleware('portal.tenant')->group(function (): void {
         Route::post('/otp/request', [PortalAuthController::class, 'requestOtp'])->middleware('throttle:login')->name('api.portal.otp.request');

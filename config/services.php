@@ -55,4 +55,12 @@ return [
         'email_enabled' => env('NOTIFICATIONS_EMAIL_ENABLED', false),
     ],
 
+    'webhooks' => [
+        'secrets' => [
+            'whatsapp' => env('WHATSAPP_WEBHOOK_SECRET'),
+            'sms' => env('SMS_WEBHOOK_SECRET'),
+            'fcm' => env('FCM_WEBHOOK_SECRET'),
+        ],
+    ],
+
 ];
