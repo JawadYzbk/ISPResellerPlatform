@@ -2,6 +2,12 @@
 
 This runbook records the repeatable repository-side evidence for ISP-084/101. The acceptance dataset is isolated from demo and production data: 50,000 services with 90 days of daily usage rows, plus a representative live-session population.
 
+## Docker development loop
+
+The Windows Docker development stack keeps `vendor`, `bootstrap/cache` and `storage/framework` in named volumes. The app startup script refreshes Laravel's configuration cache, and the PHP development server disables OPcache timestamp validation by default. This avoids repeated bind-mount file-stat work while keeping source edits explicit: restart the app after PHP, `.env` or configuration changes. Set `PHP_OPCACHE_VALIDATE_TIMESTAMPS=1` when automatic code revalidation is preferred.
+
+On 2026-08-11, ten sequential `/login` requests measured from inside the app container were observed at 146–281 ms after this setup. Before the development-server setting and framework-volume change, the same local loop commonly measured 0.5–1.4 seconds, with occasional multi-second requests. The result is a local development-loop observation, not a production SLO or load-test result.
+
 ## Run the benchmark
 
 Use a PostgreSQL 17 environment with the benchmark dataset loaded and the same indexes/migrations as the release under test:

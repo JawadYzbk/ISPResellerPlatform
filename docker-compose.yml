@@ -10,6 +10,11 @@ services:
     volumes:
       - .:/var/www/html
       - app-bootstrap-cache:/var/www/html/bootstrap/cache
+      - type: volume
+        source: app-framework-cache
+        target: /var/www/html/storage/framework
+        volume:
+          nocopy: true
       - app-vendor:/var/www/html/vendor
     healthcheck:
       test: ["CMD-SHELL", "php -r \"exit((int) (! @file_get_contents('http://127.0.0.1:8000/up')));\""]
@@ -32,6 +37,7 @@ services:
       CACHE_STORE: redis
       SESSION_DRIVER: redis
       QUEUE_CONNECTION: redis
+      PHP_OPCACHE_VALIDATE_TIMESTAMPS: ${PHP_OPCACHE_VALIDATE_TIMESTAMPS:-0}
       PAYMENT_GATEWAY: ${PAYMENT_GATEWAY:-null}
       STRIPE_SECRET: ${STRIPE_SECRET:-}
       STRIPE_PUBLISHABLE_KEY: ${STRIPE_PUBLISHABLE_KEY:-}
@@ -68,6 +74,11 @@ services:
     volumes:
       - .:/var/www/html
       - app-bootstrap-cache:/var/www/html/bootstrap/cache
+      - type: volume
+        source: app-framework-cache
+        target: /var/www/html/storage/framework
+        volume:
+          nocopy: true
       - app-vendor:/var/www/html/vendor
     environment:
       APP_ENV: local
@@ -94,6 +105,11 @@ services:
     volumes:
       - .:/var/www/html
       - app-bootstrap-cache:/var/www/html/bootstrap/cache
+      - type: volume
+        source: app-framework-cache
+        target: /var/www/html/storage/framework
+        volume:
+          nocopy: true
       - app-vendor:/var/www/html/vendor
     environment:
       APP_ENV: local
@@ -165,6 +181,7 @@ services:
 
 volumes:
   app-bootstrap-cache:
+  app-framework-cache:
   app-vendor:
   frontend-node-modules:
   postgres-data:
