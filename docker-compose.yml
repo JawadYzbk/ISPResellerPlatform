@@ -1,3 +1,62 @@
+x-app-environment: &app-environment
+  APP_ENV: local
+  APP_URL: http://localhost:8000
+  DB_CONNECTION: pgsql
+  DB_HOST: postgres
+  DB_PORT: 5432
+  DB_DATABASE: isp_manager
+  DB_USERNAME: isp_manager
+  DB_PASSWORD: isp_manager
+  REDIS_CLIENT: predis
+  REDIS_HOST: redis
+  REDIS_PORT: 6379
+  CACHE_STORE: redis
+  SESSION_DRIVER: redis
+  QUEUE_CONNECTION: redis
+  FILESYSTEM_DISK: ${FILESYSTEM_DISK:-local}
+  PAYMENT_GATEWAY: ${PAYMENT_GATEWAY:-null}
+  STRIPE_SECRET: ${STRIPE_SECRET:-}
+  STRIPE_PUBLISHABLE_KEY: ${STRIPE_PUBLISHABLE_KEY:-}
+  STRIPE_ENDPOINT: ${STRIPE_ENDPOINT:-https://api.stripe.com}
+  STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
+  STRIPE_WEBHOOK_TOLERANCE: ${STRIPE_WEBHOOK_TOLERANCE:-300}
+  STRIPE_TIMEOUT: ${STRIPE_TIMEOUT:-15}
+  WHISH_ENABLED: ${WHISH_ENABLED:-false}
+  WHISH_ENVIRONMENT: ${WHISH_ENVIRONMENT:-sandbox}
+  WHISH_CHANNEL: ${WHISH_CHANNEL:-}
+  WHISH_SECRET: ${WHISH_SECRET:-}
+  WHISH_WEBSITE_URL: ${WHISH_WEBSITE_URL:-http://localhost:8000}
+  WHISH_ENDPOINT: ${WHISH_ENDPOINT:-}
+  WHISH_TIMEOUT: ${WHISH_TIMEOUT:-15}
+  WHISH_SUCCESS_CALLBACK_URL: ${WHISH_SUCCESS_CALLBACK_URL:-}
+  WHISH_FAILURE_CALLBACK_URL: ${WHISH_FAILURE_CALLBACK_URL:-}
+  WHISH_SUCCESS_REDIRECT_URL: ${WHISH_SUCCESS_REDIRECT_URL:-}
+  WHISH_FAILURE_REDIRECT_URL: ${WHISH_FAILURE_REDIRECT_URL:-}
+  WHATSAPP_CLOUD_TOKEN: ${WHATSAPP_CLOUD_TOKEN:-}
+  WHATSAPP_PHONE_NUMBER_ID: ${WHATSAPP_PHONE_NUMBER_ID:-}
+  WHATSAPP_PROVIDER: ${WHATSAPP_PROVIDER:-cloud}
+  WHATSAPP_WEB_ENABLED: ${WHATSAPP_WEB_ENABLED:-false}
+  WHATSAPP_WEB_ENDPOINT: ${WHATSAPP_WEB_ENDPOINT:-http://whatsapp-web:3001}
+  WHATSAPP_WEB_TOKEN: ${WHATSAPP_WEB_TOKEN:-}
+  WHATSAPP_WEBHOOK_SECRET: ${WHATSAPP_WEBHOOK_SECRET:-}
+  WHATSAPP_WEBHOOK_URL: ${WHATSAPP_WEBHOOK_URL:-}
+  SMS_PROVIDER_ENDPOINT: ${SMS_PROVIDER_ENDPOINT:-}
+  SMS_PROVIDER_TOKEN: ${SMS_PROVIDER_TOKEN:-}
+  SMS_PROVIDER_SENDER: ${SMS_PROVIDER_SENDER:-}
+  SMS_WEBHOOK_SECRET: ${SMS_WEBHOOK_SECRET:-}
+  FCM_PROVIDER_ENDPOINT: ${FCM_PROVIDER_ENDPOINT:-}
+  FCM_PROVIDER_TOKEN: ${FCM_PROVIDER_TOKEN:-}
+  FCM_WEBHOOK_SECRET: ${FCM_WEBHOOK_SECRET:-}
+  NOTIFICATIONS_EMAIL_ENABLED: ${NOTIFICATIONS_EMAIL_ENABLED:-false}
+  FX_ROUNDING_MODE: ${FX_ROUNDING_MODE:-half_up}
+  FRANKFURTER_ENABLED: ${FRANKFURTER_ENABLED:-false}
+  FRANKFURTER_ENDPOINT: ${FRANKFURTER_ENDPOINT:-https://api.frankfurter.dev}
+  FRANKFURTER_TIMEOUT: ${FRANKFURTER_TIMEOUT:-10}
+  FRANKFURTER_QUOTES: ${FRANKFURTER_QUOTES:-LBP,USD,EUR}
+  MAIL_MAILER: smtp
+  MAIL_HOST: mailpit
+  MAIL_PORT: 1025
+
 services:
   app:
     build:
@@ -23,43 +82,10 @@ services:
       retries: 30
       start_period: 10s
     environment:
-      APP_ENV: local
+      <<: *app-environment
       APP_DEBUG: "true"
-      APP_URL: http://localhost:8000
-      DB_CONNECTION: pgsql
-      DB_HOST: postgres
-      DB_PORT: 5432
-      DB_DATABASE: isp_manager
-      DB_USERNAME: isp_manager
-      DB_PASSWORD: isp_manager
-      REDIS_CLIENT: predis
-      REDIS_HOST: redis
-      CACHE_STORE: redis
-      SESSION_DRIVER: redis
-      QUEUE_CONNECTION: redis
       PHP_OPCACHE_VALIDATE_TIMESTAMPS: ${PHP_OPCACHE_VALIDATE_TIMESTAMPS:-0}
       PHP_CLI_SERVER_WORKERS: ${PHP_CLI_SERVER_WORKERS:-4}
-      PAYMENT_GATEWAY: ${PAYMENT_GATEWAY:-null}
-      STRIPE_SECRET: ${STRIPE_SECRET:-}
-      STRIPE_PUBLISHABLE_KEY: ${STRIPE_PUBLISHABLE_KEY:-}
-      STRIPE_ENDPOINT: ${STRIPE_ENDPOINT:-https://api.stripe.com}
-      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
-      STRIPE_WEBHOOK_TOLERANCE: ${STRIPE_WEBHOOK_TOLERANCE:-300}
-      STRIPE_TIMEOUT: ${STRIPE_TIMEOUT:-15}
-      WHISH_ENABLED: ${WHISH_ENABLED:-false}
-      WHISH_ENVIRONMENT: ${WHISH_ENVIRONMENT:-sandbox}
-      WHISH_CHANNEL: ${WHISH_CHANNEL:-}
-      WHISH_SECRET: ${WHISH_SECRET:-}
-      WHISH_WEBSITE_URL: ${WHISH_WEBSITE_URL:-http://localhost:8000}
-      WHISH_ENDPOINT: ${WHISH_ENDPOINT:-}
-      WHISH_TIMEOUT: ${WHISH_TIMEOUT:-15}
-      WHISH_SUCCESS_CALLBACK_URL: ${WHISH_SUCCESS_CALLBACK_URL:-}
-      WHISH_FAILURE_CALLBACK_URL: ${WHISH_FAILURE_CALLBACK_URL:-}
-      WHISH_SUCCESS_REDIRECT_URL: ${WHISH_SUCCESS_REDIRECT_URL:-}
-      WHISH_FAILURE_REDIRECT_URL: ${WHISH_FAILURE_REDIRECT_URL:-}
-      MAIL_MAILER: smtp
-      MAIL_HOST: mailpit
-      MAIL_PORT: 1025
     depends_on:
       postgres:
         condition: service_healthy
@@ -82,17 +108,7 @@ services:
           nocopy: true
       - app-vendor:/var/www/html/vendor
     environment:
-      APP_ENV: local
-      DB_CONNECTION: pgsql
-      DB_HOST: postgres
-      DB_PORT: 5432
-      DB_DATABASE: isp_manager
-      DB_USERNAME: isp_manager
-      DB_PASSWORD: isp_manager
-      REDIS_CLIENT: predis
-      REDIS_HOST: redis
-      CACHE_STORE: redis
-      QUEUE_CONNECTION: redis
+      <<: *app-environment
     depends_on:
       app:
         condition: service_healthy
@@ -113,17 +129,7 @@ services:
           nocopy: true
       - app-vendor:/var/www/html/vendor
     environment:
-      APP_ENV: local
-      DB_CONNECTION: pgsql
-      DB_HOST: postgres
-      DB_PORT: 5432
-      DB_DATABASE: isp_manager
-      DB_USERNAME: isp_manager
-      DB_PASSWORD: isp_manager
-      REDIS_CLIENT: predis
-      REDIS_HOST: redis
-      CACHE_STORE: redis
-      QUEUE_CONNECTION: redis
+      <<: *app-environment
     depends_on:
       app:
         condition: service_healthy
