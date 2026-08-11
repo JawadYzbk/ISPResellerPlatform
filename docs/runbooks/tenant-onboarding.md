@@ -45,4 +45,5 @@ Use this checklist for a new ISP/reseller tenant. The tenant owner and the imple
    ```
 
    Resolve every `FAIL`. Review every `WARN`; add `--strict` when logo, payment provider, and notification setup are mandatory for the pilot.
+   The report also verifies the 27 active notification templates for the tenant locale; rerun `CapabilitySeeder` if that check reports missing templates.
 7. Start the pilot only after the owner signs off the customer import, router scope, payment/notification behavior, rollback plan, and two-week monitoring owner. Record the tenant public ID, not internal database IDs, in the handover document.
