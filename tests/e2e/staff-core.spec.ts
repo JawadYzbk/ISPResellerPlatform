@@ -131,8 +131,7 @@ test.describe('staff core journeys', () => {
 
         await page.goto('/customers');
         const openCustomer = page.getByRole('link', { name: 'Open', exact: true }).first();
-        await openCustomer.click();
-        await expect(page).toHaveURL(/\/customers\/[^/]+$/);
+        await Promise.all([page.waitForURL('**/customers/**'), openCustomer.click()]);
         await expect(page.getByRole('link', { name: 'Take payment', exact: true })).toBeVisible();
         await page.getByRole('link', { name: 'Take payment', exact: true }).click();
         await expect(page.getByRole('heading', { name: 'Record payment' })).toBeVisible();
@@ -158,7 +157,7 @@ test.describe('staff core journeys', () => {
     test('shows the customer payment grid by month', async ({ page }) => {
         await signIn(page);
         await page.goto('/customers');
-        await page.getByRole('link', { name: 'Open', exact: true }).first().click();
+        await Promise.all([page.waitForURL('**/customers/**'), page.getByRole('link', { name: 'Open', exact: true }).first().click()]);
 
         await expect(page.getByTestId('customer-payment-grid')).toBeVisible();
         await expect(page.getByRole('heading', { name: 'Monthly payment grid' })).toBeVisible();
