@@ -75,6 +75,14 @@ class AppServiceProvider extends ServiceProvider
                 Limit::perMinute(5)->by('account:'.$email),
             ];
         });
+        RateLimiter::for('password-reset', function (Request $request): array {
+            $email = Str::lower($request->string('email')->toString());
+
+            return [
+                Limit::perMinute(3)->by('ip:'.$request->ip()),
+                Limit::perMinutes(15, 3)->by('account:'.$email),
+            ];
+        });
         RateLimiter::for('customer-otp', function (Request $request): array {
             $phone = trim($request->string('phone')->toString());
 

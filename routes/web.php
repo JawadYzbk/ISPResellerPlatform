@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\LogoutController;
+use App\Http\Controllers\Auth\PasswordResetController;
 use App\Http\Controllers\Auth\ReauthenticateController;
 use App\Http\Controllers\Auth\TwoFactorController;
 use App\Http\Controllers\Web\BillingController;
@@ -50,6 +51,10 @@ Route::prefix('portal/{tenant:slug}')->group(function (): void {
 Route::middleware('guest')->group(function (): void {
     Route::get('/login', [LoginController::class, 'create'])->name('login');
     Route::post('/login', [LoginController::class, 'store'])->middleware('throttle:login')->name('login.store');
+    Route::get('/forgot-password', [PasswordResetController::class, 'requestForm'])->name('password.request');
+    Route::post('/forgot-password', [PasswordResetController::class, 'send'])->middleware('throttle:password-reset')->name('password.email');
+    Route::get('/reset-password/{token}', [PasswordResetController::class, 'resetForm'])->name('password.reset');
+    Route::post('/reset-password', [PasswordResetController::class, 'reset'])->name('password.update');
     Route::get('/invite/{token}', [InvitationController::class, 'show'])->name('invitations.show');
     Route::post('/invite/{token}', [InvitationController::class, 'accept'])->name('invitations.accept');
 });
