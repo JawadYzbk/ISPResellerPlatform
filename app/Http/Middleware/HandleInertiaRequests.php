@@ -15,7 +15,7 @@ final class HandleInertiaRequests extends Middleware
     {
         $user = $request->user();
         $user = $user instanceof User ? $user : null;
-        $tenant = $user?->tenant;
+        $tenant = $user instanceof User ? Tenant::query()->find($user->tenant_id) : null;
         $tenant = $tenant instanceof Tenant ? $tenant : null;
         $settings = $tenant instanceof Tenant ? $tenant->settingsData() : null;
         $tenantLocale = $settings === null ? 'en' : $settings->locale;

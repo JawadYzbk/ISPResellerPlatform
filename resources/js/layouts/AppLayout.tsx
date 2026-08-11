@@ -76,6 +76,11 @@ export default function AppLayout({ children }: PropsWithChildren) {
     }, []);
 
     useEffect(() => {
+        document.documentElement.lang = app.locale.replace('_', '-');
+        document.documentElement.dir = app.direction;
+    }, [app.direction, app.locale]);
+
+    useEffect(() => {
         if (searchOpen) window.setTimeout(() => searchInput.current?.focus(), 0);
     }, [searchOpen]);
 

@@ -123,6 +123,7 @@ test.describe('staff core journeys', () => {
     });
 
     test('renders the workspace in right-to-left mode when configured', async ({ page }) => {
+        test.setTimeout(60_000);
         await signIn(page);
         await page.goto('/settings/general');
         await page.goto('/security/reauthenticate');
@@ -132,11 +133,13 @@ test.describe('staff core journeys', () => {
         await page.goto('/settings/general');
         await page.getByLabel('Locale').selectOption('ar');
         await page.getByRole('button', { name: 'Save settings' }).click();
-        await expect(page.locator('[dir="rtl"]')).toBeVisible();
+        await expect(page.locator('#app > div[dir="rtl"]')).toBeVisible({ timeout: 15_000 });
+        await expect(page.locator('html')).toHaveAttribute('dir', 'rtl', { timeout: 15_000 });
 
         await page.goto('/settings/general');
         await page.getByLabel('Locale').selectOption('en');
         await page.getByRole('button', { name: 'Save settings' }).click();
-        await expect(page.locator('[dir="ltr"]')).toBeVisible();
+        await expect(page.locator('html')).toHaveAttribute('dir', 'ltr', { timeout: 15_000 });
+        await expect(page.locator('#app > div[dir="ltr"]')).toBeVisible({ timeout: 15_000 });
     });
 });

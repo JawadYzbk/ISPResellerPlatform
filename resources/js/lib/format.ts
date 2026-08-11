@@ -1,16 +1,28 @@
-export function formatMoney(amountMinor: number, currency: string, locale = 'en-US'): string {
-    const fractionDigits = currencyFractionDigits(currency);
+export function formatMoney(amountMinor: number, currency: string, locale = browserLocale()): string {
+    const normalizedCurrency = currency.trim().toUpperCase();
+    const fractionDigits = currencyFractionDigits(normalizedCurrency, locale);
 
     return new Intl.NumberFormat(locale, {
         style: 'currency',
-        currency,
+        currency: normalizedCurrency,
         minimumFractionDigits: fractionDigits,
         maximumFractionDigits: fractionDigits,
     }).format(amountMinor / 10 ** fractionDigits);
 }
 
-export function currencyFractionDigits(currency: string): number {
-    return currency === 'JPY' ? 0 : currency === 'KWD' ? 3 : 2;
+export function currencyFractionDigits(currency: string, locale = 'en-US'): number {
+    const normalizedCurrency = currency.trim().toUpperCase();
+
+    try {
+        return (
+            new Intl.NumberFormat(locale, {
+                style: 'currency',
+                currency: normalizedCurrency,
+            }).resolvedOptions().maximumFractionDigits ?? 2
+        );
+    } catch {
+        return normalizedCurrency === 'JPY' || normalizedCurrency === 'LBP' ? 0 : 2;
+    }
 }
 
 export function parseMoneyToMinor(value: string, currency: string): number | null {
@@ -58,7 +70,13 @@ export function formatExpiryCountdown(value: string | null): string {
     return `Expires in ${days} days`;
 }
 
-export function formatDate(value: string | null, locale = 'en-US'): string {
+export function formatDate(value: string | null, locale = browserLocale()): string {
     if (!value) return '—';
     return new Intl.DateTimeFormat(locale, { dateStyle: 'medium' }).format(new Date(value));
+}
+
+function browserLocale(): string {
+    if (typeof document === 'undefined') return 'en-US';
+
+    return document.documentElement.lang.replace('_', '-') || 'en-US';
 }
