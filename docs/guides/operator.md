@@ -56,6 +56,8 @@ Use one stable `X-Idempotency-Key` per client payment attempt. Reusing the same 
 
 Collector devices use the offline sync flow in the [field-app guide](field-app.md). Close and reconcile cash shifts according to the tenant’s local cash-control policy before handover.
 
+To collect through Whish Pay from the staff web app, open the customer payment form, select USD, LBP, or AED, enter the amount, and choose **Generate Whish QR**. Keep the QR screen open while the customer scans it; the page polls the provider and only shows success after the server verifies and posts the payment. The **Open Whish link** action is a fallback for devices that cannot scan the QR. A failed or settlement-failed attempt must be restarted with a new collection attempt, not recorded manually as successful.
+
 ## Tickets, incidents, and notifications
 
 Use **Operations -> Tickets** to search by ticket/customer, filter the SLA queue, assign an operator, change an allowed status, and post either a public reply or an internal note. Closed tickets are immutable from the reply form. A reply to a resolved ticket records the return to in-progress before adding the message. Internal notes are never returned through the customer portal.
