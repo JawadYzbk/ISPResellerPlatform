@@ -31,14 +31,25 @@ final class TenantProvisioner
                 ]);
             }
 
-            Currency::firstOrCreate(
-                ['code' => $tenant->base_currency],
-                ['name' => $tenant->base_currency, 'decimal_digits' => $this->decimalDigits($tenant->base_currency), 'is_base' => true, 'is_active' => true],
-            );
-            Currency::firstOrCreate(
-                ['code' => $tenant->collection_currency],
-                ['name' => $tenant->collection_currency, 'decimal_digits' => $this->decimalDigits($tenant->collection_currency), 'is_collection' => true, 'is_active' => true],
-            );
+            $currencyDefinitions = [
+                $tenant->base_currency => ['is_base' => true, 'is_collection' => false],
+                $tenant->collection_currency => ['is_base' => false, 'is_collection' => true],
+            ];
+            if ($tenant->base_currency === $tenant->collection_currency) {
+                $currencyDefinitions[$tenant->base_currency] = ['is_base' => true, 'is_collection' => true];
+            }
+
+            foreach ($currencyDefinitions as $code => $flags) {
+                Currency::updateOrCreate(
+                    ['code' => $code],
+                    [
+                        'name' => $code,
+                        'decimal_digits' => $this->decimalDigits($code),
+                        ...$flags,
+                        'is_active' => true,
+                    ],
+                );
+            }
 
             foreach ([
                 ['code' => '1100', 'name' => 'Accounts Receivable', 'category' => 'asset', 'normal_balance' => 'debit'],

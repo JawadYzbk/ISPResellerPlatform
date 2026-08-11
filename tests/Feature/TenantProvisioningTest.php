@@ -33,3 +33,19 @@ it('provisions the operational defaults for a new tenant', function (): void {
         ->and(DocumentSequence::count())->toBe(7)
         ->and(DocumentSequence::where('key', 'work_order')->exists())->toBeTrue();
 });
+
+it('marks a shared currency as both base and collection currency', function (): void {
+    $tenant = Tenant::create([
+        'name' => 'Single Currency ISP',
+        'slug' => 'single-currency-isp',
+        'base_currency' => 'USD',
+        'collection_currency' => 'USD',
+    ]);
+
+    app(Tenancy::class)->set($tenant);
+    $currency = Currency::where('code', 'USD')->firstOrFail();
+
+    expect($currency->is_base)->toBeTrue()
+        ->and($currency->is_collection)->toBeTrue()
+        ->and($currency->is_active)->toBeTrue();
+});
