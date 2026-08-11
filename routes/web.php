@@ -18,10 +18,12 @@ use App\Http\Controllers\Web\InvitationController;
 use App\Http\Controllers\Web\IpPoolOperationsController;
 use App\Http\Controllers\Web\MediaDownloadController;
 use App\Http\Controllers\Web\NetworkOperationsController;
+use App\Http\Controllers\Web\NotificationController;
 use App\Http\Controllers\Web\PartnerController;
 use App\Http\Controllers\Web\PlanOperationsController;
 use App\Http\Controllers\Web\PopOperationsController;
 use App\Http\Controllers\Web\PortalPageController;
+use App\Http\Controllers\Web\ProfileController;
 use App\Http\Controllers\Web\ReportController;
 use App\Http\Controllers\Web\RouterOperationsController;
 use App\Http\Controllers\Web\SecurityController;
@@ -74,6 +76,9 @@ Route::middleware(['auth', 'tenant'])->group(function (): void {
 
 Route::middleware(['auth', 'tenant', '2fa'])->group(function (): void {
     Route::get('/dashboard', DashboardController::class)->name('dashboard');
+    Route::get('/profile', [ProfileController::class, 'show'])->name('profile');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications');
     Route::get('/search', WorkspaceSearchController::class)->name('workspace.search');
     Route::get('/settings/general', [SettingsController::class, 'general'])->name('settings.general');
     Route::put('/settings/general', [SettingsController::class, 'updateGeneral'])->middleware('recent-auth')->name('settings.general.update');

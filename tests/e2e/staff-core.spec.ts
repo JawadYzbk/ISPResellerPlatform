@@ -55,6 +55,19 @@ test.describe('staff core journeys', () => {
         await expect(page.getByRole('heading', { name: 'Workspace settings' })).toBeVisible();
     });
 
+    test('opens the profile menu and notifications center from the header', async ({ page }) => {
+        await signIn(page);
+
+        await page.getByRole('button', { name: 'Open account menu' }).click();
+        await page.getByRole('menuitem', { name: 'Profile' }).click();
+        await expect(page).toHaveURL(/\/profile$/);
+        await expect(page.getByRole('heading', { name: 'Your profile' })).toBeVisible();
+
+        await page.getByRole('link', { name: 'Open notifications center' }).click();
+        await expect(page).toHaveURL(/\/notifications$/);
+        await expect(page.getByRole('heading', { name: 'Notifications & attention' })).toBeVisible();
+    });
+
     test('keeps the owner workspace routes free of authorization and not-found failures', async ({ page }) => {
         test.setTimeout(120_000);
         await signIn(page);
@@ -85,6 +98,8 @@ test.describe('staff core journeys', () => {
             '/settings/general',
             '/settings/users',
             '/security/sessions',
+            '/profile',
+            '/notifications',
         ]) {
             const response = await page.goto(path, { waitUntil: 'domcontentloaded', timeout: 120_000 });
 

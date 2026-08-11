@@ -23,6 +23,7 @@ import {
     Search,
     Router,
     Tags,
+    UserRound,
     Users,
     Wifi,
     WalletCards,
@@ -52,7 +53,9 @@ export default function AppLayout({ children }: PropsWithChildren) {
     const [search, setSearch] = useState('');
     const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
     const [searching, setSearching] = useState(false);
+    const [accountOpen, setAccountOpen] = useState(false);
     const searchInput = useRef<HTMLInputElement>(null);
+    const accountMenu = useRef<HTMLDivElement>(null);
     const can = (permission: string | string[]) =>
         Array.isArray(permission)
             ? permission.some((item) => auth.permissions.includes(item))
@@ -65,6 +68,7 @@ export default function AppLayout({ children }: PropsWithChildren) {
                 setSearchOpen(true);
             }
             if (event.key === 'Escape') setSearchOpen(false);
+            if (event.key === 'Escape') setAccountOpen(false);
         };
         window.addEventListener('keydown', handleShortcut);
 
@@ -74,6 +78,18 @@ export default function AppLayout({ children }: PropsWithChildren) {
     useEffect(() => {
         if (searchOpen) window.setTimeout(() => searchInput.current?.focus(), 0);
     }, [searchOpen]);
+
+    useEffect(() => {
+        const handleOutsideClick = (event: MouseEvent) => {
+            if (accountMenu.current && !accountMenu.current.contains(event.target as Node)) {
+                setAccountOpen(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleOutsideClick);
+
+        return () => document.removeEventListener('mousedown', handleOutsideClick);
+    }, []);
 
     useEffect(() => {
         const value = search.trim();
@@ -220,33 +236,79 @@ export default function AppLayout({ children }: PropsWithChildren) {
                     </div>
                     <div className="flex items-center gap-3">
                         <Link
-                            href="/dashboard#attention"
+                            href="/notifications"
                             className="relative rounded-lg p-2.5 text-muted hover:bg-white"
-                            title="Open manager attention queue"
-                            aria-label="Open manager attention queue"
+                            title="Open notifications center"
+                            aria-label="Open notifications center"
                         >
                             <Bell size={19} strokeWidth={1.8} />
-                            <span className="absolute end-2 top-2 size-1.5 rounded-full bg-coral" />
                         </Link>
-                        <div className="flex items-center gap-3 border-s border-line ps-3">
-                            <div className="grid size-9 place-items-center rounded-full bg-brand-soft text-sm font-bold text-brand">
-                                {auth.user?.name.slice(0, 1).toUpperCase()}
-                            </div>
-                            <div className="hidden text-start sm:block">
-                                <p className="text-sm font-semibold">{auth.user?.name}</p>
-                                <p className="text-xs capitalize text-muted">{auth.user?.role.replace('_', ' ')}</p>
-                            </div>
-                            <ChevronDown size={16} className="hidden text-muted sm:block" />
-                        </div>
-                        <Form action="/logout" method="post">
+                        <div ref={accountMenu} className="relative border-s border-line ps-3">
                             <button
-                                type="submit"
-                                className="rounded-lg p-2.5 text-muted hover:bg-white hover:text-coral"
-                                title="Sign out"
+                                type="button"
+                                onClick={() => setAccountOpen((open) => !open)}
+                                className="flex items-center gap-3 rounded-xl p-1.5 text-start hover:bg-white"
+                                aria-haspopup="menu"
+                                aria-expanded={accountOpen}
+                                aria-controls="account-menu"
+                                aria-label="Open account menu"
                             >
-                                <LogOut size={18} />
+                                <span className="grid size-9 place-items-center rounded-full bg-brand-soft text-sm font-bold text-brand">
+                                    {auth.user?.name.slice(0, 1).toUpperCase()}
+                                </span>
+                                <span className="hidden sm:block">
+                                    <span className="block text-sm font-semibold">{auth.user?.name}</span>
+                                    <span className="block text-xs capitalize text-muted">
+                                        {auth.user?.role.replaceAll('_', ' ')}
+                                    </span>
+                                </span>
+                                <ChevronDown size={16} className="text-muted" />
                             </button>
-                        </Form>
+                            {accountOpen && (
+                                <div
+                                    id="account-menu"
+                                    role="menu"
+                                    aria-label="Account menu"
+                                    className="absolute end-0 top-full z-30 mt-2 w-56 overflow-hidden rounded-xl border border-line bg-white p-1 shadow-xl"
+                                >
+                                    <Link
+                                        href="/profile"
+                                        role="menuitem"
+                                        onClick={() => setAccountOpen(false)}
+                                        className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold hover:bg-sand"
+                                    >
+                                        <UserRound size={16} className="text-brand" /> Profile
+                                    </Link>
+                                    <Link
+                                        href="/security/sessions"
+                                        role="menuitem"
+                                        onClick={() => setAccountOpen(false)}
+                                        className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold hover:bg-sand"
+                                    >
+                                        <KeyRound size={16} className="text-brand" /> Active sessions
+                                    </Link>
+                                    {can('settings.manage') && (
+                                        <Link
+                                            href="/settings/general"
+                                            role="menuitem"
+                                            onClick={() => setAccountOpen(false)}
+                                            className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold hover:bg-sand"
+                                        >
+                                            <Wrench size={16} className="text-brand" /> Workspace settings
+                                        </Link>
+                                    )}
+                                    <Form action="/logout" method="post" className="mt-1 border-t border-line pt-1">
+                                        <button
+                                            type="submit"
+                                            role="menuitem"
+                                            className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold text-coral hover:bg-rose-50"
+                                        >
+                                            <LogOut size={16} /> Sign out
+                                        </button>
+                                    </Form>
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </header>
                 <OfflineBanner />

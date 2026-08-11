@@ -12,6 +12,7 @@ use App\Models\PartnerWallet;
 use App\Models\Payment;
 use App\Models\Service;
 use App\Models\Tenant;
+use App\Models\User;
 use App\Support\Tenancy;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -20,7 +21,7 @@ final readonly class GetDashboardAttentionQueue implements Action
     /**
      * @return list<array{type: string, title: string, detail: string, href: string, severity: string}>
      */
-    public function handle(int $perType = 5): array
+    public function handle(int $perType = 5, ?User $user = null): array
     {
         $limit = min(max($perType, 1), 10);
         $tenant = Tenant::query()->findOrFail(app(Tenancy::class)->requireId());
@@ -85,7 +86,19 @@ final readonly class GetDashboardAttentionQueue implements Action
                 $this->add($rows, 'low_reseller_balance', 'Low reseller balance', $partner->name.' · '.$wallet->balance_amount.' '.$wallet->currency, '/dashboard?attention=partner-wallet&partner='.urlencode($partner->code), 'warning');
             });
 
-        return $rows;
+        if ($user === null) {
+            return $rows;
+        }
+
+        return array_values(array_filter(
+            $rows,
+            fn (array $row): bool => match ($row['type']) {
+                'expired_service', 'paid_provisioning_failed', 'stale_session' => $user->can('services.view'),
+                'unallocated_payment' => $user->can('payments.collect') || $user->can('billing.invoices.view'),
+                'low_reseller_balance' => $user->can('wallets.view'),
+                default => false,
+            },
+        ));
     }
 
     /** @param list<array{type: string, title: string, detail: string, href: string, severity: string}> $rows */
