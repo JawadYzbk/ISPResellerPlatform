@@ -34,7 +34,7 @@ final readonly class UpdateTenantSettings implements Action
             $oldLogoPath = $locked->logo_path;
             $logoPath = $oldLogoPath;
             if (($data['logo'] ?? null) instanceof UploadedFile) {
-                $logoPath = $data['logo']->store('tenants/'.$locked->public_id, 'public');
+                $logoPath = $data['logo']->store('tenants/'.$locked->public_id, (string) config('filesystems.default', 'local'));
             }
 
             $locked->forceFill([
@@ -48,7 +48,7 @@ final readonly class UpdateTenantSettings implements Action
             ])->save();
 
             if (is_string($oldLogoPath) && $oldLogoPath !== '' && $oldLogoPath !== $logoPath) {
-                Storage::disk('public')->delete($oldLogoPath);
+                Storage::disk((string) config('filesystems.default', 'local'))->delete($oldLogoPath);
             }
 
             return $locked->refresh();

@@ -9,6 +9,7 @@ use App\Support\Tenancy;
 use Database\Seeders\CapabilitySeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Laravel\Sanctum\Sanctum;
@@ -16,7 +17,9 @@ use Laravel\Sanctum\Sanctum;
 uses(RefreshDatabase::class);
 
 it('stores a tenant-scoped technician image and returns a public media id', function (): void {
-    Storage::fake('local');
+    Config::set('filesystems.default', 's3');
+    $disk = 's3';
+    Storage::fake($disk);
     $tenant = Tenant::create(['name' => 'Northline', 'slug' => 'northline', 'base_currency' => 'USD', 'collection_currency' => 'USD']);
     app(Tenancy::class)->set($tenant);
     $user = User::create(['tenant_id' => $tenant->id, 'name' => 'Technician', 'email' => 'media-tech@example.test', 'password' => Hash::make('password'), 'role' => 'technician']);
@@ -29,7 +32,7 @@ it('stores a tenant-scoped technician image and returns a public media id', func
     $response->assertCreated()->assertJsonStructure(['id', 'filename', 'mime_type', 'size_bytes'])->assertJsonMissing(['path', 'sha256']);
     app(Tenancy::class)->set($tenant);
     $media = MediaUpload::query()->firstOrFail();
-    Storage::disk('local')->assertExists($media->path);
+    Storage::disk($disk)->assertExists($media->path);
     expect($response->json('id'))->toBe($media->public_id)
         ->and($media->tenant_id)->toBe($tenant->id);
 });

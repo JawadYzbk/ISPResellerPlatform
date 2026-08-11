@@ -8,13 +8,16 @@ use App\Support\Tenancy;
 use Database\Seeders\CapabilitySeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 
 uses(RefreshDatabase::class);
 
 it('uploads and downloads a tenant-private customer document', function (): void {
-    Storage::fake('local');
+    Config::set('filesystems.default', 's3');
+    $disk = 's3';
+    Storage::fake($disk);
     $tenant = Tenant::create(['name' => 'Northline', 'slug' => 'northline', 'base_currency' => 'USD', 'collection_currency' => 'USD']);
     app(Tenancy::class)->set($tenant);
     $user = User::create(['tenant_id' => $tenant->id, 'name' => 'Customer care', 'email' => 'customer-documents@example.test', 'password' => Hash::make('password'), 'role' => 'tenant_owner']);
@@ -29,7 +32,7 @@ it('uploads and downloads a tenant-private customer document', function (): void
 
     app(Tenancy::class)->set($tenant);
     $document = MediaUpload::query()->where('customer_id', $customer->id)->firstOrFail();
-    Storage::disk('local')->assertExists($document->path);
+    Storage::disk($disk)->assertExists($document->path);
     $this->actingAs($user)
         ->get(route('customers.show', $customer->public_id))
         ->assertInertia(fn ($page) => $page

@@ -6,12 +6,15 @@ use App\Support\Tenancy;
 use Database\Seeders\CapabilitySeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Storage;
 
 uses(RefreshDatabase::class);
 
 it('lets an owner upload a tenant logo for staff and portal branding', function (): void {
-    Storage::fake('public');
+    Config::set('filesystems.default', 's3');
+    $disk = 's3';
+    Storage::fake($disk);
     $tenant = Tenant::create([
         'name' => 'Northline',
         'slug' => 'northline',
@@ -57,7 +60,7 @@ it('lets an owner upload a tenant logo for staff and portal branding', function 
     $tenant->refresh();
 
     expect($tenant->logo_path)->toStartWith('tenants/'.$tenant->public_id.'/');
-    Storage::disk('public')->assertExists($tenant->logo_path);
+    Storage::disk($disk)->assertExists($tenant->logo_path);
 
     $this->get(route('tenant.logo', $tenant))->assertOk();
     $this->actingAs($owner)

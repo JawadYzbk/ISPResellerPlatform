@@ -29,7 +29,7 @@ final readonly class StoreMediaUpload implements Action
         }
         $publicId = (string) Str::ulid();
         $extension = $file->guessExtension() ?: 'bin';
-        $disk = 'local';
+        $disk = (string) config('filesystems.default', 'local');
         $path = 'media/'.$tenantId.'/'.$publicId.'.'.$extension;
         $stored = Storage::disk($disk)->putFileAs(dirname($path), $file, basename($path));
         if ($stored === false) {
