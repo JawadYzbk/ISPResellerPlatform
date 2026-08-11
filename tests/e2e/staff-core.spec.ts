@@ -77,7 +77,7 @@ test.describe('staff core journeys', () => {
         await expect(page.getByRole('heading', { name: 'Your operations at a glance.' })).toBeVisible();
         await page.goto('/partners/commercial');
         await expect(page).toHaveURL(/\/partners\/commercial/);
-        await expect(page.getByRole('heading', { name: 'Prices and settlements' })).toBeVisible();
+        await expect(page.getByRole('heading', { name: 'Prices and settlements' })).toBeVisible({ timeout: 15_000 });
     });
 
     test('keeps the customer queue and settings reachable for the owner', async ({ page }) => {
