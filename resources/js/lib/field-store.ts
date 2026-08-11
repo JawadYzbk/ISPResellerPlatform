@@ -8,10 +8,36 @@ export type QueuedFieldPayment = {
     last_error?: string;
 };
 
-type StoredFieldState = {
+export type FieldCustomerCache = {
+    id: string;
+    code: string;
+    first_name: string;
+    last_name: string | null;
+    phone: string;
+    balance_amount: number;
+    balance_currency: string;
+    zone: { code: string; name: string } | null;
+};
+
+export type FieldCurrencyCache = {
+    code: string;
+    name: string;
+    decimal_digits: number;
+};
+
+export type CachedFieldSnapshot = {
+    sync_token: string;
+    generated_at: string;
+    customers: FieldCustomerCache[];
+    currencies: FieldCurrencyCache[];
+    default_currency: string;
+};
+
+export type StoredFieldState = {
     key: string;
     sync_token: string | null;
     pending: QueuedFieldPayment[];
+    cached_snapshot?: CachedFieldSnapshot;
 };
 
 const DATABASE_NAME = 'isp-manager-field';

@@ -5,19 +5,16 @@ import { CheckCircle2, CloudOff, CreditCard, RefreshCw, Search, UserRound, Wifi 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import AppLayout from '@/layouts/AppLayout';
-import { readFieldState, writeFieldState, type QueuedFieldPayment } from '@/lib/field-store';
+import {
+    readFieldState,
+    writeFieldState,
+    type CachedFieldSnapshot,
+    type FieldCustomerCache,
+    type QueuedFieldPayment,
+} from '@/lib/field-store';
 import { currencyFractionDigits, formatMoney, parseMoneyToMinor } from '@/lib/format';
 
-type FieldCustomer = {
-    id: string;
-    code: string;
-    first_name: string;
-    last_name: string | null;
-    phone: string;
-    balance_amount: number;
-    balance_currency: string;
-    zone: { code: string; name: string } | null;
-};
+type FieldCustomer = FieldCustomerCache;
 
 type FieldSnapshot = {
     sync_token: string;
@@ -72,6 +69,7 @@ function csrfToken(): string {
 
 export default function FieldIndex({ snapshot, shift, summary, currencies, defaultCurrency, storageKey }: Props) {
     const [customers, setCustomers] = useState(snapshot.data.customers);
+    const [currencyOptions, setCurrencyOptions] = useState(currencies);
     const [selectedCustomerId, setSelectedCustomerId] = useState('');
     const [search, setSearch] = useState('');
     const [amount, setAmount] = useState('');
@@ -85,7 +83,7 @@ export default function FieldIndex({ snapshot, shift, summary, currencies, defau
     const [error, setError] = useState<string | null>(null);
 
     const selectedCustomer = customers.find((customer) => customer.id === selectedCustomerId) ?? null;
-    const selectedCurrency = currencies.find((item) => item.code === currency);
+    const selectedCurrency = currencyOptions.find((item) => item.code === currency);
     const fractionDigits = selectedCurrency?.decimal_digits ?? currencyFractionDigits(currency);
     const filteredCustomers = useMemo(() => {
         const query = search.trim().toLowerCase();
@@ -95,12 +93,28 @@ export default function FieldIndex({ snapshot, shift, summary, currencies, defau
     }, [customers, search]);
 
     const persist = useCallback(
-        async (nextPending: QueuedFieldPayment[], nextSyncToken = syncToken) => {
+        async (
+            nextPending: QueuedFieldPayment[],
+            nextSyncToken = syncToken,
+            nextCustomers = customers,
+            nextCurrencies = currencyOptions,
+        ) => {
             setPending(nextPending);
             setSyncToken(nextSyncToken);
-            await writeFieldState({ key: storageKey, pending: nextPending, sync_token: nextSyncToken });
+            await writeFieldState({
+                key: storageKey,
+                pending: nextPending,
+                sync_token: nextSyncToken,
+                cached_snapshot: {
+                    sync_token: nextSyncToken,
+                    generated_at: new Date().toISOString(),
+                    customers: nextCustomers,
+                    currencies: nextCurrencies,
+                    default_currency: defaultCurrency,
+                },
+            });
         },
-        [storageKey, syncToken],
+        [currencyOptions, customers, defaultCurrency, storageKey, syncToken],
     );
 
     const refreshSnapshot = useCallback(async () => {
@@ -123,8 +137,9 @@ export default function FieldIndex({ snapshot, shift, summary, currencies, defau
             const changedCustomers = new Map(customers.map((customer) => [customer.id, customer]));
             body.data.customers.forEach((customer) => changedCustomers.set(customer.id, customer));
             (body.tombstones?.customers ?? []).forEach((customerId) => changedCustomers.delete(customerId));
-            setCustomers([...changedCustomers.values()]);
-            await persist(pending, body.sync_token);
+            const nextCustomers = [...changedCustomers.values()];
+            setCustomers(nextCustomers);
+            await persist(pending, body.sync_token, nextCustomers);
             setMessage('Field data refreshed.');
         } catch (caught) {
             setError(caught instanceof Error ? caught.message : 'The field list could not be refreshed.');
@@ -177,10 +192,36 @@ export default function FieldIndex({ snapshot, shift, summary, currencies, defau
 
     useEffect(() => {
         let mounted = true;
-        void readFieldState(storageKey).then((stored) => {
-            if (!mounted || stored === null) return;
-            setPending(stored.pending);
-            if (stored.sync_token) setSyncToken(stored.sync_token);
+        void readFieldState(storageKey).then(async (stored) => {
+            if (!mounted) return;
+
+            const cached = stored?.cached_snapshot;
+            const hasServerSnapshot = snapshot.sync_token !== '' || snapshot.generated_at !== '';
+            const nextCustomers = hasServerSnapshot ? snapshot.data.customers : (cached?.customers ?? []);
+            const nextCurrencies = currencies.length > 0 ? currencies : (cached?.currencies ?? []);
+            const nextSyncToken = hasServerSnapshot ? snapshot.sync_token : (cached?.sync_token ?? stored?.sync_token ?? '');
+
+            setPending(stored?.pending ?? []);
+            setCustomers(nextCustomers);
+            setCurrencyOptions(nextCurrencies);
+            setSyncToken(nextSyncToken);
+            if (!defaultCurrency && cached?.default_currency) setCurrency(cached.default_currency);
+
+            if (!stored || hasServerSnapshot || cached) {
+                const cachedSnapshot: CachedFieldSnapshot = {
+                    sync_token: nextSyncToken,
+                    generated_at: hasServerSnapshot ? snapshot.generated_at : (cached?.generated_at ?? new Date().toISOString()),
+                    customers: nextCustomers,
+                    currencies: nextCurrencies,
+                    default_currency: defaultCurrency || cached?.default_currency || nextCurrencies[0]?.code || 'USD',
+                };
+                await writeFieldState({
+                    key: storageKey,
+                    pending: stored?.pending ?? [],
+                    sync_token: nextSyncToken || null,
+                    cached_snapshot: cachedSnapshot,
+                });
+            }
         });
 
         const markOnline = () => setOnline(true);
@@ -193,7 +234,7 @@ export default function FieldIndex({ snapshot, shift, summary, currencies, defau
             window.removeEventListener('online', markOnline);
             window.removeEventListener('offline', markOffline);
         };
-    }, [storageKey]);
+    }, [currencies, defaultCurrency, snapshot, storageKey]);
 
     const wasOnline = useRef(online);
 
@@ -329,7 +370,7 @@ export default function FieldIndex({ snapshot, shift, summary, currencies, defau
                         </label>
                         <label className="block">
                             <span className="field-label">Currency</span>
-                            <CurrencyCombobox aria-label="Field payment currency" value={currency} currencies={currencies} onChange={setCurrency} />
+                            <CurrencyCombobox aria-label="Field payment currency" value={currency} currencies={currencyOptions} onChange={setCurrency} />
                         </label>
                         <label className="block sm:col-span-2">
                             <span className="field-label">Payment method</span>

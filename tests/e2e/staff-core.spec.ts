@@ -325,6 +325,31 @@ test.describe('staff core journeys', () => {
         await expect(page.getByRole('heading', { name: 'Collector desk' })).toBeVisible();
         await expect(page.getByLabel('Search field customers')).toBeVisible();
         await expect(page.getByRole('combobox', { name: 'Field payment currency' })).toBeVisible();
+        await expect
+            .poll(() =>
+                page.evaluate(
+                    () =>
+                        new Promise<number>((resolve) => {
+                            const fallbackCount = Object.keys(localStorage)
+                                .filter((key) => key.startsWith('isp-manager-field:'))
+                                .reduce((count, key) => {
+                                    try {
+                                        return Math.max(count, JSON.parse(localStorage.getItem(key) ?? '{}').cached_snapshot?.customers?.length ?? 0);
+                                    } catch {
+                                        return count;
+                                    }
+                                }, 0);
+                            const request = indexedDB.open('isp-manager-field', 1);
+                            request.onerror = () => resolve(fallbackCount);
+                            request.onsuccess = () => {
+                                const read = request.result.transaction('state', 'readonly').objectStore('state').getAll();
+                                read.onerror = () => resolve(fallbackCount);
+                                read.onsuccess = () => resolve(Math.max(fallbackCount, ...read.result.map((item) => item.cached_snapshot?.customers?.length ?? 0)));
+                            };
+                        }),
+                ),
+            )
+            .toBeGreaterThan(0);
 
         await page.context().setOffline(true);
         await expect(page.getByRole('status')).toContainText('offline', { ignoreCase: true });
