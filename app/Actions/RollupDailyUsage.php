@@ -4,6 +4,7 @@ namespace App\Actions;
 
 use App\Contracts\Action;
 use App\Models\CurrentSession;
+use App\Models\RadiusAccounting;
 use App\Models\Tenant;
 use App\Models\UsageDaily;
 use App\Support\Tenancy;
@@ -14,11 +15,19 @@ final readonly class RollupDailyUsage implements Action
     public function handle(Tenant $tenant, CarbonImmutable $date): int
     {
         return app(Tenancy::class)->run($tenant, function () use ($date): int {
-            $rows = CurrentSession::query()
-                ->selectRaw('service_id, SUM(input_octets) as input_octets, SUM(output_octets) as output_octets')
-                ->whereDate('acct_start_time', $date->toDateString())
+            $rows = RadiusAccounting::query()
+                ->selectRaw('service_id, SUM(COALESCE(acctinputoctets, 0)) as input_octets, SUM(COALESCE(acctoutputoctets, 0)) as output_octets')
+                ->whereNotNull('service_id')
+                ->whereDate('acctstarttime', $date->toDateString())
                 ->groupBy('service_id')
                 ->get();
+            if ($rows->isEmpty()) {
+                $rows = CurrentSession::query()
+                    ->selectRaw('service_id, SUM(input_octets) as input_octets, SUM(output_octets) as output_octets')
+                    ->whereDate('acct_start_time', $date->toDateString())
+                    ->groupBy('service_id')
+                    ->get();
+            }
             foreach ($rows as $row) {
                 $input = (int) $row->input_octets;
                 $output = (int) $row->output_octets;

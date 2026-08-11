@@ -44,11 +44,13 @@ return Application::configure(basePath: dirname(__DIR__))
         $schedule->command('services:suspend-overdue')->hourlyAt(5);
         $schedule->command('metrics:prune')->dailyAt('02:10');
         $schedule->command('notifications:expiry-reminders')->hourlyAt(10);
+        $schedule->command('radius:sync-accounting')->everyFiveMinutes();
         $schedule->command('radius:mark-stale-sessions')->everyFifteenMinutes();
         $schedule->command('tickets:auto-close-resolved')->hourlyAt(20);
         $schedule->command('billing:generate-invoices')->dailyAt('01:20');
         $schedule->command('fx:sync-frankfurter')->dailyAt('01:35');
-        $schedule->command('radius:enforce-quotas')->dailyAt('01:40');
+        $schedule->command('usage:rollup-daily')->dailyAt('01:40');
+        $schedule->command('radius:enforce-quotas')->dailyAt('01:45');
     })
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->web(append: [

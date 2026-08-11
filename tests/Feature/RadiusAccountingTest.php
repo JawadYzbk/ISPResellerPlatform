@@ -3,14 +3,17 @@
 use App\Actions\CloseSessionsForNas;
 use App\Actions\MarkStaleSessions;
 use App\Actions\RollupDailyUsage;
+use App\Actions\SyncRadiusAccounting;
 use App\Actions\UpsertCurrentSession;
 use App\Models\CurrentSession;
+use App\Models\RadiusNas;
 use App\Models\Service;
 use App\Models\Tenant;
 use App\Models\UsageDaily;
 use App\Support\Tenancy;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 
 uses(RefreshDatabase::class);
 
@@ -28,6 +31,35 @@ it('upserts live RADIUS sessions and rolls usage up idempotently', function (): 
     expect(CurrentSession::count())->toBe(1)
         ->and(UsageDaily::count())->toBe(1)
         ->and(UsageDaily::firstOrFail()->total_octets)->toBe(450);
+});
+
+it('imports stock radacct rows into tenant sessions and usage', function (): void {
+    $tenant = Tenant::create(['name' => 'Radacctline', 'slug' => 'radacctline', 'base_currency' => 'USD', 'collection_currency' => 'USD']);
+    app(Tenancy::class)->set($tenant);
+    $service = Service::factory()->create(['username' => 'radius-customer-001']);
+    RadiusNas::create(['nasname' => '10.0.0.1', 'shortname' => 'Core NAS', 'secret' => 'shared-secret', 'coa_port' => 1700]);
+    $date = CarbonImmutable::parse('2026-08-10 12:00:00');
+
+    DB::table('radacct')->insert([
+        'acctsessionid' => 'acct-radacct-001',
+        'acctuniqueid' => 'unique-radacct-001',
+        'username' => $service->username,
+        'nasipaddress' => '10.0.0.1',
+        'acctstarttime' => $date,
+        'acctupdatetime' => $date->addMinutes(5),
+        'acctinputoctets' => 100,
+        'acctoutputoctets' => 250,
+        'framedipaddress' => '10.0.0.5',
+    ]);
+
+    expect(app(SyncRadiusAccounting::class)->handle($tenant, $date->addMinutes(5)))->toBe(1)
+        ->and(CurrentSession::firstOrFail()->input_octets)->toBe(100)
+        ->and(CurrentSession::firstOrFail()->output_octets)->toBe(250)
+        ->and(DB::table('radacct')->where('acctuniqueid', 'unique-radacct-001')->value('service_id'))->toBe($service->id);
+
+    app(RollupDailyUsage::class)->handle($tenant, $date);
+
+    expect(UsageDaily::firstOrFail()->total_octets)->toBe(350);
 });
 
 it('marks sessions stale after two missed interim intervals', function (): void {
