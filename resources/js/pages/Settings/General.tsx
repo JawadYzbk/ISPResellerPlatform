@@ -21,7 +21,8 @@ type Settings = {
 
 type FormSettings = Settings & { name: string; logo: File | null };
 
-type Payments = { cash_enabled: boolean; whish_enabled: boolean; stripe_enabled: boolean };
+type PaymentStatus = { ready: boolean; status: string; detail: string };
+type Payments = { cash: PaymentStatus; whish: PaymentStatus; stripe: PaymentStatus };
 type SetupSignals = {
     logo_ready: boolean;
     currency: { base: string; collection: string; rate_ready: boolean };
@@ -99,7 +100,7 @@ export default function GeneralSettings({ tenant, settings, payments, setup }: P
                         WhatsApp setup
                     </Link>
                 </div>
-                <section className="card mt-6 p-5">
+                <section id="payment-channels" className="card mt-6 p-5">
                     <div className="flex items-center justify-between gap-4">
                         <div>
                             <h2 className="section-title">Payment channels</h2>
@@ -112,34 +113,38 @@ export default function GeneralSettings({ tenant, settings, payments, setup }: P
                     <div className="mt-5 grid gap-4 md:grid-cols-3">
                         <div className="rounded-xl border border-line bg-sand/50 p-4">
                             <p className="text-sm font-semibold">Cash collection</p>
-                            <p className="mt-1 text-xs text-muted">
-                                Open a shift, collect, and close with a counted float.
-                            </p>
+                            <p className="mt-1 text-xs text-muted">{payments.cash.detail}</p>
                             <Link href="/billing/shifts" className="mt-3 inline-flex text-xs font-semibold text-brand">
                                 Open cash shifts →
                             </Link>
                         </div>
                         <div className="rounded-xl border border-line bg-sand/50 p-4">
                             <p className="text-sm font-semibold">Whish Pay QR</p>
-                            <p className="mt-1 text-xs text-muted">
-                                {payments.whish_enabled
-                                    ? 'Enabled for supported USD, LBP, and AED collection.'
-                                    : 'Provider credentials are not enabled.'}
+                            <p
+                                className={`mt-1 text-xs ${payments.whish.ready ? 'text-emerald-700' : 'text-amber-700'}`}
+                            >
+                                {payments.whish.detail}
                             </p>
-                            <Link href="/customers" className="mt-3 inline-flex text-xs font-semibold text-brand">
-                                Open customer collection →
+                            <Link
+                                href={payments.whish.ready ? '/customers' : '#payment-channels'}
+                                className="mt-3 inline-flex text-xs font-semibold text-brand"
+                            >
+                                {payments.whish.ready ? 'Open customer collection' : 'Review gateway setup'} →
                             </Link>
                         </div>
                         <div className="rounded-xl border border-line bg-sand/50 p-4">
                             <p className="text-sm font-semibold">Stripe portal</p>
-                            <p className="mt-1 text-xs text-muted">
-                                {payments.stripe_enabled
-                                    ? 'Enabled for customer portal checkout.'
-                                    : 'Portal checkout is not configured.'}
+                            <p
+                                className={`mt-1 text-xs ${payments.stripe.ready ? 'text-emerald-700' : 'text-amber-700'}`}
+                            >
+                                {payments.stripe.detail}
                             </p>
-                            <span className="mt-3 inline-flex text-xs font-semibold text-muted">
-                                Confirmed by customer
-                            </span>
+                            <Link
+                                href="#payment-channels"
+                                className="mt-3 inline-flex text-xs font-semibold text-brand"
+                            >
+                                {payments.stripe.ready ? 'Review customer portal' : 'Review gateway setup'} →
+                            </Link>
                         </div>
                     </div>
                 </section>

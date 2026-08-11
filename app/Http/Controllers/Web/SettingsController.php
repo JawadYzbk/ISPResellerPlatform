@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Web;
 
+use App\Actions\GetPaymentSetupStatus;
 use App\Actions\GetWhatsAppSetupStatus;
 use App\Actions\GetWorkspaceSetupSignals;
 use App\Actions\QueueWhatsAppTestMessage;
@@ -17,7 +18,7 @@ use Inertia\Response;
 
 final class SettingsController extends Controller
 {
-    public function general(Request $request, GetWorkspaceSetupSignals $setupSignals): Response
+    public function general(Request $request, GetPaymentSetupStatus $paymentStatus, GetWorkspaceSetupSignals $setupSignals): Response
     {
         $user = $request->user();
         abort_unless($user instanceof User && $user->can('settings.manage'), 403);
@@ -44,12 +45,7 @@ final class SettingsController extends Controller
                 'resolved_ticket_auto_close_hours' => (int) ($settings->settings['resolved_ticket_auto_close_hours'] ?? 72),
                 'radius_interim_interval_seconds' => (int) ($settings->settings['radius_interim_interval_seconds'] ?? 300),
             ],
-            'payments' => [
-                'cash_enabled' => true,
-                'whish_enabled' => (bool) config('services.whish.enabled', false),
-                'stripe_enabled' => (string) config('services.payments.driver', 'null') === 'stripe'
-                    && filled(config('services.stripe.publishable_key')),
-            ],
+            'payments' => $paymentStatus->handle(),
             'setup' => $setupSignals->handle($tenant),
         ]);
     }

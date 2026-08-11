@@ -24,6 +24,15 @@ it('renders and updates tenant settings through the owner surface', function ():
         'services.whatsapp.web.token' => 'bridge-token',
         'services.whatsapp.web.webhook_url' => 'http://app/api/v1/webhooks/gateways/whatsapp_web',
         'services.webhooks.secrets.whatsapp_web' => 'webhook-secret',
+        'services.payments.driver' => 'null',
+        'services.stripe.secret' => null,
+        'services.stripe.publishable_key' => null,
+        'services.stripe.endpoint' => null,
+        'services.stripe.webhook_secret' => null,
+        'services.whish.enabled' => false,
+        'services.whish.channel' => null,
+        'services.whish.secret' => null,
+        'services.whish.website_url' => null,
     ]);
     Http::fake();
 
@@ -39,6 +48,9 @@ it('renders and updates tenant settings through the owner surface', function ():
             ->where('setup.currency.rate_ready', true)
             ->where('setup.whatsapp.configured', true)
             ->where('setup.whatsapp.status', 'configured')
+            ->where('payments.cash.ready', true)
+            ->where('payments.stripe.status', 'not_selected')
+            ->where('payments.whish.status', 'disabled')
         );
     Http::assertNothingSent();
 
