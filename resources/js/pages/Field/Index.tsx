@@ -1,4 +1,5 @@
 import CurrencyCombobox, { type CurrencyOption } from '@/components/ui/currency-combobox';
+import ConfirmDialog from '@/components/ui/confirm-dialog';
 import ResponsiveSelect from '@/components/ui/responsive-select';
 import { Head, Link } from '@inertiajs/react';
 import { CheckCircle2, CloudOff, CreditCard, RefreshCw, Search, UserRound, Wifi } from 'lucide-react';
@@ -6,6 +7,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import AppLayout from '@/layouts/AppLayout';
 import {
+    clearFieldState,
     readFieldState,
     writeFieldState,
     type CachedFieldSnapshot,
@@ -274,6 +276,16 @@ export default function FieldIndex({ snapshot, shift, summary, currencies, defau
         if (online) void pushQueue();
     };
 
+    const clearDeviceData = async () => {
+        await clearFieldState(storageKey);
+        setPending([]);
+        setSyncToken(snapshot.sync_token);
+        setCustomers(snapshot.data.customers);
+        setCurrencyOptions(currencies);
+        setMessage('Field data was cleared from this device.');
+        setError(null);
+    };
+
     return (
         <AppLayout>
             <Head title="Field collection" />
@@ -304,9 +316,20 @@ export default function FieldIndex({ snapshot, shift, summary, currencies, defau
                     <div className="card p-4">
                         <p className="eyebrow">Queue</p>
                         <p className="mt-2 text-lg font-semibold">{pending.length} pending</p>
-                        <button type="button" className="mt-1 inline-flex items-center gap-1 text-xs font-semibold text-brand disabled:opacity-50" disabled={!online || busy || pending.length === 0} onClick={() => void pushQueue()}>
-                            <RefreshCw size={13} className={busy ? 'animate-spin' : ''} /> Synchronize now
-                        </button>
+                        <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1">
+                            <button type="button" className="inline-flex items-center gap-1 text-xs font-semibold text-brand disabled:opacity-50" disabled={!online || busy || pending.length === 0} onClick={() => void pushQueue()}>
+                                <RefreshCw size={13} className={busy ? 'animate-spin' : ''} /> Synchronize now
+                            </button>
+                            <ConfirmDialog
+                                title="Clear field data from this device?"
+                                description={pending.length > 0 ? 'This removes the cached customer list and permanently deletes the queued payments on this device. Only continue after the queue is synchronized or no longer needed.' : 'This removes the cached customer list and currency catalog from this device. The server data is not changed.'}
+                                confirmLabel="Clear device data"
+                                destructive={pending.length > 0}
+                                onConfirm={clearDeviceData}
+                            >
+                                <button type="button" className="text-xs font-semibold text-coral disabled:opacity-50" disabled={busy}>Clear device data</button>
+                            </ConfirmDialog>
+                        </div>
                     </div>
                 </div>
 

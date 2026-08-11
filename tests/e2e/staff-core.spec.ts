@@ -351,8 +351,13 @@ test.describe('staff core journeys', () => {
             )
             .toBeGreaterThan(0);
 
+        await page.getByRole('button', { name: 'Clear device data' }).click();
+        await expect(page.getByRole('alertdialog')).toBeVisible();
+        await page.getByRole('button', { name: 'Clear device data', exact: true }).last().click();
+        await expect(page.getByRole('status')).toContainText('Field data was cleared');
+
         await page.context().setOffline(true);
-        await expect(page.getByRole('status')).toContainText('offline', { ignoreCase: true });
+        await expect(page.getByRole('status').filter({ hasText: /offline/i })).toBeVisible();
         await page.context().setOffline(false);
     });
 

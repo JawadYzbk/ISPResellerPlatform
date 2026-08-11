@@ -77,6 +77,16 @@ async function writeIndexedState(state: StoredFieldState): Promise<void> {
     }).finally(() => database.close());
 }
 
+async function deleteIndexedState(key: string): Promise<void> {
+    const database = await openDatabase();
+
+    await new Promise<void>((resolve, reject) => {
+        const request = database.transaction(STORE_NAME, 'readwrite').objectStore(STORE_NAME).delete(key);
+        request.onsuccess = () => resolve();
+        request.onerror = () => reject(request.error ?? new Error('Field storage could not be cleared.'));
+    }).finally(() => database.close());
+}
+
 function readFallbackState(key: string): StoredFieldState | null {
     try {
         const raw = window.localStorage.getItem(fallbackKey(key));
@@ -114,6 +124,20 @@ export async function writeFieldState(state: StoredFieldState): Promise<void> {
         await writeIndexedState(state);
     } catch {
         writeFallbackState(state);
+    }
+}
+
+export async function clearFieldState(key: string): Promise<void> {
+    try {
+        if (typeof window !== 'undefined' && 'indexedDB' in window) await deleteIndexedState(key);
+    } catch {
+        // Fall through to the local-storage cleanup when IndexedDB is unavailable.
+    }
+
+    try {
+        window.localStorage.removeItem(fallbackKey(key));
+    } catch {
+        // A private browsing context may deny local persistence.
     }
 }
 
