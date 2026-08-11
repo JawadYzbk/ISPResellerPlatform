@@ -28,3 +28,23 @@ it('queues one tenant-local expiry reminder and respects opt-out and quiet hours
         ->and(app(QueueExpiryReminders::class)->handle($tenant, $localNow->setTime(22, 0), 7))->toBe(0)
         ->and(Message::count())->toBe(1);
 });
+
+it('uses the customer channel order so an expiry reminder can fall back', function (): void {
+    Queue::fake();
+    $tenant = Tenant::create(['name' => 'Fallbackline', 'slug' => 'fallbackline', 'timezone' => 'Asia/Beirut', 'base_currency' => 'USD', 'collection_currency' => 'USD']);
+    app(Tenancy::class)->set($tenant);
+    MessageTemplate::create(['key' => 'service.expiry_reminder', 'channel' => 'sms', 'locale' => 'en', 'body' => 'SMS {{ service_username }}']);
+    MessageTemplate::create(['key' => 'service.expiry_reminder', 'channel' => 'email', 'locale' => 'en', 'body' => 'Email {{ service_username }}']);
+    $localNow = CarbonImmutable::parse('2026-08-10 09:00:00', 'Asia/Beirut');
+    $service = Service::factory()->create([
+        'status' => ServiceStatus::Active,
+        'expires_at' => $localNow->addDays(7)->setTimezone('UTC'),
+    ]);
+    $service->customer->forceFill(['notification_preferences' => ['channels' => ['sms', 'email']]])->save();
+
+    expect(app(QueueExpiryReminders::class)->handle($tenant, $localNow, 7))->toBe(1);
+
+    $message = Message::query()->firstOrFail();
+    expect($message->channel)->toBe('sms')
+        ->and($message->metadata['fallback_channels'])->toBe(['email']);
+});

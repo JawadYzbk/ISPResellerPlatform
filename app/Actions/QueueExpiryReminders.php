@@ -5,7 +5,6 @@ namespace App\Actions;
 use App\Contracts\Action;
 use App\Enums\ServiceStatus;
 use App\Models\Message;
-use App\Models\MessageTemplate;
 use App\Models\Service;
 use App\Models\Tenant;
 use App\Support\Tenancy;
@@ -13,7 +12,7 @@ use Carbon\CarbonImmutable;
 
 final readonly class QueueExpiryReminders implements Action
 {
-    public function __construct(private QueueMessage $queueMessage) {}
+    public function __construct(private QueueCustomerNotification $notification) {}
 
     public function handle(Tenant $tenant, ?CarbonImmutable $at = null, int $offsetDays = 7): int
     {
@@ -23,16 +22,11 @@ final readonly class QueueExpiryReminders implements Action
             if ($this->isQuiet($now, (string) ($settings['notification_quiet_start'] ?? '21:00'), (string) ($settings['notification_quiet_end'] ?? '08:00')) || $now->hour !== (int) ($settings['expiry_reminder_send_hour'] ?? 9)) {
                 return 0;
             }
-            $template = MessageTemplate::query()->where('key', 'service.expiry_reminder')->where('channel', 'sms')->where('locale', $tenant->locale ?: 'en')->where('is_active', true)->first();
-            if ($template === null) {
-                return 0;
-            }
-
             $target = $now->addDays(max(1, $offsetDays));
             $start = $target->startOfDay()->setTimezone('UTC');
             $end = $target->endOfDay()->setTimezone('UTC');
             $queued = 0;
-            Service::query()->with('customer')->where('status', ServiceStatus::Active)->whereBetween('expires_at', [$start, $end])->chunkById(100, function ($services) use (&$queued, $template, $offsetDays, $target): void {
+            Service::query()->with('customer')->where('status', ServiceStatus::Active)->whereBetween('expires_at', [$start, $end])->chunkById(100, function ($services) use (&$queued, $offsetDays, $target): void {
                 foreach ($services as $service) {
                     $customer = $service->customer;
                     if (($customer->notification_preferences['service_expiry_reminders'] ?? true) === false) {
@@ -42,13 +36,13 @@ final readonly class QueueExpiryReminders implements Action
                     if (Message::query()->where('idempotency_key', $key)->exists()) {
                         continue;
                     }
-                    $this->queueMessage->handle($template, $customer->phone, 'sms', $template->locale, $key, [
+                    $message = $this->notification->handle($customer, 'service.expiry_reminder', $key, [
                         'customer_name' => $customer->full_name,
                         'service_username' => $service->username,
                         'expiry_date' => $target->toDateString(),
                         'days_remaining' => $offsetDays,
-                    ], $customer);
-                    $queued++;
+                    ]);
+                    $queued += $message === null ? 0 : 1;
                 }
             });
 

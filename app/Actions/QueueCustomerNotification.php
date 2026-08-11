@@ -66,6 +66,7 @@ final readonly class QueueCustomerNotification implements Action
             'customer.welcome' => 'welcome_messages',
             'payment.receipt' => 'payment_receipts',
             'service.suspended', 'service.reactivated' => 'service_status_notifications',
+            'service.expiry_reminder' => 'service_expiry_reminders',
             'outage.notice', 'outage.resolved' => 'outage_notifications',
             default => str_replace('.', '_', $templateKey),
         };
