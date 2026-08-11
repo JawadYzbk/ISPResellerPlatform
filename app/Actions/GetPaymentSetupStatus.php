@@ -28,7 +28,11 @@ final readonly class GetPaymentSetupStatus implements Action
                 'detail' => $stripeReady
                     ? 'PaymentIntent checkout and webhook settlement are configured.'
                     : ($stripeSelected
-                        ? 'Complete the Stripe secret, publishable key, endpoint, and webhook secret.'
+                        ? 'Missing deployment values: '.$this->missingConfiguration([
+                            'STRIPE_SECRET' => config('services.stripe.secret'),
+                            'STRIPE_PUBLISHABLE_KEY' => config('services.stripe.publishable_key'),
+                            'STRIPE_WEBHOOK_SECRET' => config('services.stripe.webhook_secret'),
+                        ]).'.'
                         : 'Stripe is not selected; cash collection remains available.'),
             ],
             'whish' => [
@@ -37,10 +41,23 @@ final readonly class GetPaymentSetupStatus implements Action
                 'detail' => $whishReady
                     ? 'Whish Pay QR and provider-verified callbacks are configured.'
                     : ($whishEnabled
-                        ? 'Complete the Whish channel, secret, and website URL.'
+                        ? 'Missing deployment values: '.$this->missingConfiguration([
+                            'WHISH_CHANNEL' => config('services.whish.channel'),
+                            'WHISH_SECRET' => config('services.whish.secret'),
+                            'WHISH_WEBSITE_URL' => config('services.whish.website_url'),
+                        ]).'.'
                         : 'Whish Pay is disabled; enable it after merchant acceptance.'),
             ],
         ];
+    }
+
+    /** @param array<string, mixed> $values */
+    private function missingConfiguration(array $values): string
+    {
+        return collect($values)
+            ->filter(fn (mixed $value): bool => ! $this->configured($value))
+            ->keys()
+            ->implode(', ');
     }
 
     private function configured(mixed $value): bool

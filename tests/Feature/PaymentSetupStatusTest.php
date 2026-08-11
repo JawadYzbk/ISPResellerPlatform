@@ -19,7 +19,10 @@ it('requires complete gateway configuration before reporting online payments as 
 
     expect($status['cash']['ready'])->toBeTrue()
         ->and($status['stripe']['status'])->toBe('not_configured')
+        ->and($status['stripe']['detail'])->toContain('STRIPE_WEBHOOK_SECRET')
         ->and($status['whish']['status'])->toBe('not_configured');
+
+    expect($status['whish']['detail'])->toContain('WHISH_WEBSITE_URL');
 
     config()->set([
         'services.stripe.webhook_secret' => 'stripe-webhook-secret',

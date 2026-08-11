@@ -141,10 +141,10 @@ export default function GeneralSettings({ tenant, settings, currencies, payments
                                 {payments.whish.detail}
                             </p>
                             <Link
-                                href={payments.whish.ready ? '/customers' : '#payment-channels'}
+                                href={payments.whish.ready ? '/customers' : '/settings/readiness'}
                                 className="mt-3 inline-flex text-xs font-semibold text-brand"
                             >
-                                {payments.whish.ready ? 'Open customer collection' : 'Review gateway setup'} →
+                                {payments.whish.ready ? 'Open customer collection' : 'Open readiness checklist'} →
                             </Link>
                         </div>
                         <div className="rounded-xl border border-line bg-sand/50 p-4">
@@ -155,10 +155,10 @@ export default function GeneralSettings({ tenant, settings, currencies, payments
                                 {payments.stripe.detail}
                             </p>
                             <Link
-                                href="#payment-channels"
+                                href={payments.stripe.ready ? '#payment-channels' : '/settings/readiness'}
                                 className="mt-3 inline-flex text-xs font-semibold text-brand"
                             >
-                                {payments.stripe.ready ? 'Review customer portal' : 'Review gateway setup'} →
+                                {payments.stripe.ready ? 'Review customer portal' : 'Open readiness checklist'} →
                             </Link>
                         </div>
                     </div>
