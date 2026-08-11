@@ -181,8 +181,12 @@ export default function AppLayout({ children }: PropsWithChildren) {
             <RealtimeBridge />
             <aside className="fixed inset-y-0 start-0 z-20 hidden w-64 flex-col border-e border-line bg-white lg:flex">
                 <div className="flex h-20 items-center gap-3 border-b border-line px-6">
-                    <div className="grid size-9 place-items-center rounded-xl bg-brand text-white shadow-sm">
-                        <Activity size={19} />
+                    <div className="grid size-9 place-items-center overflow-hidden rounded-xl bg-brand text-white shadow-sm">
+                        {auth.tenant?.logo_url ? (
+                            <img src={auth.tenant.logo_url} alt="" className="size-full object-cover" />
+                        ) : (
+                            <Activity size={19} />
+                        )}
                     </div>
                     <div>
                         <p className="font-display text-sm font-bold tracking-tight">ISP Manager</p>

@@ -30,6 +30,7 @@ use App\Http\Controllers\Web\SecurityController;
 use App\Http\Controllers\Web\ServiceController;
 use App\Http\Controllers\Web\SessionOperationsController;
 use App\Http\Controllers\Web\SettingsController;
+use App\Http\Controllers\Web\TenantLogoController;
 use App\Http\Controllers\Web\TicketOperationsController;
 use App\Http\Controllers\Web\UserOperationsController;
 use App\Http\Controllers\Web\WorkOrderOperationsController;
@@ -49,6 +50,8 @@ Route::prefix('portal/{tenant:slug}')->group(function (): void {
     Route::get('/', [PortalPageController::class, 'signIn'])->name('portal.sign-in');
     Route::get('/dashboard', [PortalPageController::class, 'dashboard'])->name('portal.dashboard');
 });
+
+Route::get('/tenant/{tenant:slug}/logo', TenantLogoController::class)->name('tenant.logo');
 
 Route::middleware('guest')->group(function (): void {
     Route::get('/login', [LoginController::class, 'create'])->name('login');

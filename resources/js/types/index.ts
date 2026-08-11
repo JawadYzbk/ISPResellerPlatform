@@ -9,6 +9,7 @@ export type Tenant = {
     id: string;
     name: string;
     currency: string;
+    logo_url: string | null;
 };
 
 export type PageProps = {
@@ -122,7 +123,7 @@ export type OperationsReport = {
     low_stock_items: { sku: string; name: string; available_units: number | string; reorder_level: number }[];
 };
 
-export type PublicTenant = { slug: string; name: string };
+export type PublicTenant = { slug: string; name: string; logo_url: string | null };
 
 export type PortalBilling = {
     invoices: {

@@ -194,8 +194,12 @@ export default function PortalDashboard({ tenant }: Props) {
             <main className="mx-auto max-w-3xl">
                 <header className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                        <div className="grid size-10 place-items-center rounded-xl bg-brand text-white">
-                            <Wifi size={19} />
+                        <div className="grid size-10 place-items-center overflow-hidden rounded-xl bg-brand text-white">
+                            {tenant.logo_url ? (
+                                <img src={tenant.logo_url} alt="" className="size-full object-cover" />
+                            ) : (
+                                <Wifi size={19} />
+                            )}
                         </div>
                         <div>
                             <p className="font-display font-bold">{tenant.name}</p>

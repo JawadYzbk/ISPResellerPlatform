@@ -18,12 +18,15 @@ final class SettingsController extends Controller
     {
         $user = $request->user();
         abort_unless($user instanceof User && $user->can('settings.manage'), 403);
-        abort_unless($user->tenant instanceof Tenant, 403);
-        $tenant = $user->tenant;
+        $tenant = Tenant::query()->find($user->tenant_id);
+        abort_unless($tenant instanceof Tenant, 403);
         $settings = $tenant->settingsData();
 
         return Inertia::render('Settings/General', [
-            'tenant' => $tenant->only(['public_id', 'name', 'slug']),
+            'tenant' => [
+                ...$tenant->only(['public_id', 'name', 'slug']),
+                'logo_url' => $tenant->logo_path === null ? null : route('tenant.logo', $tenant),
+            ],
             'settings' => [
                 'locale' => $settings->locale,
                 'timezone' => $settings->timezone,
@@ -45,8 +48,9 @@ final class SettingsController extends Controller
     {
         $user = $request->user();
         abort_unless($user instanceof User && $user->can('settings.manage'), 403);
-        abort_unless($user->tenant instanceof Tenant, 403);
-        $update->handle($user->tenant, $request->validated());
+        $tenant = Tenant::query()->find($user->tenant_id);
+        abort_unless($tenant instanceof Tenant, 403);
+        $update->handle($tenant, $request->validated());
 
         return redirect()->route('settings.general')->with('success', 'Workspace settings updated.');
     }

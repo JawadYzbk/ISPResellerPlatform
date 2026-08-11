@@ -56,8 +56,12 @@ export default function PortalSignIn({ tenant }: Props) {
             <Head title={`${tenant.name} customer portal`} />
             <main className="mx-auto w-full max-w-md">
                 <div className="mb-8 flex items-center gap-3">
-                    <div className="grid size-10 place-items-center rounded-xl bg-brand text-white">
-                        <Wifi size={19} />
+                    <div className="grid size-10 place-items-center overflow-hidden rounded-xl bg-brand text-white">
+                        {tenant.logo_url ? (
+                            <img src={tenant.logo_url} alt="" className="size-full object-cover" />
+                        ) : (
+                            <Wifi size={19} />
+                        )}
                     </div>
                     <div>
                         <p className="font-display font-bold">{tenant.name}</p>

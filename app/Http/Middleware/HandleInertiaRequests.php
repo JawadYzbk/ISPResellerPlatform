@@ -42,6 +42,7 @@ final class HandleInertiaRequests extends Middleware
                     'id' => $tenant->public_id,
                     'name' => $tenant->name,
                     'currency' => $tenant->collection_currency,
+                    'logo_url' => $tenant->logo_path === null ? null : route('tenant.logo', $tenant),
                 ] : null,
             ],
             'flash' => [

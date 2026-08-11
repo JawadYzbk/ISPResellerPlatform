@@ -4,7 +4,9 @@ namespace App\Actions;
 
 use App\Contracts\Action;
 use App\Models\Tenant;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 final readonly class UpdateTenantSettings implements Action
 {
@@ -29,14 +31,25 @@ final readonly class UpdateTenantSettings implements Action
                 'radius_interim_interval_seconds' => $data['radius_interim_interval_seconds'],
             ]);
 
+            $oldLogoPath = $locked->logo_path;
+            $logoPath = $oldLogoPath;
+            if (($data['logo'] ?? null) instanceof UploadedFile) {
+                $logoPath = $data['logo']->store('tenants/'.$locked->public_id, 'public');
+            }
+
             $locked->forceFill([
                 'name' => $data['name'],
+                'logo_path' => $logoPath,
                 'locale' => $data['locale'],
                 'timezone' => $data['timezone'],
                 'base_currency' => $data['base_currency'],
                 'collection_currency' => $data['collection_currency'],
                 'settings' => $settings,
             ])->save();
+
+            if (is_string($oldLogoPath) && $oldLogoPath !== '' && $oldLogoPath !== $logoPath) {
+                Storage::disk('public')->delete($oldLogoPath);
+            }
 
             return $locked->refresh();
         });

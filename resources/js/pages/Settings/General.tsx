@@ -1,9 +1,9 @@
 import { Head, Link, useForm } from '@inertiajs/react';
-import { ArrowLeft, Save, Settings2 } from 'lucide-react';
+import { ArrowLeft, ImagePlus, Save, Settings2 } from 'lucide-react';
 
 import AppLayout from '@/layouts/AppLayout';
 
-type Tenant = { public_id: string; name: string; slug: string };
+type Tenant = { public_id: string; name: string; slug: string; logo_url: string | null };
 type Settings = {
     locale: 'en' | 'ar' | 'fr';
     timezone: string;
@@ -19,16 +19,16 @@ type Settings = {
     radius_interim_interval_seconds: number;
 };
 
-type FormSettings = Settings & { name: string };
+type FormSettings = Settings & { name: string; logo: File | null };
 
 type Props = { tenant: Tenant; settings: Settings };
 
 export default function GeneralSettings({ tenant, settings }: Props) {
-    const form = useForm<FormSettings>({ ...settings, name: tenant.name });
+    const form = useForm<FormSettings>({ ...settings, name: tenant.name, logo: null });
 
     const submit = (event: React.FormEvent) => {
         event.preventDefault();
-        form.put('/settings/general');
+        form.put('/settings/general', { forceFormData: true });
     };
 
     return (
@@ -69,6 +69,35 @@ export default function GeneralSettings({ tenant, settings }: Props) {
                                     onChange={(event) => form.setData('name', event.target.value)}
                                 />
                                 {form.errors.name && <p className="field-error">{form.errors.name}</p>}
+                            </label>
+                            <label className="sm:col-span-2">
+                                <span className="field-label">Tenant logo</span>
+                                <div className="mt-2 flex flex-wrap items-center gap-4">
+                                    <div className="grid size-16 place-items-center overflow-hidden rounded-2xl bg-brand-soft text-brand">
+                                        {tenant.logo_url ? (
+                                            <img
+                                                src={tenant.logo_url}
+                                                alt={`${tenant.name} logo`}
+                                                className="size-full object-cover"
+                                            />
+                                        ) : (
+                                            <ImagePlus size={22} />
+                                        )}
+                                    </div>
+                                    <div className="min-w-0 flex-1">
+                                        <input
+                                            className="field file:me-3 file:rounded-md file:border-0 file:bg-brand-soft file:px-3 file:py-1.5 file:font-semibold file:text-brand"
+                                            type="file"
+                                            accept="image/jpeg,image/png,image/webp"
+                                            onChange={(event) => form.setData('logo', event.target.files?.[0] ?? null)}
+                                        />
+                                        <p className="mt-1 text-xs text-muted">
+                                            JPG, PNG, or WebP up to 2 MB. It appears in the staff shell and customer
+                                            portal.
+                                        </p>
+                                        {form.errors.logo && <p className="field-error">{form.errors.logo}</p>}
+                                    </div>
+                                </div>
                             </label>
                             <label>
                                 <span className="field-label">Tenant slug</span>

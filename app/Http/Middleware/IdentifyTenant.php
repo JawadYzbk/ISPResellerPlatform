@@ -17,9 +17,10 @@ final class IdentifyTenant
     {
         $user = $request->user();
         abort_unless($user instanceof User, 401);
-        $tenant = $user->tenant;
+        $tenant = Tenant::query()->find($user->tenant_id);
 
         abort_unless($tenant instanceof Tenant, 403, 'A tenant membership is required.');
+        $user->setRelation('tenant', $tenant);
 
         $tenancy = app(Tenancy::class);
         $tenancy->set($tenant);

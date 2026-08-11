@@ -16,7 +16,7 @@ class Tenant extends Model
     /** @use HasFactory<TenantFactory> */
     use HasFactory;
 
-    protected $fillable = ['name', 'slug', 'status', 'base_currency', 'collection_currency', 'timezone', 'locale', 'settings'];
+    protected $fillable = ['name', 'logo_path', 'slug', 'status', 'base_currency', 'collection_currency', 'timezone', 'locale', 'settings'];
 
     protected function casts(): array
     {

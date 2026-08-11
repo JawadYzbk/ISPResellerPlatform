@@ -16,6 +16,7 @@ final class TenantSettingsRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:120'],
+            'logo' => ['sometimes', 'nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
             'locale' => ['required', 'in:en,ar,fr'],
             'timezone' => ['required', 'timezone'],
             'base_currency' => ['required', 'regex:/^[A-Z]{3}$/'],
