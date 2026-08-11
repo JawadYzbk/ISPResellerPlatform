@@ -32,12 +32,13 @@ use App\Http\Controllers\Api\TicketApiController;
 use App\Http\Controllers\Api\WhishPaymentCallbackController;
 use App\Http\Controllers\Api\WorkOrderApiController;
 use App\Http\Controllers\Api\ZoneApiController;
+use App\Http\Middleware\ApiResponseHeaders;
 use App\Models\User;
 use App\Support\Api\UserApiResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-Route::prefix('v1')->group(function (): void {
+Route::prefix('v1')->middleware(ApiResponseHeaders::class)->group(function (): void {
     Route::get('/health', [HealthController::class, 'show'])->name('api.health');
     Route::post('/webhooks/gateways/{gateway}', MessageWebhookController::class)->name('api.webhooks.gateways');
     Route::post('/webhooks/payments/{gateway}', PaymentGatewayWebhookController::class)->name('api.webhooks.payments');
