@@ -1,5 +1,5 @@
-import { Head, Link, useForm } from '@inertiajs/react';
-import { ArrowLeft, CreditCard, Receipt, Save } from 'lucide-react';
+import { Head, Link, router, useForm } from '@inertiajs/react';
+import { ArrowLeft, CreditCard, QrCode, Receipt, Save } from 'lucide-react';
 
 import AppLayout from '@/layouts/AppLayout';
 import { currencyFractionDigits, formatMoney, parseMoneyToMinor } from '@/lib/format';
@@ -43,9 +43,10 @@ type Props = {
     invoices: InvoiceOption[];
     defaultCurrency?: string;
     paymentCurrencies: PaymentCurrency[];
+    whishEnabled: boolean;
 };
 
-export default function PaymentCreate({ customer, invoices, defaultCurrency, paymentCurrencies }: Props) {
+export default function PaymentCreate({ customer, invoices, defaultCurrency, paymentCurrencies, whishEnabled }: Props) {
     const form = useForm({
         amount: '',
         currency: defaultCurrency ?? customer.balance_currency,
@@ -63,6 +64,7 @@ export default function PaymentCreate({ customer, invoices, defaultCurrency, pay
     const selectedRate = selectedCurrency?.rate ?? null;
     const fractionDigits = selectedCurrency?.decimal_digits ?? currencyFractionDigits(form.data.currency);
     const needsFx = form.data.currency !== customer.balance_currency;
+    const whishSupported = whishEnabled && ['USD', 'LBP', 'AED'].includes(form.data.currency);
 
     const formatRate = (rate: FxRateSnapshot) => {
         const targetPerSource = rate.numerator / rate.denominator;
@@ -128,6 +130,22 @@ export default function PaymentCreate({ customer, invoices, defaultCurrency, pay
         form.clearErrors('amount');
         form.transform((data) => ({ ...data, amount: amountMinor }));
         form.post(`/customers/${customer.public_id}/payments`);
+    };
+
+    const generateWhishQr = () => {
+        const amountMinor = parseMoneyToMinor(form.data.amount, form.data.currency);
+        if (amountMinor === null) {
+            form.setError('amount', 'Enter a valid positive amount.');
+            return;
+        }
+
+        form.clearErrors('amount');
+        router.post(`/customers/${customer.public_id}/payments/whish`, {
+            amount: amountMinor,
+            currency: form.data.currency,
+            invoice_id: form.data.invoice_id || null,
+            idempotency_key: crypto.randomUUID(),
+        });
     };
 
     return (
@@ -353,6 +371,11 @@ export default function PaymentCreate({ customer, invoices, defaultCurrency, pay
                         <Link href={`/customers/${customer.public_id}`} className="button-secondary">
                             Cancel
                         </Link>
+                        {whishSupported && (
+                            <button type="button" className="button-secondary" onClick={generateWhishQr}>
+                                <QrCode size={16} /> Generate Whish QR
+                            </button>
+                        )}
                         <button className="button-primary" disabled={form.processing}>
                             <Save size={16} /> Record payment
                         </button>
