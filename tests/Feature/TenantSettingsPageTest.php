@@ -16,6 +16,11 @@ it('renders and updates tenant settings through the owner surface', function ():
     app(Tenancy::class)->set($tenant);
     $user->assignRole('tenant_owner');
     $user->forceFill(['last_authenticated_at' => now()])->save();
+    config()->set([
+        'services.whatsapp.mode' => 'cloud',
+        'services.whatsapp.token' => null,
+        'services.whatsapp.phone_number_id' => null,
+    ]);
 
     $this->actingAs($user)
         ->get(route('settings.general'))
@@ -25,6 +30,10 @@ it('renders and updates tenant settings through the owner surface', function ():
             ->where('tenant.slug', 'northline')
             ->where('settings.locale', 'en')
             ->where('settings.collection_currency', 'USD')
+            ->where('setup.logo_ready', false)
+            ->where('setup.currency.rate_ready', true)
+            ->where('setup.whatsapp.configured', false)
+            ->where('setup.whatsapp.status', 'not_configured')
         );
 
     app(Tenancy::class)->set($tenant);

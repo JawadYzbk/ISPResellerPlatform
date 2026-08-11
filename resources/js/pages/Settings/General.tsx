@@ -1,5 +1,5 @@
 import { Head, Link, useForm } from '@inertiajs/react';
-import { ArrowLeft, ImagePlus, Save, Settings2 } from 'lucide-react';
+import { AlertCircle, ArrowLeft, CheckCircle2, ImagePlus, Save, Settings2 } from 'lucide-react';
 
 import AppLayout from '@/layouts/AppLayout';
 
@@ -22,11 +22,51 @@ type Settings = {
 type FormSettings = Settings & { name: string; logo: File | null };
 
 type Payments = { cash_enabled: boolean; whish_enabled: boolean; stripe_enabled: boolean };
+type SetupSignals = {
+    logo_ready: boolean;
+    currency: { base: string; collection: string; rate_ready: boolean };
+    whatsapp: { mode: 'cloud' | 'web'; configured: boolean; status: string };
+};
 
-type Props = { tenant: Tenant; settings: Settings; payments: Payments };
+type Props = { tenant: Tenant; settings: Settings; payments: Payments; setup: SetupSignals };
 
-export default function GeneralSettings({ tenant, settings, payments }: Props) {
+function SetupSignal({ label, detail, ready, href }: { label: string; detail: string; ready: boolean; href: string }) {
+    return (
+        <div className="rounded-xl border border-line bg-sand/50 p-4">
+            <div className="flex items-start gap-3">
+                {ready ? (
+                    <CheckCircle2 size={18} className="mt-0.5 shrink-0 text-emerald-700" />
+                ) : (
+                    <AlertCircle size={18} className="mt-0.5 shrink-0 text-amber-700" />
+                )}
+                <div className="min-w-0">
+                    <p className="text-sm font-semibold">{label}</p>
+                    <p className="mt-1 text-xs text-muted">{detail}</p>
+                </div>
+            </div>
+            <Link href={href} className="mt-3 inline-flex text-xs font-semibold text-brand">
+                {ready ? 'Review setup' : 'Complete setup'} →
+            </Link>
+        </div>
+    );
+}
+
+export default function GeneralSettings({ tenant, settings, payments, setup }: Props) {
     const form = useForm<FormSettings>({ ...settings, name: tenant.name, logo: null });
+    const whatsappReady = setup.whatsapp.mode === 'web' ? setup.whatsapp.status === 'ready' : setup.whatsapp.configured;
+    const whatsappDetail = whatsappReady
+        ? setup.whatsapp.mode === 'web'
+            ? 'The Web.js bridge is paired and ready for controlled delivery.'
+            : 'Cloud API credentials are present.'
+        : setup.whatsapp.status === 'disabled'
+          ? 'WhatsApp Web.js is disabled.'
+          : 'Provider credentials or pairing are still required.';
+    const currencyDetail =
+        setup.currency.base === setup.currency.collection
+            ? `${setup.currency.base} is used for billing and collection.`
+            : setup.currency.rate_ready
+              ? `Effective ${setup.currency.base}/${setup.currency.collection} conversion is available.`
+              : `Add an effective ${setup.currency.base}/${setup.currency.collection} rate before collecting.`;
 
     const submit = (event: React.FormEvent) => {
         event.preventDefault();
@@ -103,8 +143,43 @@ export default function GeneralSettings({ tenant, settings, payments }: Props) {
                         </div>
                     </div>
                 </section>
+                <section className="card mt-6 p-5">
+                    <div className="flex items-center justify-between gap-4">
+                        <div>
+                            <h2 className="section-title">Setup signals</h2>
+                            <p className="mt-1 text-sm text-muted">The remaining workspace checks are visible here.</p>
+                        </div>
+                        <Link href="/settings/whatsapp" className="button-quiet">
+                            Open messaging setup
+                        </Link>
+                    </div>
+                    <div className="mt-5 grid gap-4 md:grid-cols-3">
+                        <SetupSignal
+                            label="Tenant branding"
+                            detail={
+                                setup.logo_ready
+                                    ? 'Logo uploaded for staff and customer surfaces.'
+                                    : 'Upload a tenant logo for staff and customer surfaces.'
+                            }
+                            ready={setup.logo_ready}
+                            href="#workspace-identity"
+                        />
+                        <SetupSignal
+                            label="Currencies and FX"
+                            detail={currencyDetail}
+                            ready={setup.currency.rate_ready}
+                            href={setup.currency.rate_ready ? '#money-display' : '/billing/exchange-rates'}
+                        />
+                        <SetupSignal
+                            label="WhatsApp delivery"
+                            detail={whatsappDetail}
+                            ready={whatsappReady}
+                            href="/settings/whatsapp"
+                        />
+                    </div>
+                </section>
                 <form onSubmit={submit} className="card mt-8 space-y-8 p-6">
-                    <section>
+                    <section id="workspace-identity">
                         <div className="flex items-center gap-2">
                             <Settings2 size={18} className="text-brand" />
                             <h2 className="section-title">Workspace identity</h2>
@@ -179,7 +254,7 @@ export default function GeneralSettings({ tenant, settings, payments }: Props) {
                             </label>
                         </div>
                     </section>
-                    <section className="border-t border-line pt-7">
+                    <section id="money-display" className="border-t border-line pt-7">
                         <h2 className="section-title">Money and display</h2>
                         <div className="mt-5 grid gap-5 sm:grid-cols-2">
                             <label>

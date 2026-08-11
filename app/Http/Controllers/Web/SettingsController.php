@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Web;
 
 use App\Actions\GetWhatsAppSetupStatus;
+use App\Actions\GetWorkspaceSetupSignals;
 use App\Actions\QueueWhatsAppTestMessage;
 use App\Actions\UpdateTenantSettings;
 use App\Http\Controllers\Controller;
@@ -16,7 +17,7 @@ use Inertia\Response;
 
 final class SettingsController extends Controller
 {
-    public function general(Request $request): Response
+    public function general(Request $request, GetWorkspaceSetupSignals $setupSignals): Response
     {
         $user = $request->user();
         abort_unless($user instanceof User && $user->can('settings.manage'), 403);
@@ -49,6 +50,7 @@ final class SettingsController extends Controller
                 'stripe_enabled' => (string) config('services.payments.driver', 'null') === 'stripe'
                     && filled(config('services.stripe.publishable_key')),
             ],
+            'setup' => $setupSignals->handle($tenant),
         ]);
     }
 
