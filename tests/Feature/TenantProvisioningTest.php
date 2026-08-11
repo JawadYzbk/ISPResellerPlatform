@@ -49,3 +49,23 @@ it('marks a shared currency as both base and collection currency', function (): 
         ->and($currency->is_collection)->toBeTrue()
         ->and($currency->is_active)->toBeTrue();
 });
+
+it('reconciles currency roles when tenant currency settings change', function (): void {
+    $tenant = Tenant::create([
+        'name' => 'Changing Currency ISP',
+        'slug' => 'changing-currency-isp',
+        'base_currency' => 'USD',
+        'collection_currency' => 'USD',
+    ]);
+
+    $tenant->update(['collection_currency' => 'LBP']);
+    app(Tenancy::class)->set($tenant);
+
+    $usd = Currency::where('code', 'USD')->firstOrFail();
+    $lbp = Currency::where('code', 'LBP')->firstOrFail();
+
+    expect($usd->is_base)->toBeTrue()
+        ->and($usd->is_collection)->toBeFalse()
+        ->and($lbp->is_base)->toBeFalse()
+        ->and($lbp->is_collection)->toBeTrue();
+});

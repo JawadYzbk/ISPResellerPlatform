@@ -38,6 +38,11 @@ class Tenant extends Model
         static::created(function (self $tenant): void {
             app(TenantProvisioner::class)->provision($tenant);
         });
+        static::updated(function (self $tenant): void {
+            if ($tenant->wasChanged(['base_currency', 'collection_currency'])) {
+                app(TenantProvisioner::class)->provision($tenant);
+            }
+        });
     }
 
     public function settingsData(): TenantSettings
