@@ -38,4 +38,11 @@ Use this checklist for a new ISP/reseller tenant. The tenant owner and the imple
 3. Make one controlled payment in the approved test path, confirm the receipt and journal entry, and reconcile the customer balance. Never use a real payment during a lab test.
 4. Exercise one service activation, one suspension, one reactivation, and one network retry. Confirm queued commands are idempotent and visible to the operator.
 5. Confirm backup configuration, recent backup visibility, isolated restore rehearsal status, alert ownership, and incident contacts.
-6. Start the pilot only after the owner signs off the customer import, router scope, payment/notification behavior, rollback plan, and two-week monitoring owner. Record the tenant public ID, not internal database IDs, in the handover document.
+6. Run the tenant readiness report and attach its JSON output to the handover record:
+
+   ```text
+   php artisan platform:tenant-readiness northline --json
+   ```
+
+   Resolve every `FAIL`. Review every `WARN`; add `--strict` when logo, payment provider, and notification setup are mandatory for the pilot.
+7. Start the pilot only after the owner signs off the customer import, router scope, payment/notification behavior, rollback plan, and two-week monitoring owner. Record the tenant public ID, not internal database IDs, in the handover document.
