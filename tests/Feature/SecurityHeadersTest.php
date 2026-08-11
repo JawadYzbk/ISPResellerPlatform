@@ -16,7 +16,8 @@ it('adds baseline browser security headers to web responses', function (): void 
     expect($response->headers->get('Content-Security-Policy'))
         ->toContain('http://127.0.0.1:5173')
         ->toContain('ws://127.0.0.1:5173')
-        ->not->toContain('http://[::1]:5173');
+        ->toContain('http://[::1]:5173')
+        ->toContain('ws://[::1]:5173');
 });
 
 it('does not expose development script capabilities in production CSP', function (): void {
