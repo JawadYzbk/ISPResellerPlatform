@@ -6,6 +6,7 @@ use App\Support\Tenancy;
 use Database\Seeders\CapabilitySeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Http;
 
 uses(RefreshDatabase::class);
 
@@ -17,10 +18,14 @@ it('renders and updates tenant settings through the owner surface', function ():
     $user->assignRole('tenant_owner');
     $user->forceFill(['last_authenticated_at' => now()])->save();
     config()->set([
-        'services.whatsapp.mode' => 'cloud',
-        'services.whatsapp.token' => null,
-        'services.whatsapp.phone_number_id' => null,
+        'services.whatsapp.mode' => 'web',
+        'services.whatsapp.web.enabled' => true,
+        'services.whatsapp.web.endpoint' => 'http://whatsapp-web:3001',
+        'services.whatsapp.web.token' => 'bridge-token',
+        'services.whatsapp.web.webhook_url' => 'http://app/api/v1/webhooks/gateways/whatsapp_web',
+        'services.webhooks.secrets.whatsapp_web' => 'webhook-secret',
     ]);
+    Http::fake();
 
     $this->actingAs($user)
         ->get(route('settings.general'))
@@ -32,9 +37,10 @@ it('renders and updates tenant settings through the owner surface', function ():
             ->where('settings.collection_currency', 'USD')
             ->where('setup.logo_ready', false)
             ->where('setup.currency.rate_ready', true)
-            ->where('setup.whatsapp.configured', false)
-            ->where('setup.whatsapp.status', 'not_configured')
+            ->where('setup.whatsapp.configured', true)
+            ->where('setup.whatsapp.status', 'configured')
         );
+    Http::assertNothingSent();
 
     app(Tenancy::class)->set($tenant);
     $this->actingAs($user)

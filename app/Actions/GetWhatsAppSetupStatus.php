@@ -11,7 +11,7 @@ final readonly class GetWhatsAppSetupStatus implements Action
     public function __construct(private QrCodeRenderer $qrCode) {}
 
     /** @return array{mode: string, enabled: bool, configured: bool, status: string, detail: string|null, qr_code: string|null, webhook_configured: bool} */
-    public function handle(): array
+    public function handle(bool $probeBridge = true): array
     {
         $mode = (string) config('services.whatsapp.mode', 'cloud');
 
@@ -47,6 +47,18 @@ final readonly class GetWhatsAppSetupStatus implements Action
                 'detail' => $enabled ? 'The Web.js bridge still needs its endpoint, token, and signed webhook settings.' : 'WhatsApp Web.js is disabled.',
                 'qr_code' => null,
                 'webhook_configured' => $webhookConfigured,
+            ];
+        }
+
+        if (! $probeBridge) {
+            return [
+                'mode' => 'web',
+                'enabled' => true,
+                'configured' => true,
+                'status' => 'configured',
+                'detail' => 'Bridge configuration is present. Open WhatsApp setup to check pairing status.',
+                'qr_code' => null,
+                'webhook_configured' => true,
             ];
         }
 

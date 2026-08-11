@@ -30,7 +30,7 @@ final readonly class GetWorkspaceSetupSignals implements Action
                     });
                 })
                 ->exists();
-            $whatsapp = $this->whatsapp->handle();
+            $whatsapp = $this->whatsapp->handle(false);
 
             return [
                 'logo_ready' => filled($tenant->logo_path),
