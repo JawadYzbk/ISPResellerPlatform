@@ -18,6 +18,17 @@ test.describe('staff core journeys', () => {
         await expect(page.getByRole('heading', { name: 'Sign in to your workspace' })).toBeVisible();
     });
 
+    test('renders the customer portal entry and protects the dashboard', async ({ page }) => {
+        await page.goto('/portal/northline');
+        await expect(page.getByRole('heading', { name: 'Manage your connection.' })).toBeVisible();
+        await expect(page.getByLabel('Phone number')).toBeVisible();
+        await expect(page.getByRole('button', { name: 'Send code' })).toBeVisible();
+
+        await page.goto('/portal/northline/dashboard');
+        await expect(page).toHaveURL(/\/portal\/northline$/);
+        await expect(page.getByRole('heading', { name: 'Manage your connection.' })).toBeVisible();
+    });
+
     test('renders the staff password recovery screens', async ({ page }) => {
         await page.goto('/forgot-password');
         await expect(page.getByRole('heading', { name: 'Reset your password' })).toBeVisible();
