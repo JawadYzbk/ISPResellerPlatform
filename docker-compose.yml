@@ -104,6 +104,7 @@ services:
     command: sh -c "npm ci && npm run build && tail -f /dev/null"
     volumes:
       - .:/var/www/html
+      - frontend-node-modules:/var/www/html/node_modules
     depends_on:
       app:
         condition: service_started
@@ -151,6 +152,7 @@ services:
 
 volumes:
   app-bootstrap-cache:
+  frontend-node-modules:
   postgres-data:
   redis-data:
   minio-data:
