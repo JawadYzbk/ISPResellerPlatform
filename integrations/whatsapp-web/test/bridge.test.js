@@ -1,10 +1,18 @@
-import { mkdtemp, rm } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { EventEmitter } from 'node:events';
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { JsonIdempotencyStore, WhatsAppBridge, hasValidSignature, isHealthyStatus, normalizeRecipient, signPayload } from '../src/bridge.js';
+import {
+  clearStaleChromiumProfileLocks,
+  JsonIdempotencyStore,
+  WhatsAppBridge,
+  hasValidSignature,
+  isHealthyStatus,
+  normalizeRecipient,
+  signPayload,
+} from '../src/bridge.js';
 
 class FakeClient extends EventEmitter {
   constructor() {
@@ -54,6 +62,35 @@ test('signatures, recipients and readiness are enforced', async () => {
   try {
     const bridge = new WhatsAppBridge({ client: new FakeClient(), store: new JsonIdempotencyStore(directory) });
     await assert.rejects(() => bridge.send({ idempotencyKey: 'message-002', to: '96170123456', body: 'Hello' }), /not ready/);
+  } finally {
+    await rm(directory, { recursive: true, force: true });
+  }
+});
+
+test('clears stale Chromium profile locks before initialization', async () => {
+  const directory = await mkdtemp(join(tmpdir(), 'isp-whatsapp-'));
+  const profile = join(directory, 'session-isp-manager');
+  try {
+    await mkdir(profile, { recursive: true });
+    await writeFile(join(profile, 'SingletonLock'), 'stale');
+    await writeFile(join(profile, 'SingletonCookie'), 'stale');
+    await writeFile(join(profile, 'preferences'), '{}');
+
+    assert.equal(await clearStaleChromiumProfileLocks(directory), 2);
+    await assert.rejects(() => readFile(join(profile, 'SingletonLock')), { code: 'ENOENT' });
+    assert.equal(await readFile(join(profile, 'preferences'), 'utf8'), '{}');
+
+    const client = new FakeClient();
+    let prepared = false;
+    const bridge = new WhatsAppBridge({
+      client,
+      store: new JsonIdempotencyStore(directory),
+      beforeStart: async () => {
+        prepared = (await clearStaleChromiumProfileLocks(directory)) === 0;
+      },
+    });
+    await bridge.start();
+    assert.equal(prepared, true);
   } finally {
     await rm(directory, { recursive: true, force: true });
   }

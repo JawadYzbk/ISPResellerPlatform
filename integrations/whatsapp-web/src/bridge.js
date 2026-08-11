@@ -1,4 +1,4 @@
-import { mkdir, readFile, rename, writeFile } from 'node:fs/promises';
+import { mkdir, readdir, readFile, rename, unlink, writeFile } from 'node:fs/promises';
 import { createHash, createHmac, timingSafeEqual } from 'node:crypto';
 import { join } from 'node:path';
 
@@ -8,6 +8,50 @@ export class IdempotencyConflictError extends Error {}
 
 export function isHealthyStatus(status) {
   return ['qr', 'authenticated', 'ready'].includes(status);
+}
+
+const CHROMIUM_PROFILE_LOCKS = new Set(['SingletonCookie', 'SingletonLock', 'SingletonSocket']);
+
+export async function clearStaleChromiumProfileLocks(directory) {
+  const pending = [directory];
+  let removed = 0;
+
+  while (pending.length > 0) {
+    const current = pending.pop();
+    let entries;
+
+    try {
+      entries = await readdir(current, { withFileTypes: true });
+    } catch (error) {
+      if (error.code === 'ENOENT') {
+        continue;
+      }
+
+      throw error;
+    }
+
+    for (const entry of entries) {
+      const path = join(current, entry.name);
+      if (entry.isDirectory()) {
+        pending.push(path);
+        continue;
+      }
+      if (!CHROMIUM_PROFILE_LOCKS.has(entry.name)) {
+        continue;
+      }
+
+      try {
+        await unlink(path);
+        removed++;
+      } catch (error) {
+        if (error.code !== 'ENOENT') {
+          throw error;
+        }
+      }
+    }
+  }
+
+  return removed;
 }
 
 export function signPayload(body, secret) {
@@ -71,13 +115,14 @@ export class JsonIdempotencyStore {
 }
 
 export class WhatsAppBridge {
-  constructor({ client, store, webhookUrl = '', webhookSecret = '', fetcher = fetch, logger = console }) {
+  constructor({ client, store, webhookUrl = '', webhookSecret = '', fetcher = fetch, logger = console, beforeStart = async () => {} }) {
     this.client = client;
     this.store = store;
     this.webhookUrl = webhookUrl;
     this.webhookSecret = webhookSecret;
     this.fetcher = fetcher;
     this.logger = logger;
+    this.beforeStart = beforeStart;
     this.state = { status: 'starting', qr: null, lastError: null, readyAt: null };
     this.pending = new Map();
   }
@@ -102,6 +147,7 @@ export class WhatsAppBridge {
     this.client.on('message_ack', (message, ack) => {
       void this.handleAck(message, ack).catch((error) => this.logger.error(`WhatsApp callback failed: ${error.message}`));
     });
+    await this.beforeStart();
     await this.client.initialize();
   }
 

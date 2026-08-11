@@ -1,6 +1,13 @@
 import http from 'node:http';
+import { join } from 'node:path';
 import whatsappWeb from 'whatsapp-web.js';
-import { JsonIdempotencyStore, WhatsAppBridge, bearerMatches, isHealthyStatus } from './bridge.js';
+import {
+    clearStaleChromiumProfileLocks,
+    JsonIdempotencyStore,
+    WhatsAppBridge,
+    bearerMatches,
+    isHealthyStatus,
+} from './bridge.js';
 
 const { Client, LocalAuth } = whatsappWeb;
 
@@ -15,6 +22,7 @@ const config = {
     headless: process.env.WHATSAPP_WEB_HEADLESS !== 'false',
     executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || '',
 };
+const sessionProfilePath = join(config.sessionPath, `session-${config.clientId}`);
 
 if (!config.token) {
     throw new Error('WHATSAPP_WEB_TOKEN is required.');
@@ -36,6 +44,12 @@ const bridge = new WhatsAppBridge({
     store: new JsonIdempotencyStore(config.sessionPath),
     webhookUrl: config.webhookUrl,
     webhookSecret: config.webhookSecret,
+    beforeStart: async () => {
+        const removed = await clearStaleChromiumProfileLocks(sessionProfilePath);
+        if (removed > 0) {
+            console.warn(`Removed ${removed} stale Chromium profile lock(s) before initialization.`);
+        }
+    },
 });
 
 function json(response, status, payload) {
