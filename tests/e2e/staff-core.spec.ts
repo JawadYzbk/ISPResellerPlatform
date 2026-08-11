@@ -153,6 +153,72 @@ test.describe('staff core journeys', () => {
         await expect(page.getByRole('heading', { name: 'Send one test message' })).toBeVisible();
     });
 
+    test('shows the customer payment grid by month', async ({ page }) => {
+        await signIn(page);
+        await page.goto('/customers');
+        await page.getByRole('link', { name: 'Open', exact: true }).first().click();
+
+        await expect(page.getByTestId('customer-payment-grid')).toBeVisible();
+        await expect(page.getByRole('heading', { name: 'Monthly payment grid' })).toBeVisible();
+        await expect(page.getByLabel('Payment year')).toBeVisible();
+        await expect(page.locator('[data-testid^="payment-month-"]')).toHaveCount(12);
+    });
+
+    test('uses shadcn selects on desktop and the native fallback only on mobile', async ({ page }) => {
+        await signIn(page);
+        await page.goto('/settings/general');
+        await expect(page.getByRole('heading', { name: 'Workspace settings' })).toBeVisible();
+        await expect(page.locator('select:not([aria-hidden="true"])')).toHaveCount(0);
+
+        await page.getByLabel('Locale').click();
+        await expect(page.getByRole('option', { name: 'Arabic' })).toBeVisible();
+        await page.getByRole('option', { name: 'English' }).click();
+
+        await page.setViewportSize({ width: 390, height: 844 });
+        await expect(page.locator('select:not([aria-hidden="true"])')).toHaveCount(1);
+        await expect(page.getByLabel('Locale')).toHaveValue('en');
+    });
+
+    test('uses an accessible confirmation dialog for destructive actions', async ({ page }) => {
+        await signIn(page);
+        await page.goto('/billing/payments');
+
+        const reverseButton = page.getByRole('button', { name: 'Reverse', exact: true }).first();
+        await expect(reverseButton).toBeVisible();
+        await reverseButton.click();
+
+        await expect(page.getByRole('alertdialog')).toBeVisible();
+        await expect(page.getByRole('heading', { name: /Reverse payment/ })).toBeVisible();
+        await page.getByRole('button', { name: 'Cancel' }).click();
+        await expect(page.getByRole('alertdialog')).toBeHidden();
+    });
+
+    test('saves workspace settings together with a logo upload', async ({ page }) => {
+        await signIn(page);
+        await page.goto('/security/reauthenticate');
+        await page.getByLabel('Password').fill(adminPassword);
+        await Promise.all([page.waitForURL('**/dashboard'), page.getByRole('button', { name: 'Confirm' }).click()]);
+
+        await page.goto('/settings/general');
+        await page.locator('input[type="file"]').setInputFiles({
+            name: 'e2e-logo.png',
+            mimeType: 'image/png',
+            buffer: Buffer.from(
+                'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=',
+                'base64',
+            ),
+        });
+        const settingsResponse = page.waitForResponse(
+            (response) => response.url().endsWith('/settings/general') && response.request().method() === 'POST',
+        );
+        await page.getByRole('button', { name: 'Save settings' }).click();
+        expect((await settingsResponse).status()).toBeLessThan(400);
+        await expect(page).toHaveURL(/\/settings\/general/);
+        await expect(page.getByRole('heading', { name: 'Workspace settings' })).toBeVisible();
+        await expect(page.getByText('The name field is required.')).toHaveCount(0);
+        await expect(page.getByText('The base currency field is required.')).toHaveCount(0);
+    });
+
     test('opens the profile menu and notifications center from the header', async ({ page }) => {
         await signIn(page);
         await expect(page.getByRole('heading', { name: 'Your operations at a glance.' })).toBeVisible();
