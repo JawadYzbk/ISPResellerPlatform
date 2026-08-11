@@ -18,6 +18,8 @@ abstract class TestCase extends BaseTestCase
             'MAIL_MAILER' => 'array',
             'QUEUE_CONNECTION' => 'sync',
             'SESSION_DRIVER' => 'array',
+            'WHATSAPP_PROVIDER' => 'cloud',
+            'WHATSAPP_WEB_ENABLED' => 'false',
         ] as $key => $value) {
             putenv($key.'='.$value);
             $_ENV[$key] = $value;
