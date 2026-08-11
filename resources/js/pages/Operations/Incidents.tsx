@@ -1,3 +1,4 @@
+import ResponsiveSelect from '@/components/ui/responsive-select';
 import { Head, Link, router } from '@inertiajs/react';
 import { AlertTriangle, ChevronLeft, ChevronRight, ExternalLink, RefreshCw } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -91,21 +92,29 @@ export default function IncidentsPage({ incidents, filters }: Props) {
                 </label>
                 <label>
                     <span className="field-label">Status</span>
-                    <select className="field" value={status} onChange={(event) => setStatus(event.target.value)}>
+                    <ResponsiveSelect
+                        className="field"
+                        value={status}
+                        onChange={(event) => setStatus(event.target.value)}
+                    >
                         <option value="">All statuses</option>
                         <option value="open">Open</option>
                         <option value="resolved">Resolved</option>
-                    </select>
+                    </ResponsiveSelect>
                 </label>
                 <label>
                     <span className="field-label">Severity</span>
-                    <select className="field" value={severity} onChange={(event) => setSeverity(event.target.value)}>
+                    <ResponsiveSelect
+                        className="field"
+                        value={severity}
+                        onChange={(event) => setSeverity(event.target.value)}
+                    >
                         <option value="">All severities</option>
                         <option value="critical">Critical</option>
                         <option value="high">High</option>
                         <option value="warning">Warning</option>
                         <option value="info">Info</option>
-                    </select>
+                    </ResponsiveSelect>
                 </label>
                 <button type="submit" className="button-primary">
                     Apply filters

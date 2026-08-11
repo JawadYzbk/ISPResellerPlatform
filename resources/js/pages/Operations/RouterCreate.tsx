@@ -1,3 +1,4 @@
+import ResponsiveSelect from '@/components/ui/responsive-select';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { ArrowLeft, Router as RouterIcon, Save } from 'lucide-react';
 
@@ -81,7 +82,7 @@ export default function RouterCreate({ pops }: Props) {
                         </label>
                         <label>
                             <span className="field-label">POP</span>
-                            <select
+                            <ResponsiveSelect
                                 className="field"
                                 value={form.data.pop_id}
                                 onChange={(event) => form.setData('pop_id', event.target.value)}
@@ -92,7 +93,7 @@ export default function RouterCreate({ pops }: Props) {
                                         {pop.name} ({pop.code})
                                     </option>
                                 ))}
-                            </select>
+                            </ResponsiveSelect>
                             {form.errors.pop_id && <p className="field-error">{form.errors.pop_id}</p>}
                         </label>
                         <label>

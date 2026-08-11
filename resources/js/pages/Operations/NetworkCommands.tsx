@@ -1,3 +1,4 @@
+import ResponsiveSelect from '@/components/ui/responsive-select';
 import { Head, Link, router } from '@inertiajs/react';
 import { AlertTriangle, ChevronLeft, ChevronRight, RefreshCw, Terminal } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -75,7 +76,11 @@ export default function NetworkCommandsPage({ commands, filters, canRetry = fals
             <form onSubmit={applyFilters} className="card mt-8 flex flex-col gap-4 p-5 sm:flex-row sm:items-end">
                 <label className="block sm:min-w-52">
                     <span className="field-label">Command status</span>
-                    <select className="field" value={status} onChange={(event) => setStatus(event.target.value)}>
+                    <ResponsiveSelect
+                        className="field"
+                        value={status}
+                        onChange={(event) => setStatus(event.target.value)}
+                    >
                         <option value="">All statuses</option>
                         <option value="pending">Pending</option>
                         <option value="running">Running</option>
@@ -84,11 +89,11 @@ export default function NetworkCommandsPage({ commands, filters, canRetry = fals
                         <option value="failed">Failed</option>
                         <option value="abandoned">Abandoned</option>
                         <option value="stale">Stale</option>
-                    </select>
+                    </ResponsiveSelect>
                 </label>
                 <label className="block sm:min-w-52">
                     <span className="field-label">Network state</span>
-                    <select
+                    <ResponsiveSelect
                         className="field"
                         value={networkState}
                         onChange={(event) => setNetworkState(event.target.value)}
@@ -99,7 +104,7 @@ export default function NetworkCommandsPage({ commands, filters, canRetry = fals
                         <option value="drifted">Drifted</option>
                         <option value="failed">Failed</option>
                         <option value="unknown">Unknown</option>
-                    </select>
+                    </ResponsiveSelect>
                 </label>
                 <button type="submit" className="button-primary">
                     Apply filters

@@ -1,3 +1,4 @@
+import ResponsiveSelect from '@/components/ui/responsive-select';
 import { Head, Link, router, useForm } from '@inertiajs/react';
 import { CheckCircle2, Globe2, Plus, Server } from 'lucide-react';
 
@@ -113,18 +114,18 @@ export default function IpPoolsPage({ pools, selectedPoolId, addresses, routers,
                         </label>
                         <label>
                             <span className="field-label">IP version</span>
-                            <select
+                            <ResponsiveSelect
                                 className="field"
                                 value={poolForm.data.version}
                                 onChange={(event) => poolForm.setData('version', event.target.value)}
                             >
                                 <option value="4">IPv4</option>
                                 <option value="6">IPv6</option>
-                            </select>
+                            </ResponsiveSelect>
                         </label>
                         <label>
                             <span className="field-label">Use</span>
-                            <select
+                            <ResponsiveSelect
                                 className="field"
                                 value={poolForm.data.type}
                                 onChange={(event) => poolForm.setData('type', event.target.value)}
@@ -132,11 +133,11 @@ export default function IpPoolsPage({ pools, selectedPoolId, addresses, routers,
                                 <option value="dynamic">Dynamic</option>
                                 <option value="static">Static</option>
                                 <option value="blocked">Blocked</option>
-                            </select>
+                            </ResponsiveSelect>
                         </label>
                         <label>
                             <span className="field-label">Router</span>
-                            <select
+                            <ResponsiveSelect
                                 className="field"
                                 value={poolForm.data.router_id}
                                 onChange={(event) => poolForm.setData('router_id', event.target.value)}
@@ -147,7 +148,7 @@ export default function IpPoolsPage({ pools, selectedPoolId, addresses, routers,
                                         {router.name}
                                     </option>
                                 ))}
-                            </select>
+                            </ResponsiveSelect>
                         </label>
                     </div>
                     <div className="flex justify-end">
@@ -234,7 +235,7 @@ export default function IpPoolsPage({ pools, selectedPoolId, addresses, routers,
                             </label>
                             <label>
                                 <span className="field-label">Status</span>
-                                <select
+                                <ResponsiveSelect
                                     className="field"
                                     value={addressForm.data.status}
                                     onChange={(event) => addressForm.setData('status', event.target.value)}
@@ -242,7 +243,7 @@ export default function IpPoolsPage({ pools, selectedPoolId, addresses, routers,
                                     <option value="free">Free</option>
                                     <option value="reserved">Reserved</option>
                                     <option value="conflict">Conflict</option>
-                                </select>
+                                </ResponsiveSelect>
                             </label>
                             <button className="button-primary" disabled={addressForm.processing}>
                                 <Plus size={16} /> Record

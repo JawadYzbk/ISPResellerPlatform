@@ -1,3 +1,4 @@
+import ResponsiveSelect from '@/components/ui/responsive-select';
 import { Head, Link, router } from '@inertiajs/react';
 import { ChevronLeft, ChevronRight, RefreshCw, Router as RouterIcon, ShieldCheck } from 'lucide-react';
 import { useState } from 'react';
@@ -61,12 +62,16 @@ export default function RoutersPage({ routers, filters, canCheckHealth = false, 
             <form onSubmit={applyFilters} className="card mt-8 flex flex-col gap-4 p-5 sm:flex-row sm:items-end">
                 <label className="block sm:min-w-52">
                     <span className="field-label">Router status</span>
-                    <select className="field" value={status} onChange={(event) => setStatus(event.target.value)}>
+                    <ResponsiveSelect
+                        className="field"
+                        value={status}
+                        onChange={(event) => setStatus(event.target.value)}
+                    >
                         <option value="">All statuses</option>
                         <option value="online">Online</option>
                         <option value="offline">Offline</option>
                         <option value="unknown">Unknown</option>
-                    </select>
+                    </ResponsiveSelect>
                 </label>
                 <button type="submit" className="button-primary">
                     Apply filters

@@ -1,3 +1,4 @@
+import ResponsiveSelect from '@/components/ui/responsive-select';
 import { Head, Link, router } from '@inertiajs/react';
 import { ChevronLeft, ChevronRight, MessageSquare, Search } from 'lucide-react';
 import { useState } from 'react';
@@ -65,24 +66,32 @@ export default function TicketsPage({ tickets, filters }: Props) {
                 </label>
                 <label className="block lg:min-w-48">
                     <span className="field-label">Status</span>
-                    <select className="field" value={status} onChange={(event) => setStatus(event.target.value)}>
+                    <ResponsiveSelect
+                        className="field"
+                        value={status}
+                        onChange={(event) => setStatus(event.target.value)}
+                    >
                         <option value="">All statuses</option>
                         <option value="open">Open</option>
                         <option value="in_progress">In progress</option>
                         <option value="pending">Pending</option>
                         <option value="resolved">Resolved</option>
                         <option value="closed">Closed</option>
-                    </select>
+                    </ResponsiveSelect>
                 </label>
                 <label className="block lg:min-w-40">
                     <span className="field-label">Priority</span>
-                    <select className="field" value={priority} onChange={(event) => setPriority(event.target.value)}>
+                    <ResponsiveSelect
+                        className="field"
+                        value={priority}
+                        onChange={(event) => setPriority(event.target.value)}
+                    >
                         <option value="">All priorities</option>
                         <option value="critical">Critical</option>
                         <option value="high">High</option>
                         <option value="normal">Normal</option>
                         <option value="low">Low</option>
-                    </select>
+                    </ResponsiveSelect>
                 </label>
                 <button type="submit" className="button-primary">
                     Apply filters

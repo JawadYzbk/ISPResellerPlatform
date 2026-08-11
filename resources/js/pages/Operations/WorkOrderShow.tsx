@@ -1,3 +1,4 @@
+import ResponsiveSelect from '@/components/ui/responsive-select';
 import { Head, Link, router, useForm } from '@inertiajs/react';
 import {
     ArrowLeft,
@@ -325,7 +326,7 @@ export default function WorkOrderShowPage({ workOrder, bulkMaterials, scheduledA
                                 <div className="grid gap-4 sm:grid-cols-2">
                                     <label>
                                         <span className="field-label">Material</span>
-                                        <select
+                                        <ResponsiveSelect
                                             className="field"
                                             value={materialForm.data.inventory_item_id}
                                             onChange={(event) =>
@@ -341,11 +342,11 @@ export default function WorkOrderShowPage({ workOrder, bulkMaterials, scheduledA
                                                     {material.sku} · {material.name} · {material.quantity} available
                                                 </option>
                                             ))}
-                                        </select>
+                                        </ResponsiveSelect>
                                     </label>
                                     <label>
                                         <span className="field-label">Warehouse</span>
-                                        <select
+                                        <ResponsiveSelect
                                             className="field"
                                             value={materialForm.data.warehouse_id}
                                             onChange={(event) =>
@@ -366,7 +367,7 @@ export default function WorkOrderShowPage({ workOrder, bulkMaterials, scheduledA
                                                         {material.warehouse}
                                                     </option>
                                                 ))}
-                                        </select>
+                                        </ResponsiveSelect>
                                     </label>
                                     <label>
                                         <span className="field-label">Quantity</span>

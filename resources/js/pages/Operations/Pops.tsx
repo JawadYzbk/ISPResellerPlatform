@@ -1,3 +1,4 @@
+import ResponsiveSelect from '@/components/ui/responsive-select';
 import { Head, Link, router, useForm } from '@inertiajs/react';
 import { ChevronLeft, ChevronRight, Network, Plus, Search } from 'lucide-react';
 import { useState } from 'react';
@@ -94,7 +95,7 @@ export default function PopsPage({ pops, filters, canManage, statuses }: Props) 
                         </label>
                         <label>
                             <span className="field-label">Status</span>
-                            <select
+                            <ResponsiveSelect
                                 className="field"
                                 value={popForm.data.status}
                                 onChange={(event) => popForm.setData('status', event.target.value)}
@@ -104,7 +105,7 @@ export default function PopsPage({ pops, filters, canManage, statuses }: Props) 
                                         {option.replace('_', ' ')}
                                     </option>
                                 ))}
-                            </select>
+                            </ResponsiveSelect>
                             {popForm.errors.status && <p className="field-error">{popForm.errors.status}</p>}
                         </label>
                     </div>
@@ -131,14 +132,18 @@ export default function PopsPage({ pops, filters, canManage, statuses }: Props) 
                 </label>
                 <label className="block sm:min-w-48">
                     <span className="field-label">Status</span>
-                    <select className="field" value={status} onChange={(event) => setStatus(event.target.value)}>
+                    <ResponsiveSelect
+                        className="field"
+                        value={status}
+                        onChange={(event) => setStatus(event.target.value)}
+                    >
                         <option value="">All statuses</option>
                         {statuses.map((option) => (
                             <option key={option} value={option}>
                                 {option.replace('_', ' ')}
                             </option>
                         ))}
-                    </select>
+                    </ResponsiveSelect>
                 </label>
                 <button type="submit" className="button-primary">
                     Apply filters

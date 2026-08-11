@@ -1,3 +1,4 @@
+import ResponsiveSelect from '@/components/ui/responsive-select';
 import { Head, Link, router, useForm } from '@inertiajs/react';
 import { ArrowLeft, MessageSquare, Send } from 'lucide-react';
 import { useState } from 'react';
@@ -132,7 +133,7 @@ export default function TicketShow({
                             <h2 className="section-title">Assignment</h2>
                             <label>
                                 <span className="field-label">Responsible operator</span>
-                                <select
+                                <ResponsiveSelect
                                     className="field"
                                     value={assigneeId}
                                     onChange={(event) => setAssigneeId(event.target.value)}
@@ -143,7 +144,7 @@ export default function TicketShow({
                                             {assignee.name} · {assignee.role.replace('_', ' ')}
                                         </option>
                                     ))}
-                                </select>
+                                </ResponsiveSelect>
                             </label>
                             <button className="button-secondary w-full justify-center">Save assignment</button>
                         </form>
@@ -151,7 +152,7 @@ export default function TicketShow({
                     {canMutate && ticket.status !== 'closed' && (
                         <form onSubmit={updateStatus} className="card space-y-4 p-6">
                             <h2 className="section-title">Update status</h2>
-                            <select
+                            <ResponsiveSelect
                                 className="field"
                                 value={status}
                                 onChange={(event) => setStatus(event.target.value as Ticket['status'])}
@@ -161,7 +162,7 @@ export default function TicketShow({
                                         {option.replace('_', ' ')}
                                     </option>
                                 ))}
-                            </select>
+                            </ResponsiveSelect>
                             <button className="button-primary" disabled={status === ticket.status}>
                                 Save status
                             </button>

@@ -1,3 +1,4 @@
+import ResponsiveSelect from '@/components/ui/responsive-select';
 import { Head, Link, router, useForm } from '@inertiajs/react';
 import { ArrowLeft, RefreshCw, Router as RouterIcon, Save, ShieldCheck } from 'lucide-react';
 
@@ -154,7 +155,7 @@ export default function RouterShowPage({ router: device, pops, canEdit }: Props)
                             </label>
                             <label>
                                 <span className="field-label">POP</span>
-                                <select
+                                <ResponsiveSelect
                                     className="field"
                                     value={form.data.pop_id}
                                     onChange={(event) => form.setData('pop_id', event.target.value)}
@@ -165,7 +166,7 @@ export default function RouterShowPage({ router: device, pops, canEdit }: Props)
                                             {pop.name} ({pop.code})
                                         </option>
                                     ))}
-                                </select>
+                                </ResponsiveSelect>
                             </label>
                             <label>
                                 <span className="field-label">API username</span>

@@ -1,3 +1,4 @@
+import ResponsiveSelect from '@/components/ui/responsive-select';
 import { Head, Link, router } from '@inertiajs/react';
 import { CalendarDays, CheckCircle2, ChevronLeft, ChevronRight, ClipboardList, Search } from 'lucide-react';
 import { useState } from 'react';
@@ -78,7 +79,11 @@ export default function WorkOrdersPage({ workOrders, filters }: Props) {
                 </label>
                 <label className="block sm:min-w-52">
                     <span className="field-label">Work order status</span>
-                    <select className="field" value={status} onChange={(event) => setStatus(event.target.value)}>
+                    <ResponsiveSelect
+                        className="field"
+                        value={status}
+                        onChange={(event) => setStatus(event.target.value)}
+                    >
                         <option value="">All statuses</option>
                         <option value="pending">Pending</option>
                         <option value="assigned">Assigned</option>
@@ -87,7 +92,7 @@ export default function WorkOrdersPage({ workOrders, filters }: Props) {
                         <option value="completed">Completed</option>
                         <option value="failed">Failed</option>
                         <option value="cancelled">Cancelled</option>
-                    </select>
+                    </ResponsiveSelect>
                 </label>
                 <button type="submit" className="button-primary">
                     Apply filters

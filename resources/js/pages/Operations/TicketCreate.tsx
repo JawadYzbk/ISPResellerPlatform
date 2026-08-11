@@ -1,3 +1,4 @@
+import ResponsiveSelect from '@/components/ui/responsive-select';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { ArrowLeft, Save, Ticket as TicketIcon } from 'lucide-react';
 
@@ -61,7 +62,7 @@ export default function TicketCreate({ customer, services }: Props) {
                     <div className="grid gap-5 sm:grid-cols-3">
                         <label>
                             <span className="field-label">Category</span>
-                            <select
+                            <ResponsiveSelect
                                 className="field"
                                 value={form.data.category}
                                 onChange={(event) => form.setData('category', event.target.value)}
@@ -71,11 +72,11 @@ export default function TicketCreate({ customer, services }: Props) {
                                 <option value="installation">Installation</option>
                                 <option value="technical">Technical</option>
                                 <option value="other">Other</option>
-                            </select>
+                            </ResponsiveSelect>
                         </label>
                         <label>
                             <span className="field-label">Priority</span>
-                            <select
+                            <ResponsiveSelect
                                 className="field"
                                 value={form.data.priority}
                                 onChange={(event) => form.setData('priority', event.target.value)}
@@ -84,11 +85,11 @@ export default function TicketCreate({ customer, services }: Props) {
                                 <option value="high">High</option>
                                 <option value="normal">Normal</option>
                                 <option value="low">Low</option>
-                            </select>
+                            </ResponsiveSelect>
                         </label>
                         <label>
                             <span className="field-label">Service</span>
-                            <select
+                            <ResponsiveSelect
                                 className="field"
                                 value={form.data.service_public_id}
                                 onChange={(event) => form.setData('service_public_id', event.target.value)}
@@ -99,7 +100,7 @@ export default function TicketCreate({ customer, services }: Props) {
                                         {service.username} · {service.plan ?? 'No plan'}
                                     </option>
                                 ))}
-                            </select>
+                            </ResponsiveSelect>
                         </label>
                     </div>
                     <label>

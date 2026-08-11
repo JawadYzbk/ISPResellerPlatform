@@ -1,3 +1,4 @@
+import ResponsiveSelect from '@/components/ui/responsive-select';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { ArrowLeft, ExternalLink, Network, Plus, Router as RouterIcon } from 'lucide-react';
 
@@ -112,7 +113,7 @@ export default function PopShowPage({ pop, canManage, statuses }: Props) {
                         </label>
                         <label>
                             <span className="field-label">Status</span>
-                            <select
+                            <ResponsiveSelect
                                 className="field"
                                 value={popForm.data.status}
                                 onChange={(event) => popForm.setData('status', event.target.value as Status)}
@@ -122,7 +123,7 @@ export default function PopShowPage({ pop, canManage, statuses }: Props) {
                                         {option.replace('_', ' ')}
                                     </option>
                                 ))}
-                            </select>
+                            </ResponsiveSelect>
                             {popForm.errors.status && <p className="field-error">{popForm.errors.status}</p>}
                         </label>
                     </div>
