@@ -238,12 +238,13 @@ test.describe('staff core journeys', () => {
         await expect(page.getByRole('heading', { name: 'Your operations at a glance.' })).toBeVisible();
 
         await page.getByRole('button', { name: 'Open account menu' }).click();
-        await page.getByRole('menuitem', { name: 'Profile' }).click();
-        await expect(page).toHaveURL(/\/profile$/);
+        await Promise.all([page.waitForURL('**/profile'), page.getByRole('menuitem', { name: 'Profile' }).click()]);
         await expect(page.getByRole('heading', { name: 'Your profile' })).toBeVisible();
 
-        await page.getByRole('link', { name: 'Open notifications center' }).click();
-        await expect(page).toHaveURL(/\/notifications$/);
+        await Promise.all([
+            page.waitForURL('**/notifications'),
+            page.getByRole('link', { name: 'Open notifications center' }).click(),
+        ]);
         await expect(page.getByRole('heading', { name: 'Notifications & attention' })).toBeVisible();
     });
 
