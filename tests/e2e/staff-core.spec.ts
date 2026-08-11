@@ -18,6 +18,14 @@ test.describe('staff core journeys', () => {
         await expect(page.getByRole('heading', { name: 'Sign in to your workspace' })).toBeVisible();
     });
 
+    test('renders the staff password recovery screens', async ({ page }) => {
+        await page.goto('/forgot-password');
+        await expect(page.getByRole('heading', { name: 'Reset your password' })).toBeVisible();
+
+        await page.goto('/reset-password/example-token?email=admin%40example.com');
+        await expect(page.getByRole('heading', { name: 'Choose a new password' })).toBeVisible();
+    });
+
     test('lets the owner sign in and open the partner commercial workspace', async ({ page }) => {
         await signIn(page);
 
