@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Web;
 
 use App\Actions\GetPaymentSetupStatus;
+use App\Actions\GetTenantReadiness;
 use App\Actions\GetWhatsAppSetupStatus;
 use App\Actions\GetWorkspaceSetupSignals;
 use App\Actions\QueueWhatsAppTestMessage;
@@ -47,6 +48,26 @@ final class SettingsController extends Controller
             ],
             'payments' => $paymentStatus->handle(),
             'setup' => $setupSignals->handle($tenant),
+        ]);
+    }
+
+    public function readiness(Request $request, GetTenantReadiness $readiness): Response
+    {
+        $user = $request->user();
+        abort_unless($user instanceof User && $user->can('settings.manage'), 403);
+        $tenant = Tenant::query()->find($user->tenant_id);
+        abort_unless($tenant instanceof Tenant, 403);
+
+        $checks = $readiness->handle($tenant);
+        $hasFailures = collect($checks)->contains(fn (array $check): bool => $check['status'] === 'FAIL');
+        $hasWarnings = collect($checks)->contains(fn (array $check): bool => $check['status'] === 'WARN');
+
+        return Inertia::render('Settings/Readiness', [
+            'overall' => $hasFailures ? 'FAIL' : ($hasWarnings ? 'WARN' : 'PASS'),
+            'checks' => collect($checks)->map(fn (array $check, string $name): array => [
+                'name' => $name,
+                ...$check,
+            ])->values()->all(),
         ]);
     }
 

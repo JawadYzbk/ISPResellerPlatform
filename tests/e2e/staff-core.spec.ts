@@ -121,6 +121,9 @@ test.describe('staff core journeys', () => {
         await expect(page.getByText('Tenant branding', { exact: true })).toBeVisible();
         await expect(page.getByText('Currencies and FX', { exact: true })).toBeVisible();
         await expect(page.getByText('WhatsApp delivery', { exact: true })).toBeVisible();
+        await page.goto('/settings/readiness');
+        await expect(page.getByRole('heading', { name: 'Pilot readiness' })).toBeVisible();
+        await expect(page.getByText('Tenant logo', { exact: true })).toBeVisible();
     });
 
     test('opens the profile menu and notifications center from the header', async ({ page }) => {
@@ -165,6 +168,7 @@ test.describe('staff core journeys', () => {
             '/reports/finance',
             '/reports/operations',
             '/settings/general',
+            '/settings/readiness',
             '/settings/users',
             '/settings/whatsapp',
             '/security/sessions',

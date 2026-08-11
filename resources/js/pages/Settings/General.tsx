@@ -93,6 +93,9 @@ export default function GeneralSettings({ tenant, settings, payments, setup }: P
                     <Link href="/settings/general" className="button-secondary">
                         General
                     </Link>
+                    <Link href="/settings/readiness" className="button-secondary">
+                        Pilot readiness
+                    </Link>
                     <Link href="/settings/users" className="button-secondary">
                         Users and invitations
                     </Link>

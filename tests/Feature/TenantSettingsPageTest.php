@@ -54,6 +54,22 @@ it('renders and updates tenant settings through the owner surface', function ():
         );
     Http::assertNothingSent();
 
+    Http::fake([
+        'http://whatsapp-web:3001/status' => Http::response(['status' => 'qr']),
+    ]);
+    app(Tenancy::class)->set($tenant);
+    $this->actingAs($user)
+        ->get(route('settings.readiness'))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->component('Settings/Readiness')
+            ->where('overall', 'FAIL')
+            ->where('checks.0.name', 'Tenant status')
+            ->where('checks.0.status', 'PASS')
+            ->where('checks.9.name', 'Tenant logo')
+            ->where('checks.9.status', 'WARN')
+        );
+
     app(Tenancy::class)->set($tenant);
     $this->actingAs($user)
         ->put(route('settings.general.update'), [
