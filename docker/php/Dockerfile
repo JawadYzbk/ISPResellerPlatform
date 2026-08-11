@@ -13,6 +13,8 @@ RUN apk add --no-cache \
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
+COPY docker/php/development.ini /usr/local/etc/php/conf.d/99-development.ini
+
 WORKDIR /var/www/html
 
 EXPOSE 8000
