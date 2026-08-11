@@ -1,13 +1,26 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type BrowserContext, type Page } from '@playwright/test';
 
 const adminEmail = process.env.E2E_ADMIN_EMAIL ?? 'admin@example.com';
 const adminPassword = process.env.E2E_ADMIN_PASSWORD ?? 'password';
+type BrowserStorageState = Awaited<ReturnType<BrowserContext['storageState']>>;
+
+let authenticatedState: BrowserStorageState | null = null;
 
 async function signIn(page: Page): Promise<void> {
+    if (authenticatedState !== null) {
+        await page.context().addCookies(authenticatedState.cookies);
+        await page.goto('/dashboard');
+
+        if (page.url().endsWith('/dashboard')) return;
+
+        authenticatedState = null;
+    }
+
     await page.goto('/login');
     await page.getByLabel('Email address').fill(adminEmail);
     await page.getByLabel('Password').fill(adminPassword);
     await Promise.all([page.waitForURL('**/dashboard'), page.getByRole('button', { name: 'Enter workspace' }).click()]);
+    authenticatedState = await page.context().storageState();
 }
 
 test.describe('staff core journeys', () => {
