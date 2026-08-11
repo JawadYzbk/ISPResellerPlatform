@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
@@ -58,6 +59,7 @@ return new class extends Migration
             return;
         }
 
+        $this->materializeLegacyNasSecrets();
         DB::table('nas')->whereNull('secret')->delete();
 
         Schema::table('nas', function (Blueprint $table): void {
@@ -68,6 +70,21 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->text('secret')->nullable(false)->change();
         });
+    }
+
+    private function materializeLegacyNasSecrets(): void
+    {
+        foreach (DB::table('nas')->whereNotNull('secret')->cursor() as $nas) {
+            $raw = (string) $nas->secret;
+
+            try {
+                $plaintext = (string) Crypt::decrypt($raw, false);
+            } catch (Throwable) {
+                continue;
+            }
+
+            DB::table('nas')->where('id', $nas->id)->update(['secret' => $plaintext]);
+        }
     }
 
     private function createAuthorizationTables(): void
