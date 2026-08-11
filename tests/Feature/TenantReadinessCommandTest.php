@@ -19,6 +19,9 @@ use Spatie\Permission\Models\Role;
 uses(RefreshDatabase::class);
 
 it('reports a tenant readiness checklist and allows optional integration warnings', function (): void {
+    Http::fake([
+        'http://whatsapp-web:3001/accounts/*/status' => Http::response(['status' => 'ready']),
+    ]);
     $tenant = Tenant::factory()->create(['slug' => 'pilot-tenant']);
     $owner = User::factory()->create([
         'tenant_id' => $tenant->id,

@@ -18,7 +18,7 @@ final class WhatsAppBridgeClient
     /** @return array<string, mixed> */
     public function status(WhatsAppAccount $account): array
     {
-        return $this->request('get', '/accounts/'.rawurlencode($account->bridge_id).'/status');
+        return $this->request('get', '/accounts/'.rawurlencode($account->bridge_id).'/status', timeout: 2);
     }
 
     /** @return array<string, mixed> */
@@ -46,7 +46,7 @@ final class WhatsAppBridgeClient
     }
 
     /** @param array<string, mixed>|null $payload @return array<string, mixed> */
-    private function request(string $method, string $path, ?array $payload = null): array
+    private function request(string $method, string $path, ?array $payload = null, int $timeout = 15): array
     {
         if (! $this->configured()) {
             throw new RuntimeException('WhatsApp Web.js is not configured.');
@@ -55,7 +55,7 @@ final class WhatsAppBridgeClient
         try {
             $request = Http::withToken((string) config('services.whatsapp.web.token'))
                 ->acceptJson()
-                ->timeout(15);
+                ->timeout($timeout);
             $response = $method === 'get'
                 ? $request->get($this->url($path))
                 : $request->post($this->url($path), $payload ?? []);
