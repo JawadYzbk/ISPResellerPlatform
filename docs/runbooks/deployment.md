@@ -65,7 +65,7 @@ Use the supervisor’s managed equivalents in production. Do not run duplicate q
 
 ## Verification
 
-On 2026-08-11, the current release was rebuilt in an isolated `isp-manager-acceptance` project and completed a fresh PostgreSQL 17 migration and demo seed, production config/route/event caching, `platform:preflight --production`, Nginx `/login` and `/docs/api` probes, `/up`, `/api/v1/health`, and the WhatsApp bridge health probe (`status: qr`). Synthetic containers, volumes, network and environment file were removed after the run. This verifies current image and topology wiring; it does not claim live provider credentials, WhatsApp pairing, or RouterOS acceptance.
+On 2026-08-11, release commit `93bc185` was rebuilt in an isolated `isp-manager-acceptance` project and completed a fresh PostgreSQL 17 migration and demo seed, production config/route/event caching, `platform:preflight --production`, Nginx `/login` and `/docs/api` probes, `/up`, `/api/v1/health`, and the WhatsApp bridge health probe (`status: qr`). Synthetic containers, volumes, network and environment file were removed after the run. This verifies current image and topology wiring; it does not claim live provider credentials, WhatsApp pairing, or RouterOS acceptance.
 
 1. Check `php artisan platform:preflight --production` and `php artisan migrate:status`.
 2. Check `/up` and `/api/v1/health`.
