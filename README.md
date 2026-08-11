@@ -48,7 +48,7 @@ The current foundation is live:
 - Cursor-paginated customer API, idempotent payment API, collector batches, customer portal OTP/session flow, service plan/renewal APIs, OpenAPI slice and finance reporting
 - Role-scoped Sanctum abilities, app version/maintenance config, technician diagnostics, van inventory, assigned work-order evidence/signature/readings/material APIs
 - Collector offline bootstrap/delta sync with signed cursors and per-payment created/replayed/rejected results
-- Responsive mobile field fallback navigation with an offline connection indicator; native encrypted offline storage remains a separate client integration
+- Responsive mobile field fallback navigation plus the session-authenticated `/field` collector desk with IndexedDB/localStorage payment queueing and signed snapshot refresh; native encrypted offline storage remains a separate client integration
 - Customer, plan, service and serialized-equipment CSV imports with preview, partial success and guarded rollback
 - Staff import workspace with CSV/XLSX preview, row-level reports, tenant-scoped history and controlled rollback
 - Basic reseller hierarchy and journal-linked wallet funding/debiting with credit limits

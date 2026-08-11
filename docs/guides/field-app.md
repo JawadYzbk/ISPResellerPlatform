@@ -18,6 +18,12 @@ Supported token abilities are `staff:collector`, `staff:technician`, `staff:oper
 6. Persist each item’s `created`, `replayed`, or `rejected` result. A replay is not a new payment; surface a rejected item for operator resolution.
 7. Read `GET /api/v1/collector/shift`, `GET /api/v1/collector/payments?date=YYYY-MM-DD`, and `GET /api/v1/collector/summary?date=YYYY-MM-DD` for reconciliation. Close with `POST /api/v1/collector/shift/close`; a variance requires `variance_note`.
 
+## Browser field desk
+
+Collectors can use the authenticated `/field` workspace from a phone-sized browser without issuing a separate API token. It loads the same tenant-scoped customer snapshot and currency catalog, requires an open cash shift before enabling collection, and sends queued payments through the signed server-side sync actions.
+
+When the connection is unavailable, the browser stores the payment queue in IndexedDB (with a local-storage fallback for restricted browsing contexts). Each item keeps its UUID idempotency key and rejected reason. When connectivity returns, accepted or replayed items are removed and rejected items stay visible for review. The queue is keyed by tenant and user; clear browser data when a device is reassigned. This browser fallback is not a substitute for encrypted native mobile storage.
+
 For a Whish Pay collection, send `POST /api/v1/collector/payments/whish` with `customer_id`, integer `amount`, supported `currency` (`USD`, `LBP`, or `AED`), and an `X-Idempotency-Key`. The response contains the provider collect URL and an SVG QR data URI for the customer. Poll `GET /api/v1/collector/payments/whish/{attempt}` when the callback is delayed; the server verifies Whish status and settles through the normal ledger path. Do not mark the attempt paid from the QR redirect or callback query parameters alone.
 
 Use `GET /api/v1/collector/customers?q=&zone=&status=due,overdue` for the field collection queue, then open `GET /api/v1/collector/customers/{customer}` for balance, location, service expiry, and last-payment context. Receipt resend is `POST /api/v1/collector/payments/{payment}/receipt` with `channel` set to `whatsapp`, `sms`, or `email`; keep the idempotency key when retrying.
