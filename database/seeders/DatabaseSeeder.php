@@ -36,9 +36,19 @@ use App\Models\Zone;
 use App\Support\Tenancy;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 
 class DatabaseSeeder extends Seeder
 {
+    private const DEMO_LOGO = <<<'SVG'
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" role="img" aria-labelledby="title">
+  <title>Northline Broadband</title>
+  <rect width="160" height="160" rx="36" fill="#0f766e"/>
+  <path fill="#fef3c7" d="M38 116V44h18l23 34V44h18v72H79L56 82v34H38Z"/>
+  <circle cx="119" cy="115" r="9" fill="#fbbf24"/>
+</svg>
+SVG;
+
     /** @var list<array{email: string, name: string, role: string}> */
     private const DEMO_STAFF_ACCOUNTS = [
         ['email' => 'admin@example.com', 'name' => 'Maya Haddad', 'role' => 'tenant_owner'],
@@ -57,6 +67,7 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $tenant = Tenant::updateOrCreate(['slug' => 'northline'], ['name' => 'Northline Broadband', 'base_currency' => 'USD', 'collection_currency' => 'LBP', 'timezone' => 'Asia/Beirut', 'locale' => 'en']);
+        $this->seedDemoLogo($tenant);
 
         $this->call(CapabilitySeeder::class);
 
@@ -245,5 +256,18 @@ class DatabaseSeeder extends Seeder
                 );
             }
         });
+    }
+
+    private function seedDemoLogo(Tenant $tenant): void
+    {
+        if (! app()->environment(['local', 'testing']) || (is_string($tenant->logo_path) && trim($tenant->logo_path) !== '')) {
+            return;
+        }
+
+        $disk = (string) config('filesystems.default', 'local');
+        $path = 'tenants/'.$tenant->public_id.'/demo-logo.svg';
+
+        Storage::disk($disk)->put($path, self::DEMO_LOGO, ['visibility' => 'private', 'ContentType' => 'image/svg+xml']);
+        $tenant->forceFill(['logo_path' => $path])->save();
     }
 }
