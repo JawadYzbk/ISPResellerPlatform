@@ -3,13 +3,18 @@
 namespace App\Actions;
 
 use App\Contracts\Action;
+use App\Domain\Radius\RadiusSyncService;
+use App\Models\RadiusNas;
 use App\Models\Router;
 
 final readonly class UpdateRouter implements Action
 {
+    public function __construct(private RadiusSyncService $radiusSync) {}
+
     /** @param array<string, mixed> $data */
     public function handle(Router $router, array $data): Router
     {
+        $previousHost = $router->host;
         $router->forceFill([
             'pop_id' => $data['pop_id'] ?? null,
             'name' => $data['name'],
@@ -27,6 +32,12 @@ final readonly class UpdateRouter implements Action
         }
         $router->save();
 
-        return $router->refresh();
+        $updated = $router->refresh();
+        $this->radiusSync->syncRouter($updated);
+        if ($previousHost !== $updated->host) {
+            RadiusNas::query()->where('tenant_id', $updated->tenant_id)->where('nasname', $previousHost)->delete();
+        }
+
+        return $updated;
     }
 }
