@@ -1,5 +1,6 @@
 <?php
 
+use App\Actions\GetWhatsAppSetupStatus;
 use App\Jobs\DeliverMessage;
 use App\Models\Message;
 use App\Models\Tenant;
@@ -57,6 +58,41 @@ it('shows the server-side WhatsApp Web.js status and QR pairing state', function
         );
 
     Http::assertSent(fn ($request): bool => $request->hasHeader('Authorization', 'Bearer bridge-token'));
+});
+
+it('reuses the tenant account when status is requested outside request middleware', function (): void {
+    Http::fake([
+        'http://whatsapp-web:3001/accounts/*/status' => Http::response([
+            'status' => 'ready',
+            'phone' => '96170123456',
+        ]),
+    ]);
+    config()->set([
+        'services.whatsapp.mode' => 'web',
+        'services.whatsapp.web.enabled' => true,
+        'services.whatsapp.web.endpoint' => 'http://whatsapp-web:3001',
+        'services.whatsapp.web.token' => 'bridge-token',
+        'services.whatsapp.web.webhook_url' => 'http://app/api/v1/webhooks/gateways/whatsapp_web',
+        'services.webhooks.secrets.whatsapp_web' => 'webhook-secret',
+    ]);
+    app(Tenancy::class)->clear();
+    $tenant = Tenant::create(['name' => 'Northline', 'slug' => 'northline', 'base_currency' => 'USD', 'collection_currency' => 'LBP']);
+    app(Tenancy::class)->run($tenant, function (): void {
+        WhatsAppAccount::create([
+            'label' => 'Existing phone',
+            'job' => 'billing',
+            'bridge_id' => 'existing-account',
+            'status' => 'ready',
+            'is_active' => true,
+        ]);
+    });
+    app(Tenancy::class)->clear();
+
+    $setup = app(GetWhatsAppSetupStatus::class)->handle(true, $tenant);
+
+    expect($setup['accounts'])->toHaveCount(1)
+        ->and($setup['accounts'][0]['label'])->toBe('Existing phone')
+        ->and(WhatsAppAccount::withoutGlobalScopes()->where('tenant_id', $tenant->id)->count())->toBe(1);
 });
 
 it('queues an audited WhatsApp test message only after the bridge is ready', function (): void {

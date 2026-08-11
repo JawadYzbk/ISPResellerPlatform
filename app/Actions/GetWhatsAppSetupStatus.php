@@ -6,6 +6,7 @@ use App\Contracts\Action;
 use App\Models\Tenant;
 use App\Models\WhatsAppAccount;
 use App\Support\QrCodeRenderer;
+use App\Support\Tenancy;
 use Illuminate\Support\Facades\Http;
 
 final readonly class GetWhatsAppSetupStatus implements Action
@@ -14,6 +15,7 @@ final readonly class GetWhatsAppSetupStatus implements Action
         private QrCodeRenderer $qrCode,
         private EnsureWhatsAppAccount $ensureAccount,
         private SynchronizeWhatsAppAccount $synchronizeAccount,
+        private Tenancy $tenancy,
     ) {}
 
     /** @return array{mode: string, enabled: bool, configured: bool, status: string, detail: string|null, qr_code: string|null, webhook_configured: bool, accounts: list<array<string, mixed>>} */
@@ -59,7 +61,10 @@ final readonly class GetWhatsAppSetupStatus implements Action
         }
 
         if ($tenant instanceof Tenant) {
-            return $this->tenantStatus($tenant, $probeBridge, $webhookConfigured);
+            return $this->tenancy->run(
+                $tenant,
+                fn (): array => $this->tenantStatus($tenant, $probeBridge, $webhookConfigured),
+            );
         }
 
         if (! $probeBridge) {
@@ -111,7 +116,11 @@ final readonly class GetWhatsAppSetupStatus implements Action
     /** @return array<string, mixed> */
     private function tenantStatus(Tenant $tenant, bool $probeBridge, bool $webhookConfigured): array
     {
-        $accounts = $tenant->whatsappAccounts()->where('is_active', true)->oldest('id')->get();
+        $accounts = WhatsAppAccount::withoutGlobalScopes()
+            ->where('tenant_id', $tenant->id)
+            ->where('is_active', true)
+            ->oldest('id')
+            ->get();
         if ($accounts->isEmpty()) {
             $accounts = collect([$this->ensureAccount->handle($tenant)]);
         }
