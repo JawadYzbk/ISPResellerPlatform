@@ -7,6 +7,7 @@ use App\Support\Tenancy;
 use Illuminate\Console\Command;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Spatie\Permission\Models\Role;
 
@@ -82,4 +83,24 @@ it('passes the tenant logo check when the configured file exists', function (): 
     $this->artisan('platform:tenant-readiness', ['tenant' => $tenant->slug, '--json' => true])
         ->assertExitCode(Command::FAILURE)
         ->expectsOutputToContain('A tenant logo is available on the configured storage disk.');
+});
+
+it('does not pass WhatsApp Web.js readiness while the bridge is waiting for pairing', function (): void {
+    Config::set([
+        'services.whatsapp.mode' => 'web',
+        'services.whatsapp.web.enabled' => true,
+        'services.whatsapp.web.endpoint' => 'http://whatsapp-web:3001',
+        'services.whatsapp.web.token' => 'bridge-token',
+        'services.whatsapp.web.webhook_url' => 'http://app/api/v1/webhooks/gateways/whatsapp_web',
+        'services.webhooks.secrets.whatsapp_web' => 'webhook-secret',
+    ]);
+    Http::fake([
+        'http://whatsapp-web:3001/status' => Http::response(['status' => 'qr', 'qr' => 'pairing-code']),
+    ]);
+
+    $tenant = Tenant::factory()->create(['slug' => 'pairing-tenant']);
+
+    $this->artisan('platform:tenant-readiness', ['tenant' => $tenant->slug, '--json' => true])
+        ->assertExitCode(Command::FAILURE)
+        ->expectsOutputToContain('The private Web.js bridge is configured but is waiting for account pairing to finish.');
 });

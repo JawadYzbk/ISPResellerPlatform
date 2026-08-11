@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Actions\GetWhatsAppSetupStatus;
 use App\Models\Branch;
 use App\Models\Currency;
 use App\Models\ExchangeRate;
@@ -23,7 +24,7 @@ final class TenantReadinessCommand extends Command
 
     protected $description = 'Check whether a tenant is ready for a supervised pilot handoff.';
 
-    public function handle(Tenancy $tenancy): int
+    public function handle(Tenancy $tenancy, GetWhatsAppSetupStatus $whatsappStatus): int
     {
         $identifier = (string) $this->argument('tenant');
         $tenant = Tenant::query()
@@ -38,7 +39,7 @@ final class TenantReadinessCommand extends Command
         }
 
         /** @var array<string, array{status: 'PASS'|'WARN'|'FAIL', detail: string}> $checks */
-        $checks = $tenancy->run($tenant, fn (): array => $this->checksFor($tenant));
+        $checks = $tenancy->run($tenant, fn (): array => $this->checksFor($tenant, $whatsappStatus));
         $hasFailures = collect($checks)->contains(fn (array $check): bool => $check['status'] === 'FAIL');
         $hasWarnings = collect($checks)->contains(fn (array $check): bool => $check['status'] === 'WARN');
         $strict = (bool) $this->option('strict');
@@ -77,7 +78,7 @@ final class TenantReadinessCommand extends Command
     }
 
     /** @return array<string, array{status: 'PASS'|'WARN'|'FAIL', detail: string}> */
-    private function checksFor(Tenant $tenant): array
+    private function checksFor(Tenant $tenant, GetWhatsAppSetupStatus $whatsappStatus): array
     {
         $baseCurrency = strtoupper((string) $tenant->base_currency);
         $collectionCurrency = strtoupper((string) $tenant->collection_currency);
@@ -132,7 +133,7 @@ final class TenantReadinessCommand extends Command
             'Cash collection' => $this->check('PASS', 'Cash collection is available to authorized staff.'),
             'Stripe gateway' => $this->stripeCheck(),
             'Whish Pay gateway' => $this->whishCheck(),
-            'WhatsApp channel' => $this->whatsappCheck(),
+            'WhatsApp channel' => $this->whatsappCheck($whatsappStatus),
         ];
     }
 
@@ -195,20 +196,19 @@ final class TenantReadinessCommand extends Command
     }
 
     /** @return array{status: 'PASS'|'WARN'|'FAIL', detail: string} */
-    private function whatsappCheck(): array
+    private function whatsappCheck(GetWhatsAppSetupStatus $whatsappStatus): array
     {
         $mode = strtolower((string) config('services.whatsapp.mode', 'cloud'));
         if ($mode === 'web') {
-            $configured = (bool) config('services.whatsapp.web.enabled')
-                && $this->hasConfiguredValue(config('services.whatsapp.web.endpoint'))
-                && $this->hasConfiguredValue(config('services.whatsapp.web.token'))
-                && $this->hasConfiguredValue(config('services.whatsapp.web.webhook_url'))
-                && $this->hasConfiguredValue(config('services.webhooks.secrets.whatsapp_web'));
+            $setup = $whatsappStatus->handle();
 
-            return $this->check(
-                $configured ? 'PASS' : 'FAIL',
-                $configured ? 'The private Web.js bridge and callback secret are configured.' : 'Complete Web.js bridge, token, callback URL and callback secret configuration.',
-            );
+            return match ($setup['status']) {
+                'ready' => $this->check('PASS', 'The private Web.js bridge is paired and ready.'),
+                'qr', 'authenticated', 'starting' => $this->check('WARN', 'The private Web.js bridge is configured but is waiting for account pairing to finish.'),
+                'disabled' => $this->check('WARN', 'WhatsApp Web.js is disabled; enable it after pairing a dedicated business account.'),
+                'not_configured' => $this->check('FAIL', 'Complete Web.js bridge, token, callback URL and callback secret configuration.'),
+                default => $this->check('FAIL', 'The private Web.js bridge is configured but is not ready for delivery.'),
+            };
         }
 
         $configured = $this->hasConfiguredValue(config('services.whatsapp.token'))
