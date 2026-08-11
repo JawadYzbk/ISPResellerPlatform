@@ -7,7 +7,7 @@ export class BridgeNotReadyError extends Error {}
 export class IdempotencyConflictError extends Error {}
 
 export function isHealthyStatus(status) {
-  return ['qr', 'authenticated', 'ready'].includes(status);
+  return ['idle', 'qr', 'authenticated', 'ready'].includes(status);
 }
 
 const CHROMIUM_PROFILE_LOCKS = new Set(['SingletonCookie', 'SingletonLock', 'SingletonSocket']);
@@ -115,9 +115,19 @@ export class JsonIdempotencyStore {
 }
 
 export class WhatsAppBridge {
-  constructor({ client, store, webhookUrl = '', webhookSecret = '', fetcher = fetch, logger = console, beforeStart = async () => {} }) {
+  constructor({
+    client,
+    store,
+    accountId = null,
+    webhookUrl = '',
+    webhookSecret = '',
+    fetcher = fetch,
+    logger = console,
+    beforeStart = async () => {},
+  }) {
     this.client = client;
     this.store = store;
+    this.accountId = accountId;
     this.webhookUrl = webhookUrl;
     this.webhookSecret = webhookSecret;
     this.fetcher = fetcher;
@@ -136,7 +146,13 @@ export class WhatsAppBridge {
       this.state = { ...this.state, status: 'authenticated', qr: null, lastError: null };
     });
     this.client.on('ready', () => {
-      this.state = { ...this.state, status: 'ready', qr: null, lastError: null, readyAt: new Date().toISOString() };
+      this.state = {
+        ...this.state,
+        status: 'ready',
+        qr: null,
+        lastError: null,
+        readyAt: new Date().toISOString(),
+      };
     });
     this.client.on('auth_failure', (message) => {
       this.state = { ...this.state, status: 'auth_failure', lastError: String(message) };
@@ -145,18 +161,49 @@ export class WhatsAppBridge {
       this.state = { ...this.state, status: 'disconnected', lastError: String(reason) };
     });
     this.client.on('message_ack', (message, ack) => {
-      void this.handleAck(message, ack).catch((error) => this.logger.error(`WhatsApp callback failed: ${error.message}`));
+      void this.handleAck(message, ack).catch((error) =>
+        this.logger.error(`WhatsApp callback failed: ${error.message}`),
+      );
     });
     await this.beforeStart();
     await this.client.initialize();
   }
 
   status() {
-    return { ...this.state, qr: this.state.status === 'qr' ? this.state.qr : null };
+    const info = this.client.info;
+
+    return {
+      account_id: this.accountId,
+      ...this.state,
+      qr: this.state.status === 'qr' ? this.state.qr : null,
+      phone: typeof info?.wid?.user === 'string' ? info.wid.user : null,
+      push_name: typeof info?.pushname === 'string' ? info.pushname : null,
+    };
+  }
+
+  async disconnect() {
+    try {
+      if (typeof this.client.logout === 'function') {
+        await this.client.logout();
+      }
+    } catch (error) {
+      this.logger.warn(`WhatsApp logout failed: ${error.message}`);
+    }
+
+    if (typeof this.client.destroy === 'function') {
+      await this.client.destroy();
+    }
+
+    this.state = { ...this.state, status: 'disconnected', qr: null, lastError: null };
   }
 
   async send({ idempotencyKey, to, body }) {
-    if (typeof idempotencyKey !== 'string' || idempotencyKey.trim() === '' || typeof body !== 'string' || body.trim() === '') {
+    if (
+      typeof idempotencyKey !== 'string' ||
+      idempotencyKey.trim() === '' ||
+      typeof body !== 'string' ||
+      body.trim() === ''
+    ) {
       throw new TypeError('idempotency_key and body are required.');
     }
 
@@ -192,7 +239,11 @@ export class WhatsAppBridge {
       throw new Error('WhatsApp did not return a provider message ID.');
     }
 
-    const result = { idempotency_key: idempotencyKey, provider_message_id: providerMessageId, payload_hash: payloadHash };
+    const result = {
+      idempotency_key: idempotencyKey,
+      provider_message_id: providerMessageId,
+      payload_hash: payloadHash,
+    };
     await this.store.set(idempotencyKey, result);
     this.pending.set(providerMessageId, idempotencyKey);
     await this.notify({ id: providerMessageId, message_id: providerMessageId, status: 'sent' });
@@ -219,10 +270,13 @@ export class WhatsAppBridge {
       return;
     }
 
-    const body = JSON.stringify(payload);
+    const body = JSON.stringify(this.accountId === null ? payload : { account_id: this.accountId, ...payload });
     const response = await this.fetcher(this.webhookUrl, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-Webhook-Signature': signPayload(body, this.webhookSecret) },
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Webhook-Signature': signPayload(body, this.webhookSecret),
+      },
       body,
     });
     if (!response.ok) {
@@ -247,4 +301,114 @@ export function normalizeRecipient(value) {
   }
 
   return `${digits}@c.us`;
+}
+
+export class WhatsAppBridgeManager {
+  constructor({ clientFactory, sessionPath, webhookUrl = '', webhookSecret = '', logger = console }) {
+    this.clientFactory = clientFactory;
+    this.sessionPath = sessionPath;
+    this.webhookUrl = webhookUrl;
+    this.webhookSecret = webhookSecret;
+    this.logger = logger;
+    this.bridges = new Map();
+    this.starting = new Map();
+  }
+
+  async ensure(accountId) {
+    this.validateAccountId(accountId);
+    const existing = this.bridges.get(accountId);
+    if (existing) {
+      return existing;
+    }
+
+    const pending = this.starting.get(accountId);
+    if (pending) {
+      return pending;
+    }
+
+    const start = (async () => {
+      const profilePath = join(this.sessionPath, `session-${accountId}`);
+      const bridge = new WhatsAppBridge({
+        accountId,
+        client: this.clientFactory(accountId),
+        store: new JsonIdempotencyStore(join(this.sessionPath, `account-${accountId}`)),
+        webhookUrl: this.webhookUrl,
+        webhookSecret: this.webhookSecret,
+        logger: this.logger,
+        beforeStart: async () => {
+          const removed = await clearStaleChromiumProfileLocks(profilePath);
+          if (removed > 0) {
+            this.logger.warn(`Removed ${removed} stale Chromium profile lock(s) for ${accountId}.`);
+          }
+        },
+      });
+      this.bridges.set(accountId, bridge);
+
+      try {
+        await bridge.start();
+      } catch (error) {
+        this.bridges.delete(accountId);
+        throw error;
+      }
+
+      return bridge;
+    })();
+
+    this.starting.set(accountId, start);
+    try {
+      return await start;
+    } finally {
+      this.starting.delete(accountId);
+    }
+  }
+
+  async send(accountId, payload) {
+    const bridge = await this.ensure(accountId);
+
+    return bridge.send(payload);
+  }
+
+  async disconnect(accountId, restart = true) {
+    this.validateAccountId(accountId);
+    const bridge = this.bridges.get(accountId);
+    if (bridge) {
+      await bridge.disconnect();
+      this.bridges.delete(accountId);
+    }
+
+    return restart
+      ? (await this.ensure(accountId)).status()
+      : { account_id: accountId, status: 'disconnected', qr: null };
+  }
+
+  async status(accountId) {
+    this.validateAccountId(accountId);
+    const bridge = await this.ensure(accountId);
+
+    return bridge.status();
+  }
+
+  statuses() {
+    return [...this.bridges.values()].map((bridge) => bridge.status());
+  }
+
+  summary() {
+    const statuses = this.statuses();
+    if (statuses.length === 0) {
+      return { status: 'idle', accounts: 0, qr: null };
+    }
+
+    const preferred =
+      statuses.find((status) => status.status === 'ready') ??
+      statuses.find((status) => status.status === 'qr') ??
+      statuses[0];
+
+    return { ...preferred, accounts: statuses.length };
+  }
+
+  validateAccountId(accountId) {
+    if (typeof accountId !== 'string' || /^[A-Za-z0-9_-]{1,80}$/.test(accountId) === false) {
+      throw new TypeError('A safe account_id is required.');
+    }
+  }
 }

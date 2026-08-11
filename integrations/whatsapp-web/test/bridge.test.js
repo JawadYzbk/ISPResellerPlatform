@@ -8,6 +8,7 @@ import {
   clearStaleChromiumProfileLocks,
   JsonIdempotencyStore,
   WhatsAppBridge,
+  WhatsAppBridgeManager,
   hasValidSignature,
   isHealthyStatus,
   normalizeRecipient,
@@ -25,6 +26,14 @@ class FakeClient extends EventEmitter {
   async sendMessage(to, body) {
     this.sent.push({ to, body });
     return { id: { _serialized: `wamid-${this.sent.length}` } };
+  }
+
+  async logout() {
+    this.loggedOut = true;
+  }
+
+  async destroy() {
+    this.destroyed = true;
   }
 }
 
@@ -91,6 +100,40 @@ test('clears stale Chromium profile locks before initialization', async () => {
     });
     await bridge.start();
     assert.equal(prepared, true);
+  } finally {
+    await rm(directory, { recursive: true, force: true });
+  }
+});
+
+test('keeps multiple account sessions isolated and disconnects one account without affecting another', async () => {
+  const directory = await mkdtemp(join(tmpdir(), 'isp-whatsapp-'));
+  const clients = new Map();
+  try {
+    const manager = new WhatsAppBridgeManager({
+      sessionPath: directory,
+      clientFactory: (accountId) => {
+        const client = new FakeClient();
+        clients.set(accountId, client);
+        return client;
+      },
+    });
+
+    const billing = await manager.ensure('billing-account');
+    const support = await manager.ensure('support-account');
+    clients.get('billing-account').emit('ready');
+    clients.get('support-account').emit('ready');
+
+    assert.equal(billing.status().account_id, 'billing-account');
+    assert.equal(support.status().account_id, 'support-account');
+    await manager.send('billing-account', { idempotencyKey: 'billing-001', to: '+961 70 123 456', body: 'Billing' });
+    await manager.send('support-account', { idempotencyKey: 'support-001', to: '+961 71 123 456', body: 'Support' });
+    assert.deepEqual(clients.get('billing-account').sent[0], { to: '96170123456@c.us', body: 'Billing' });
+    assert.deepEqual(clients.get('support-account').sent[0], { to: '96171123456@c.us', body: 'Support' });
+
+    const disconnected = await manager.disconnect('support-account', false);
+    assert.equal(disconnected.status, 'disconnected');
+    assert.equal(clients.get('support-account').destroyed, true);
+    assert.equal((await manager.status('billing-account')).status, 'ready');
   } finally {
     await rm(directory, { recursive: true, force: true });
   }
