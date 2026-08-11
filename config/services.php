@@ -43,6 +43,7 @@ return [
             'enabled' => env('WHATSAPP_WEB_ENABLED', false),
             'endpoint' => env('WHATSAPP_WEB_ENDPOINT', 'http://whatsapp-web:3001'),
             'token' => env('WHATSAPP_WEB_TOKEN'),
+            'client_id' => env('WHATSAPP_WEB_CLIENT_ID', 'isp-manager'),
             'webhook_url' => env('WHATSAPP_WEBHOOK_URL'),
         ],
     ],

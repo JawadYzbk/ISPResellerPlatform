@@ -7,11 +7,17 @@ use App\Models\Concerns\BelongsToTenant;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 
+/**
+ * @property Carbon|null $last_ready_at
+ */
 class WhatsAppAccount extends Model
 {
     use Auditable, BelongsToTenant;
+
+    protected $table = 'whatsapp_accounts';
 
     /** @var list<string> */
     public const JOBS = ['general', 'billing', 'collections', 'support', 'operations', 'marketing'];
