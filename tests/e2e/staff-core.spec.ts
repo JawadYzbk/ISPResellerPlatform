@@ -51,6 +51,10 @@ test.describe('staff core journeys', () => {
         await expect(page.getByRole('navigation', { name: 'Field navigation' })).toBeVisible();
         await expect(page.getByRole('link', { name: 'Customers' }).last()).toBeVisible();
         await expect(page.getByRole('link', { name: 'Payments' }).last()).toBeVisible();
+
+        await page.context().setOffline(true);
+        await expect(page.getByRole('status')).toContainText('Offline.');
+        await page.context().setOffline(false);
     });
 
     test('renders the workspace in right-to-left mode when configured', async ({ page }) => {
