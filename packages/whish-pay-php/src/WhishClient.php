@@ -95,7 +95,20 @@ final class WhishClient
     {
         $dialog = $payload['dialog'] ?? null;
 
-        return is_string($dialog) && trim($dialog) !== '' ? $dialog : $fallback;
+        if (is_string($dialog) && trim($dialog) !== '') {
+            return $dialog;
+        }
+
+        if (is_array($dialog)) {
+            foreach (['message', 'title'] as $key) {
+                $value = $dialog[$key] ?? null;
+                if (is_string($value) && trim($value) !== '') {
+                    return $value;
+                }
+            }
+        }
+
+        return $fallback;
     }
 
     /** @param array<string, mixed> $payload */

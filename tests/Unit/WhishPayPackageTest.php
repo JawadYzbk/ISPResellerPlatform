@@ -64,7 +64,7 @@ it('raises a provider exception instead of accepting a rejected API response', f
     {
         public function send(string $method, string $url, array $headers, ?array $payload, int $timeout): WhishHttpResponse
         {
-            return new WhishHttpResponse(200, '{"status":false,"code":"DECLINED","dialog":"Declined"}');
+            return new WhishHttpResponse(200, '{"status":false,"code":"DECLINED","dialog":{"title":"Payment failed","message":"Declined"}}');
         }
     };
     $client = new WhishClient(new WhishConfig('channel', 'secret', 'https://app.example.test'), $transport);
