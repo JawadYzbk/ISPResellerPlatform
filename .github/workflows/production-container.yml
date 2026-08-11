@@ -19,3 +19,90 @@ jobs:
 
       - name: Build production images
         run: docker compose --profile whatsapp -f docker-compose.production.yml build --pull
+
+      - name: Create synthetic production acceptance environment
+        run: |
+          cat > .env.acceptance <<'EOF'
+          APP_VERSION=local
+          APP_KEY=base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
+          APP_URL=https://acceptance.isp.local
+          HTTP_PORT=18000
+          DB_DATABASE=isp_manager_acceptance
+          DB_USERNAME=isp_manager
+          DB_PASSWORD=acceptance-db-password
+          REDIS_PASSWORD=acceptance-redis-password
+          AWS_ACCESS_KEY_ID=acceptance-minio
+          AWS_SECRET_ACCESS_KEY=acceptance-minio-secret
+          AWS_DEFAULT_REGION=us-east-1
+          AWS_BUCKET=isp-media
+          AWS_ENDPOINT=http://minio:9000
+          AWS_USE_PATH_STYLE_ENDPOINT=true
+          SENTRY_DSN=https://00000000000000000000000000000000@o0.ingest.sentry.io/0
+          SENTRY_ENVIRONMENT=production
+          SENTRY_RELEASE=acceptance
+          SENTRY_SEND_DEFAULT_PII=false
+          REVERB_APP_ID=acceptance
+          REVERB_APP_KEY=acceptance-reverb-key
+          REVERB_APP_SECRET=acceptance-reverb-secret
+          REVERB_HOST=acceptance.isp.local
+          REVERB_PORT=443
+          REVERB_SCHEME=https
+          REVERB_ALLOWED_ORIGINS=https://acceptance.isp.local,http://127.0.0.1:18000
+          MONITORING_ENABLED=true
+          MONITORING_ALERT_WEBHOOK_URL=https://monitoring.invalid/health
+          MONITORING_ALERT_WEBHOOK_SECRET=acceptance-monitoring-secret
+          WHATSAPP_PROVIDER=web
+          WHATSAPP_WEB_ENABLED=true
+          WHATSAPP_WEB_TOKEN=acceptance-whatsapp-token
+          WHATSAPP_WEBHOOK_SECRET=acceptance-whatsapp-secret
+          WHATSAPP_WEBHOOK_URL=http://web/api/v1/webhooks/gateways/whatsapp_web
+          PAYMENT_GATEWAY=null
+          WHISH_ENABLED=false
+          FRANKFURTER_ENABLED=false
+          BACKUP_DISK=s3
+          BACKUP_ARCHIVE_PASSWORD=acceptance-backup-password
+          BACKUP_ENCRYPTION=default
+          BACKUP_VERIFY=true
+          BACKUP_NOTIFY_TO=ops@isp.invalid
+          MAIL_MAILER=log
+          MAIL_FROM_ADDRESS=ops@isp.invalid
+          MAIL_FROM_NAME=ISP Manager Acceptance
+          EOF
+
+      - name: Run production-shaped acceptance deployment
+        run: |
+          compose=(docker compose --env-file .env.acceptance -p isp-manager-acceptance --profile whatsapp -f docker-compose.production.yml)
+          "${compose[@]}" up -d postgres redis minio minio-init
+          "${compose[@]}" run --rm app php artisan migrate --force
+          "${compose[@]}" run --rm app php artisan db:seed --force
+          "${compose[@]}" run --rm app php artisan optimize:clear
+          "${compose[@]}" run --rm app php artisan config:cache
+          "${compose[@]}" run --rm app php artisan route:cache
+          "${compose[@]}" run --rm app php artisan event:cache
+          "${compose[@]}" up -d app worker scheduler reverb web whatsapp-web
+          "${compose[@]}" run --rm app php artisan platform:preflight --production
+
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:18000/up >/dev/null; then
+              break
+            fi
+            sleep 2
+          done
+          curl --fail --silent http://127.0.0.1:18000/up >/dev/null
+          curl --fail --silent http://127.0.0.1:18000/api/v1/health
+
+          whatsapp_ready=0
+          for attempt in $(seq 1 30); do
+            if "${compose[@]}" exec -T whatsapp-web node -e "fetch('http://127.0.0.1:3001/health').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"; then
+              whatsapp_ready=1
+              break
+            fi
+            sleep 2
+          done
+          test "$whatsapp_ready" -eq 1
+
+      - name: Tear down production acceptance deployment
+        if: always()
+        run: |
+          docker compose --env-file .env.acceptance --profile whatsapp -p isp-manager-acceptance -f docker-compose.production.yml down -v --remove-orphans
+          rm -f .env.acceptance
