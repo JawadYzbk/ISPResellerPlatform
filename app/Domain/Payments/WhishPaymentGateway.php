@@ -41,9 +41,18 @@ final readonly class WhishPaymentGateway
         return $this->minorToDecimal($attempt->amount, $attempt->currency);
     }
 
-    public function matchesAmount(PaymentAttempt $attempt, ?string $providerAmount): bool
+    public function matchesStatus(PaymentAttempt $attempt, PaymentStatus $status): bool
     {
-        if ($providerAmount === null || preg_match('/^\d+(?:\.\d+)?$/', $providerAmount) !== 1) {
+        $currencyMatches = $status->currency === null
+            || strtoupper($status->currency) === strtoupper($attempt->currency);
+        $amountMatches = $status->amount === null || $this->matchesAmount($attempt, $status->amount);
+
+        return $currencyMatches && $amountMatches;
+    }
+
+    private function matchesAmount(PaymentAttempt $attempt, string $providerAmount): bool
+    {
+        if (preg_match('/^\d+(?:\.\d+)?$/', $providerAmount) !== 1) {
             return false;
         }
 

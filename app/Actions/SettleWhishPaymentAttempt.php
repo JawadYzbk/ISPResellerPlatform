@@ -39,7 +39,7 @@ final readonly class SettleWhishPaymentAttempt implements Action
 
                 return $current->load('payment');
             }
-            if ($status->currency !== strtoupper($current->currency) || ! $this->gateway->matchesAmount($current, $status->amount)) {
+            if (! $this->gateway->matchesStatus($current, $status)) {
                 $current->forceFill([
                     'status' => PaymentAttemptStatus::Failed,
                     'failure_reason' => 'Whish status did not match the recorded amount or currency.',

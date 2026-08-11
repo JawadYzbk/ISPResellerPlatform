@@ -28,7 +28,7 @@ it('verifies Whish status server-side and posts a successful payment once', func
         {
             $this->calls++;
 
-            return new WhishHttpResponse(200, '{"status":true,"data":{"collectStatus":"success","amount":"12.50","currency":"USD","transactionId":"TX-100"}}');
+            return new WhishHttpResponse(200, '{"status":true,"data":{"collectStatus":"success","transactionId":"TX-100"}}');
         }
     };
     app()->instance(WhishHttpTransport::class, $transport);
