@@ -2,6 +2,7 @@
 
 use App\Models\Incident;
 use App\Models\Tenant;
+use App\Support\ScheduledTaskMonitor;
 use App\Support\Tenancy;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
@@ -118,4 +119,20 @@ it('includes a queue backlog as an actionable monitoring signal', function (): v
         ->expectsOutput('Platform health: degraded; alert: sent.');
 
     Http::assertSent(fn ($request): bool => (json_decode($request->body(), true, 512, JSON_THROW_ON_ERROR)['signals']['queue'] ?? null) === 'degraded');
+});
+
+it('alerts when a monitored suspension task fails', function (): void {
+    configurePlatformMonitoring();
+    Http::fake(['https://alerts.isp.internal/*' => Http::response([], 202)]);
+    Cache::put('scheduler_heartbeat', now()->toIso8601String(), now()->addMinutes(5));
+    Cache::put('queue_worker_heartbeat', now()->toIso8601String(), now()->addMinutes(5));
+    $monitor = app(ScheduledTaskMonitor::class);
+    $monitor->markStarted();
+    $monitor->record('php artisan services:suspend-overdue', false);
+
+    $this->artisan('platform:monitor')
+        ->assertExitCode(1)
+        ->expectsOutput('Platform health: degraded; alert: sent.');
+
+    Http::assertSent(fn ($request): bool => (json_decode($request->body(), true, 512, JSON_THROW_ON_ERROR)['signals']['scheduled_services_suspend_overdue'] ?? null) === 'failed');
 });
