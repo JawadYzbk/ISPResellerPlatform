@@ -42,6 +42,12 @@ final class SettingsController extends Controller
                 'resolved_ticket_auto_close_hours' => (int) ($settings->settings['resolved_ticket_auto_close_hours'] ?? 72),
                 'radius_interim_interval_seconds' => (int) ($settings->settings['radius_interim_interval_seconds'] ?? 300),
             ],
+            'payments' => [
+                'cash_enabled' => true,
+                'whish_enabled' => (bool) config('services.whish.enabled', false),
+                'stripe_enabled' => (string) config('services.payments.driver', 'null') === 'stripe'
+                    && filled(config('services.stripe.publishable_key')),
+            ],
         ]);
     }
 

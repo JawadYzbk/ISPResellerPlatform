@@ -250,7 +250,7 @@ export default function PaymentCreate({ customer, invoices, defaultCurrency, pay
                         >
                             <option value="cash">Cash</option>
                             <option value="bank_transfer">Bank transfer</option>
-                            <option value="card">Card</option>
+                            <option value="card">Card (manual record)</option>
                             <option value="mobile_wallet">Mobile wallet</option>
                         </select>
                         {form.errors.method && <p className="field-error">{form.errors.method}</p>}

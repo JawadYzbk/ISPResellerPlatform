@@ -21,9 +21,11 @@ type Settings = {
 
 type FormSettings = Settings & { name: string; logo: File | null };
 
-type Props = { tenant: Tenant; settings: Settings };
+type Payments = { cash_enabled: boolean; whish_enabled: boolean; stripe_enabled: boolean };
 
-export default function GeneralSettings({ tenant, settings }: Props) {
+type Props = { tenant: Tenant; settings: Settings; payments: Payments };
+
+export default function GeneralSettings({ tenant, settings, payments }: Props) {
     const form = useForm<FormSettings>({ ...settings, name: tenant.name, logo: null });
 
     const submit = (event: React.FormEvent) => {
@@ -57,6 +59,50 @@ export default function GeneralSettings({ tenant, settings }: Props) {
                         WhatsApp setup
                     </Link>
                 </div>
+                <section className="card mt-6 p-5">
+                    <div className="flex items-center justify-between gap-4">
+                        <div>
+                            <h2 className="section-title">Payment channels</h2>
+                            <p className="mt-1 text-sm text-muted">What the workspace can offer today.</p>
+                        </div>
+                        <Link href="/billing/payments" className="button-quiet">
+                            Payment ledger
+                        </Link>
+                    </div>
+                    <div className="mt-5 grid gap-4 md:grid-cols-3">
+                        <div className="rounded-xl border border-line bg-sand/50 p-4">
+                            <p className="text-sm font-semibold">Cash collection</p>
+                            <p className="mt-1 text-xs text-muted">
+                                Open a shift, collect, and close with a counted float.
+                            </p>
+                            <Link href="/billing/shifts" className="mt-3 inline-flex text-xs font-semibold text-brand">
+                                Open cash shifts →
+                            </Link>
+                        </div>
+                        <div className="rounded-xl border border-line bg-sand/50 p-4">
+                            <p className="text-sm font-semibold">Whish Pay QR</p>
+                            <p className="mt-1 text-xs text-muted">
+                                {payments.whish_enabled
+                                    ? 'Enabled for supported USD, LBP, and AED collection.'
+                                    : 'Provider credentials are not enabled.'}
+                            </p>
+                            <Link href="/customers" className="mt-3 inline-flex text-xs font-semibold text-brand">
+                                Open customer collection →
+                            </Link>
+                        </div>
+                        <div className="rounded-xl border border-line bg-sand/50 p-4">
+                            <p className="text-sm font-semibold">Stripe portal</p>
+                            <p className="mt-1 text-xs text-muted">
+                                {payments.stripe_enabled
+                                    ? 'Enabled for customer portal checkout.'
+                                    : 'Portal checkout is not configured.'}
+                            </p>
+                            <span className="mt-3 inline-flex text-xs font-semibold text-muted">
+                                Confirmed by customer
+                            </span>
+                        </div>
+                    </div>
+                </section>
                 <form onSubmit={submit} className="card mt-8 space-y-8 p-6">
                     <section>
                         <div className="flex items-center gap-2">
