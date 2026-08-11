@@ -4,7 +4,7 @@ services:
       context: .
       dockerfile: docker/php/Dockerfile
     working_dir: /var/www/html
-    command: sh -c "composer install --no-interaction && php artisan migrate --force && cd public && php -S 0.0.0.0:8000 ../vendor/laravel/framework/src/Illuminate/Foundation/resources/server.php"
+    command: sh docker/php/start-development.sh
     ports:
       - "8000:8000"
     volumes:
