@@ -38,6 +38,7 @@ services:
       SESSION_DRIVER: redis
       QUEUE_CONNECTION: redis
       PHP_OPCACHE_VALIDATE_TIMESTAMPS: ${PHP_OPCACHE_VALIDATE_TIMESTAMPS:-0}
+      PHP_CLI_SERVER_WORKERS: ${PHP_CLI_SERVER_WORKERS:-4}
       PAYMENT_GATEWAY: ${PAYMENT_GATEWAY:-null}
       STRIPE_SECRET: ${STRIPE_SECRET:-}
       STRIPE_PUBLISHABLE_KEY: ${STRIPE_PUBLISHABLE_KEY:-}
@@ -130,7 +131,7 @@ services:
   frontend:
     image: node:22-alpine
     working_dir: /var/www/html
-    command: sh -c "npm ci && npm run build && tail -f /dev/null"
+    command: sh docker/frontend/start-development.sh
     volumes:
       - .:/var/www/html
       - frontend-node-modules:/var/www/html/node_modules

@@ -101,7 +101,7 @@ docker compose up --build
 
 The app is at [http://localhost:8000](http://localhost:8000), Mailpit at [http://localhost:8025](http://localhost:8025), and the MinIO console at [http://localhost:9001](http://localhost:9001).
 
-The development app keeps Composer dependencies and framework cache in named volumes, refreshes the Laravel configuration cache on each app start, runs the Docker PHP server with OPcache timestamp validation disabled for faster bind-mounted requests, and skips dependency installation when the lockfiles are unchanged. Restart the app after changing PHP source, `.env` or PHP configuration; set `PHP_OPCACHE_VALIDATE_TIMESTAMPS=1` when live code revalidation is more important than request speed. Rebuild the app image after changing Docker PHP settings with `docker compose build app && docker compose up -d app`.
+The development app keeps Composer dependencies and framework cache in named volumes, refreshes the Laravel configuration cache on each app start, runs the Docker PHP server with four CLI workers and OPcache timestamp validation disabled for faster bind-mounted requests, and keeps the frontend dependency install behind a lockfile hash. Restart the app after changing PHP source, `.env` or PHP configuration; set `PHP_OPCACHE_VALIDATE_TIMESTAMPS=1` when live code revalidation is more important than request speed. Set `PHP_CLI_SERVER_WORKERS=1` when debugging process-specific behavior. Rebuild the app image after changing Docker PHP settings with `docker compose build app && docker compose up -d app`.
 
 For the production-shaped PHP-FPM/Nginx topology, use the release procedure in [the deployment runbook](docs/runbooks/deployment.md) with `docker-compose.production.yml`.
 
