@@ -9,6 +9,7 @@ use App\Jobs\DeliverMessage;
 use App\Models\Customer;
 use App\Models\Message;
 use App\Models\MessageTemplate;
+use App\Models\WhatsAppAccount;
 use Illuminate\Support\Facades\DB;
 
 final readonly class QueueMessage implements Action
@@ -16,16 +17,17 @@ final readonly class QueueMessage implements Action
     public function __construct(private TemplateRenderer $renderer) {}
 
     /** @param array<string, scalar|null> $variables @param array<string, mixed> $metadata */
-    public function handle(MessageTemplate $template, string $recipient, string $channel, string $locale, string $idempotencyKey, array $variables = [], ?Customer $customer = null, array $metadata = []): Message
+    public function handle(MessageTemplate $template, string $recipient, string $channel, string $locale, string $idempotencyKey, array $variables = [], ?Customer $customer = null, array $metadata = [], ?WhatsAppAccount $whatsappAccount = null): Message
     {
         $existing = Message::query()->where('idempotency_key', $idempotencyKey)->first();
         if ($existing instanceof Message) {
             return $existing;
         }
 
-        return DB::transaction(function () use ($template, $recipient, $channel, $locale, $idempotencyKey, $variables, $customer, $metadata): Message {
+        return DB::transaction(function () use ($template, $recipient, $channel, $locale, $idempotencyKey, $variables, $customer, $metadata, $whatsappAccount): Message {
             $message = Message::create([
                 'customer_id' => $customer?->id,
+                'whatsapp_account_id' => $whatsappAccount?->id,
                 'channel' => $channel,
                 'recipient' => $recipient,
                 'template_key' => $template->key,
