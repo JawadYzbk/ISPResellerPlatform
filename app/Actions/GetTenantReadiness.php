@@ -13,6 +13,7 @@ use App\Models\User;
 use App\Models\Zone;
 use App\Support\MessageTemplateProvisioner;
 use App\Support\Tenancy;
+use Carbon\CarbonInterface;
 use Illuminate\Support\Facades\Storage;
 use Throwable;
 
@@ -133,7 +134,7 @@ final readonly class GetTenantReadiness implements Action
             return $this->check('PASS', 'Base and collection currencies are the same; no FX rate is required.');
         }
 
-        $hasRate = ExchangeRate::query()
+        $rate = ExchangeRate::query()
             ->where('effective_from', '<=', $now)
             ->where(function ($query) use ($baseCurrency, $collectionCurrency): void {
                 $query->where(function ($query) use ($baseCurrency, $collectionCurrency): void {
@@ -142,14 +143,27 @@ final readonly class GetTenantReadiness implements Action
                     $query->where('base_currency', $collectionCurrency)->where('quote_currency', $baseCurrency);
                 });
             })
-            ->exists();
+            ->orderByDesc('effective_from')
+            ->first();
 
-        return $this->check(
-            $hasRate ? 'PASS' : 'FAIL',
-            $hasRate
-                ? 'An effective direct or inverse '.$baseCurrency.'/'.$collectionCurrency.' rate is available.'
-                : 'Add an effective '.$baseCurrency.'/'.$collectionCurrency.' rate or run fx:sync-frankfurter.',
-        );
+        if (! $rate instanceof ExchangeRate) {
+            return $this->check('FAIL', 'Add an effective '.$baseCurrency.'/'.$collectionCurrency.' rate or run fx:sync-frankfurter.');
+        }
+
+        $ageHours = $rate->effective_from instanceof CarbonInterface
+            ? (int) $rate->effective_from->diffInHours($now)
+            : PHP_INT_MAX;
+        $maxAgeHours = max(1, (int) config('services.fx.rate_max_age_hours', 72));
+        $detail = 'An effective direct or inverse '.$baseCurrency.'/'.$collectionCurrency.' rate from '.$rate->source.' is available ('.$rate->effective_from?->toDateString().').';
+
+        if ($ageHours > $maxAgeHours) {
+            return $this->check(
+                'WARN',
+                $detail.' It is '.$ageHours.' hour(s) old; refresh it or approve a current manual treasury rate.',
+            );
+        }
+
+        return $this->check('PASS', $detail);
     }
 
     /** @return array{status: 'PASS'|'WARN'|'FAIL', detail: string} */

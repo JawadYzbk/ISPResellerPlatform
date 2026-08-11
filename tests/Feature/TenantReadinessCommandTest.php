@@ -1,5 +1,7 @@
 <?php
 
+use App\Actions\GetTenantReadiness;
+use App\Models\ExchangeRate;
 use App\Models\MessageTemplate;
 use App\Models\Plan;
 use App\Models\Tenant;
@@ -139,4 +141,32 @@ it('does not pass WhatsApp Web.js readiness while the bridge is waiting for pair
     $this->artisan('platform:tenant-readiness', ['tenant' => $tenant->slug, '--json' => true])
         ->assertExitCode(Command::FAILURE)
         ->expectsOutputToContain('The private Web.js bridge is configured but is waiting for account pairing to finish.');
+});
+
+it('warns when the collection rate is older than the configured freshness window', function (): void {
+    Config::set('services.fx.rate_max_age_hours', 24);
+    $tenant = Tenant::factory()->create([
+        'slug' => 'stale-rate-tenant',
+        'base_currency' => 'USD',
+        'collection_currency' => 'LBP',
+    ]);
+
+    app(Tenancy::class)->run($tenant, function (): void {
+        ExchangeRate::create([
+            'base_currency' => 'USD',
+            'quote_currency' => 'LBP',
+            'rate_numerator' => 90_000,
+            'rate_denominator' => 1,
+            'effective_from' => now()->subDays(2),
+            'source' => 'manual',
+        ]);
+    });
+
+    $check = app(GetTenantReadiness::class)->handle($tenant)['Collection FX rate'];
+    expect($check['status'])->toBe('WARN', $check['detail'])
+        ->and($check['detail'])->toContain('It is ');
+
+    $this->artisan('platform:tenant-readiness', ['tenant' => $tenant->slug, '--json' => true])
+        ->assertExitCode(Command::FAILURE)
+        ->expectsOutputToContain('Collection FX rate');
 });

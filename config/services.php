@@ -76,6 +76,7 @@ return [
 
     'fx' => [
         'rounding_mode' => env('FX_ROUNDING_MODE', 'half_up'),
+        'rate_max_age_hours' => max(1, (int) env('FX_RATE_MAX_AGE_HOURS', 72)),
     ],
 
     'frankfurter' => [
