@@ -19,8 +19,31 @@ final class EnsureRecentAuthentication
             return $next($request);
         }
 
-        return $request->expectsJson()
-            ? abort(401, 'Recent authentication is required.')
-            : redirect()->route('security.reauthenticate');
+        if ($request->expectsJson()) {
+            abort(401, 'Recent authentication is required.');
+        }
+
+        $this->rememberIntendedUrl($request);
+
+        return redirect()->route('security.reauthenticate');
+    }
+
+    private function rememberIntendedUrl(Request $request): void
+    {
+        $intended = $request->isMethodSafe()
+            ? $request->fullUrl()
+            : $request->headers->get('referer');
+
+        if (! is_string($intended) || trim($intended) === '') {
+            $intended = url()->previous();
+        }
+
+        $parsed = parse_url($intended);
+        $host = is_array($parsed) && isset($parsed['host']) ? (string) $parsed['host'] : null;
+        if ($host !== null && strcasecmp($host, $request->getHost()) !== 0) {
+            $intended = route('dashboard');
+        }
+
+        $request->session()->put('url.intended', $intended);
     }
 }
