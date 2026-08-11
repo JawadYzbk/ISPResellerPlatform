@@ -1,5 +1,6 @@
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, Link, router, useForm } from '@inertiajs/react';
 import { ArrowLeft, CheckCircle2, MessageCircle, QrCode, RefreshCw, ShieldAlert, WifiOff } from 'lucide-react';
+import { useEffect } from 'react';
 
 import AppLayout from '@/layouts/AppLayout';
 
@@ -34,6 +35,18 @@ export default function WhatsAppSettings({ setup }: Props) {
     const problem =
         setup.status === 'unreachable' || setup.status === 'auth_failure' || setup.status === 'disconnected';
     const testForm = useForm({ phone: '' });
+
+    useEffect(() => {
+        if (setup.mode !== 'web' || setup.status === 'ready') {
+            return;
+        }
+
+        const interval = window.setInterval(() => {
+            router.reload({ only: ['setup'] });
+        }, 5000);
+
+        return () => window.clearInterval(interval);
+    }, [setup.mode, setup.status]);
 
     const submitTest = (event: React.FormEvent) => {
         event.preventDefault();
@@ -97,8 +110,10 @@ export default function WhatsAppSettings({ setup }: Props) {
                         <p className="mt-3 text-sm text-muted">
                             {setup.mode === 'web'
                                 ? setup.status === 'qr'
-                                    ? 'Open WhatsApp on the phone for this workspace and scan the QR code shown here from Linked devices.'
-                                    : 'The bridge status is refreshed when this page is opened. Use refresh after starting or pairing the bridge.'
+                                    ? 'On the phone for this workspace, open WhatsApp → Linked devices → Link a device, then scan the QR code shown here.'
+                                    : setup.status === 'ready'
+                                      ? 'This workspace is already paired. The QR code appears when the private bridge needs a new device link.'
+                                      : 'The bridge status refreshes automatically while it starts or waits for pairing. You can also refresh manually.'
                                 : 'Cloud API credentials are managed in the deployment environment. No private token is stored in tenant settings.'}
                         </p>
                         {setup.detail && (
