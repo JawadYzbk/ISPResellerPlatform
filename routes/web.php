@@ -150,6 +150,7 @@ Route::middleware(['auth', 'tenant', '2fa'])->group(function (): void {
     Route::post('/billing/shifts/{shift:public_id}/close', [CashShiftOperationsController::class, 'close'])->middleware('recent-auth')->name('billing.shifts.close');
     Route::get('/billing/exchange-rates', [ExchangeRateOperationsController::class, 'index'])->name('billing.exchange-rates');
     Route::post('/billing/exchange-rates', [ExchangeRateOperationsController::class, 'store'])->middleware('recent-auth')->name('billing.exchange-rates.store');
+    Route::post('/billing/exchange-rates/sync', [ExchangeRateOperationsController::class, 'sync'])->middleware('recent-auth')->name('billing.exchange-rates.sync');
     Route::post('/billing/payments/{payment:public_id}/reverse', [BillingController::class, 'reversePayment'])->middleware('recent-auth')->name('billing.payments.reverse');
     Route::get('/operations/tickets', [TicketOperationsController::class, 'index'])->name('operations.tickets');
     Route::get('/operations/tickets/{ticket:public_id}', [TicketOperationsController::class, 'show'])->name('operations.tickets.show');

@@ -28,6 +28,8 @@ type RateForm = {
 type Props = PageProps & {
     rates: Paginator<ExchangeRate>;
     filters: { base_currency?: string; quote_currency?: string };
+    frankfurterEnabled: boolean;
+    workspaceCurrencies: { base: string | null; collection: string | null };
 };
 
 function Pagination({ rates }: { rates: Paginator<ExchangeRate> }) {
@@ -70,7 +72,7 @@ function Pagination({ rates }: { rates: Paginator<ExchangeRate> }) {
     );
 }
 
-export default function ExchangeRatesPage({ rates, filters }: Props) {
+export default function ExchangeRatesPage({ rates, filters, frankfurterEnabled, workspaceCurrencies }: Props) {
     const [baseCurrency, setBaseCurrency] = useState(filters.base_currency ?? '');
     const [quoteCurrency, setQuoteCurrency] = useState(filters.quote_currency ?? '');
     const form = useForm<RateForm>({
@@ -129,6 +131,27 @@ export default function ExchangeRatesPage({ rates, filters }: Props) {
                 <div className="rounded-xl border border-line bg-white px-4 py-3 text-sm text-muted">
                     <span className="font-semibold text-ink">Fraction based</span> · No rounding in the rate history
                 </div>
+            </div>
+
+            <div className="card mt-6 flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                    <p className="text-sm font-semibold">Frankfurter market rates</p>
+                    <p className="mt-1 text-sm text-muted">
+                        Import append-only rates for {workspaceCurrencies.base ?? 'the workspace base currency'} into{' '}
+                        {workspaceCurrencies.collection ?? 'the collection currency'}.
+                    </p>
+                </div>
+                {frankfurterEnabled ? (
+                    <button
+                        type="button"
+                        className="button-secondary shrink-0"
+                        onClick={() => router.post('/billing/exchange-rates/sync')}
+                    >
+                        <RefreshCw size={16} /> Sync Frankfurter
+                    </button>
+                ) : (
+                    <span className="text-xs text-muted">Enable FRANKFURTER_ENABLED to use provider sync.</span>
+                )}
             </div>
 
             <form onSubmit={submit} className="card mt-8 p-6">

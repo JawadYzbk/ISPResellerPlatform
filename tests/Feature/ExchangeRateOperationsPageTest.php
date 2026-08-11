@@ -7,6 +7,7 @@ use App\Support\Tenancy;
 use Database\Seeders\CapabilitySeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Http;
 
 uses(RefreshDatabase::class);
 
@@ -123,4 +124,37 @@ it('does not expose exchange-rate administration without settings capability', f
     $user->assignRole('cashier');
 
     $this->actingAs($user)->get(route('billing.exchange-rates'))->assertForbidden();
+});
+
+it('lets a workspace owner import Frankfurter rates from the exchange-rate screen', function (): void {
+    config()->set([
+        'services.frankfurter.enabled' => true,
+        'services.frankfurter.quotes' => ['LBP'],
+    ]);
+    Http::fake([
+        'https://api.frankfurter.dev/*' => Http::response([
+            ['date' => '2026-08-11', 'base' => 'USD', 'quote' => 'LBP', 'rate' => '89500.25'],
+        ]),
+    ]);
+    $tenant = Tenant::create(['name' => 'Northline', 'slug' => 'northline', 'base_currency' => 'USD', 'collection_currency' => 'LBP']);
+    $user = User::create([
+        'tenant_id' => $tenant->id,
+        'name' => 'Workspace owner',
+        'email' => 'rates-sync@example.test',
+        'password' => Hash::make('password'),
+        'role' => 'tenant_owner',
+    ]);
+    app(CapabilitySeeder::class)->run();
+    app(Tenancy::class)->set($tenant);
+    $user->assignRole('tenant_owner');
+    $this->actingAs($user)->post(route('security.reauthenticate.store'), ['password' => 'password']);
+
+    $this->actingAs($user)
+        ->from(route('billing.exchange-rates'))
+        ->post(route('billing.exchange-rates.sync'))
+        ->assertRedirect(route('billing.exchange-rates'))
+        ->assertSessionHas('success', '1 Frankfurter rate(s) imported.');
+
+    app(Tenancy::class)->set($tenant);
+    expect(ExchangeRate::query()->where('source', 'frankfurter')->where('quote_currency', 'LBP')->exists())->toBeTrue();
 });
