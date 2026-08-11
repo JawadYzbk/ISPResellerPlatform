@@ -61,3 +61,21 @@ it('records an approved FX override and preserves the operator reason', function
         ->and($payment->reference)->toBe('counter-001')
         ->and($customer->refresh()->balance_amount)->toBe(0);
 });
+
+it('fails closed instead of using a stale rate for a current payment', function (): void {
+    config(['services.fx.rate_max_age_hours' => 24]);
+    $tenant = Tenant::create(['name' => 'Northline', 'slug' => 'northline', 'base_currency' => 'USD', 'collection_currency' => 'LBP']);
+    app(Tenancy::class)->set($tenant);
+    ExchangeRate::create([
+        'base_currency' => 'USD',
+        'quote_currency' => 'LBP',
+        'rate_numerator' => 90_000,
+        'rate_denominator' => 1,
+        'effective_from' => now()->subDays(2),
+        'source' => 'manual',
+    ]);
+    $customer = Customer::factory()->create(['balance_currency' => 'USD']);
+
+    expect(fn (): mixed => app(RecordPayment::class)->handle($customer, 9_000_000, 'LBP', 'cash', 'fx-stale-001'))
+        ->toThrow(DomainException::class, 'refresh it or provide an approved override.');
+});

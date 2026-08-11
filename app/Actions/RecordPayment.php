@@ -61,10 +61,10 @@ final readonly class RecordPayment implements Action
 
         $receivedAt = CarbonImmutable::now();
         $baseCurrency = (string) Tenant::query()->whereKey($customer->tenant_id)->value('base_currency');
-        $baseSnapshot = $this->fx->snapshot($currency, $baseCurrency, $receivedAt, $fxRateNumerator, $fxRateDenominator, $rounding->value);
+        $baseSnapshot = $this->fx->snapshot($currency, $baseCurrency, $receivedAt, $fxRateNumerator, $fxRateDenominator, roundingMode: $rounding->value, requireFresh: true);
         $ledgerSnapshot = $customer->balance_currency === $baseCurrency
             ? $baseSnapshot
-            : $this->fx->snapshot($currency, $customer->balance_currency, $receivedAt, roundingMode: $rounding->value);
+            : $this->fx->snapshot($currency, $customer->balance_currency, $receivedAt, roundingMode: $rounding->value, requireFresh: true);
         if ($invoice !== null && $invoice->currency !== $baseCurrency && ($fxRateNumerator !== null || $fxRateDenominator !== null)) {
             throw new DomainException('FX overrides must be stated against the tenant base currency.');
         }
@@ -73,7 +73,7 @@ final readonly class RecordPayment implements Action
             $invoiceSnapshot = match (true) {
                 $invoice->currency === $baseCurrency => $baseSnapshot,
                 $invoice->currency === $customer->balance_currency => $ledgerSnapshot,
-                default => $this->fx->snapshot($currency, $invoice->currency, $receivedAt, roundingMode: $rounding->value),
+                default => $this->fx->snapshot($currency, $invoice->currency, $receivedAt, roundingMode: $rounding->value, requireFresh: true),
             };
         }
 

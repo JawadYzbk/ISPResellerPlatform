@@ -152,7 +152,7 @@ final class CustomerController extends Controller
             ->map(function (Currency $currency) use ($customer, $fx): array {
                 $rate = null;
                 try {
-                    $rate = $fx->snapshot($currency->code, $customer->balance_currency, now()->toImmutable());
+                    $rate = $fx->snapshot($currency->code, $customer->balance_currency, now()->toImmutable(), requireFresh: true);
                 } catch (DomainException) {
                     // The collector can still choose this currency and enter an approved override.
                 }
