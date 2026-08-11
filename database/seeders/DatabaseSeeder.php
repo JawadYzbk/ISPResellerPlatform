@@ -15,6 +15,7 @@ use App\Enums\TicketStatus;
 use App\Enums\WorkOrderStatus;
 use App\Models\Branch;
 use App\Models\Customer;
+use App\Models\ExchangeRate;
 use App\Models\InventoryItem;
 use App\Models\InventoryUnit;
 use App\Models\Invoice;
@@ -55,7 +56,7 @@ class DatabaseSeeder extends Seeder
 
     public function run(): void
     {
-        $tenant = Tenant::updateOrCreate(['slug' => 'northline'], ['name' => 'Northline Broadband', 'base_currency' => 'USD', 'collection_currency' => 'USD', 'timezone' => 'Asia/Beirut', 'locale' => 'en']);
+        $tenant = Tenant::updateOrCreate(['slug' => 'northline'], ['name' => 'Northline Broadband', 'base_currency' => 'USD', 'collection_currency' => 'LBP', 'timezone' => 'Asia/Beirut', 'locale' => 'en']);
 
         $this->call(CapabilitySeeder::class);
 
@@ -71,7 +72,7 @@ class DatabaseSeeder extends Seeder
 
         $admin = $staff['tenant_owner'];
 
-        app(Tenancy::class)->run($tenant, function () use ($admin): void {
+        app(Tenancy::class)->run($tenant, function () use ($admin, $tenant): void {
             $postJournalEntry = app(PostJournalEntry::class);
             $zones = collect([
                 ['name' => 'Central District', 'code' => 'CENTRAL'],
@@ -126,6 +127,16 @@ class DatabaseSeeder extends Seeder
 
             $historyStart = now()->subMonths(6)->startOfMonth();
             $currentStart = now()->startOfDay();
+            $demoRateEffectiveFrom = now($tenant->timezone)->startOfDay();
+            ExchangeRate::updateOrCreate(
+                ['base_currency' => 'USD', 'quote_currency' => 'LBP', 'effective_from' => $demoRateEffectiveFrom],
+                [
+                    'rate_numerator' => 90_000,
+                    'rate_denominator' => 1,
+                    'source' => 'demo',
+                    'metadata' => ['description' => 'Seeded demonstration rate; replace before live collections.'],
+                ],
+            );
             $plans = collect([
                 ['name' => 'Home 25', 'slug' => 'home-25', 'download_kbps' => 25_000, 'upload_kbps' => 5_000, 'duration_days' => 30, 'amount_minor' => 2500, 'currency' => 'USD'],
                 ['name' => 'Home 50', 'slug' => 'home-50', 'download_kbps' => 50_000, 'upload_kbps' => 10_000, 'duration_days' => 30, 'amount_minor' => 3500, 'currency' => 'USD'],
@@ -213,7 +224,9 @@ class DatabaseSeeder extends Seeder
                     if (($serviceIndex + $monthOffset) % 11 === 0) {
                         continue;
                     }
-                    $payment = $recordPayment->handle($service->customer, $invoice->total_amount, 'USD', 'cash', 'demo-payment:'.$invoiceNumber, $invoice, $admin);
+                    $paymentCurrency = $serviceIndex === 0 && $monthOffset === 1 ? 'LBP' : 'USD';
+                    $paymentAmount = $paymentCurrency === 'LBP' ? $invoice->total_amount * 90_000 : $invoice->total_amount;
+                    $payment = $recordPayment->handle($service->customer, $paymentAmount, $paymentCurrency, 'cash', 'demo-payment:'.$invoiceNumber, $invoice, $admin);
                     $payment->forceFill(['received_at' => $period->copy()->addDays(3)])->saveQuietly();
                 }
             }
