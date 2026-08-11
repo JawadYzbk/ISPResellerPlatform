@@ -9,6 +9,7 @@ if [ ! -f vendor/autoload.php ] || [ composer.json -nt vendor/autoload.php ] || 
 fi
 
 php artisan migrate --force --no-interaction
+php artisan db:seed --class=CapabilitySeeder --force --no-interaction
 php artisan config:clear --no-interaction
 
 cd public
