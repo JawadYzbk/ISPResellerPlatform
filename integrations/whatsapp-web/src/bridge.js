@@ -1,4 +1,4 @@
-import { mkdir, readdir, readFile, rename, unlink, writeFile } from 'node:fs/promises';
+import { mkdir, readdir, readFile, rename, rm, unlink, writeFile } from 'node:fs/promises';
 import { createHash, createHmac, timingSafeEqual } from 'node:crypto';
 import { join } from 'node:path';
 
@@ -379,6 +379,27 @@ export class WhatsAppBridgeManager {
     return restart
       ? (await this.ensure(accountId)).status()
       : { account_id: accountId, status: 'disconnected', qr: null };
+  }
+
+  async remove(accountId) {
+    this.validateAccountId(accountId);
+    const pending = this.starting.get(accountId);
+    if (pending) {
+      await pending.catch(() => undefined);
+    }
+
+    const bridge = this.bridges.get(accountId);
+    if (bridge) {
+      await bridge.disconnect();
+      this.bridges.delete(accountId);
+    }
+
+    await Promise.all([
+      rm(join(this.sessionPath, `session-${accountId}`), { recursive: true, force: true }),
+      rm(join(this.sessionPath, `account-${accountId}`), { recursive: true, force: true }),
+    ]);
+
+    return { account_id: accountId, status: 'deleted' };
   }
 
   async status(accountId) {

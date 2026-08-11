@@ -127,6 +127,9 @@ const server = http.createServer(async (request, response) => {
       const restart = payload.restart !== false;
       return json(response, 200, await manager.disconnect(account.accountId, restart));
     }
+    if (account && account.action === 'status' && request.method === 'DELETE') {
+      return json(response, 200, await manager.remove(account.accountId));
+    }
     if (account && account.action === 'messages' && request.method === 'POST') {
       const payload = await readJson(request);
       const result = await manager.send(account.accountId, {

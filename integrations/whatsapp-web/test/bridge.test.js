@@ -134,6 +134,11 @@ test('keeps multiple account sessions isolated and disconnects one account witho
     assert.equal(disconnected.status, 'disconnected');
     assert.equal(clients.get('support-account').destroyed, true);
     assert.equal((await manager.status('billing-account')).status, 'ready');
+
+    const removed = await manager.remove('billing-account');
+    assert.equal(removed.status, 'deleted');
+    assert.equal(clients.get('billing-account').destroyed, true);
+    assert.equal(manager.bridges.has('billing-account'), false);
   } finally {
     await rm(directory, { recursive: true, force: true });
   }
