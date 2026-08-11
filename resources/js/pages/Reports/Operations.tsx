@@ -47,6 +47,10 @@ export default function OperationsReportPage({ report }: Props) {
                         <Download size={15} />
                         Download CSV
                     </a>
+                    <a href="/reports/operations?format=xlsx" className="button-quiet">
+                        <Download size={15} />
+                        Download XLSX
+                    </a>
                 </div>
             </div>
             <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">

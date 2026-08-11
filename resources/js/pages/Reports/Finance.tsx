@@ -1,5 +1,6 @@
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import { ArrowLeft, BarChart3, Download, Receipt, TrendingUp, Wallet } from 'lucide-react';
+import { useState } from 'react';
 
 import AppLayout from '@/layouts/AppLayout';
 import { formatMoney } from '@/lib/format';
@@ -28,6 +29,15 @@ const formatBytes = (bytes: number) => {
 };
 
 export default function FinanceReportPage({ report }: Props) {
+    const [from, setFrom] = useState(report.from);
+    const [to, setTo] = useState(report.to);
+    const query = `from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`;
+
+    const applyPeriod = (event: React.FormEvent) => {
+        event.preventDefault();
+        router.get('/reports/finance', { from, to }, { preserveState: true, replace: true });
+    };
+
     return (
         <AppLayout>
             <Head title="Finance report" />
@@ -50,16 +60,34 @@ export default function FinanceReportPage({ report }: Props) {
                     <Link href="/reports/operations" className="button-quiet">
                         Operations report
                     </Link>
-                    <a href="/reports/finance?format=csv" className="button-quiet">
+                    <a href={`/reports/finance?format=csv&${query}`} className="button-quiet">
                         <Download size={15} />
                         Download CSV
                     </a>
-                    <a href="/reports/finance?format=xlsx" className="button-quiet">
+                    <a href={`/reports/finance?format=xlsx&${query}`} className="button-quiet">
                         <Download size={15} />
                         Download XLSX
                     </a>
                 </div>
             </div>
+            <form onSubmit={applyPeriod} className="card mt-6 flex flex-col gap-4 p-5 sm:flex-row sm:items-end">
+                <label className="block sm:min-w-48">
+                    <span className="field-label">From</span>
+                    <input
+                        className="field"
+                        type="date"
+                        value={from}
+                        onChange={(event) => setFrom(event.target.value)}
+                    />
+                </label>
+                <label className="block sm:min-w-48">
+                    <span className="field-label">To</span>
+                    <input className="field" type="date" value={to} onChange={(event) => setTo(event.target.value)} />
+                </label>
+                <button type="submit" className="button-primary">
+                    Apply period
+                </button>
+            </form>
             <div className="mt-8 grid gap-4 md:grid-cols-4">
                 <div className="card p-5">
                     <Receipt className="text-brand" size={20} />
