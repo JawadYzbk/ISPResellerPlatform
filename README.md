@@ -55,7 +55,7 @@ The current foundation is live:
 - Deferred owner dashboard metrics and manager attention panels with server-rendered loading fallbacks
 - Capability-aware global command palette for customers, services, billing records, tickets, equipment and incidents
 - Transactional APP_KEY rotation command with an operator runbook for encrypted credentials
-- Coherent demo tenant seed with 200 customers/services, billing history, routers/POPs, tickets, work orders and serialized stock
+- Coherent Lebanon-oriented demo tenant seed with USD base currency, LBP collection, a demo FX rate, one LBP settlement against a USD invoice, 200 customers/services, billing history, routers/POPs, tickets, work orders and serialized stock
 - Money value object backed by `brick/money`
 - Pest tests for money arithmetic, authentication and tenant isolation
 - Docker Compose services for PHP, PostgreSQL 17, Redis 7, Mailpit and MinIO
