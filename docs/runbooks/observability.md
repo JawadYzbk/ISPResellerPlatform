@@ -3,9 +3,9 @@
 ## Liveness and dependency health
 
 - `GET /up` is the framework liveness probe.
-- `GET /api/v1/health` is the deeper dependency probe. It checks the database, cache, default queue depth, scheduler heartbeat and queue-worker heartbeat.
+- `GET /api/v1/health` is the deeper dependency probe. It checks the database, cache, default queue depth, scheduler heartbeat, queue-worker heartbeat, and the count of unresolved router-unreachable incidents (`checks.router_incidents`).
 - `php artisan platform:heartbeat` records the scheduler heartbeat and queues the worker heartbeat job. The scheduler runs it every minute through `bootstrap/app.php`.
-- `php artisan platform:monitor` runs every five minutes, sends only health-state transitions to the configured signed alert webhook, suppresses repeated failures, and emits a recovery event after the platform returns to healthy.
+- `php artisan platform:monitor` runs every five minutes, sends signed alerts for distinct degraded signal sets to the configured webhook, suppresses repeated identical failures, and emits a recovery event after the platform returns to healthy. Alert payloads include the actionable `signals` map, so a router outage appearing during an existing scheduler outage is not silently suppressed.
 - `php artisan ledger:check-invariants` checks balanced journal entries, customer projections and partner wallet invariants. It runs daily at 03:00.
 
 The health endpoint is intentionally unauthenticated and must not expose credentials or customer data. A `degraded` response requires alerting; it is not a replacement for a queue, scheduler or database monitor. In production, set `MONITORING_ENABLED=true`, `MONITORING_ALERT_WEBHOOK_URL`, and `MONITORING_ALERT_WEBHOOK_SECRET`; the receiver must verify `X-Platform-Alert-Signature` as an HMAC-SHA256 signature over the raw JSON body. The production preflight rejects missing monitoring routing.
