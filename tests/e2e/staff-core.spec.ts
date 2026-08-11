@@ -19,7 +19,7 @@ const seededRoleJourneys = [
         dashboardCta: 'Find customers',
     },
     { label: 'cashier', email: 'cashier@example.com', path: '/billing/invoices', dashboardCta: 'Find customers' },
-    { label: 'collector', email: 'collector@example.com', path: '/billing/payments', dashboardCta: 'Find customers' },
+    { label: 'collector', email: 'collector@example.com', path: '/field', dashboardCta: 'Find customers' },
     {
         label: 'support agent',
         email: 'support.agent@example.com',
@@ -313,6 +313,19 @@ test.describe('staff core journeys', () => {
 
         await page.context().setOffline(true);
         await expect(page.getByRole('status')).toContainText('Offline.');
+        await page.context().setOffline(false);
+    });
+
+    test('opens the collector desk with a searchable customer list and offline queue status', async ({ page }) => {
+        await signIn(page);
+        await page.goto('/field');
+
+        await expect(page.getByRole('heading', { name: 'Collector desk' })).toBeVisible();
+        await expect(page.getByLabel('Search field customers')).toBeVisible();
+        await expect(page.getByRole('combobox', { name: 'Field payment currency' })).toBeVisible();
+
+        await page.context().setOffline(true);
+        await expect(page.getByRole('status')).toContainText('offline', { ignoreCase: true });
         await page.context().setOffline(false);
     });
 

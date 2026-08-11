@@ -1,0 +1,372 @@
+import CurrencyCombobox, { type CurrencyOption } from '@/components/ui/currency-combobox';
+import ResponsiveSelect from '@/components/ui/responsive-select';
+import { Head, Link } from '@inertiajs/react';
+import { CheckCircle2, CloudOff, CreditCard, RefreshCw, Search, UserRound, Wifi } from 'lucide-react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+
+import AppLayout from '@/layouts/AppLayout';
+import { readFieldState, writeFieldState, type QueuedFieldPayment } from '@/lib/field-store';
+import { currencyFractionDigits, formatMoney, parseMoneyToMinor } from '@/lib/format';
+
+type FieldCustomer = {
+    id: string;
+    code: string;
+    first_name: string;
+    last_name: string | null;
+    phone: string;
+    balance_amount: number;
+    balance_currency: string;
+    zone: { code: string; name: string } | null;
+};
+
+type FieldSnapshot = {
+    sync_token: string;
+    generated_at: string;
+    data: {
+        customers: FieldCustomer[];
+        services: unknown[];
+        plans: unknown[];
+        exchange_rates: unknown[];
+        message_templates: unknown[];
+    };
+    tombstones?: { customers?: string[] };
+};
+
+type CollectorShift = {
+    id: string;
+    status: string;
+    opened_at: string | null;
+    opening_float: Record<string, number>;
+    system_totals: Record<string, number>;
+    payment_count: number;
+} | null;
+
+type CollectorSummary = {
+    date: string;
+    payment_count: number;
+    totals: Record<string, number>;
+};
+
+type SyncResult = {
+    index: number;
+    status: 'created' | 'replayed' | 'rejected' | 'error';
+    error?: string;
+};
+
+type Props = {
+    snapshot: FieldSnapshot;
+    shift: CollectorShift;
+    summary: CollectorSummary;
+    currencies: CurrencyOption[];
+    defaultCurrency: string;
+    storageKey: string;
+};
+
+function newIdempotencyKey(): string {
+    return globalThis.crypto?.randomUUID?.() ?? `field-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+}
+
+function csrfToken(): string {
+    return document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ?? '';
+}
+
+export default function FieldIndex({ snapshot, shift, summary, currencies, defaultCurrency, storageKey }: Props) {
+    const [customers, setCustomers] = useState(snapshot.data.customers);
+    const [selectedCustomerId, setSelectedCustomerId] = useState('');
+    const [search, setSearch] = useState('');
+    const [amount, setAmount] = useState('');
+    const [currency, setCurrency] = useState(defaultCurrency || currencies[0]?.code || 'USD');
+    const [method, setMethod] = useState('cash');
+    const [pending, setPending] = useState<QueuedFieldPayment[]>([]);
+    const [syncToken, setSyncToken] = useState(snapshot.sync_token);
+    const [online, setOnline] = useState(() => (typeof navigator === 'undefined' ? true : navigator.onLine));
+    const [busy, setBusy] = useState(false);
+    const [message, setMessage] = useState<string | null>(null);
+    const [error, setError] = useState<string | null>(null);
+
+    const selectedCustomer = customers.find((customer) => customer.id === selectedCustomerId) ?? null;
+    const selectedCurrency = currencies.find((item) => item.code === currency);
+    const fractionDigits = selectedCurrency?.decimal_digits ?? currencyFractionDigits(currency);
+    const filteredCustomers = useMemo(() => {
+        const query = search.trim().toLowerCase();
+        if (query === '') return customers;
+
+        return customers.filter((customer) => `${customer.code} ${customer.first_name} ${customer.last_name ?? ''} ${customer.phone}`.toLowerCase().includes(query));
+    }, [customers, search]);
+
+    const persist = useCallback(
+        async (nextPending: QueuedFieldPayment[], nextSyncToken = syncToken) => {
+            setPending(nextPending);
+            setSyncToken(nextSyncToken);
+            await writeFieldState({ key: storageKey, pending: nextPending, sync_token: nextSyncToken });
+        },
+        [storageKey, syncToken],
+    );
+
+    const refreshSnapshot = useCallback(async () => {
+        if (!online) {
+            setError('You are offline. The saved customer list and payment queue are still available.');
+            return;
+        }
+
+        setBusy(true);
+        setError(null);
+        try {
+            const query = syncToken ? `?since=${encodeURIComponent(syncToken)}` : '';
+            const response = await fetch(`/field/sync${query}`, {
+                credentials: 'same-origin',
+                headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+            });
+            const body = (await response.json()) as FieldSnapshot;
+            if (!response.ok) throw new Error('The field list could not be refreshed.');
+
+            const changedCustomers = new Map(customers.map((customer) => [customer.id, customer]));
+            body.data.customers.forEach((customer) => changedCustomers.set(customer.id, customer));
+            (body.tombstones?.customers ?? []).forEach((customerId) => changedCustomers.delete(customerId));
+            setCustomers([...changedCustomers.values()]);
+            await persist(pending, body.sync_token);
+            setMessage('Field data refreshed.');
+        } catch (caught) {
+            setError(caught instanceof Error ? caught.message : 'The field list could not be refreshed.');
+        } finally {
+            setBusy(false);
+        }
+    }, [customers, online, pending, persist, syncToken]);
+
+    const pushQueue = useCallback(async () => {
+        if (!online || pending.length === 0) return;
+
+        setBusy(true);
+        setError(null);
+        try {
+            const response = await fetch('/field/push', {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: {
+                    Accept: 'application/json',
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken(),
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+                body: JSON.stringify({
+                    items: pending.map((item) => {
+                        const cleanItem = { ...item };
+                        delete cleanItem.last_error;
+                        return cleanItem;
+                    }),
+                }),
+            });
+            const body = (await response.json()) as { results?: SyncResult[] };
+            if (!response.ok || !Array.isArray(body.results)) throw new Error('Queued payments could not be synchronized.');
+
+            const results = body.results;
+            const remaining = pending.flatMap((item, index) => {
+                const result = results.find((candidate) => candidate.index === index);
+                return result?.status === 'created' || result?.status === 'replayed'
+                    ? []
+                    : [{ ...item, last_error: result?.error ?? 'Payment was not accepted yet.' }];
+            });
+            await persist(remaining);
+            setMessage(remaining.length === 0 ? 'All queued payments were synchronized.' : 'Some payments remain queued for review.');
+        } catch (caught) {
+            setError(caught instanceof Error ? caught.message : 'Queued payments could not be synchronized.');
+        } finally {
+            setBusy(false);
+        }
+    }, [online, pending, persist]);
+
+    useEffect(() => {
+        let mounted = true;
+        void readFieldState(storageKey).then((stored) => {
+            if (!mounted || stored === null) return;
+            setPending(stored.pending);
+            if (stored.sync_token) setSyncToken(stored.sync_token);
+        });
+
+        const markOnline = () => setOnline(true);
+        const markOffline = () => setOnline(false);
+        window.addEventListener('online', markOnline);
+        window.addEventListener('offline', markOffline);
+
+        return () => {
+            mounted = false;
+            window.removeEventListener('online', markOnline);
+            window.removeEventListener('offline', markOffline);
+        };
+    }, [storageKey]);
+
+    const wasOnline = useRef(online);
+
+    useEffect(() => {
+        const becameOnline = online && !wasOnline.current;
+        wasOnline.current = online;
+        if (!becameOnline || pending.length === 0) return;
+
+        const timer = window.setTimeout(() => void pushQueue(), 0);
+        return () => window.clearTimeout(timer);
+    }, [online, pending.length, pushQueue]);
+
+    const queuePayment = async (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        if (!selectedCustomer) {
+            setError('Choose a customer before saving a payment.');
+            return;
+        }
+
+        const amountMinor = parseMoneyToMinor(amount, currency);
+        if (amountMinor === null) {
+            setError('Enter a valid positive amount.');
+            return;
+        }
+
+        const item: QueuedFieldPayment = {
+            customer_id: selectedCustomer.id,
+            amount: amountMinor,
+            currency,
+            method,
+            idempotency_key: newIdempotencyKey(),
+        };
+        await persist([...pending, item]);
+        setAmount('');
+        setMessage(online ? 'Payment saved locally and queued for synchronization.' : 'Payment saved on this device. It will synchronize when you are back online.');
+        setError(null);
+        if (online) void pushQueue();
+    };
+
+    return (
+        <AppLayout>
+            <Head title="Field collection" />
+            <div className="mx-auto max-w-4xl pb-24">
+                <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
+                    <div>
+                        <p className="eyebrow">Field operations</p>
+                        <h1 className="page-title">Collector desk</h1>
+                        <p className="page-subtitle">Find customers, record collections and keep working when the connection drops.</p>
+                    </div>
+                    <div className={`inline-flex items-center gap-2 self-start rounded-full px-3 py-2 text-xs font-semibold ${online ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'}`}>
+                        {online ? <Wifi size={15} /> : <CloudOff size={15} />}
+                        {online ? 'Online' : 'Offline'}
+                    </div>
+                </div>
+
+                <div className="mt-6 grid gap-4 sm:grid-cols-3">
+                    <div className="card p-4">
+                        <p className="eyebrow">Shift</p>
+                        <p className="mt-2 text-lg font-semibold">{shift ? 'Open' : 'Not open'}</p>
+                        <p className="mt-1 text-xs text-muted">{shift ? `${shift.payment_count} posted payment(s)` : 'Open a cash shift before collecting.'}</p>
+                    </div>
+                    <div className="card p-4">
+                        <p className="eyebrow">Today</p>
+                        <p className="mt-2 text-lg font-semibold">{summary.payment_count} payment(s)</p>
+                        <p className="mt-1 text-xs text-muted">{Object.entries(summary.totals).map(([code, value]) => formatMoney(value, code)).join(' · ') || 'Nothing posted yet'}</p>
+                    </div>
+                    <div className="card p-4">
+                        <p className="eyebrow">Queue</p>
+                        <p className="mt-2 text-lg font-semibold">{pending.length} pending</p>
+                        <button type="button" className="mt-1 inline-flex items-center gap-1 text-xs font-semibold text-brand disabled:opacity-50" disabled={!online || busy || pending.length === 0} onClick={() => void pushQueue()}>
+                            <RefreshCw size={13} className={busy ? 'animate-spin' : ''} /> Synchronize now
+                        </button>
+                    </div>
+                </div>
+
+                {!shift && (
+                    <div className="mt-6 flex flex-col gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900 sm:flex-row sm:items-center sm:justify-between">
+                        <span>Open a cash shift before recording collector payments.</span>
+                        <Link href="/billing/shifts" className="font-semibold underline">Open shifts</Link>
+                    </div>
+                )}
+
+                {(message || error) && (
+                    <div className={`mt-6 rounded-xl border p-4 text-sm ${error ? 'border-rose-200 bg-rose-50 text-rose-800' : 'border-emerald-200 bg-emerald-50 text-emerald-800'}`} role="status">
+                        {error ?? message}
+                    </div>
+                )}
+
+                <section className="card mt-6 overflow-hidden">
+                    <div className="border-b border-line p-5">
+                        <p className="eyebrow">Customer queue</p>
+                        <div className="flex items-start justify-between gap-4">
+                            <h2 className="mt-1 text-xl font-semibold">Choose a customer</h2>
+                            <button type="button" className="inline-flex shrink-0 items-center gap-1 text-xs font-semibold text-brand disabled:opacity-50" onClick={() => void refreshSnapshot()} disabled={!online || busy}>
+                                <RefreshCw size={13} className={busy ? 'animate-spin' : ''} /> Refresh list
+                            </button>
+                        </div>
+                        <div className="relative mt-4">
+                            <Search size={17} className="pointer-events-none absolute start-3 top-3 text-muted" />
+                            <input className="field ps-10" aria-label="Search field customers" placeholder="Search name, code or phone" value={search} onChange={(event) => setSearch(event.target.value)} />
+                        </div>
+                    </div>
+                    <div className="max-h-80 divide-y divide-line overflow-y-auto">
+                        {filteredCustomers.map((customer) => {
+                            const selected = customer.id === selectedCustomerId;
+                            return (
+                                <button key={customer.id} type="button" className={`flex w-full items-center gap-3 px-5 py-4 text-start transition ${selected ? 'bg-brand-soft' : 'hover:bg-sand'}`} onClick={() => setSelectedCustomerId(customer.id)}>
+                                    <span className="grid size-10 shrink-0 place-items-center rounded-full bg-sand text-brand"><UserRound size={18} /></span>
+                                    <span className="min-w-0 flex-1">
+                                        <span className="block truncate font-semibold">{customer.first_name} {customer.last_name ?? ''}</span>
+                                        <span className="mt-1 block truncate text-xs text-muted">{customer.code} · {customer.phone}</span>
+                                    </span>
+                                    <span className="text-end text-sm font-semibold">{formatMoney(customer.balance_amount, customer.balance_currency)}</span>
+                                </button>
+                            );
+                        })}
+                        {filteredCustomers.length === 0 && <p className="p-6 text-sm text-muted">No customers match this search.</p>}
+                    </div>
+                </section>
+
+                <form className="card mt-6 space-y-5 p-5" onSubmit={(event) => void queuePayment(event)}>
+                    <div className="flex items-center gap-2">
+                        <CreditCard size={18} className="text-brand" />
+                        <div>
+                            <p className="font-semibold">Record collection</p>
+                            <p className="text-xs text-muted">{selectedCustomer ? `${selectedCustomer.first_name} ${selectedCustomer.last_name ?? ''}` : 'Select a customer above'}</p>
+                        </div>
+                    </div>
+                    <div className="grid gap-5 sm:grid-cols-2">
+                        <label className="block">
+                            <span className="field-label">Amount ({currency})</span>
+                            <input className="field" type="number" inputMode="decimal" min="0" step={fractionDigits === 0 ? '1' : '0.01'} placeholder={fractionDigits === 0 ? '0' : '0.00'} value={amount} onChange={(event) => setAmount(event.target.value)} />
+                        </label>
+                        <label className="block">
+                            <span className="field-label">Currency</span>
+                            <CurrencyCombobox aria-label="Field payment currency" value={currency} currencies={currencies} onChange={setCurrency} />
+                        </label>
+                        <label className="block sm:col-span-2">
+                            <span className="field-label">Payment method</span>
+                            <ResponsiveSelect aria-label="Field payment method" value={method} onChange={(event) => setMethod(event.target.value)}>
+                                <option value="cash">Cash</option>
+                                <option value="bank_transfer">Bank transfer</option>
+                                <option value="card">Card</option>
+                                <option value="mobile_wallet">Mobile wallet</option>
+                            </ResponsiveSelect>
+                        </label>
+                    </div>
+                    <button type="submit" className="button-primary w-full justify-center" disabled={!shift || !selectedCustomer || busy}>
+                        <CheckCircle2 size={17} /> Save payment to device
+                    </button>
+                    <p className="text-xs text-muted">Payments use a unique idempotency key and remain on this device until the server accepts or rejects them.</p>
+                </form>
+
+                {pending.length > 0 && (
+                    <section className="card mt-6 p-5">
+                        <h2 className="font-semibold">Pending review</h2>
+                        <div className="mt-3 space-y-3">
+                            {pending.map((item) => {
+                                const customer = customers.find((candidate) => candidate.id === item.customer_id);
+                                return (
+                                    <div key={item.idempotency_key} className="rounded-lg border border-line bg-sand px-4 py-3 text-sm">
+                                        <div className="flex items-center justify-between gap-4">
+                                            <span className="font-semibold">{customer?.first_name ?? item.customer_id}</span>
+                                            <span className="font-semibold">{formatMoney(item.amount, item.currency)}</span>
+                                        </div>
+                                        {item.last_error && <p className="mt-1 text-xs text-rose-700">{item.last_error}</p>}
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </section>
+                )}
+            </div>
+        </AppLayout>
+    );
+}

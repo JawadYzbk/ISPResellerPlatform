@@ -34,6 +34,8 @@ final class FieldController extends Controller
             'shift' => $shift->handle($user),
             'summary' => $summary->handle($user, now()->toDateString()),
             'currencies' => $currencyCatalog->handle(),
+            'defaultCurrency' => $tenant->collection_currency,
+            'storageKey' => 'field:'.$tenant->public_id.':'.$user->id,
         ]);
     }
 

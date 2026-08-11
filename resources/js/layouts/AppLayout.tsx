@@ -9,6 +9,7 @@ import {
     ClipboardList,
     CreditCard,
     FileUp,
+    HandCoins,
     KeyRound,
     Command,
     LayoutDashboard,
@@ -175,6 +176,7 @@ export default function AppLayout({ children }: PropsWithChildren) {
 
     const fieldNav: NavigationItem[] = [
         { label: 'Home', href: '/dashboard', icon: LayoutDashboard },
+        { label: 'Collect', href: '/field', icon: HandCoins, permission: 'payments.collect' },
         { label: 'Customers', href: '/customers', icon: Users, permission: 'customers.view' },
         { label: 'Payments', href: '/billing/payments', icon: CreditCard, permission: 'payments.collect' },
         { label: 'Shifts', href: '/billing/shifts', icon: WalletCards, permission: 'payments.collect' },

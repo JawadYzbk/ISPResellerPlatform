@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Customer;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Support\Tenancy;
@@ -17,6 +18,7 @@ it('serves the collector field surface from the authenticated web session', func
     $user = User::create(['tenant_id' => $tenant->id, 'name' => 'Collector', 'email' => 'field@example.test', 'password' => Hash::make('password'), 'role' => 'collector']);
     app(CapabilitySeeder::class)->run();
     $user->assignRole('collector');
+    $customer = Customer::factory()->create(['first_name' => 'Rami']);
 
     Http::fake(['https://api.frankfurter.dev/v2/currencies' => Http::response([
         ['iso_code' => 'LBP', 'name' => 'Lebanese Pound'],
@@ -26,7 +28,13 @@ it('serves the collector field surface from the authenticated web session', func
 
     $this->actingAs($user)
         ->get(route('field.index'))
-        ->assertOk();
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->component('Field/Index')
+            ->where('snapshot.data.customers.0.id', $customer->public_id)
+            ->where('currencies.0.code', 'USD')
+            ->where('currencies.1.code', 'EUR')
+            ->where('currencies.2.code', 'LBP'));
 });
 
 it('refreshes the collector field snapshot through the web session', function (): void {
