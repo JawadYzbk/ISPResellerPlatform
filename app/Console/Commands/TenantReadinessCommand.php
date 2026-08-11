@@ -85,7 +85,10 @@ final class TenantReadinessCommand extends Command
         $now = now($tenant->timezone);
 
         $owner = User::query()->whereIn('role', ['tenant_owner', 'admin'])->first();
-        $ownerReady = $owner instanceof User && $owner->hasRole((string) $owner->role);
+        $ownerReady = $owner instanceof User
+            && $owner->hasRole((string) $owner->role)
+            && $owner->can('settings.manage')
+            && $owner->can('customers.view');
         $hasActivePlanPrice = Plan::query()
             ->where('status', 'active')
             ->whereHas('prices', function ($query) use ($baseCurrency, $now): void {
@@ -105,8 +108,10 @@ final class TenantReadinessCommand extends Command
             'Owner capability' => $this->check(
                 $ownerReady ? 'PASS' : 'FAIL',
                 $ownerReady
-                    ? 'An owner account has its role assignment.'
-                    : ($owner instanceof User ? 'Owner account exists but has no assigned capability role.' : 'No tenant owner or admin account exists.'),
+                    ? 'An owner account has its role assignment and critical settings/customer capabilities.'
+                    : ($owner instanceof User
+                        ? 'Owner account needs its capability role and critical settings/customer permissions.'
+                        : 'No tenant owner or admin account exists.'),
             ),
             'Default branch' => $this->check(
                 Branch::query()->where('is_default', true)->exists() ? 'PASS' : 'FAIL',

@@ -9,6 +9,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
+use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
 uses(RefreshDatabase::class);
@@ -22,6 +23,9 @@ it('reports a tenant readiness checklist and allows optional integration warning
 
     app(Tenancy::class)->run($tenant, function () use ($owner): void {
         Role::findOrCreate('tenant_owner', 'web');
+        Permission::findOrCreate('settings.manage', 'web');
+        Permission::findOrCreate('customers.view', 'web');
+        Role::findByName('tenant_owner', 'web')->syncPermissions(['settings.manage', 'customers.view']);
         $owner->assignRole('tenant_owner');
 
         $plan = Plan::create([
@@ -45,6 +49,23 @@ it('reports a tenant readiness checklist and allows optional integration warning
         ->assertExitCode(Command::SUCCESS)
         ->expectsOutputToContain('Tenant readiness passed with warnings.')
         ->expectsOutputToContain('Tenant logo');
+});
+
+it('fails owner readiness when the assigned role has lost critical capabilities', function (): void {
+    $tenant = Tenant::factory()->create(['slug' => 'missing-capabilities-tenant']);
+    $owner = User::factory()->create([
+        'tenant_id' => $tenant->id,
+        'role' => 'tenant_owner',
+    ]);
+
+    app(Tenancy::class)->run($tenant, function () use ($owner): void {
+        Role::findOrCreate('tenant_owner', 'web');
+        $owner->assignRole('tenant_owner');
+    });
+
+    $this->artisan('platform:tenant-readiness', ['tenant' => $tenant->slug, '--json' => true])
+        ->assertExitCode(Command::FAILURE)
+        ->expectsOutputToContain('Owner account needs its capability role and critical settings');
 });
 
 it('fails when a tenant has no billable plan', function (): void {
