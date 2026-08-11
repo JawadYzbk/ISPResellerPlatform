@@ -3,6 +3,8 @@ import { Head, Link, router, useForm } from '@inertiajs/react';
 import {
     ArrowLeft,
     CalendarDays,
+    CheckCircle2,
+    CircleAlert,
     CreditCard,
     Download,
     Edit3,
@@ -15,6 +17,7 @@ import {
     Pause,
     Play,
     RefreshCw,
+    ReceiptText,
     ShieldOff,
     Upload,
     Wifi,
@@ -30,6 +33,22 @@ import type { Customer, PageProps } from '@/types';
 
 type Props = PageProps & {
     customer: Customer;
+    paymentGrid: {
+        year: number;
+        years: number[];
+        months: {
+            month: number;
+            status: 'paid' | 'partial' | 'due' | 'no_invoice';
+            invoice_count: number;
+            payment_count: number;
+            totals: {
+                currency: string;
+                billed_amount: number;
+                paid_amount: number;
+                outstanding_amount: number;
+            }[];
+        }[];
+    };
     canAnonymize?: boolean;
     canCreateService?: boolean;
     canEdit?: boolean;
@@ -47,6 +66,7 @@ type Props = PageProps & {
 
 export default function CustomerShow({
     customer,
+    paymentGrid,
     canAnonymize = false,
     canCreateService = false,
     canEdit = false,
@@ -78,6 +98,11 @@ export default function CustomerShow({
             forceFormData: true,
             onSuccess: () => documentForm.reset(),
         });
+    };
+    const paymentMonthLabel = (month: number) =>
+        new Intl.DateTimeFormat(undefined, { month: 'short' }).format(new Date(paymentGrid.year, month - 1, 1));
+    const changePaymentYear = (event: React.ChangeEvent<HTMLSelectElement>) => {
+        router.get(window.location.pathname, { year: event.target.value }, { preserveScroll: true, replace: true });
     };
 
     return (
@@ -183,6 +208,97 @@ export default function CustomerShow({
                             <p className="mt-1 text-xs text-muted">Earliest service expiry</p>
                         </div>
                     </div>
+                    <div className="card overflow-hidden" data-testid="customer-payment-grid">
+                        <div className="flex flex-col gap-4 border-b border-line px-6 py-5 sm:flex-row sm:items-start sm:justify-between">
+                            <div>
+                                <div className="flex items-center gap-2">
+                                    <ReceiptText size={18} className="text-brand" />
+                                    <h2 className="section-title">Monthly payment grid</h2>
+                                </div>
+                                <p className="mt-1 text-sm text-muted">
+                                    See which billing months are paid, partial, or still due.
+                                </p>
+                            </div>
+                            <label className="block w-full sm:w-32">
+                                <span className="sr-only">Payment year</span>
+                                <ResponsiveSelect
+                                    aria-label="Payment year"
+                                    className="field"
+                                    value={paymentGrid.year}
+                                    onChange={changePaymentYear}
+                                >
+                                    {paymentGrid.years.map((year) => (
+                                        <option key={year} value={year}>
+                                            {year}
+                                        </option>
+                                    ))}
+                                </ResponsiveSelect>
+                            </label>
+                        </div>
+                        <div className="grid gap-3 p-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                            {paymentGrid.months.map((month) => {
+                                const statusLabel = {
+                                    paid: 'Paid',
+                                    partial: 'Partial',
+                                    due: 'Due',
+                                    no_invoice: 'No invoice',
+                                }[month.status];
+                                const statusClass = {
+                                    paid: 'border-emerald-200 bg-emerald-50 text-emerald-800',
+                                    partial: 'border-amber-200 bg-amber-50 text-amber-800',
+                                    due: 'border-rose-200 bg-rose-50 text-rose-800',
+                                    no_invoice: 'border-line bg-sand/30 text-muted',
+                                }[month.status];
+
+                                return (
+                                    <div
+                                        key={month.month}
+                                        data-testid={`payment-month-${month.month}`}
+                                        className={`rounded-xl border p-4 ${statusClass}`}
+                                    >
+                                        <div className="flex items-start justify-between gap-3">
+                                            <p className="font-semibold">{paymentMonthLabel(month.month)}</p>
+                                            {month.status === 'paid' ? (
+                                                <CheckCircle2 size={16} aria-label="Paid" />
+                                            ) : month.status === 'no_invoice' ? (
+                                                <ReceiptText size={16} aria-label="No invoice" />
+                                            ) : (
+                                                <CircleAlert size={16} aria-label={statusLabel} />
+                                            )}
+                                        </div>
+                                        <p className="mt-1 text-xs font-semibold uppercase tracking-wide opacity-80">
+                                            {statusLabel}
+                                        </p>
+                                        {month.totals.length > 0 ? (
+                                            <div className="mt-3 space-y-2 text-xs">
+                                                {month.totals.map((total) => (
+                                                    <div key={total.currency}>
+                                                        <p className="font-semibold">
+                                                            {formatMoney(total.paid_amount, total.currency)} paid
+                                                        </p>
+                                                        {total.outstanding_amount > 0 && (
+                                                            <p className="mt-0.5 opacity-80">
+                                                                {formatMoney(total.outstanding_amount, total.currency)}{' '}
+                                                                due
+                                                            </p>
+                                                        )}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        ) : (
+                                            <p className="mt-3 text-xs opacity-80">Nothing billed</p>
+                                        )}
+                                        {month.invoice_count > 0 && (
+                                            <p className="mt-3 text-[11px] opacity-70">
+                                                {month.invoice_count} invoice{month.invoice_count === 1 ? '' : 's'} ·{' '}
+                                                {month.payment_count} payment{month.payment_count === 1 ? '' : 's'}
+                                            </p>
+                                        )}
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
                     <div className="card overflow-hidden">
                         <div className="flex items-center justify-between border-b border-line px-6 py-5">
                             <div>
@@ -208,10 +324,14 @@ export default function CustomerShow({
                                                 <Wifi size={18} />
                                             </div>
                                             <div>
-                                                <p className="font-semibold">{service.plan.name}</p>
+                                                <p className="font-semibold">
+                                                    {service.plan?.name ?? 'Plan unavailable'}
+                                                </p>
                                                 <p className="mt-1 text-sm text-muted">
-                                                    {service.username} · {service.plan.download_kbps / 1000} Mbps down /{' '}
-                                                    {service.plan.upload_kbps / 1000} Mbps up
+                                                    {service.username} ·{' '}
+                                                    {service.plan
+                                                        ? `${service.plan.download_kbps / 1000} Mbps down / ${service.plan.upload_kbps / 1000} Mbps up`
+                                                        : 'No plan assigned'}
                                                 </p>
                                             </div>
                                         </div>

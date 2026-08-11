@@ -9,6 +9,7 @@ use App\Actions\CreateWhishPaymentAttempt;
 use App\Actions\DeleteCustomerView;
 use App\Actions\ExportCustomersCsv;
 use App\Actions\GetCustomerDetails;
+use App\Actions\GetCustomerPaymentGrid;
 use App\Actions\ListCustomers;
 use App\Actions\ListCustomerSavedViews;
 use App\Actions\RecordPayment;
@@ -399,12 +400,20 @@ final class CustomerController extends Controller
         return redirect()->route('customers.index')->with('success', 'Customer view deleted.');
     }
 
-    public function show(Request $request, Customer $customer, GetCustomerDetails $getCustomerDetails): Response
-    {
+    public function show(
+        Request $request,
+        Customer $customer,
+        GetCustomerDetails $getCustomerDetails,
+        GetCustomerPaymentGrid $getCustomerPaymentGrid,
+    ): Response {
         $this->authorize('view', $customer);
+        $year = (int) ($request->validate([
+            'year' => ['nullable', 'integer', 'between:2000,2100'],
+        ])['year'] ?? now()->year);
 
         return Inertia::render('Customers/Show', [
             'customer' => $getCustomerDetails->handle($customer),
+            'paymentGrid' => $getCustomerPaymentGrid->handle($customer, $year),
             'canAnonymize' => $request->user()?->can('customers.anonymize') === true,
             'canCreateService' => $request->user()?->can('services.create') === true,
             'canEdit' => $request->user()?->can('customers.update') === true,
