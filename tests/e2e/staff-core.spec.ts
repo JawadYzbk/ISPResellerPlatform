@@ -157,7 +157,10 @@ test.describe('staff core journeys', () => {
     test('shows the customer payment grid by month', async ({ page }) => {
         await signIn(page);
         await page.goto('/customers');
-        await Promise.all([page.waitForURL('**/customers/**'), page.getByRole('link', { name: 'Open', exact: true }).first().click()]);
+        await Promise.all([
+            page.waitForURL('**/customers/**'),
+            page.getByRole('link', { name: 'Open', exact: true }).first().click(),
+        ]);
 
         await expect(page.getByTestId('customer-payment-grid')).toBeVisible();
         await expect(page.getByRole('heading', { name: 'Monthly payment grid' })).toBeVisible();
@@ -334,7 +337,11 @@ test.describe('staff core journeys', () => {
                                 .filter((key) => key.startsWith('isp-manager-field:'))
                                 .reduce((count, key) => {
                                     try {
-                                        return Math.max(count, JSON.parse(localStorage.getItem(key) ?? '{}').cached_snapshot?.customers?.length ?? 0);
+                                        return Math.max(
+                                            count,
+                                            JSON.parse(localStorage.getItem(key) ?? '{}').cached_snapshot?.customers
+                                                ?.length ?? 0,
+                                        );
                                     } catch {
                                         return count;
                                     }
@@ -342,9 +349,18 @@ test.describe('staff core journeys', () => {
                             const request = indexedDB.open('isp-manager-field', 1);
                             request.onerror = () => resolve(fallbackCount);
                             request.onsuccess = () => {
-                                const read = request.result.transaction('state', 'readonly').objectStore('state').getAll();
+                                const read = request.result
+                                    .transaction('state', 'readonly')
+                                    .objectStore('state')
+                                    .getAll();
                                 read.onerror = () => resolve(fallbackCount);
-                                read.onsuccess = () => resolve(Math.max(fallbackCount, ...read.result.map((item) => item.cached_snapshot?.customers?.length ?? 0)));
+                                read.onsuccess = () =>
+                                    resolve(
+                                        Math.max(
+                                            fallbackCount,
+                                            ...read.result.map((item) => item.cached_snapshot?.customers?.length ?? 0),
+                                        ),
+                                    );
                             };
                         }),
                 ),
