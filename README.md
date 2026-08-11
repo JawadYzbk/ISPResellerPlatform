@@ -98,6 +98,7 @@ composer test
 npm run format:check
 npm run typecheck
 npm run build
+npm run test:integrations
 ```
 
 For browser acceptance, install Chromium once with `npx playwright install chromium`, then run `npm run e2e` against the local seeded application.

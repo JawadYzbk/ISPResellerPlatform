@@ -10,6 +10,7 @@
         "format": "prettier --write resources/js resources/css scripts playwright.config.ts tests/e2e",
         "format:check": "prettier --check resources/js resources/css scripts playwright.config.ts tests/e2e",
         "e2e": "node scripts/prepare-e2e.mjs && playwright test",
+        "test:integrations": "npm --prefix integrations/whatsapp-web test",
         "e2e:ui": "playwright test --ui"
     },
     "devDependencies": {
