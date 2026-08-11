@@ -175,8 +175,20 @@ test.describe('staff core journeys', () => {
         await page.getByRole('option', { name: 'English' }).click();
 
         await page.setViewportSize({ width: 390, height: 844 });
-        await expect(page.locator('select:not([aria-hidden="true"])')).toHaveCount(1);
+        await expect(page.locator('select:not([aria-hidden="true"])')).toHaveCount(3);
         await expect(page.getByLabel('Locale')).toHaveValue('en');
+    });
+
+    test('selects a searched currency with the mouse', async ({ page }) => {
+        await signIn(page);
+        await page.goto('/settings/general');
+
+        await page.getByLabel('Base currency').click();
+        await page.locator('input[aria-label="Search currencies"]').fill('euro');
+        await page.getByRole('option', { name: /EUR.*Euro/ }).click();
+
+        await expect(page.getByLabel('Base currency')).toContainText('EUR');
+        await expect(page.getByLabel('Base currency')).toContainText('Euro');
     });
 
     test('uses an accessible confirmation dialog for destructive actions', async ({ page }) => {
