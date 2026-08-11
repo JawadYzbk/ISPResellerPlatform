@@ -122,6 +122,7 @@ it('rejects a production tenant with an unassigned capability role', function ()
 
     $this->artisan('platform:preflight', ['--production' => true])
         ->assertExitCode(Command::FAILURE)
+        ->expectsOutputToContain('CapabilitySeeder')
         ->expectsOutputToContain('Capability assignments');
 });
 

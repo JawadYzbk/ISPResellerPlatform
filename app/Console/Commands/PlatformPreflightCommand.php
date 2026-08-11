@@ -54,6 +54,9 @@ final class PlatformPreflightCommand extends Command
 
         $failures = array_keys(array_filter($checks, static fn (bool $passed): bool => ! $passed));
         if ($failures !== []) {
+            if (in_array('Capability assignments', $failures, true)) {
+                $this->warn('Run php artisan db:seed --class=CapabilitySeeder --force to reconcile tenant roles and permissions.');
+            }
             $this->error('Preflight failed: '.implode(', ', $failures).'.');
 
             return self::FAILURE;
