@@ -14,6 +14,7 @@ use App\Actions\UpdateTenantSettings;
 use App\Actions\UpdateWhatsAppAccount;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\TenantSettingsRequest;
+use App\Models\Currency;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Models\WhatsAppAccount;
@@ -33,6 +34,17 @@ final class SettingsController extends Controller
         $tenant = Tenant::query()->find($user->tenant_id);
         abort_unless($tenant instanceof Tenant, 403);
         $settings = $tenant->settingsData();
+        $currencies = Currency::query()
+            ->where('is_active', true)
+            ->orderBy('code')
+            ->get(['code', 'name', 'decimal_digits'])
+            ->map(fn (Currency $currency): array => [
+                'code' => $currency->code,
+                'name' => $currency->name,
+                'decimal_digits' => $currency->decimal_digits,
+            ])
+            ->values()
+            ->all();
 
         return Inertia::render('Settings/General', [
             'tenant' => [
@@ -53,6 +65,7 @@ final class SettingsController extends Controller
                 'resolved_ticket_auto_close_hours' => (int) ($settings->settings['resolved_ticket_auto_close_hours'] ?? 72),
                 'radius_interim_interval_seconds' => (int) ($settings->settings['radius_interim_interval_seconds'] ?? 300),
             ],
+            'currencies' => $currencies,
             'payments' => $paymentStatus->handle(),
             'setup' => $setupSignals->handle($tenant),
         ]);

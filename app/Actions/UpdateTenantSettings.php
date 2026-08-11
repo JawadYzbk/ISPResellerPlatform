@@ -6,7 +6,6 @@ use App\Contracts\Action;
 use App\Models\Tenant;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
 
 final readonly class UpdateTenantSettings implements Action
 {
@@ -47,9 +46,7 @@ final readonly class UpdateTenantSettings implements Action
                 'settings' => $settings,
             ])->save();
 
-            if (is_string($oldLogoPath) && $oldLogoPath !== '' && $oldLogoPath !== $logoPath) {
-                Storage::disk((string) config('filesystems.default', 'local'))->delete($oldLogoPath);
-            }
+            // Keep the previous asset for browser/cache requests that may still reference the old public URL.
 
             return $locked->refresh();
         });

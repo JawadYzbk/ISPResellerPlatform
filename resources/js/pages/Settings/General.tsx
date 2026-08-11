@@ -1,3 +1,4 @@
+import CurrencyCombobox, { type CurrencyOption } from '@/components/ui/currency-combobox';
 import ResponsiveSelect from '@/components/ui/responsive-select';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { AlertCircle, ArrowLeft, CheckCircle2, ImagePlus, Save, Settings2 } from 'lucide-react';
@@ -30,7 +31,13 @@ type SetupSignals = {
     whatsapp: { mode: 'cloud' | 'web'; configured: boolean; status: string };
 };
 
-type Props = { tenant: Tenant; settings: Settings; payments: Payments; setup: SetupSignals };
+type Props = {
+    tenant: Tenant;
+    settings: Settings;
+    currencies: CurrencyOption[];
+    payments: Payments;
+    setup: SetupSignals;
+};
 
 function SetupSignal({ label, detail, ready, href }: { label: string; detail: string; ready: boolean; href: string }) {
     return (
@@ -53,7 +60,7 @@ function SetupSignal({ label, detail, ready, href }: { label: string; detail: st
     );
 }
 
-export default function GeneralSettings({ tenant, settings, payments, setup }: Props) {
+export default function GeneralSettings({ tenant, settings, currencies, payments, setup }: Props) {
     const form = useForm<FormSettings>({ ...settings, name: tenant.name, logo: null });
     const whatsappReady = setup.whatsapp.mode === 'web' ? setup.whatsapp.status === 'ready' : setup.whatsapp.configured;
     const whatsappDetail = whatsappReady
@@ -72,7 +79,11 @@ export default function GeneralSettings({ tenant, settings, payments, setup }: P
 
     const submit = (event: React.FormEvent) => {
         event.preventDefault();
-        form.put('/settings/general', { forceFormData: form.data.logo !== null });
+        form.transform((data) => ({ ...data, _method: 'put' }));
+        form.post('/settings/general', {
+            forceFormData: form.data.logo !== null,
+            preserveScroll: true,
+        });
     };
 
     return (
@@ -268,13 +279,12 @@ export default function GeneralSettings({ tenant, settings, payments, setup }: P
                         <div className="mt-5 grid gap-5 sm:grid-cols-2">
                             <label>
                                 <span className="field-label">Base currency</span>
-                                <input
-                                    className="field"
-                                    maxLength={3}
+                                <CurrencyCombobox
+                                    id="base_currency"
+                                    aria-label="Base currency"
+                                    currencies={currencies}
                                     value={form.data.base_currency}
-                                    onChange={(event) =>
-                                        form.setData('base_currency', event.target.value.toUpperCase())
-                                    }
+                                    onChange={(value) => form.setData('base_currency', value)}
                                 />
                                 {form.errors.base_currency && (
                                     <p className="field-error">{form.errors.base_currency}</p>
@@ -282,13 +292,12 @@ export default function GeneralSettings({ tenant, settings, payments, setup }: P
                             </label>
                             <label>
                                 <span className="field-label">Collection currency</span>
-                                <input
-                                    className="field"
-                                    maxLength={3}
+                                <CurrencyCombobox
+                                    id="collection_currency"
+                                    aria-label="Collection currency"
+                                    currencies={currencies}
                                     value={form.data.collection_currency}
-                                    onChange={(event) =>
-                                        form.setData('collection_currency', event.target.value.toUpperCase())
-                                    }
+                                    onChange={(value) => form.setData('collection_currency', value)}
                                 />
                                 {form.errors.collection_currency && (
                                     <p className="field-error">{form.errors.collection_currency}</p>
