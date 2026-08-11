@@ -9,6 +9,7 @@ import {
     RefreshCw,
     Save,
     ShieldAlert,
+    Trash2,
     WifiOff,
 } from 'lucide-react';
 import { useEffect } from 'react';
@@ -114,6 +115,17 @@ export default function WhatsAppSettings({ setup }: Props) {
 
     const disconnectAccount = (account: WhatsAppAccount) => {
         router.post(`/settings/whatsapp/accounts/${account.id}/disconnect`, {}, { preserveScroll: true });
+    };
+
+    const deleteAccount = (account: WhatsAppAccount) => {
+        if (setup.accounts.length <= 1) {
+            return;
+        }
+        if (!window.confirm(`Delete the ${account.label} WhatsApp account and its private bridge session?`)) {
+            return;
+        }
+
+        router.delete(`/settings/whatsapp/accounts/${account.id}`, { preserveScroll: true });
     };
 
     const submitCreate = (event: React.FormEvent) => {
@@ -319,6 +331,19 @@ export default function WhatsAppSettings({ setup }: Props) {
                                             onClick={() => disconnectAccount(account)}
                                         >
                                             <Link2Off size={16} /> Disconnect and pair again
+                                        </button>
+                                        <button
+                                            className="button-secondary text-coral"
+                                            type="button"
+                                            disabled={setup.accounts.length <= 1}
+                                            title={
+                                                setup.accounts.length <= 1
+                                                    ? 'Keep one WhatsApp account configured for this workspace.'
+                                                    : 'Delete this WhatsApp account and its private bridge session.'
+                                            }
+                                            onClick={() => deleteAccount(account)}
+                                        >
+                                            <Trash2 size={16} /> Delete account
                                         </button>
                                         {account.last_ready_at && (
                                             <span className="text-xs text-muted">
