@@ -33,7 +33,7 @@ Use this checklist for a new ISP/reseller tenant. The tenant owner and the imple
 
 ## Acceptance and handover
 
-1. Confirm `/up`, `/api/v1/health`, queue-worker heartbeat, scheduler heartbeat, and a test notification.
+1. Confirm `/up`, `/api/v1/health`, queue-worker heartbeat, scheduler heartbeat, and a controlled test notification from **Settings → WhatsApp setup** when WhatsApp is enabled.
 2. Run `php artisan ledger:check-invariants` and retain an `ok` result for the tenant.
 3. Make one controlled payment in the approved test path, confirm the receipt and journal entry, and reconcile the customer balance. Never use a real payment during a lab test.
 4. Exercise one service activation, one suspension, one reactivation, and one network retry. Confirm queued commands are idempotent and visible to the operator.
