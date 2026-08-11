@@ -51,8 +51,8 @@ it('delivers WhatsApp through the private Web.js bridge when selected', function
         'services.whatsapp.web.endpoint' => 'http://whatsapp-web:3001',
         'services.whatsapp.web.token' => 'bridge-token',
     ]);
-    Http::fake(['http://whatsapp-web:3001/messages' => Http::response(['provider_message_id' => 'wamid-web-001'], 201)]);
+    Http::fake(['http://whatsapp-web:3001/accounts/*/messages' => Http::response(['provider_message_id' => 'wamid-web-001'], 201)]);
 
     expect(app(WhatsAppWebMessageProvider::class)->send($message)->providerMessageId)->toBe('wamid-web-001');
-    Http::assertSent(fn ($request): bool => $request->url() === 'http://whatsapp-web:3001/messages' && $request['idempotency_key'] === 'provider-wa-web');
+    Http::assertSent(fn ($request): bool => str_starts_with($request->url(), 'http://whatsapp-web:3001/accounts/') && str_ends_with($request->url(), '/messages') && $request['idempotency_key'] === 'provider-wa-web');
 });

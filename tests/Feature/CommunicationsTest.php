@@ -11,6 +11,7 @@ use App\Models\Customer;
 use App\Models\Message;
 use App\Models\MessageTemplate;
 use App\Models\Tenant;
+use App\Models\WhatsAppAccount;
 use App\Support\Tenancy;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
@@ -110,7 +111,7 @@ it('falls back to the next configured notification channel after a provider fail
 
 it('routes the existing WhatsApp channel through the Web.js bridge when enabled', function (): void {
     Queue::fake();
-    Http::fake(['http://whatsapp-web:3001/messages' => Http::response(['provider_message_id' => 'wamid-web-002'], 201)]);
+    Http::fake(['http://whatsapp-web:3001/accounts/*/messages' => Http::response(['provider_message_id' => 'wamid-web-002'], 201)]);
     config([
         'services.whatsapp.mode' => 'web',
         'services.whatsapp.web.enabled' => true,
@@ -131,4 +132,40 @@ it('routes the existing WhatsApp channel through the Web.js bridge when enabled'
     expect($message->refresh()->status->value)->toBe('sent')
         ->and($message->provider)->toBe('whatsapp_web')
         ->and($message->provider_message_id)->toBe('wamid-web-002');
+});
+
+it('routes WhatsApp messages to the assigned job account and preserves explicit account selection', function (): void {
+    Queue::fake();
+    Http::fake(function ($request) {
+        return str_contains($request->url(), 'billing-bridge')
+            ? Http::response(['provider_message_id' => 'wamid-billing'], 201)
+            : Http::response(['provider_message_id' => 'wamid-support'], 201);
+    });
+    config([
+        'services.whatsapp.mode' => 'web',
+        'services.whatsapp.web.enabled' => true,
+        'services.whatsapp.web.endpoint' => 'http://whatsapp-web:3001',
+        'services.whatsapp.web.token' => 'bridge-token',
+    ]);
+
+    $tenant = Tenant::create(['name' => 'Routeline', 'slug' => 'routeline', 'base_currency' => 'USD', 'collection_currency' => 'USD']);
+    app(Tenancy::class)->set($tenant);
+    $billing = WhatsAppAccount::create(['label' => 'Billing', 'job' => 'billing', 'bridge_id' => 'billing-bridge', 'status' => 'ready']);
+    $support = WhatsAppAccount::create(['label' => 'Support', 'job' => 'support', 'bridge_id' => 'support-bridge', 'status' => 'ready']);
+    $template = MessageTemplate::updateOrCreate(
+        ['key' => 'payment.receipt', 'channel' => 'whatsapp', 'locale' => 'en'],
+        ['body' => 'Receipt {{ receipt_number }}'],
+    );
+
+    $payment = app(QueueMessage::class)->handle($template, '96170123456', 'whatsapp', 'en', 'job-route-billing', ['receipt_number' => 'RCT-BILLING']);
+    (new DeliverMessage($payment->id, $tenant->id))->handle(app(MessageProviderManager::class));
+
+    $explicit = app(QueueMessage::class)->handle($template, '96170123456', 'whatsapp', 'en', 'job-route-explicit', ['receipt_number' => 'RCT-SUPPORT'], metadata: ['whatsapp_job' => 'support'], whatsappAccount: $support);
+    (new DeliverMessage($explicit->id, $tenant->id))->handle(app(MessageProviderManager::class));
+
+    expect($payment->refresh()->whatsapp_account_id)->toBe($billing->id)
+        ->and($payment->provider_message_id)->toBe('wamid-billing')
+        ->and($explicit->refresh()->whatsapp_account_id)->toBe($support->id)
+        ->and($explicit->provider_message_id)->toBe('wamid-support');
+    Http::assertSentCount(2);
 });

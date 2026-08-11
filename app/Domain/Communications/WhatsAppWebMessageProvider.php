@@ -3,34 +3,42 @@
 namespace App\Domain\Communications;
 
 use App\Models\Message;
-use Illuminate\Http\Client\ConnectionException;
-use Illuminate\Support\Facades\Http;
+use App\Models\WhatsAppAccount;
+use Throwable;
 
-final class WhatsAppWebMessageProvider implements MessageProvider
+final readonly class WhatsAppWebMessageProvider implements MessageProvider
 {
+    public function __construct(
+        private WhatsAppBridgeClient $bridge,
+        private WhatsAppAccountResolver $accounts,
+    ) {}
+
     public function send(Message $message): MessageDeliveryResult
     {
-        $endpoint = config('services.whatsapp.web.endpoint');
-        $token = config('services.whatsapp.web.token');
-        if (! is_string($endpoint) || trim($endpoint) === '' || ! is_string($token) || trim($token) === '') {
+        if (! $this->bridge->configured()) {
             return MessageDeliveryResult::failed('whatsapp_web', 'provider_not_configured');
         }
 
+        $account = $this->accounts->resolve($message);
+        if (! $account instanceof WhatsAppAccount) {
+            return MessageDeliveryResult::failed('whatsapp_web', 'account_not_configured');
+        }
+
+        $message->forceFill(['whatsapp_account_id' => $account->id])->save();
+
         try {
-            $response = Http::withToken($token)->acceptJson()->timeout(15)->post(rtrim($endpoint, '/').'/messages', [
-                'idempotency_key' => $message->idempotency_key,
-                'to' => $message->recipient,
-                'body' => $message->body,
-            ]);
-        } catch (ConnectionException $exception) {
+            $response = $this->bridge->send($account, $message->idempotency_key, $message->recipient, $message->body);
+        } catch (Throwable $exception) {
             return MessageDeliveryResult::failed('whatsapp_web', 'provider_unreachable: '.$exception->getMessage());
         }
-        if ($response->failed()) {
-            return MessageDeliveryResult::failed('whatsapp_web', 'provider_rejected: HTTP '.$response->status());
-        }
 
-        $id = $response->json('provider_message_id');
+        $id = $response['provider_message_id'] ?? null;
 
-        return MessageDeliveryResult::sent('whatsapp_web', is_string($id) ? $id : null);
+        return MessageDeliveryResult::sent('whatsapp_web', is_string($id) ? $id : null, [
+            'whatsapp_account_id' => $account->id,
+            'whatsapp_account_public_id' => $account->public_id,
+            'whatsapp_bridge_id' => $account->bridge_id,
+            'whatsapp_job' => $account->job,
+        ]);
     }
 }

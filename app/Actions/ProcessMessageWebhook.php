@@ -5,6 +5,7 @@ namespace App\Actions;
 use App\Contracts\Action;
 use App\Enums\MessageStatus;
 use App\Models\Message;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 
 final readonly class ProcessMessageWebhook implements Action
@@ -18,8 +19,17 @@ final readonly class ProcessMessageWebhook implements Action
             return ['status' => 'ignored', 'message_id' => null];
         }
 
-        return DB::transaction(function () use ($provider, $payload, $providerMessageId): array {
-            $message = Message::withoutGlobalScopes()->where('provider', $provider)->where('provider_message_id', $providerMessageId)->lockForUpdate()->first();
+        $bridgeAccountId = $payload['account_id'] ?? $payload['data']['account_id'] ?? null;
+        $bridgeAccountId = is_string($bridgeAccountId) ? $bridgeAccountId : null;
+
+        return DB::transaction(function () use ($provider, $payload, $providerMessageId, $bridgeAccountId): array {
+            $query = Message::withoutGlobalScopes()
+                ->where('provider', $provider)
+                ->where('provider_message_id', $providerMessageId);
+            if ($bridgeAccountId !== null && $bridgeAccountId !== '') {
+                $query->whereHas('whatsappAccount', fn (Builder $account): Builder => $account->where('bridge_id', $bridgeAccountId));
+            }
+            $message = $query->lockForUpdate()->first();
             if (! $message instanceof Message) {
                 return ['status' => 'ignored', 'message_id' => null];
             }

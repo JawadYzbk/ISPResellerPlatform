@@ -7,6 +7,7 @@ use App\Models\Message;
 use App\Models\MessageTemplate;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Models\WhatsAppAccount;
 use App\Support\MessageTemplateProvisioner;
 use App\Support\Tenancy;
 use DomainException;
@@ -19,14 +20,14 @@ final readonly class QueueWhatsAppTestMessage implements Action
         private MessageTemplateProvisioner $templateProvisioner,
     ) {}
 
-    public function handle(Tenant $tenant, User $actor, string $recipient): Message
+    public function handle(Tenant $tenant, User $actor, string $recipient, ?WhatsAppAccount $whatsappAccount = null): Message
     {
         $normalizedRecipient = preg_replace('/\D+/', '', trim($recipient));
         if (! is_string($normalizedRecipient) || preg_match('/^\d{8,15}$/', $normalizedRecipient) !== 1) {
             throw new DomainException('Enter an international phone number with country code.');
         }
 
-        return app(Tenancy::class)->run($tenant, function () use ($tenant, $actor, $normalizedRecipient): Message {
+        return app(Tenancy::class)->run($tenant, function () use ($tenant, $actor, $normalizedRecipient, $whatsappAccount): Message {
             $locale = (string) ($tenant->locale ?: 'en');
             $template = MessageTemplate::query()
                 ->where('key', 'whatsapp.test')
@@ -53,6 +54,7 @@ final readonly class QueueWhatsAppTestMessage implements Action
                 'whatsapp-test:'.$actor->id.':'.Str::ulid(),
                 ['tenant_name' => $tenant->name],
                 metadata: ['test_notification' => true, 'actor_id' => $actor->id],
+                whatsappAccount: $whatsappAccount,
             );
         });
     }
