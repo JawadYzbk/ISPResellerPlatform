@@ -1,10 +1,12 @@
 <?php
 
+use App\Models\ExchangeRate;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Support\Tenancy;
 use Database\Seeders\CapabilitySeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
 
@@ -105,6 +107,33 @@ it('does not expose tenant settings to a user without settings capability', func
     $user->assignRole('cashier');
 
     $this->actingAs($user)->get(route('settings.general'))->assertForbidden();
+});
+
+it('does not present a stale collection rate as ready in workspace settings', function (): void {
+    Config::set('services.fx.rate_max_age_hours', 24);
+    $tenant = Tenant::create(['name' => 'Northline', 'slug' => 'northline', 'base_currency' => 'USD', 'collection_currency' => 'LBP']);
+    $user = User::create(['tenant_id' => $tenant->id, 'name' => 'Owner', 'email' => 'settings-stale-rate@example.test', 'password' => Hash::make('password'), 'role' => 'tenant_owner']);
+    app(CapabilitySeeder::class)->run();
+    app(Tenancy::class)->run($tenant, function (): void {
+        ExchangeRate::create([
+            'base_currency' => 'USD',
+            'quote_currency' => 'LBP',
+            'rate_numerator' => 90_000,
+            'rate_denominator' => 1,
+            'effective_from' => now()->subDays(2),
+            'source' => 'manual',
+        ]);
+    });
+    app(Tenancy::class)->set($tenant);
+    $user->assignRole('tenant_owner');
+    $user->forceFill(['last_authenticated_at' => now()])->save();
+
+    $this->actingAs($user)
+        ->get(route('settings.general'))
+        ->assertInertia(fn ($page) => $page
+            ->component('Settings/General')
+            ->where('setup.currency.rate_ready', false)
+        );
 });
 
 it('uses the tenant RTL setting in shared app props for an English-speaking owner', function (): void {

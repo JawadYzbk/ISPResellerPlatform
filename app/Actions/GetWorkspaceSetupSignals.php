@@ -6,6 +6,7 @@ use App\Contracts\Action;
 use App\Models\ExchangeRate;
 use App\Models\Tenant;
 use App\Support\Tenancy;
+use Carbon\CarbonInterface;
 use Illuminate\Support\Facades\Storage;
 use Throwable;
 
@@ -22,8 +23,9 @@ final readonly class GetWorkspaceSetupSignals implements Action
         return $this->tenancy->run($tenant, function () use ($tenant): array {
             $base = strtoupper((string) $tenant->base_currency);
             $collection = strtoupper((string) $tenant->collection_currency);
-            $rateReady = $base === $collection || ExchangeRate::query()
-                ->where('effective_from', '<=', now())
+            $now = now($tenant->timezone);
+            $rate = ExchangeRate::query()
+                ->where('effective_from', '<=', $now)
                 ->where(function ($query) use ($base, $collection): void {
                     $query->where(function ($query) use ($base, $collection): void {
                         $query->where('base_currency', $base)->where('quote_currency', $collection);
@@ -31,7 +33,9 @@ final readonly class GetWorkspaceSetupSignals implements Action
                         $query->where('base_currency', $collection)->where('quote_currency', $base);
                     });
                 })
-                ->exists();
+                ->orderByDesc('effective_from')
+                ->first();
+            $rateReady = $base === $collection || ($rate instanceof ExchangeRate && $this->isFresh($rate, $now));
             $whatsapp = $this->whatsapp->handle(false);
 
             return [
@@ -62,5 +66,14 @@ final readonly class GetWorkspaceSetupSignals implements Action
         } catch (Throwable) {
             return false;
         }
+    }
+
+    private function isFresh(ExchangeRate $rate, CarbonInterface $now): bool
+    {
+        if (! $rate->effective_from instanceof CarbonInterface) {
+            return false;
+        }
+
+        return (int) $rate->effective_from->diffInHours($now) <= max(1, (int) config('services.fx.rate_max_age_hours', 72));
     }
 }
