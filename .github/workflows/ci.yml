@@ -57,6 +57,12 @@ jobs:
       - name: Static analysis
         run: vendor/bin/phpstan analyse --no-progress
 
+      - name: Validate Laravel configuration cache
+        run: |
+          php artisan config:clear
+          php artisan config:cache
+          php artisan config:clear
+
       - name: Feature and unit tests
         run: php artisan test --coverage --coverage-clover storage/coverage.xml
 
