@@ -31,9 +31,17 @@ final class TenantProvisioner
                 ]);
             }
 
-            $currencyDefinitions = [
-                $tenant->base_currency => ['is_base' => true, 'is_collection' => false],
-                $tenant->collection_currency => ['is_base' => false, 'is_collection' => true],
+            $currencyDefinitions = array_fill_keys(['USD', 'EUR', 'LBP'], [
+                'is_base' => false,
+                'is_collection' => false,
+            ]);
+            $currencyDefinitions[$tenant->base_currency] = [
+                'is_base' => true,
+                'is_collection' => $tenant->base_currency === $tenant->collection_currency,
+            ];
+            $currencyDefinitions[$tenant->collection_currency] = [
+                'is_base' => false,
+                'is_collection' => true,
             ];
             if ($tenant->base_currency === $tenant->collection_currency) {
                 $currencyDefinitions[$tenant->base_currency] = ['is_base' => true, 'is_collection' => true];
