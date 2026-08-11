@@ -1,4 +1,4 @@
-import { Head, useForm } from '@inertiajs/react';
+import { Head, Link, useForm } from '@inertiajs/react';
 import { ArrowRight, Eye, EyeOff, LockKeyhole, Mail } from 'lucide-react';
 import { useState } from 'react';
 
@@ -78,15 +78,20 @@ export default function Login() {
                             )}
                         </div>
                     </div>
-                    <label className="flex items-center gap-2 text-sm text-muted">
-                        <input
-                            type="checkbox"
-                            checked={form.data.remember}
-                            onChange={(event) => form.setData('remember', event.target.checked)}
-                            className="size-4 rounded border-line text-brand focus:ring-brand"
-                        />
-                        Keep me signed in
-                    </label>
+                    <div className="flex items-center justify-between gap-4 text-sm text-muted">
+                        <label className="flex items-center gap-2">
+                            <input
+                                type="checkbox"
+                                checked={form.data.remember}
+                                onChange={(event) => form.setData('remember', event.target.checked)}
+                                className="size-4 rounded border-line text-brand focus:ring-brand"
+                            />
+                            Keep me signed in
+                        </label>
+                        <Link href="/forgot-password" className="font-semibold text-brand hover:underline">
+                            Forgot password?
+                        </Link>
+                    </div>
                     <button type="submit" disabled={form.processing} className="button-primary w-full justify-center">
                         {form.processing ? 'Signing in…' : 'Enter workspace'}
                         <ArrowRight size={17} />
