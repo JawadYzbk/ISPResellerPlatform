@@ -94,5 +94,8 @@ jobs:
       - name: Validate development Compose file
         run: docker compose config --quiet
 
+      - name: Validate development WhatsApp profile
+        run: docker compose --profile whatsapp config --quiet
+
       - name: Validate production Compose file
         run: docker compose -f docker-compose.production.yml config --quiet
