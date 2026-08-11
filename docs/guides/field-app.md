@@ -70,6 +70,7 @@ Only the assigned technician can read, upload evidence to, record readings/mater
 
 ## Client safety rules
 
+- Every versioned API response includes `X-Server-Time` in UTC and `X-Request-ID`; use the former to correct device clock drift and the latter when reporting a support issue.
 - Treat `401` as an expired/revoked token and require sign-in again.
 - Treat `403` as an ability or assignment problem; do not retry blindly.
 - Treat `409` or an idempotency replay as a reconciliation result, not a failure.
