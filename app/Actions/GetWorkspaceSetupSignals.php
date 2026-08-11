@@ -6,6 +6,8 @@ use App\Contracts\Action;
 use App\Models\ExchangeRate;
 use App\Models\Tenant;
 use App\Support\Tenancy;
+use Illuminate\Support\Facades\Storage;
+use Throwable;
 
 final readonly class GetWorkspaceSetupSignals implements Action
 {
@@ -33,7 +35,7 @@ final readonly class GetWorkspaceSetupSignals implements Action
             $whatsapp = $this->whatsapp->handle(false);
 
             return [
-                'logo_ready' => filled($tenant->logo_path),
+                'logo_ready' => $this->logoReady($tenant),
                 'currency' => [
                     'base' => $base,
                     'collection' => $collection,
@@ -46,5 +48,19 @@ final readonly class GetWorkspaceSetupSignals implements Action
                 ],
             ];
         });
+    }
+
+    private function logoReady(Tenant $tenant): bool
+    {
+        $path = is_string($tenant->logo_path) ? trim($tenant->logo_path) : '';
+        if ($path === '') {
+            return false;
+        }
+
+        try {
+            return Storage::disk((string) config('filesystems.default', 'local'))->exists($path);
+        } catch (Throwable) {
+            return false;
+        }
     }
 }
