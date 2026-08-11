@@ -130,7 +130,9 @@ test.describe('staff core journeys', () => {
         await signIn(page);
 
         await page.goto('/customers');
-        await page.getByRole('link', { name: 'Open', exact: true }).first().click();
+        const openCustomer = page.getByRole('link', { name: 'Open', exact: true }).first();
+        await openCustomer.click();
+        await expect(page).toHaveURL(/\/customers\/[^/]+$/);
         await expect(page.getByRole('link', { name: 'Take payment', exact: true })).toBeVisible();
         await page.getByRole('link', { name: 'Take payment', exact: true }).click();
         await expect(page.getByRole('heading', { name: 'Record payment' })).toBeVisible();
