@@ -11,6 +11,8 @@ use App\Models\User;
 use App\Models\Zone;
 use App\Support\Tenancy;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Storage;
+use Throwable;
 
 final class TenantReadinessCommand extends Command
 {
@@ -126,10 +128,7 @@ final class TenantReadinessCommand extends Command
                 $hasActivePlanPrice ? 'PASS' : 'FAIL',
                 $hasActivePlanPrice ? 'An active plan has an effective '.$baseCurrency.' price.' : 'Create an active plan with an effective '.$baseCurrency.' price.',
             ),
-            'Tenant logo' => $this->check(
-                is_string($tenant->logo_path) && trim($tenant->logo_path) !== '' ? 'PASS' : 'WARN',
-                is_string($tenant->logo_path) && trim($tenant->logo_path) !== '' ? 'A tenant logo is configured.' : 'Add a tenant logo before the pilot handoff.',
-            ),
+            'Tenant logo' => $this->tenantLogoCheck($tenant),
             'Cash collection' => $this->check('PASS', 'Cash collection is available to authorized staff.'),
             'Stripe gateway' => $this->stripeCheck(),
             'Whish Pay gateway' => $this->whishCheck(),
@@ -218,6 +217,31 @@ final class TenantReadinessCommand extends Command
         return $this->check(
             $configured ? 'PASS' : 'WARN',
             $configured ? 'WhatsApp Cloud credentials are configured.' : 'WhatsApp notifications are not configured; configure Cloud API or opt into Web.js.',
+        );
+    }
+
+    /** @return array{status: 'PASS'|'WARN'|'FAIL', detail: string} */
+    private function tenantLogoCheck(Tenant $tenant): array
+    {
+        $logoPath = is_string($tenant->logo_path) ? trim($tenant->logo_path) : '';
+
+        if ($logoPath === '') {
+            return $this->check('WARN', 'Add a tenant logo before the pilot handoff.');
+        }
+
+        $disk = (string) config('filesystems.default', 'local');
+
+        try {
+            $available = Storage::disk($disk)->exists($logoPath);
+        } catch (Throwable) {
+            return $this->check('WARN', 'The configured tenant logo could not be verified on the '.$disk.' storage disk.');
+        }
+
+        return $this->check(
+            $available ? 'PASS' : 'WARN',
+            $available
+                ? 'A tenant logo is available on the configured storage disk.'
+                : 'The tenant logo path is configured, but the stored file is missing from the '.$disk.' storage disk.',
         );
     }
 
