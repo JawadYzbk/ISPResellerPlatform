@@ -36,6 +36,7 @@ final class PlatformPreflightCommand extends Command
                 'Sentry configuration' => $this->sentryIsConfigured(),
                 'Encrypted off-site backups' => $this->backupsAreConfigured(),
                 'Private object storage' => $this->objectStorageIsConfigured(),
+                'Monitoring alert routing' => $this->monitoringIsConfigured(),
                 'Reverb configuration' => $this->reverbIsConfigured(),
                 'WhatsApp configuration' => $this->whatsappIsConfigured(),
                 'Payment gateway configuration' => $this->paymentGatewayIsConfigured(),
@@ -191,6 +192,22 @@ final class PlatformPreflightCommand extends Command
             && $this->hasConfiguredValue(config('broadcasting.connections.reverb.host'))
             && is_array($allowedOrigins)
             && $allowedOrigins !== [];
+    }
+
+    private function monitoringIsConfigured(): bool
+    {
+        if (! (bool) config('monitoring.enabled')) {
+            return false;
+        }
+
+        $url = config('monitoring.webhook_url');
+        $parsed = is_string($url) ? parse_url($url) : false;
+        $scheme = is_array($parsed) ? strtolower((string) ($parsed['scheme'] ?? '')) : '';
+
+        return $this->hasConfiguredValue($url)
+            && filter_var($url, FILTER_VALIDATE_URL) !== false
+            && in_array($scheme, ['http', 'https'], true)
+            && $this->hasConfiguredValue(config('monitoring.webhook_secret'));
     }
 
     private function whatsappIsConfigured(): bool

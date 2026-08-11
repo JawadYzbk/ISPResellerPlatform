@@ -38,6 +38,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withCommands([__DIR__.'/../app/Console/Commands'])
     ->withSchedule(function (Schedule $schedule): void {
         $schedule->command('platform:heartbeat')->everyMinute();
+        $schedule->command('platform:monitor')->everyFiveMinutes();
         $schedule->command('ledger:check-invariants')->dailyAt('03:00');
         $schedule->command('routers:reconcile-subscribers')->everyFifteenMinutes();
         $schedule->command('services:suspend-overdue')->hourlyAt(5);

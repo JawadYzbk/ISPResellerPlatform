@@ -67,6 +67,9 @@ it('passes the production preflight for a production-shaped configuration', func
         'filesystems.disks.s3.secret' => 's3-secret',
         'filesystems.disks.s3.bucket' => 'isp-media',
         'filesystems.disks.s3.endpoint' => 'https://objects.provider.test',
+        'monitoring.enabled' => true,
+        'monitoring.webhook_url' => 'https://alerts.isp.internal/platform',
+        'monitoring.webhook_secret' => 'monitoring-secret',
         'broadcasting.default' => 'reverb',
         'broadcasting.connections.reverb.key' => 'reverb-key',
         'broadcasting.connections.reverb.secret' => 'reverb-secret',
@@ -77,6 +80,23 @@ it('passes the production preflight for a production-shaped configuration', func
     $this->artisan('platform:preflight', ['--production' => true])
         ->assertExitCode(Command::SUCCESS)
         ->expectsOutputToContain('Preflight passed.');
+});
+
+it('requires monitoring alert routing in production', function (): void {
+    config()->set([
+        'app.key' => 'base64:'.base64_encode(str_repeat('a', 32)),
+        'app.env' => 'production',
+        'app.debug' => false,
+        'app.url' => 'https://portal.isp.internal',
+        'session.secure' => true,
+        'queue.default' => 'database',
+        'cache.default' => 'database',
+        'monitoring.enabled' => false,
+    ]);
+
+    $this->artisan('platform:preflight', ['--production' => true])
+        ->assertExitCode(Command::FAILURE)
+        ->expectsOutputToContain('Monitoring alert routing');
 });
 
 it('rejects a placeholder application key', function (): void {
