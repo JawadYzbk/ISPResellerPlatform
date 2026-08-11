@@ -3,6 +3,7 @@
 namespace App\Actions;
 
 use App\Contracts\Action;
+use App\Support\ScheduledTaskMonitor;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Migrations\Migrator;
 use Illuminate\Support\Facades\Cache;
@@ -11,6 +12,8 @@ use Illuminate\Support\Facades\Queue;
 
 final readonly class CheckApplicationHealth implements Action
 {
+    public function __construct(private ScheduledTaskMonitor $scheduledTasks) {}
+
     /** @return array{status: string, checks: array<string, string|int>} */
     public function handle(): array
     {
@@ -52,6 +55,9 @@ final readonly class CheckApplicationHealth implements Action
         }
         $checks['scheduler'] = $this->heartbeat('scheduler_heartbeat');
         $checks['queue_worker'] = $this->heartbeat('queue_worker_heartbeat');
+        $scheduledTasks = $this->scheduledTasks->check();
+        $checks['scheduled_tasks'] = $scheduledTasks['status'];
+        $checks = [...$checks, ...$scheduledTasks['checks']];
         try {
             $checks['router_incidents'] = (int) DB::table('incidents')
                 ->where('type', 'router_unreachable')

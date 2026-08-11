@@ -13,6 +13,8 @@ use App\Domain\Payments\PaymentGateway;
 use App\Domain\Payments\StripePaymentGateway;
 use App\Domain\Radius\RadiusTransport;
 use App\Domain\Radius\UdpRadiusTransport;
+use App\Listeners\RecordScheduledTaskFailed;
+use App\Listeners\RecordScheduledTaskFinished;
 use App\Models\Customer;
 use App\Models\Plan;
 use App\Models\Service;
@@ -22,7 +24,10 @@ use App\Policies\ServicePolicy;
 use App\Support\RequestContext;
 use App\Support\Tenancy;
 use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Console\Events\ScheduledTaskFailed;
+use Illuminate\Console\Events\ScheduledTaskFinished;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
@@ -56,6 +61,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Event::listen(ScheduledTaskFinished::class, RecordScheduledTaskFinished::class);
+        Event::listen(ScheduledTaskFailed::class, RecordScheduledTaskFailed::class);
         Inertia::encryptHistory();
         Gate::policy(Customer::class, CustomerPolicy::class);
         Gate::policy(Plan::class, PlanPolicy::class);

@@ -3,8 +3,9 @@
 ## Liveness and dependency health
 
 - `GET /up` is the framework liveness probe.
-- `GET /api/v1/health` is the deeper dependency probe. It checks the database, cache, default queue depth, scheduler heartbeat, queue-worker heartbeat, and the count of unresolved router-unreachable incidents (`checks.router_incidents`). Set `MONITORING_QUEUE_DEPTH_THRESHOLD` for the largest acceptable default-queue backlog; above it, `checks.queue` becomes `degraded` while the raw `checks.queue_depth` and configured threshold remain visible.
-- `php artisan platform:heartbeat` records the scheduler heartbeat and queues the worker heartbeat job. The scheduler runs it every minute through `bootstrap/app.php`.
+- `GET /api/v1/health` is the deeper dependency probe. It checks the database, cache, default queue depth, scheduler heartbeat, queue-worker heartbeat, monitored scheduled-task state, and the count of unresolved router-unreachable incidents (`checks.router_incidents`). Set `MONITORING_QUEUE_DEPTH_THRESHOLD` for the largest acceptable default-queue backlog; above it, `checks.queue` becomes `degraded` while the raw `checks.queue_depth` and configured threshold remain visible.
+- `php artisan platform:heartbeat` records the scheduler heartbeat, starts the scheduled-task monitor window, and queues the worker heartbeat job. The scheduler runs it every minute through `bootstrap/app.php`.
+- Laravel scheduler success and failure events check in `routers:reconcile-subscribers`, `services:suspend-overdue`, `billing:generate-invoices`, and `ledger:check-invariants`. A failed task or a task that misses its interval plus grace window appears as an actionable `scheduled_*` health signal and is included in the signed monitor alert.
 - `php artisan platform:monitor` runs every five minutes, sends signed alerts for distinct degraded signal sets to the configured webhook, suppresses repeated identical failures, and emits a recovery event after the platform returns to healthy. Alert payloads include the actionable `signals` map, so a router outage appearing during an existing scheduler outage is not silently suppressed.
 - `php artisan ledger:check-invariants` checks balanced journal entries, customer projections and partner wallet invariants. It runs daily at 03:00.
 
