@@ -68,4 +68,12 @@ it('reconciles currency roles when tenant currency settings change', function ()
         ->and($usd->is_collection)->toBeFalse()
         ->and($lbp->is_base)->toBeFalse()
         ->and($lbp->is_collection)->toBeTrue();
+
+    $tenant->update(['collection_currency' => 'USD']);
+    $usd->refresh();
+    $lbp->refresh();
+
+    expect($usd->is_base)->toBeTrue()
+        ->and($usd->is_collection)->toBeTrue()
+        ->and($lbp->is_collection)->toBeFalse();
 });

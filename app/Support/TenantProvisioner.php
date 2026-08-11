@@ -39,6 +39,8 @@ final class TenantProvisioner
                 $currencyDefinitions[$tenant->base_currency] = ['is_base' => true, 'is_collection' => true];
             }
 
+            Currency::query()->update(['is_base' => false, 'is_collection' => false]);
+
             foreach ($currencyDefinitions as $code => $flags) {
                 Currency::updateOrCreate(
                     ['code' => $code],
