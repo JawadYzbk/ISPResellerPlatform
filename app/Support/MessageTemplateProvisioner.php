@@ -31,16 +31,16 @@ final class MessageTemplateProvisioner
             ],
         ],
         'payment.receipt' => [
-            'variables' => ['customer_name', 'receipt_number', 'amount', 'currency'],
+            'variables' => ['customer_name', 'receipt_number', 'amount', 'amount_formatted', 'currency'],
             'subjects' => [
                 'en' => 'Payment receipt',
                 'ar' => 'إيصال دفع',
                 'fr' => 'Reçu de paiement',
             ],
             'bodies' => [
-                'en' => 'Payment received from {{ customer_name }}. Receipt {{ receipt_number }} for {{ amount }} {{ currency }}.',
-                'ar' => 'تم استلام الدفعة من {{ customer_name }}. رقم الإيصال {{ receipt_number }} بقيمة {{ amount }} {{ currency }}.',
-                'fr' => 'Paiement reçu de {{ customer_name }}. Reçu {{ receipt_number }} de {{ amount }} {{ currency }}.',
+                'en' => 'Payment received from {{ customer_name }}. Receipt {{ receipt_number }} for {{ amount_formatted }}.',
+                'ar' => 'تم استلام الدفعة من {{ customer_name }}. رقم الإيصال {{ receipt_number }} بقيمة {{ amount_formatted }}.',
+                'fr' => 'Paiement reçu de {{ customer_name }}. Reçu {{ receipt_number }} de {{ amount_formatted }}.',
             ],
         ],
         'service.expiry_reminder' => [

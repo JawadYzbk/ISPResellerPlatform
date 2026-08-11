@@ -79,6 +79,18 @@ it('queues a payment receipt after the payment is posted', function (): void {
     Queue::assertPushed(DeliverMessage::class);
 });
 
+it('formats the amount in a default payment receipt notification', function (): void {
+    Queue::fake();
+    $tenant = Tenant::create(['name' => 'Formattedline', 'slug' => 'formattedline', 'base_currency' => 'USD', 'collection_currency' => 'USD']);
+    app(Tenancy::class)->set($tenant);
+    $customer = Customer::factory()->create();
+
+    app(RecordPayment::class)->handle($customer, 3500, 'USD', 'cash', 'formatted-receipt-001');
+
+    expect(Message::query()->where('template_key', 'payment.receipt')->firstOrFail()->body)
+        ->toContain('35.00');
+});
+
 it('queues suspension and reactivation notices exactly once across the overdue renewal path', function (): void {
     Queue::fake();
     $tenant = Tenant::create(['name' => 'Eastline', 'slug' => 'eastline', 'base_currency' => 'USD', 'collection_currency' => 'USD']);

@@ -6,6 +6,7 @@ use App\Contracts\Action;
 use App\Models\Message;
 use App\Models\Payment;
 use App\Models\User;
+use App\Support\BillingPdfFormatter;
 use DomainException;
 
 final readonly class ResendPaymentReceipt implements Action
@@ -28,6 +29,7 @@ final readonly class ResendPaymentReceipt implements Action
                 'customer_name' => $payment->customer->full_name,
                 'receipt_number' => $payment->number,
                 'amount' => $payment->amount,
+                'amount_formatted' => BillingPdfFormatter::money($payment->amount, $payment->currency),
                 'currency' => $payment->currency,
             ],
             [$channel],

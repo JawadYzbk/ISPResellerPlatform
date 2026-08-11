@@ -17,6 +17,7 @@ use App\Models\LedgerAccount;
 use App\Models\Payment;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Support\BillingPdfFormatter;
 use App\Support\DocumentNumberGenerator;
 use Carbon\CarbonImmutable;
 use DomainException;
@@ -158,6 +159,7 @@ final readonly class RecordPayment implements Action
                 'customer_name' => $customer->full_name,
                 'receipt_number' => $payment->number,
                 'amount' => $payment->amount,
+                'amount_formatted' => BillingPdfFormatter::money($payment->amount, $payment->currency),
                 'currency' => $payment->currency,
             ]);
 
