@@ -31,6 +31,7 @@ The current foundation is live:
 - Immediate or next-renewal service plan changes with prorated ledger credit/charge entries, pause/resume lifecycle controls, and queued RouterOS/RADIUS rate synchronization
 - Payment-driven one-to-twelve-period renewal with signed previews, scheduled overdue suspension and post-commit network command outbox
 - Message templates, provider delivery jobs, tickets, work orders and serialized inventory
+- Idempotent English, Arabic and French notification templates provisioned for WhatsApp, SMS and email
 - Idempotent customer welcome, payment receipt, expiry, suspension and reactivation notifications with channel selection, opt-out handling, provider fallback and scoped outage broadcasts
 - FreeRADIUS sync, live-session accounting and daily usage rollups
 - Encrypted router RADIUS shared secrets, validated UDP CoA/Disconnect packets and radius driver wiring

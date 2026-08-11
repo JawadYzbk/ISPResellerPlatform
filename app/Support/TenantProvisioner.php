@@ -66,6 +66,8 @@ final class TenantProvisioner
                 LedgerAccount::firstOrCreate(['code' => $account['code']], [...$account, 'is_system' => true]);
             }
         });
+
+        app(MessageTemplateProvisioner::class)->provision($tenant);
     }
 
     private function decimalDigits(string $currency): int

@@ -4,8 +4,10 @@ use App\Data\TenantSettings;
 use App\Models\Branch;
 use App\Models\Currency;
 use App\Models\DocumentSequence;
+use App\Models\MessageTemplate;
 use App\Models\Tenant;
 use App\Models\Zone;
+use App\Support\MessageTemplateProvisioner;
 use App\Support\Tenancy;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -31,7 +33,30 @@ it('provisions the operational defaults for a new tenant', function (): void {
         ->and(Currency::where('code', 'USD')->exists())->toBeTrue()
         ->and(Currency::where('code', 'LBP')->exists())->toBeTrue()
         ->and(DocumentSequence::count())->toBe(7)
-        ->and(DocumentSequence::where('key', 'work_order')->exists())->toBeTrue();
+        ->and(DocumentSequence::where('key', 'work_order')->exists())->toBeTrue()
+        ->and(MessageTemplate::where('key', 'customer.welcome')->count())->toBe(9)
+        ->and(MessageTemplate::where('key', 'payment.receipt')->where('channel', 'email')->where('locale', 'ar')->exists())->toBeTrue();
+});
+
+it('does not overwrite customized notification templates during reconciliation', function (): void {
+    $tenant = Tenant::create([
+        'name' => 'Template ISP',
+        'slug' => 'template-isp',
+        'base_currency' => 'USD',
+        'collection_currency' => 'LBP',
+    ]);
+
+    app(Tenancy::class)->set($tenant);
+    $template = MessageTemplate::query()
+        ->where('key', 'payment.receipt')
+        ->where('channel', 'whatsapp')
+        ->where('locale', 'en')
+        ->firstOrFail();
+    $template->update(['body' => 'Custom receipt copy.']);
+
+    app(MessageTemplateProvisioner::class)->provision($tenant);
+
+    expect($template->refresh()->body)->toBe('Custom receipt copy.');
 });
 
 it('marks a shared currency as both base and collection currency', function (): void {

@@ -24,7 +24,10 @@ it('selects an available channel and respects notification opt-out', function ()
     $tenant = Tenant::create(['name' => 'Northline', 'slug' => 'northline', 'base_currency' => 'USD', 'collection_currency' => 'USD']);
     app(Tenancy::class)->set($tenant);
     $customer = Customer::factory()->create(['notification_preferences' => ['channels' => ['email']]]);
-    MessageTemplate::create(['key' => 'payment.receipt', 'channel' => 'email', 'locale' => 'en', 'body' => 'Receipt {{ receipt_number }}']);
+    MessageTemplate::updateOrCreate(
+        ['key' => 'payment.receipt', 'channel' => 'email', 'locale' => 'en'],
+        ['body' => 'Receipt {{ receipt_number }}'],
+    );
 
     $message = app(QueueCustomerNotification::class)->handle($customer, 'payment.receipt', 'receipt-001', ['receipt_number' => 'RCT-001']);
 
@@ -37,6 +40,24 @@ it('selects an available channel and respects notification opt-out', function ()
         ->and(Message::query()->count())->toBe(1);
 });
 
+it('uses provisioned templates for a new tenant without manual template setup', function (): void {
+    Queue::fake();
+    $tenant = Tenant::create(['name' => 'Template-ready ISP', 'slug' => 'template-ready', 'base_currency' => 'USD', 'collection_currency' => 'USD']);
+    app(Tenancy::class)->set($tenant);
+    $customer = Customer::factory()->create();
+
+    $message = app(QueueCustomerNotification::class)->handle(
+        $customer,
+        'payment.receipt',
+        'provisioned-template-receipt',
+        ['receipt_number' => 'RCT-DEFAULT'],
+        ['sms'],
+    );
+
+    expect($message)->toBeInstanceOf(Message::class)
+        ->and($message?->body)->toContain('RCT-DEFAULT');
+});
+
 it('queues a payment receipt after the payment is posted', function (): void {
     Queue::fake();
     $tenant = Tenant::create(['name' => 'Southline', 'slug' => 'southline', 'base_currency' => 'USD', 'collection_currency' => 'USD']);
@@ -45,7 +66,10 @@ it('queues a payment receipt after the payment is posted', function (): void {
     $plan = Plan::factory()->create(['name' => 'Home 50', 'slug' => 'home-50', 'download_kbps' => 50_000, 'upload_kbps' => 10_000, 'duration_days' => 30, 'amount_minor' => 3500, 'currency' => 'USD']);
     $plan->prices()->create(['currency' => 'USD', 'amount_minor' => 3500, 'effective_from' => now()->subDay()]);
     $invoice = app(IssueInvoice::class)->handle(app(CreateInvoice::class)->handle($customer, $plan));
-    MessageTemplate::create(['key' => 'payment.receipt', 'channel' => 'sms', 'locale' => 'en', 'body' => 'Receipt {{ receipt_number }} for {{ amount }} {{ currency }}']);
+    MessageTemplate::updateOrCreate(
+        ['key' => 'payment.receipt', 'channel' => 'sms', 'locale' => 'en'],
+        ['body' => 'Receipt {{ receipt_number }} for {{ amount }} {{ currency }}'],
+    );
 
     $payment = app(RecordPayment::class)->handle($customer, 3500, 'USD', 'cash', 'notification-payment-001', $invoice);
 
@@ -59,8 +83,14 @@ it('queues suspension and reactivation notices exactly once across the overdue r
     Queue::fake();
     $tenant = Tenant::create(['name' => 'Eastline', 'slug' => 'eastline', 'base_currency' => 'USD', 'collection_currency' => 'USD']);
     app(Tenancy::class)->set($tenant);
-    MessageTemplate::create(['key' => 'service.suspended', 'channel' => 'sms', 'locale' => 'en', 'body' => 'Suspended {{ service_username }}']);
-    MessageTemplate::create(['key' => 'service.reactivated', 'channel' => 'sms', 'locale' => 'en', 'body' => 'Reactivated {{ service_username }}']);
+    MessageTemplate::updateOrCreate(
+        ['key' => 'service.suspended', 'channel' => 'sms', 'locale' => 'en'],
+        ['body' => 'Suspended {{ service_username }}'],
+    );
+    MessageTemplate::updateOrCreate(
+        ['key' => 'service.reactivated', 'channel' => 'sms', 'locale' => 'en'],
+        ['body' => 'Reactivated {{ service_username }}'],
+    );
     $service = Service::factory()->create(['status' => ServiceStatus::Active, 'expires_at' => now()->subMinute()]);
     $service->plan->prices()->create(['currency' => 'USD', 'amount_minor' => 3500, 'effective_from' => now()->subDay()]);
 

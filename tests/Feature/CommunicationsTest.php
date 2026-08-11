@@ -23,7 +23,10 @@ it('fails loudly in preview and safely queues idempotent messages in production'
     Queue::fake();
     $tenant = Tenant::create(['name' => 'Northline', 'slug' => 'northline', 'base_currency' => 'USD', 'collection_currency' => 'USD']);
     app(Tenancy::class)->set($tenant);
-    $template = MessageTemplate::create(['key' => 'payment.receipt', 'channel' => 'sms', 'locale' => 'en', 'body' => 'Hello {{ customer_name }}, receipt {{ receipt_number }}.']);
+    $template = MessageTemplate::updateOrCreate(
+        ['key' => 'payment.receipt', 'channel' => 'sms', 'locale' => 'en'],
+        ['body' => 'Hello {{ customer_name }}, receipt {{ receipt_number }}.'],
+    );
 
     expect(fn (): string => app(TemplateRenderer::class)->render($template, ['customer_name' => 'Rami'], preview: true))->toThrow(RuntimeException::class)
         ->and(app(TemplateRenderer::class)->render($template, ['customer_name' => 'Rami']))->toBe('Hello Rami, receipt .');
@@ -42,7 +45,10 @@ it('records provider delivery and retries failures without duplicating a message
     Queue::fake();
     $tenant = Tenant::create(['name' => 'Southline', 'slug' => 'southline', 'base_currency' => 'USD', 'collection_currency' => 'USD']);
     app(Tenancy::class)->set($tenant);
-    $template = MessageTemplate::create(['key' => 'outage.notice', 'channel' => 'sms', 'locale' => 'en', 'body' => 'Outage in {{ zone }}.']);
+    $template = MessageTemplate::updateOrCreate(
+        ['key' => 'outage.notice', 'channel' => 'sms', 'locale' => 'en'],
+        ['body' => 'Outage in {{ zone }}.'],
+    );
     $provider = new FakeMessageProvider;
     app()->instance(FakeMessageProvider::class, $provider);
     $message = app(QueueMessage::class)->handle($template, '96170123456', 'sms', 'en', 'outage-001', ['zone' => 'North']);
@@ -76,8 +82,14 @@ it('falls back to the next configured notification channel after a provider fail
     $tenant = Tenant::create(['name' => 'Fallbackline', 'slug' => 'fallbackline', 'base_currency' => 'USD', 'collection_currency' => 'USD']);
     app(Tenancy::class)->set($tenant);
     $customer = Customer::factory()->create(['notification_preferences' => ['channels' => ['sms', 'email']]]);
-    MessageTemplate::create(['key' => 'payment.receipt', 'channel' => 'sms', 'locale' => 'en', 'body' => 'SMS receipt {{ receipt_number }}']);
-    MessageTemplate::create(['key' => 'payment.receipt', 'channel' => 'email', 'locale' => 'en', 'body' => 'Email receipt {{ receipt_number }}']);
+    MessageTemplate::updateOrCreate(
+        ['key' => 'payment.receipt', 'channel' => 'sms', 'locale' => 'en'],
+        ['body' => 'SMS receipt {{ receipt_number }}'],
+    );
+    MessageTemplate::updateOrCreate(
+        ['key' => 'payment.receipt', 'channel' => 'email', 'locale' => 'en'],
+        ['body' => 'Email receipt {{ receipt_number }}'],
+    );
 
     $message = app(QueueCustomerNotification::class)->handle($customer, 'payment.receipt', 'fallback-001', ['receipt_number' => 'RCT-FALLBACK']);
     expect($message)->toBeInstanceOf(Message::class);
@@ -108,7 +120,10 @@ it('routes the existing WhatsApp channel through the Web.js bridge when enabled'
 
     $tenant = Tenant::create(['name' => 'Webline', 'slug' => 'webline', 'base_currency' => 'USD', 'collection_currency' => 'USD']);
     app(Tenancy::class)->set($tenant);
-    $template = MessageTemplate::create(['key' => 'payment.receipt', 'channel' => 'whatsapp', 'locale' => 'en', 'body' => 'Receipt {{ receipt_number }}']);
+    $template = MessageTemplate::updateOrCreate(
+        ['key' => 'payment.receipt', 'channel' => 'whatsapp', 'locale' => 'en'],
+        ['body' => 'Receipt {{ receipt_number }}'],
+    );
     $message = app(QueueMessage::class)->handle($template, '96170123456', 'whatsapp', 'en', 'web-message-001', ['receipt_number' => 'RCT-WEB']);
 
     (new DeliverMessage($message->id, $tenant->id))->handle(app(MessageProviderManager::class));

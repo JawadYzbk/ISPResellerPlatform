@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Authorization\PermissionCatalog;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Support\MessageTemplateProvisioner;
 use App\Support\Tenancy;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Permission;
@@ -66,6 +67,8 @@ class CapabilitySeeder extends Seeder
                     ->whereIn('role', array_keys(self::ROLE_PERMISSIONS))
                     ->each(fn (User $user): mixed => $user->assignRole((string) $user->role));
             });
+
+            app(MessageTemplateProvisioner::class)->provision($tenant);
         });
     }
 }
