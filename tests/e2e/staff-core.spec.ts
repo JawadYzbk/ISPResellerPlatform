@@ -44,6 +44,15 @@ test.describe('staff core journeys', () => {
         await expect(page.getByRole('heading', { name: 'Workspace settings' })).toBeVisible();
     });
 
+    test('shows field navigation on a mobile viewport', async ({ page }) => {
+        await page.setViewportSize({ width: 390, height: 844 });
+        await signIn(page);
+
+        await expect(page.getByRole('navigation', { name: 'Field navigation' })).toBeVisible();
+        await expect(page.getByRole('link', { name: 'Customers' }).last()).toBeVisible();
+        await expect(page.getByRole('link', { name: 'Payments' }).last()).toBeVisible();
+    });
+
     test('renders the workspace in right-to-left mode when configured', async ({ page }) => {
         await signIn(page);
         await page.goto('/settings/general');
