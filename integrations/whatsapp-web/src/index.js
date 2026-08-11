@@ -1,6 +1,8 @@
 import http from 'node:http';
-import { Client, LocalAuth } from 'whatsapp-web.js';
+import whatsappWeb from 'whatsapp-web.js';
 import { JsonIdempotencyStore, WhatsAppBridge, bearerMatches } from './bridge.js';
+
+const { Client, LocalAuth } = whatsappWeb;
 
 const config = {
   host: process.env.WHATSAPP_WEB_HOST || '0.0.0.0',
