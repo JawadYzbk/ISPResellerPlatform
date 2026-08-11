@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Web;
 use App\Actions\AnonymizeCustomer;
 use App\Actions\CreateCustomer;
 use App\Actions\CreateRenewalInvoice;
+use App\Actions\CreateWhishPaymentAttempt;
 use App\Actions\DeleteCustomerView;
 use App\Actions\ExportCustomersCsv;
 use App\Actions\GetCustomerDetails;
@@ -12,27 +13,33 @@ use App\Actions\ListCustomers;
 use App\Actions\ListCustomerSavedViews;
 use App\Actions\RecordPayment;
 use App\Actions\SaveCustomerView;
+use App\Actions\SettleWhishPaymentAttempt;
 use App\Actions\StoreMediaUpload;
 use App\Actions\UpdateCustomer;
 use App\Domain\Money\FxConverter;
 use App\Enums\InvoiceStatus;
+use App\Enums\PaymentAttemptStatus;
 use App\Enums\PaymentStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\CollectPaymentRequest;
+use App\Http\Requests\CreateWhishPaymentRequest;
 use App\Http\Requests\CustomerIndexRequest;
 use App\Http\Requests\CustomerRequest;
 use App\Models\Currency;
 use App\Models\Customer;
 use App\Models\CustomerSavedView;
 use App\Models\Invoice;
+use App\Models\PaymentAttempt;
 use App\Models\Plan;
 use App\Models\Router;
 use App\Models\Service;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Models\Zone;
+use App\Support\QrCodeRenderer;
 use App\Support\Tenancy;
 use DomainException;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
@@ -164,7 +171,66 @@ final class CustomerController extends Controller
             'invoices' => $invoices,
             'defaultCurrency' => (string) (Tenant::query()->whereKey($user->tenant_id)->value('collection_currency') ?? $customer->balance_currency),
             'paymentCurrencies' => $paymentCurrencies,
+            'whishEnabled' => (bool) config('services.whish.enabled'),
         ]);
+    }
+
+    public function storeWhishPayment(CreateWhishPaymentRequest $request, Customer $customer, CreateWhishPaymentAttempt $create, QrCodeRenderer $qr): Response
+    {
+        $this->authorize('view', $customer);
+        $user = $request->user();
+        abort_unless($user instanceof User && $user->can('payments.collect'), 403);
+        $validated = $request->validated();
+        $invoice = isset($validated['invoice_id'])
+            ? Invoice::query()->where('public_id', $validated['invoice_id'])->where('customer_id', $customer->id)->firstOrFail()
+            : null;
+
+        try {
+            $attempt = $create->handle(
+                $user,
+                $customer,
+                (int) $validated['amount'],
+                (string) $validated['currency'],
+                $invoice,
+                (string) $validated['idempotency_key'],
+            );
+        } catch (DomainException $exception) {
+            throw ValidationException::withMessages(['currency' => $exception->getMessage()]);
+        }
+        abort_if($attempt->collect_url === null, 502, 'Whish did not return a collection URL.');
+
+        return Inertia::render('Payments/Whish', [
+            'customer' => $customer->only(['public_id', 'code', 'first_name', 'last_name']),
+            'attempt' => $this->whishAttempt($attempt, $qr),
+        ]);
+    }
+
+    public function whishStatus(Request $request, Customer $customer, string $attemptId, SettleWhishPaymentAttempt $settle): JsonResponse
+    {
+        $this->authorize('view', $customer);
+        abort_unless($request->user()?->can('payments.collect') === true, 403);
+        $attempt = PaymentAttempt::query()
+            ->where('gateway', 'whish')
+            ->where('public_id', $attemptId)
+            ->where('customer_id', $customer->id)
+            ->firstOrFail();
+
+        try {
+            $attempt = $settle->handle($attempt);
+        } catch (DomainException $exception) {
+            return response()->json(['message' => $exception->getMessage()], 502);
+        } catch (\Throwable) {
+            return response()->json(['message' => 'Whish payment status could not be verified.'], 502);
+        }
+
+        return response()->json(['data' => [
+            'id' => $attempt->public_id,
+            'status' => $attempt->status->value,
+            'provider_transaction_id' => $attempt->provider_transaction_id,
+            'payment_id' => $attempt->payment?->public_id,
+            'last_checked_at' => $attempt->last_checked_at?->toIso8601String(),
+            'terminal' => in_array($attempt->status, [PaymentAttemptStatus::Succeeded, PaymentAttemptStatus::Failed, PaymentAttemptStatus::SettlementFailed], true),
+        ]]);
     }
 
     public function renew(Request $request, Customer $customer): Response
@@ -363,5 +429,20 @@ final class CustomerController extends Controller
         $anonymize->handle($customer, $user);
 
         return redirect()->route('customers.show', $customer->public_id)->with('success', 'Customer data anonymized.');
+    }
+
+    /** @return array<string, mixed> */
+    private function whishAttempt(PaymentAttempt $attempt, QrCodeRenderer $qr): array
+    {
+        return [
+            'id' => $attempt->public_id,
+            'status' => $attempt->status->value,
+            'external_id' => $attempt->external_id,
+            'amount' => $attempt->amount,
+            'currency' => $attempt->currency,
+            'collect_url' => $attempt->collect_url,
+            'qr_code' => ['format' => 'svg', 'data_uri' => $qr->dataUri((string) $attempt->collect_url)],
+            'last_checked_at' => $attempt->last_checked_at?->toIso8601String(),
+        ];
     }
 }
