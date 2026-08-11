@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Web;
 
 use App\Actions\CreatePartner;
+use App\Actions\GetCurrencyCatalog;
 use App\Actions\ResolvePartnerPrice;
 use App\Http\Controllers\Controller;
 use App\Models\Partner;
@@ -19,7 +20,7 @@ use Inertia\Response;
 
 final class PartnerController extends Controller
 {
-    public function commercial(Request $request, ResolvePartnerPrice $prices): Response
+    public function commercial(Request $request, ResolvePartnerPrice $prices, GetCurrencyCatalog $currencyCatalog): Response
     {
         $user = $request->user();
         abort_unless($user instanceof User && $user->can('wallets.view'), 403);
@@ -39,6 +40,7 @@ final class PartnerController extends Controller
                 'settlements' => [],
                 'showCost' => false,
                 'canManage' => $user->can('partners.manage'),
+                'currencies' => $currencyCatalog->handle(),
             ]);
         }
         $showCost = $user->partner_id === null && $user->can('settlements.approve');
@@ -81,6 +83,7 @@ final class PartnerController extends Controller
             'settlements' => $settlements,
             'showCost' => $showCost,
             'canManage' => $user->can('partners.manage'),
+            'currencies' => $currencyCatalog->handle(),
         ]);
     }
 

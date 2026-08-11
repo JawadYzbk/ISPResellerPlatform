@@ -7,6 +7,7 @@ use App\Actions\ArchivePromotion;
 use App\Actions\CreateAddon;
 use App\Actions\CreatePlan;
 use App\Actions\CreatePromotion;
+use App\Actions\GetCurrencyCatalog;
 use App\Actions\ListPlans;
 use App\Actions\UpdateAddon;
 use App\Actions\UpdatePromotion;
@@ -26,7 +27,7 @@ use Inertia\Response;
 
 final class PlanOperationsController extends Controller
 {
-    public function index(Request $request, ListPlans $listPlans): Response
+    public function index(Request $request, ListPlans $listPlans, GetCurrencyCatalog $currencyCatalog): Response
     {
         $user = $request->user();
         abort_unless($user instanceof User && $user->can('plans.manage'), 403);
@@ -87,6 +88,7 @@ final class PlanOperationsController extends Controller
                 'is_active' => $promotion->is_active,
             ])->values(),
             'availablePlans' => Plan::query()->where('status', 'active')->orderBy('name')->get(['public_id', 'name'])->values(),
+            'currencies' => $currencyCatalog->handle(),
         ]);
     }
 
@@ -146,11 +148,11 @@ final class PlanOperationsController extends Controller
         return redirect()->route('plans.index')->with('success', 'Promotion archived.');
     }
 
-    public function create(Request $request): Response
+    public function create(Request $request, GetCurrencyCatalog $currencyCatalog): Response
     {
         abort_unless($request->user()?->can('plans.manage') === true, 403);
 
-        return Inertia::render('Plans/Create');
+        return Inertia::render('Plans/Create', ['currencies' => $currencyCatalog->handle()]);
     }
 
     public function store(Request $request, CreatePlan $createPlan): RedirectResponse

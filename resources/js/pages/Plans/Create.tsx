@@ -1,3 +1,4 @@
+import CurrencyCombobox, { type CurrencyOption } from '@/components/ui/currency-combobox';
 import ResponsiveSelect from '@/components/ui/responsive-select';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { ArrowLeft, Save, Tags } from 'lucide-react';
@@ -5,7 +6,7 @@ import { ArrowLeft, Save, Tags } from 'lucide-react';
 import AppLayout from '@/layouts/AppLayout';
 import { currencyFractionDigits, parseMoneyToMinor } from '@/lib/format';
 
-export default function PlanCreate() {
+export default function PlanCreate({ currencies }: { currencies: CurrencyOption[] }) {
     const form = useForm({
         name: '',
         slug: '',
@@ -139,12 +140,12 @@ export default function PlanCreate() {
                         <label className="field-label" htmlFor="currency">
                             Currency
                         </label>
-                        <input
+                        <CurrencyCombobox
                             id="currency"
-                            maxLength={3}
-                            className="field uppercase"
+                            className="field"
                             value={form.data.currency}
-                            onChange={(event) => form.setData('currency', event.target.value.toUpperCase())}
+                            currencies={currencies}
+                            onChange={(value) => form.setData('currency', value)}
                         />
                         {form.errors.currency && <p className="field-error">{form.errors.currency}</p>}
                     </div>

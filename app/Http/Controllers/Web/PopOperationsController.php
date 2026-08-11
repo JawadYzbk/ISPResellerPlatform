@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Web;
 
 use App\Actions\CreateUpstreamLink;
+use App\Actions\GetCurrencyCatalog;
 use App\Actions\GetPopDetails;
 use App\Actions\ListPops;
 use App\Actions\SavePop;
@@ -45,7 +46,7 @@ final class PopOperationsController extends Controller
         ]);
     }
 
-    public function show(Request $request, Pop $pop, GetPopDetails $getDetails): Response
+    public function show(Request $request, Pop $pop, GetPopDetails $getDetails, GetCurrencyCatalog $currencyCatalog): Response
     {
         $user = $request->user();
         abort_unless($user instanceof User && $user->can('network.view'), 403);
@@ -63,6 +64,7 @@ final class PopOperationsController extends Controller
             ],
             'canManage' => $user->can('network.provision'),
             'statuses' => ['active', 'maintenance', 'down', 'decommissioned'],
+            'currencies' => $currencyCatalog->handle(),
         ]);
     }
 

@@ -1,3 +1,4 @@
+import CurrencyCombobox, { type CurrencyOption } from '@/components/ui/currency-combobox';
 import ResponsiveSelect from '@/components/ui/responsive-select';
 import { Head, Link, router, useForm } from '@inertiajs/react';
 import { Archive, ChevronLeft, ChevronRight, Plus, Search, Tags } from 'lucide-react';
@@ -50,9 +51,10 @@ type Props = PageProps & {
     addons: Addon[];
     promotions: Promotion[];
     availablePlans: AvailablePlan[];
+    currencies: CurrencyOption[];
 };
 
-export default function PlansIndex({ plans, filters, addons, promotions, availablePlans }: Props) {
+export default function PlansIndex({ plans, filters, addons, promotions, availablePlans, currencies }: Props) {
     const [search, setSearch] = useState(filters.search ?? '');
     const [status, setStatus] = useState(filters.status ?? '');
     const [selectedPromoPlans, setSelectedPromoPlans] = useState<string[]>([]);
@@ -197,11 +199,12 @@ export default function PlansIndex({ plans, filters, addons, promotions, availab
                         </label>
                         <label>
                             <span className="field-label">Currency</span>
-                            <input
+                            <CurrencyCombobox
+                                id="addon_currency"
                                 className="field uppercase"
-                                maxLength={3}
                                 value={addonForm.data.currency}
-                                onChange={(event) => addonForm.setData('currency', event.target.value.toUpperCase())}
+                                currencies={currencies}
+                                onChange={(value) => addonForm.setData('currency', value)}
                             />
                         </label>
                         <label>

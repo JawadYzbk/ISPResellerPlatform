@@ -1,3 +1,4 @@
+import CurrencyCombobox from '@/components/ui/currency-combobox';
 import ResponsiveSelect from '@/components/ui/responsive-select';
 import { Head, Link, router, useForm } from '@inertiajs/react';
 import { ArrowLeft, CreditCard, QrCode, Receipt, Save } from 'lucide-react';
@@ -198,18 +199,13 @@ export default function PaymentCreate({ customer, invoices, defaultCurrency, pay
                         <label className="field-label" htmlFor="currency">
                             Payment currency
                         </label>
-                        <ResponsiveSelect
+                        <CurrencyCombobox
                             id="currency"
                             className="field"
                             value={form.data.currency}
-                            onChange={(event) => selectCurrency(event.target.value)}
-                        >
-                            {paymentCurrencies.map((currency) => (
-                                <option key={currency.code} value={currency.code}>
-                                    {currency.code} · {currency.name}
-                                </option>
-                            ))}
-                        </ResponsiveSelect>
+                            currencies={paymentCurrencies}
+                            onChange={selectCurrency}
+                        />
                         {selectedRate ? (
                             <p className="mt-1 text-xs text-muted">Current rate: {formatRate(selectedRate)}</p>
                         ) : needsFx ? (

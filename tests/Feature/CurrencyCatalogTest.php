@@ -12,6 +12,7 @@ uses(RefreshDatabase::class);
 it('loads the Frankfurter currency catalog with Lebanon currencies first', function (): void {
     $tenant = Tenant::factory()->create();
     app(Tenancy::class)->set($tenant);
+    config()->set('services.frankfurter.currency_catalog_enabled', true);
     Cache::forget('currency-catalog:'.sha1((string) config('services.frankfurter.endpoint')));
     Http::fake([
         'https://api.frankfurter.dev/v2/currencies' => Http::response([

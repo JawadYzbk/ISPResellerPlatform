@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Web;
 use App\Actions\CreateWhatsAppAccount;
 use App\Actions\DeleteWhatsAppAccount;
 use App\Actions\DisconnectWhatsAppAccount;
+use App\Actions\GetCurrencyCatalog;
 use App\Actions\GetPaymentSetupStatus;
 use App\Actions\GetTenantReadiness;
 use App\Actions\GetWhatsAppSetupStatus;
@@ -14,7 +15,6 @@ use App\Actions\UpdateTenantSettings;
 use App\Actions\UpdateWhatsAppAccount;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\TenantSettingsRequest;
-use App\Models\Currency;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Models\WhatsAppAccount;
@@ -27,24 +27,17 @@ use Inertia\Response;
 
 final class SettingsController extends Controller
 {
-    public function general(Request $request, GetPaymentSetupStatus $paymentStatus, GetWorkspaceSetupSignals $setupSignals): Response
-    {
+    public function general(
+        Request $request,
+        GetPaymentSetupStatus $paymentStatus,
+        GetWorkspaceSetupSignals $setupSignals,
+        GetCurrencyCatalog $currencyCatalog,
+    ): Response {
         $user = $request->user();
         abort_unless($user instanceof User && $user->can('settings.manage'), 403);
         $tenant = Tenant::query()->find($user->tenant_id);
         abort_unless($tenant instanceof Tenant, 403);
         $settings = $tenant->settingsData();
-        $currencies = Currency::query()
-            ->where('is_active', true)
-            ->orderBy('code')
-            ->get(['code', 'name', 'decimal_digits'])
-            ->map(fn (Currency $currency): array => [
-                'code' => $currency->code,
-                'name' => $currency->name,
-                'decimal_digits' => $currency->decimal_digits,
-            ])
-            ->values()
-            ->all();
 
         return Inertia::render('Settings/General', [
             'tenant' => [
@@ -65,7 +58,7 @@ final class SettingsController extends Controller
                 'resolved_ticket_auto_close_hours' => (int) ($settings->settings['resolved_ticket_auto_close_hours'] ?? 72),
                 'radius_interim_interval_seconds' => (int) ($settings->settings['radius_interim_interval_seconds'] ?? 300),
             ],
-            'currencies' => $currencies,
+            'currencies' => $currencyCatalog->handle(),
             'payments' => $paymentStatus->handle(),
             'setup' => $setupSignals->handle($tenant),
         ]);

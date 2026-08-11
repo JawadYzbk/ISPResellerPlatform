@@ -1,3 +1,4 @@
+import CurrencyCombobox, { type CurrencyOption } from '@/components/ui/currency-combobox';
 import { Head, Link, router, useForm } from '@inertiajs/react';
 import { ArrowLeft, ChevronLeft, ChevronRight, Plus, RefreshCw, Scale } from 'lucide-react';
 import { useState } from 'react';
@@ -30,6 +31,7 @@ type Props = PageProps & {
     filters: { base_currency?: string; quote_currency?: string };
     frankfurterEnabled: boolean;
     workspaceCurrencies: { base: string | null; collection: string | null };
+    currencies: CurrencyOption[];
 };
 
 function Pagination({ rates }: { rates: Paginator<ExchangeRate> }) {
@@ -72,7 +74,13 @@ function Pagination({ rates }: { rates: Paginator<ExchangeRate> }) {
     );
 }
 
-export default function ExchangeRatesPage({ rates, filters, frankfurterEnabled, workspaceCurrencies }: Props) {
+export default function ExchangeRatesPage({
+    rates,
+    filters,
+    frankfurterEnabled,
+    workspaceCurrencies,
+    currencies,
+}: Props) {
     const [baseCurrency, setBaseCurrency] = useState(filters.base_currency ?? '');
     const [quoteCurrency, setQuoteCurrency] = useState(filters.quote_currency ?? '');
     const form = useForm<RateForm>({
@@ -165,23 +173,23 @@ export default function ExchangeRatesPage({ rates, filters, frankfurterEnabled, 
                 <div className="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
                     <label>
                         <span className="field-label">Base currency</span>
-                        <input
+                        <CurrencyCombobox
+                            id="base_currency"
                             className="field"
-                            maxLength={3}
                             value={form.data.base_currency}
-                            onChange={(event) => form.setData('base_currency', event.target.value.toUpperCase())}
-                            placeholder="USD"
+                            currencies={currencies}
+                            onChange={(value) => form.setData('base_currency', value)}
                         />
                         {form.errors.base_currency && <p className="field-error">{form.errors.base_currency}</p>}
                     </label>
                     <label>
                         <span className="field-label">Quote currency</span>
-                        <input
+                        <CurrencyCombobox
+                            id="quote_currency"
                             className="field"
-                            maxLength={3}
                             value={form.data.quote_currency}
-                            onChange={(event) => form.setData('quote_currency', event.target.value.toUpperCase())}
-                            placeholder="LBP"
+                            currencies={currencies}
+                            onChange={(value) => form.setData('quote_currency', value)}
                         />
                         {form.errors.quote_currency && <p className="field-error">{form.errors.quote_currency}</p>}
                     </label>
@@ -241,22 +249,24 @@ export default function ExchangeRatesPage({ rates, filters, frankfurterEnabled, 
             <form onSubmit={applyFilters} className="card mt-6 flex flex-col gap-4 p-5 sm:flex-row sm:items-end">
                 <label className="block sm:min-w-48">
                     <span className="field-label">Base currency</span>
-                    <input
+                    <CurrencyCombobox
+                        id="filter_base_currency"
                         className="field"
-                        maxLength={3}
                         value={baseCurrency}
-                        onChange={(event) => setBaseCurrency(event.target.value)}
-                        placeholder="All"
+                        currencies={currencies}
+                        emptyLabel="All currencies"
+                        onChange={setBaseCurrency}
                     />
                 </label>
                 <label className="block sm:min-w-48">
                     <span className="field-label">Quote currency</span>
-                    <input
+                    <CurrencyCombobox
+                        id="filter_quote_currency"
                         className="field"
-                        maxLength={3}
                         value={quoteCurrency}
-                        onChange={(event) => setQuoteCurrency(event.target.value)}
-                        placeholder="All"
+                        currencies={currencies}
+                        emptyLabel="All currencies"
+                        onChange={setQuoteCurrency}
                     />
                 </label>
                 <button type="submit" className="button-secondary">

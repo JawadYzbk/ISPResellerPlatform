@@ -1,3 +1,4 @@
+import CurrencyCombobox, { type CurrencyOption } from '@/components/ui/currency-combobox';
 import ResponsiveSelect from '@/components/ui/responsive-select';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { ArrowLeft, ExternalLink, Network, Plus, Router as RouterIcon } from 'lucide-react';
@@ -30,9 +31,10 @@ type Props = {
     pop: Pop;
     canManage: boolean;
     statuses: Status[];
+    currencies: CurrencyOption[];
 };
 
-export default function PopShowPage({ pop, canManage, statuses }: Props) {
+export default function PopShowPage({ pop, canManage, statuses, currencies }: Props) {
     const popForm = useForm({ name: pop.name, code: pop.code, address: pop.address ?? '', status: pop.status });
     const linkForm = useForm({
         provider_name: '',
@@ -213,11 +215,12 @@ export default function PopShowPage({ pop, canManage, statuses }: Props) {
                                 </label>
                                 <label>
                                     <span className="field-label">Currency</span>
-                                    <input
+                                    <CurrencyCombobox
+                                        id="upstream_currency"
                                         className="field uppercase"
-                                        maxLength={3}
                                         value={linkForm.data.currency}
-                                        onChange={(event) => linkForm.setData('currency', event.target.value)}
+                                        currencies={currencies}
+                                        onChange={(value) => linkForm.setData('currency', value)}
                                     />
                                     {linkForm.errors.currency && (
                                         <p className="field-error">{linkForm.errors.currency}</p>

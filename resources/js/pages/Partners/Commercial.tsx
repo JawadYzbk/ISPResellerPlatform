@@ -1,3 +1,4 @@
+import CurrencyCombobox, { type CurrencyOption } from '@/components/ui/currency-combobox';
 import ResponsiveSelect from '@/components/ui/responsive-select';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { ArrowLeft, BookOpen, Plus, WalletCards } from 'lucide-react';
@@ -35,9 +36,18 @@ type Props = PageProps & {
     settlements: Settlement[];
     showCost: boolean;
     canManage: boolean;
+    currencies: CurrencyOption[];
 };
 
-export default function Commercial({ partners, selectedPartner, catalog, settlements, showCost, canManage }: Props) {
+export default function Commercial({
+    partners,
+    selectedPartner,
+    catalog,
+    settlements,
+    showCost,
+    canManage,
+    currencies,
+}: Props) {
     const form = useForm({
         name: '',
         code: '',
@@ -120,11 +130,12 @@ export default function Commercial({ partners, selectedPartner, catalog, settlem
                         </label>
                         <label>
                             <span className="field-label">Currency</span>
-                            <input
+                            <CurrencyCombobox
+                                id="partner_currency"
                                 className="field uppercase"
-                                maxLength={3}
                                 value={form.data.currency}
-                                onChange={(event) => form.setData('currency', event.target.value.toUpperCase())}
+                                currencies={currencies}
+                                onChange={(value) => form.setData('currency', value)}
                             />
                             {form.errors.currency && <span className="field-error">{form.errors.currency}</span>}
                         </label>

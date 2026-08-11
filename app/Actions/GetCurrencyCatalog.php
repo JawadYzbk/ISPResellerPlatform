@@ -14,11 +14,13 @@ final class GetCurrencyCatalog
     /** @return list<array{code: string, name: string, decimal_digits: int}> */
     public function handle(): array
     {
-        $catalog = Cache::remember(
-            $this->cacheKey(),
-            now()->addDay(),
-            fn (): array => $this->fetchCatalog(),
-        );
+        $catalog = (bool) config('services.frankfurter.currency_catalog_enabled', true)
+            ? Cache::remember(
+                $this->cacheKey(),
+                now()->addDay(),
+                fn (): array => $this->fetchCatalog(),
+            )
+            : $this->fallbackCatalog();
 
         foreach (Currency::query()->where('is_active', true)->get(['code', 'name', 'decimal_digits']) as $currency) {
             $code = strtoupper((string) $currency->code);

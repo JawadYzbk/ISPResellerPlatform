@@ -20,6 +20,7 @@ abstract class TestCase extends BaseTestCase
             'SESSION_DRIVER' => 'array',
             'WHATSAPP_PROVIDER' => 'cloud',
             'WHATSAPP_WEB_ENABLED' => 'false',
+            'FRANKFURTER_CURRENCY_CATALOG_ENABLED' => 'false',
         ] as $key => $value) {
             putenv($key.'='.$value);
             $_ENV[$key] = $value;

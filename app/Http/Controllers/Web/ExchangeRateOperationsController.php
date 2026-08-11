@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Web;
 
 use App\Actions\CreateExchangeRate;
+use App\Actions\GetCurrencyCatalog;
 use App\Actions\ImportFrankfurterExchangeRates;
 use App\Actions\ListExchangeRates;
 use App\Http\Controllers\Controller;
@@ -19,7 +20,7 @@ use Inertia\Response;
 
 final class ExchangeRateOperationsController extends Controller
 {
-    public function index(Request $request, ListExchangeRates $listRates): Response
+    public function index(Request $request, ListExchangeRates $listRates, GetCurrencyCatalog $currencyCatalog): Response
     {
         $user = $request->user();
         abort_unless($user instanceof User && $user->can('settings.manage'), 403);
@@ -53,6 +54,7 @@ final class ExchangeRateOperationsController extends Controller
                 'base' => $tenant instanceof Tenant ? $tenant->base_currency : null,
                 'collection' => $tenant instanceof Tenant ? $tenant->collection_currency : null,
             ],
+            'currencies' => $currencyCatalog->handle(),
         ]);
     }
 

@@ -21,6 +21,7 @@ type CurrencyComboboxProps = {
     'aria-label'?: string;
     className?: string;
     disabled?: boolean;
+    emptyLabel?: string;
 };
 
 export default function CurrencyCombobox({
@@ -31,6 +32,7 @@ export default function CurrencyCombobox({
     'aria-label': ariaLabel,
     className,
     disabled = false,
+    emptyLabel,
 }: CurrencyComboboxProps) {
     const isMobile = useMediaQuery('(max-width: 767px)');
     const [open, setOpen] = useState(false);
@@ -58,6 +60,7 @@ export default function CurrencyCombobox({
                 value={value}
                 onChange={(event) => onChange(event.target.value)}
             >
+                {emptyLabel && <option value="">{emptyLabel}</option>}
                 {currencies.map((currency) => (
                     <option key={currency.code} value={currency.code}>
                         {currency.code} — {currency.name}
@@ -86,7 +89,7 @@ export default function CurrencyCombobox({
                     className={cn('field flex items-center justify-between gap-2 text-start', className)}
                 >
                     <span className="min-w-0 truncate">
-                        {selected ? `${selected.code} — ${selected.name}` : 'Select a currency'}
+                        {selected ? `${selected.code} — ${selected.name}` : (emptyLabel ?? 'Select a currency')}
                     </span>
                     <ChevronsUpDown className="size-4 shrink-0 opacity-60" />
                 </button>
@@ -102,6 +105,25 @@ export default function CurrencyCombobox({
                     <CommandList>
                         <CommandEmpty>No matching currencies.</CommandEmpty>
                         <CommandGroup>
+                            {emptyLabel && (
+                                <CommandItem
+                                    value="__empty__"
+                                    onPointerDown={(event) => {
+                                        if (event.pointerType === 'mouse') {
+                                            event.preventDefault();
+                                            onChange('');
+                                            setOpen(false);
+                                        }
+                                    }}
+                                    onSelect={() => {
+                                        onChange('');
+                                        setOpen(false);
+                                    }}
+                                >
+                                    <Check className={cn('me-2 size-4', value === '' ? 'opacity-100' : 'opacity-0')} />
+                                    {emptyLabel}
+                                </CommandItem>
+                            )}
                             {filtered.map((currency) => (
                                 <CommandItem
                                     key={currency.code}

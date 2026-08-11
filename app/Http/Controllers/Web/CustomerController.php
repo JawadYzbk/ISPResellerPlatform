@@ -8,6 +8,7 @@ use App\Actions\CreateRenewalInvoice;
 use App\Actions\CreateWhishPaymentAttempt;
 use App\Actions\DeleteCustomerView;
 use App\Actions\ExportCustomersCsv;
+use App\Actions\GetCurrencyCatalog;
 use App\Actions\GetCustomerDetails;
 use App\Actions\GetCustomerPaymentGrid;
 use App\Actions\ListCustomers;
@@ -114,7 +115,7 @@ final class CustomerController extends Controller
         return redirect()->route('customers.show', $customer->public_id)->with('success', 'Customer document uploaded.');
     }
 
-    public function createPayment(Request $request, Customer $customer, FxConverter $fx): Response
+    public function createPayment(Request $request, Customer $customer, FxConverter $fx, GetCurrencyCatalog $currencyCatalog): Response
     {
         $this->authorize('view', $customer);
         $user = $request->user();
@@ -146,11 +147,16 @@ final class CustomerController extends Controller
             ->filter(fn (array $invoice): bool => $invoice['outstanding_amount'] > 0)
             ->values();
 
+        $catalog = collect($currencyCatalog->handle())->keyBy('code');
+        $priority = ['USD' => 0, 'EUR' => 1, 'LBP' => 2];
         $paymentCurrencies = Currency::query()
             ->where('is_active', true)
             ->orderBy('code')
             ->get(['code', 'name', 'decimal_digits'])
-            ->map(function (Currency $currency) use ($customer, $fx): array {
+            ->sortBy(fn (Currency $currency): int => $priority[$currency->code] ?? 100)
+            ->values()
+            ->map(function (Currency $currency) use ($catalog, $customer, $fx): array {
+                $catalogCurrency = $catalog->get($currency->code);
                 $rate = null;
                 try {
                     $rate = $fx->snapshot($currency->code, $customer->balance_currency, now()->toImmutable(), requireFresh: true);
@@ -160,8 +166,8 @@ final class CustomerController extends Controller
 
                 return [
                     'code' => $currency->code,
-                    'name' => $currency->name,
-                    'decimal_digits' => $currency->decimal_digits,
+                    'name' => $catalogCurrency['name'] ?? $currency->name,
+                    'decimal_digits' => $catalogCurrency['decimal_digits'] ?? $currency->decimal_digits,
                     'rate' => $rate?->toArray(),
                 ];
             })

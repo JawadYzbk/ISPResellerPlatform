@@ -53,7 +53,7 @@ final class TenantProvisioner
                 Currency::updateOrCreate(
                     ['code' => $code],
                     [
-                        'name' => $code,
+                        'name' => $this->currencyName($code),
                         'decimal_digits' => $this->decimalDigits($code),
                         ...$flags,
                         'is_active' => true,
@@ -80,5 +80,15 @@ final class TenantProvisioner
     private function decimalDigits(string $currency): int
     {
         return strtoupper($currency) === 'LBP' ? 0 : 2;
+    }
+
+    private function currencyName(string $currency): string
+    {
+        return match (strtoupper($currency)) {
+            'USD' => 'United States Dollar',
+            'EUR' => 'Euro',
+            'LBP' => 'Lebanese Pound',
+            default => strtoupper($currency),
+        };
     }
 }
