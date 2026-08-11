@@ -91,7 +91,7 @@ For the production-shaped PHP-FPM/Nginx topology, use the release procedure in [
 ```powershell
 vendor/bin/pint --test
 vendor/bin/phpstan analyse --no-progress
-php artisan test
+composer test
 npm run format:check
 npm run typecheck
 npm run build
