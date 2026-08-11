@@ -136,14 +136,34 @@ final class MessageTemplateProvisioner
         ],
     ];
 
+    /** @return list<string> */
+    public function expectedTemplateKeys(): array
+    {
+        return array_keys(self::DEFAULT_TEMPLATES);
+    }
+
+    /** @return list<string> */
+    public function supportedChannels(): array
+    {
+        return self::CHANNELS;
+    }
+
+    public function resolveLocale(Tenant $tenant): string
+    {
+        $requestedLocale = strtolower((string) ($tenant->locale ?: 'en'));
+
+        return in_array($requestedLocale, self::SUPPORTED_LOCALES, true) ? $requestedLocale : 'en';
+    }
+
     public function provision(Tenant $tenant, ?string $templateKey = null, ?string $channel = null, ?string $locale = null): void
     {
         app(Tenancy::class)->run($tenant, function () use ($tenant, $templateKey, $channel, $locale): void {
             $tenantId = app(Tenancy::class)->requireId();
             $timestamp = now();
             $templates = [];
-            $requestedLocale = strtolower((string) ($locale ?? ($tenant->locale ?: 'en')));
-            $resolvedLocale = in_array($requestedLocale, self::SUPPORTED_LOCALES, true) ? $requestedLocale : 'en';
+            $resolvedLocale = $locale === null
+                ? $this->resolveLocale($tenant)
+                : (in_array(strtolower($locale), self::SUPPORTED_LOCALES, true) ? strtolower($locale) : 'en');
             $definitions = $templateKey === null
                 ? self::DEFAULT_TEMPLATES
                 : (array_key_exists($templateKey, self::DEFAULT_TEMPLATES) ? [$templateKey => self::DEFAULT_TEMPLATES[$templateKey]] : []);

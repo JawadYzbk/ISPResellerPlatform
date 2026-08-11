@@ -6,10 +6,12 @@ use App\Actions\GetWhatsAppSetupStatus;
 use App\Models\Branch;
 use App\Models\Currency;
 use App\Models\ExchangeRate;
+use App\Models\MessageTemplate;
 use App\Models\Plan;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Models\Zone;
+use App\Support\MessageTemplateProvisioner;
 use App\Support\Tenancy;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Storage;
@@ -24,8 +26,11 @@ final class TenantReadinessCommand extends Command
 
     protected $description = 'Check whether a tenant is ready for a supervised pilot handoff.';
 
-    public function handle(Tenancy $tenancy, GetWhatsAppSetupStatus $whatsappStatus): int
-    {
+    public function handle(
+        Tenancy $tenancy,
+        GetWhatsAppSetupStatus $whatsappStatus,
+        MessageTemplateProvisioner $templateProvisioner,
+    ): int {
         $identifier = (string) $this->argument('tenant');
         $tenant = Tenant::query()
             ->where('slug', $identifier)
@@ -39,7 +44,7 @@ final class TenantReadinessCommand extends Command
         }
 
         /** @var array<string, array{status: 'PASS'|'WARN'|'FAIL', detail: string}> $checks */
-        $checks = $tenancy->run($tenant, fn (): array => $this->checksFor($tenant, $whatsappStatus));
+        $checks = $tenancy->run($tenant, fn (): array => $this->checksFor($tenant, $whatsappStatus, $templateProvisioner));
         $hasFailures = collect($checks)->contains(fn (array $check): bool => $check['status'] === 'FAIL');
         $hasWarnings = collect($checks)->contains(fn (array $check): bool => $check['status'] === 'WARN');
         $strict = (bool) $this->option('strict');
@@ -78,8 +83,11 @@ final class TenantReadinessCommand extends Command
     }
 
     /** @return array<string, array{status: 'PASS'|'WARN'|'FAIL', detail: string}> */
-    private function checksFor(Tenant $tenant, GetWhatsAppSetupStatus $whatsappStatus): array
-    {
+    private function checksFor(
+        Tenant $tenant,
+        GetWhatsAppSetupStatus $whatsappStatus,
+        MessageTemplateProvisioner $templateProvisioner,
+    ): array {
         $baseCurrency = strtoupper((string) $tenant->base_currency);
         $collectionCurrency = strtoupper((string) $tenant->collection_currency);
         $now = now($tenant->timezone);
@@ -134,12 +142,43 @@ final class TenantReadinessCommand extends Command
                 $hasActivePlanPrice ? 'PASS' : 'FAIL',
                 $hasActivePlanPrice ? 'An active plan has an effective '.$baseCurrency.' price.' : 'Create an active plan with an effective '.$baseCurrency.' price.',
             ),
+            'Notification templates' => $this->notificationTemplateCheck($tenant, $templateProvisioner),
             'Tenant logo' => $this->tenantLogoCheck($tenant),
             'Cash collection' => $this->check('PASS', 'Cash collection is available to authorized staff.'),
             'Stripe gateway' => $this->stripeCheck(),
             'Whish Pay gateway' => $this->whishCheck(),
             'WhatsApp channel' => $this->whatsappCheck($whatsappStatus),
         ];
+    }
+
+    /** @return array{status: 'PASS'|'WARN'|'FAIL', detail: string} */
+    private function notificationTemplateCheck(Tenant $tenant, MessageTemplateProvisioner $templateProvisioner): array
+    {
+        $locale = $templateProvisioner->resolveLocale($tenant);
+        $expected = [];
+
+        foreach ($templateProvisioner->expectedTemplateKeys() as $key) {
+            foreach ($templateProvisioner->supportedChannels() as $channel) {
+                $expected[] = $key.'::'.$channel;
+            }
+        }
+
+        $actual = MessageTemplate::query()
+            ->where('locale', $locale)
+            ->where('is_active', true)
+            ->whereIn('key', $templateProvisioner->expectedTemplateKeys())
+            ->whereIn('channel', $templateProvisioner->supportedChannels())
+            ->get(['key', 'channel'])
+            ->map(fn (MessageTemplate $template): string => $template->key.'::'.$template->channel)
+            ->all();
+        $missing = array_values(array_diff($expected, $actual));
+
+        return $this->check(
+            $missing === [] ? 'PASS' : 'WARN',
+            $missing === []
+                ? 'All '.count($expected).' active '.$locale.' notification templates are provisioned.'
+                : count($missing).' active '.$locale.' notification template(s) are missing; run php artisan db:seed --class=CapabilitySeeder.',
+        );
     }
 
     /** @return array{status: 'PASS'|'WARN'|'FAIL', detail: string} */

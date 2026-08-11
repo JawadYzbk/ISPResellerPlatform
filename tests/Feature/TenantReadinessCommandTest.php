@@ -1,8 +1,10 @@
 <?php
 
+use App\Models\MessageTemplate;
 use App\Models\Plan;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Support\MessageTemplateProvisioner;
 use App\Support\Tenancy;
 use Illuminate\Console\Command;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -48,7 +50,20 @@ it('reports a tenant readiness checklist and allows optional integration warning
     $this->artisan('platform:tenant-readiness', ['tenant' => $tenant->slug])
         ->assertExitCode(Command::SUCCESS)
         ->expectsOutputToContain('Tenant readiness passed with warnings.')
+        ->expectsOutputToContain('Notification templates')
         ->expectsOutputToContain('Tenant logo');
+});
+
+it('passes the notification template check after localized defaults are provisioned', function (): void {
+    $tenant = Tenant::factory()->create(['slug' => 'templates-ready-tenant']);
+
+    app(MessageTemplateProvisioner::class)->provision($tenant);
+
+    expect(app(Tenancy::class)->run($tenant, fn (): int => MessageTemplate::query()->count()))->toBe(27);
+
+    $this->artisan('platform:tenant-readiness', ['tenant' => $tenant->slug])
+        ->assertExitCode(Command::FAILURE)
+        ->expectsOutputToContain('All 27 active en notification templates are provisioned.');
 });
 
 it('fails owner readiness when the assigned role has lost critical capabilities', function (): void {
