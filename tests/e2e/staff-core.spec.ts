@@ -377,6 +377,74 @@ test.describe('staff core journeys', () => {
         await page.context().setOffline(false);
     });
 
+    test('attempts a restored field payment queue when the desk reopens online', async ({ page }) => {
+        await signIn(page);
+        await page.goto('/field');
+        await expect(page.getByRole('heading', { name: 'Collector desk' })).toBeVisible();
+
+        await page.waitForFunction(
+            () =>
+                new Promise<boolean>((resolve) => {
+                    const request = indexedDB.open('isp-manager-field', 1);
+                    request.onerror = () => resolve(false);
+                    request.onsuccess = () => {
+                        const read = request.result.transaction('state', 'readonly').objectStore('state').getAll();
+                        read.onerror = () => resolve(false);
+                        read.onsuccess = () => resolve(read.result.length > 0);
+                    };
+                }),
+        );
+
+        const fieldState = await page.evaluate(
+            () =>
+                new Promise<Record<string, unknown>>((resolve, reject) => {
+                    const request = indexedDB.open('isp-manager-field', 1);
+                    request.onerror = () => reject(request.error);
+                    request.onsuccess = () => {
+                        const read = request.result.transaction('state', 'readonly').objectStore('state').getAll();
+                        read.onerror = () => reject(read.error);
+                        read.onsuccess = () => resolve(read.result[0]);
+                    };
+                }),
+        );
+
+        await page.evaluate(
+            (state) =>
+                new Promise<void>((resolve, reject) => {
+                    const request = indexedDB.open('isp-manager-field', 1);
+                    request.onerror = () => reject(request.error);
+                    request.onsuccess = () => {
+                        const database = request.result;
+                        const transaction = database.transaction('state', 'readwrite');
+                        const store = transaction.objectStore('state');
+                        const put = store.put({
+                            ...state,
+                            pending: [
+                                {
+                                    customer_id: (state.cached_snapshot as { customers: { id: string }[] }).customers[0]
+                                        .id,
+                                    amount: 1,
+                                    currency: (state.cached_snapshot as { default_currency: string }).default_currency,
+                                    method: 'cash',
+                                    idempotency_key: `e2e-reopen-${Date.now()}`,
+                                },
+                            ],
+                        });
+                        put.onerror = () => reject(put.error);
+                        put.onsuccess = () => resolve();
+                    };
+                }),
+            fieldState,
+        );
+
+        const pushRequest = page.waitForRequest(
+            (request) => request.url().endsWith('/field/push') && request.method() === 'POST',
+        );
+        await page.reload();
+        await expect(page.getByRole('heading', { name: 'Collector desk' })).toBeVisible();
+        expect((await pushRequest).postDataJSON().items).toHaveLength(1);
+    });
+
     test('renders the workspace in right-to-left mode when configured', async ({ page }) => {
         test.setTimeout(60_000);
         await signIn(page);

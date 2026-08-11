@@ -83,6 +83,7 @@ export default function FieldIndex({ snapshot, shift, summary, currencies, defau
     const [busy, setBusy] = useState(false);
     const [message, setMessage] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
+    const [hydrated, setHydrated] = useState(false);
 
     const selectedCustomer = customers.find((customer) => customer.id === selectedCustomerId) ?? null;
     const selectedCurrency = currencyOptions.find((item) => item.code === currency);
@@ -154,52 +155,55 @@ export default function FieldIndex({ snapshot, shift, summary, currencies, defau
         }
     }, [customers, online, pending, persist, syncToken]);
 
-    const pushQueue = useCallback(async () => {
-        if (!online || pending.length === 0) return;
+    const pushQueue = useCallback(
+        async (queue = pending) => {
+            if (!online || queue.length === 0) return;
 
-        setBusy(true);
-        setError(null);
-        try {
-            const response = await fetch('/field/push', {
-                method: 'POST',
-                credentials: 'same-origin',
-                headers: {
-                    Accept: 'application/json',
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': csrfToken(),
-                    'X-Requested-With': 'XMLHttpRequest',
-                },
-                body: JSON.stringify({
-                    items: pending.map((item) => {
-                        const cleanItem = { ...item };
-                        delete cleanItem.last_error;
-                        return cleanItem;
+            setBusy(true);
+            setError(null);
+            try {
+                const response = await fetch('/field/push', {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: {
+                        Accept: 'application/json',
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken(),
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
+                    body: JSON.stringify({
+                        items: queue.map((item) => {
+                            const cleanItem = { ...item };
+                            delete cleanItem.last_error;
+                            return cleanItem;
+                        }),
                     }),
-                }),
-            });
-            const body = (await response.json()) as { results?: SyncResult[] };
-            if (!response.ok || !Array.isArray(body.results))
-                throw new Error('Queued payments could not be synchronized.');
+                });
+                const body = (await response.json()) as { results?: SyncResult[] };
+                if (!response.ok || !Array.isArray(body.results))
+                    throw new Error('Queued payments could not be synchronized.');
 
-            const results = body.results;
-            const remaining = pending.flatMap((item, index) => {
-                const result = results.find((candidate) => candidate.index === index);
-                return result?.status === 'created' || result?.status === 'replayed'
-                    ? []
-                    : [{ ...item, last_error: result?.error ?? 'Payment was not accepted yet.' }];
-            });
-            await persist(remaining);
-            setMessage(
-                remaining.length === 0
-                    ? 'All queued payments were synchronized.'
-                    : 'Some payments remain queued for review.',
-            );
-        } catch (caught) {
-            setError(caught instanceof Error ? caught.message : 'Queued payments could not be synchronized.');
-        } finally {
-            setBusy(false);
-        }
-    }, [online, pending, persist]);
+                const results = body.results;
+                const remaining = queue.flatMap((item, index) => {
+                    const result = results.find((candidate) => candidate.index === index);
+                    return result?.status === 'created' || result?.status === 'replayed'
+                        ? []
+                        : [{ ...item, last_error: result?.error ?? 'Payment was not accepted yet.' }];
+                });
+                await persist(remaining);
+                setMessage(
+                    remaining.length === 0
+                        ? 'All queued payments were synchronized.'
+                        : 'Some payments remain queued for review.',
+                );
+            } catch (caught) {
+                setError(caught instanceof Error ? caught.message : 'Queued payments could not be synchronized.');
+            } finally {
+                setBusy(false);
+            }
+        },
+        [online, pending, persist],
+    );
 
     useEffect(() => {
         let mounted = true;
@@ -237,6 +241,8 @@ export default function FieldIndex({ snapshot, shift, summary, currencies, defau
                     cached_snapshot: cachedSnapshot,
                 });
             }
+
+            setHydrated(true);
         });
 
         const markOnline = () => setOnline(true);
@@ -252,15 +258,19 @@ export default function FieldIndex({ snapshot, shift, summary, currencies, defau
     }, [currencies, defaultCurrency, snapshot, storageKey]);
 
     const wasOnline = useRef(online);
+    const initialSyncStarted = useRef(false);
 
     useEffect(() => {
         const becameOnline = online && !wasOnline.current;
         wasOnline.current = online;
-        if (!becameOnline || pending.length === 0) return;
+        if (!hydrated || !online || pending.length === 0) return;
+        if (!becameOnline && initialSyncStarted.current) return;
+
+        initialSyncStarted.current = true;
 
         const timer = window.setTimeout(() => void pushQueue(), 0);
         return () => window.clearTimeout(timer);
-    }, [online, pending.length, pushQueue]);
+    }, [hydrated, online, pending.length, pushQueue]);
 
     const queuePayment = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -290,7 +300,7 @@ export default function FieldIndex({ snapshot, shift, summary, currencies, defau
                 : 'Payment saved on this device. It will synchronize when you are back online.',
         );
         setError(null);
-        if (online) void pushQueue();
+        if (online) void pushQueue([...pending, item]);
     };
 
     const clearDeviceData = async () => {
