@@ -30,7 +30,7 @@ export default function GeneralSettings({ tenant, settings, payments }: Props) {
 
     const submit = (event: React.FormEvent) => {
         event.preventDefault();
-        form.put('/settings/general', { forceFormData: true });
+        form.put('/settings/general', { forceFormData: form.data.logo !== null });
     };
 
     return (

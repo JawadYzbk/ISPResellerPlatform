@@ -278,7 +278,6 @@ export default function AppLayout({ children }: PropsWithChildren) {
                                     <Link
                                         href="/profile"
                                         role="menuitem"
-                                        onClick={() => setAccountOpen(false)}
                                         className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold hover:bg-sand"
                                     >
                                         <UserRound size={16} className="text-brand" /> Profile
@@ -286,7 +285,6 @@ export default function AppLayout({ children }: PropsWithChildren) {
                                     <Link
                                         href="/security/sessions"
                                         role="menuitem"
-                                        onClick={() => setAccountOpen(false)}
                                         className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold hover:bg-sand"
                                     >
                                         <KeyRound size={16} className="text-brand" /> Active sessions
@@ -295,7 +293,6 @@ export default function AppLayout({ children }: PropsWithChildren) {
                                         <Link
                                             href="/settings/general"
                                             role="menuitem"
-                                            onClick={() => setAccountOpen(false)}
                                             className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold hover:bg-sand"
                                         >
                                             <Wrench size={16} className="text-brand" /> Workspace settings

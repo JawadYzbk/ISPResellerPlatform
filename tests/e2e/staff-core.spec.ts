@@ -57,6 +57,7 @@ test.describe('staff core journeys', () => {
 
     test('opens the profile menu and notifications center from the header', async ({ page }) => {
         await signIn(page);
+        await expect(page.getByRole('heading', { name: 'Your operations at a glance.' })).toBeVisible();
 
         await page.getByRole('button', { name: 'Open account menu' }).click();
         await page.getByRole('menuitem', { name: 'Profile' }).click();
