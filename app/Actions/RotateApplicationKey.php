@@ -59,7 +59,6 @@ final readonly class RotateApplicationKey implements Action
             ['table' => 'services', 'column' => 'password_encrypted', 'json' => false],
             ['table' => 'routers', 'column' => 'password_encrypted', 'json' => false],
             ['table' => 'routers', 'column' => 'radius_secret_encrypted', 'json' => false],
-            ['table' => 'radius_nas', 'column' => 'secret', 'json' => false],
             ['table' => 'upstream_credentials', 'column' => 'secret', 'json' => false],
             ['table' => 'users', 'column' => 'two_factor_secret', 'json' => false],
             ['table' => 'users', 'column' => 'two_factor_recovery_codes', 'json' => true],

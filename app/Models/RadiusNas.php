@@ -10,15 +10,15 @@ class RadiusNas extends Model
 {
     use BelongsToTenant;
 
-    protected $table = 'radius_nas';
+    protected $table = 'nas';
 
-    protected $fillable = ['tenant_id', 'nasname', 'shortname', 'secret', 'coa_port'];
+    protected $fillable = ['tenant_id', 'nasname', 'shortname', 'type', 'ports', 'secret', 'server', 'community', 'description', 'coa_port'];
 
     protected $hidden = ['secret'];
 
     protected function casts(): array
     {
-        return ['secret' => 'encrypted', 'coa_port' => 'integer'];
+        return ['coa_port' => 'integer', 'ports' => 'integer'];
     }
 
     /** @return BelongsTo<Tenant, $this> */

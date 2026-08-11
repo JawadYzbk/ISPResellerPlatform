@@ -10,7 +10,7 @@ class RadiusUser extends Model
 {
     use BelongsToTenant;
 
-    protected $table = 'radius_users';
+    protected $table = 'radcheck';
 
     protected $fillable = ['tenant_id', 'service_id', 'username', 'attribute', 'op', 'value'];
 

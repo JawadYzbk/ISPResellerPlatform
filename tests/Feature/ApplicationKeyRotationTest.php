@@ -48,13 +48,13 @@ it('rotates router and FreeRADIUS shared secrets', function (): void {
 
     $this->artisan('security:rotate-app-key', ['--new-key' => $newKey])
         ->assertExitCode(0)
-        ->expectsOutputToContain('Re-encrypted 3 secret record(s).');
+        ->expectsOutputToContain('Re-encrypted 2 secret record(s).');
 
     $bytes = base64_decode(substr($newKey, 7), true);
     expect($bytes)->toBeString();
     $newEncrypter = new Encrypter($bytes, 'AES-256-CBC');
     $routerRow = DB::table('routers')->where('id', $router->id)->first();
-    $nasRow = DB::table('radius_nas')->where('id', $nas->id)->first();
+    $nasRow = DB::table('nas')->where('id', $nas->id)->first();
     expect($newEncrypter->decrypt($routerRow->radius_secret_encrypted, false))->toBe('router-radius-secret')
-        ->and($newEncrypter->decrypt($nasRow->secret, false))->toBe('nas-radius-secret');
+        ->and($nasRow->secret)->toBe('nas-radius-secret');
 });

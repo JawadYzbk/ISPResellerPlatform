@@ -38,18 +38,28 @@ final class RadiusSyncService
         });
     }
 
-    public function syncRouter(Router $router): RadiusNas
+    public function syncRouter(Router $router): ?RadiusNas
     {
-        return DB::transaction(fn (): RadiusNas => $this->syncRouterRecord($router));
+        return DB::transaction(fn (): ?RadiusNas => $this->syncRouterRecord($router));
     }
 
-    private function syncRouterRecord(Router $router): RadiusNas
+    private function syncRouterRecord(Router $router): ?RadiusNas
     {
+        if (blank($router->radius_secret_encrypted)) {
+            RadiusNas::query()
+                ->where('tenant_id', $router->tenant_id)
+                ->where('nasname', $router->host)
+                ->delete();
+
+            return null;
+        }
+
         return RadiusNas::updateOrCreate(
             ['tenant_id' => $router->tenant_id, 'nasname' => $router->host],
             [
                 'shortname' => $router->name,
                 'secret' => $router->radius_secret_encrypted,
+                'type' => 'other',
                 'coa_port' => $router->coa_port,
             ],
         );

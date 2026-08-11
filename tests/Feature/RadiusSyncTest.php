@@ -13,8 +13,15 @@ use App\Models\Service;
 use App\Models\Tenant;
 use App\Support\Tenancy;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Schema;
 
 uses(RefreshDatabase::class);
+
+it('keeps the FreeRADIUS integration on stock SQL table names', function (): void {
+    foreach (['radcheck', 'radreply', 'radgroupcheck', 'radgroupreply', 'radusergroup', 'radacct', 'radpostauth', 'nas'] as $table) {
+        expect(Schema::hasTable($table))->toBeTrue();
+    }
+});
 
 it('writes deterministic FreeRADIUS rows from a service plan and status', function (): void {
     $tenant = Tenant::create(['name' => 'Northline', 'slug' => 'northline', 'base_currency' => 'USD', 'collection_currency' => 'USD']);
@@ -42,7 +49,24 @@ it('synchronizes radius state when a radius service transitions', function (): v
     expect(RadiusUserGroup::firstOrFail()->groupname)->toBe('plan-'.$service->plan_id);
 });
 
-it('populates encrypted FreeRADIUS NAS records from router lifecycle changes', function (): void {
+it('does not publish a NAS without a configured RADIUS shared secret', function (): void {
+    $tenant = Tenant::create(['name' => 'Eastline', 'slug' => 'eastline', 'base_currency' => 'USD', 'collection_currency' => 'USD']);
+    app(Tenancy::class)->set($tenant);
+
+    app(CreateRouter::class)->handle([
+        'name' => 'API-only router',
+        'host' => 'api.example.test',
+        'api_port' => 8729,
+        'username' => 'api',
+        'password' => 'router-secret',
+        'coa_port' => 1700,
+        'tls_verify' => true,
+    ], $tenant);
+
+    expect(RadiusNas::query()->count())->toBe(0);
+});
+
+it('populates stock FreeRADIUS NAS records from router lifecycle changes', function (): void {
     $tenant = Tenant::create(['name' => 'Westline', 'slug' => 'westline', 'base_currency' => 'USD', 'collection_currency' => 'USD']);
     app(Tenancy::class)->set($tenant);
 

@@ -10,7 +10,7 @@ class RadiusUserGroup extends Model
 {
     use BelongsToTenant;
 
-    protected $table = 'radius_user_groups';
+    protected $table = 'radusergroup';
 
     protected $fillable = ['tenant_id', 'service_id', 'username', 'groupname'];
 

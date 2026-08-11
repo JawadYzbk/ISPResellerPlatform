@@ -10,7 +10,7 @@ class RadiusGroupReply extends Model
 {
     use BelongsToTenant;
 
-    protected $table = 'radius_group_replies';
+    protected $table = 'radgroupreply';
 
     protected $fillable = ['tenant_id', 'groupname', 'attribute', 'op', 'value'];
 
