@@ -117,6 +117,10 @@ test.describe('staff core journeys', () => {
         await expect(page.getByRole('heading', { name: 'Customers' })).toBeVisible();
         await page.goto('/settings/general');
         await expect(page.getByRole('heading', { name: 'Workspace settings' })).toBeVisible();
+        await expect(page.getByRole('heading', { name: 'Setup signals' })).toBeVisible();
+        await expect(page.getByText('Tenant branding', { exact: true })).toBeVisible();
+        await expect(page.getByText('Currencies and FX', { exact: true })).toBeVisible();
+        await expect(page.getByText('WhatsApp delivery', { exact: true })).toBeVisible();
     });
 
     test('opens the profile menu and notifications center from the header', async ({ page }) => {
