@@ -2,7 +2,7 @@
 
 This is the platform's standalone, framework-neutral Whish Pay client. It has no Node.js dependency and accepts an injected HTTP transport, with cURL available as the default transport.
 
-The client follows the server-side contract used by the referenced community client: create a payment, receive a collect URL, and verify the payment with the status endpoint before treating it as paid. The Laravel application keeps ledger amounts in integer minor units and converts only at the provider boundary.
+The client follows the server-side contract used by the referenced community client: create a payment at `/payment/whish`, receive a `collectUrl` (or legacy `whishUrl`), and verify the payment with `/payment/collect/status` before treating it as paid. The Laravel application keeps ledger amounts in integer minor units and converts only at the provider boundary.
 
 ```php
 $client = new WhishPay\WhishClient(
@@ -28,6 +28,6 @@ $payment = $client->createPayment(new WhishPay\PaymentRequest(
 $status = $client->getPaymentStatus('123456789', 'USD');
 ```
 
-Merchant credentials are held in private configuration properties and are never included in the client's public serialization. Confirm endpoint paths, headers, amount units, callback fields, and production credentials against the current official Whish merchant documentation before enabling live traffic.
+Merchant credentials are held in private configuration properties and are never included in the client's public serialization. The reference client documents GET callbacks with `externalId` and `currency`; the Laravel callback treats those values as lookup hints only and verifies the provider status server-side before settlement. Confirm endpoint paths, headers, amount units, callback fields, and production credentials against the current official Whish merchant documentation before enabling live traffic.
 
 Reference contract: [Mohammad-AlBaker-Zaytoun/whish-pay](https://github.com/Mohammad-AlBaker-Zaytoun/whish-pay).
