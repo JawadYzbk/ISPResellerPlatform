@@ -13,6 +13,7 @@ type Props = PageProps & {
 
 export default function Dashboard({ metrics, attentionQueue }: Props) {
     const { auth } = usePage<PageProps>().props;
+    const canCreateCustomer = auth.permissions.includes('customers.create');
     const cards = metrics
         ? [
               {
@@ -57,9 +58,9 @@ export default function Dashboard({ metrics, attentionQueue }: Props) {
                         Keep an eye on the customers, services and actions that need you today.
                     </p>
                 </div>
-                <Link href="/customers" className="button-primary">
-                    <Plus size={17} />
-                    Add customer
+                <Link href={canCreateCustomer ? '/customers/create' : '/customers'} className="button-primary">
+                    {canCreateCustomer ? <Plus size={17} /> : <Users size={17} />}
+                    {canCreateCustomer ? 'Add customer' : 'Find customers'}
                 </Link>
             </div>
             <Deferred data="metrics" fallback={<DashboardMetricsFallback />}>

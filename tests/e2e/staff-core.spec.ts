@@ -5,17 +5,47 @@ const adminPassword = process.env.E2E_ADMIN_PASSWORD ?? 'password';
 type BrowserStorageState = Awaited<ReturnType<BrowserContext['storageState']>>;
 
 const seededRoleJourneys = [
-    { label: 'tenant owner', email: 'admin@example.com', path: '/partners/commercial' },
-    { label: 'operations manager', email: 'operations.manager@example.com', path: '/operations/inventory' },
-    { label: 'billing manager', email: 'billing.manager@example.com', path: '/billing/invoices' },
-    { label: 'cashier', email: 'cashier@example.com', path: '/billing/invoices' },
-    { label: 'collector', email: 'collector@example.com', path: '/billing/payments' },
-    { label: 'support agent', email: 'support.agent@example.com', path: '/operations/tickets' },
-    { label: 'technician', email: 'technician@example.com', path: '/operations/work-orders' },
-    { label: 'network administrator', email: 'network.admin@example.com', path: '/operations/sessions' },
-    { label: 'reseller owner', email: 'reseller.owner@example.com', path: '/partners/commercial' },
-    { label: 'reseller staff', email: 'reseller.staff@example.com', path: '/customers' },
-    { label: 'auditor', email: 'auditor@example.com', path: '/reports/finance' },
+    { label: 'tenant owner', email: 'admin@example.com', path: '/partners/commercial', dashboardCta: 'Add customer' },
+    {
+        label: 'operations manager',
+        email: 'operations.manager@example.com',
+        path: '/operations/inventory',
+        dashboardCta: 'Add customer',
+    },
+    {
+        label: 'billing manager',
+        email: 'billing.manager@example.com',
+        path: '/billing/invoices',
+        dashboardCta: 'Find customers',
+    },
+    { label: 'cashier', email: 'cashier@example.com', path: '/billing/invoices', dashboardCta: 'Find customers' },
+    { label: 'collector', email: 'collector@example.com', path: '/billing/payments', dashboardCta: 'Find customers' },
+    {
+        label: 'support agent',
+        email: 'support.agent@example.com',
+        path: '/operations/tickets',
+        dashboardCta: 'Find customers',
+    },
+    {
+        label: 'technician',
+        email: 'technician@example.com',
+        path: '/operations/work-orders',
+        dashboardCta: 'Find customers',
+    },
+    {
+        label: 'network administrator',
+        email: 'network.admin@example.com',
+        path: '/operations/sessions',
+        dashboardCta: 'Find customers',
+    },
+    {
+        label: 'reseller owner',
+        email: 'reseller.owner@example.com',
+        path: '/partners/commercial',
+        dashboardCta: 'Add customer',
+    },
+    { label: 'reseller staff', email: 'reseller.staff@example.com', path: '/customers', dashboardCta: 'Add customer' },
+    { label: 'auditor', email: 'auditor@example.com', path: '/reports/finance', dashboardCta: 'Find customers' },
 ] as const;
 
 let authenticatedState: BrowserStorageState | null = null;
@@ -147,6 +177,9 @@ test.describe('staff core journeys', () => {
         test(`keeps the ${account.label} seeded workspace usable`, async ({ page }) => {
             test.setTimeout(90_000);
             await signInAs(page, account.email);
+            await expect(page.getByRole('link', { name: account.dashboardCta, exact: true })).toBeVisible({
+                timeout: 15_000,
+            });
 
             for (const path of ['/dashboard', '/profile', '/notifications', account.path]) {
                 const response = await page.goto(path, { waitUntil: 'domcontentloaded', timeout: 90_000 });
