@@ -227,6 +227,7 @@ test.describe('staff core journeys', () => {
     test('shows field navigation on a mobile viewport', async ({ page }) => {
         await page.setViewportSize({ width: 390, height: 844 });
         await signIn(page);
+        await expect(page.getByRole('heading', { name: 'Your operations at a glance.' })).toBeVisible();
 
         await expect(page.getByRole('navigation', { name: 'Field navigation' })).toBeVisible();
         await expect(page.getByRole('link', { name: 'Customers' }).last()).toBeVisible();
