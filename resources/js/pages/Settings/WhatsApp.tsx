@@ -1,5 +1,16 @@
 import { Head, Link, router, useForm } from '@inertiajs/react';
-import { ArrowLeft, CheckCircle2, MessageCircle, QrCode, RefreshCw, ShieldAlert, WifiOff } from 'lucide-react';
+import {
+    ArrowLeft,
+    CheckCircle2,
+    Link2Off,
+    MessageCircle,
+    Plus,
+    QrCode,
+    RefreshCw,
+    Save,
+    ShieldAlert,
+    WifiOff,
+} from 'lucide-react';
 import { useEffect } from 'react';
 
 import AppLayout from '@/layouts/AppLayout';
@@ -12,15 +23,39 @@ type Setup = {
     detail: string | null;
     qr_code: string | null;
     webhook_configured: boolean;
+    accounts: WhatsAppAccount[];
+};
+
+type WhatsAppAccount = {
+    id: string;
+    label: string;
+    job: string;
+    status: string;
+    phone: string | null;
+    push_name: string | null;
+    last_error: string | null;
+    last_ready_at: string | null;
+    qr_code: string | null;
+    is_active: boolean;
 };
 
 type Props = { setup: Setup };
+
+const jobOptions = [
+    { value: 'general', label: 'General delivery' },
+    { value: 'billing', label: 'Billing and receipts' },
+    { value: 'collections', label: 'Collections' },
+    { value: 'support', label: 'Support and incidents' },
+    { value: 'operations', label: 'Operations' },
+    { value: 'marketing', label: 'Marketing' },
+] as const;
 
 const statusLabels: Record<string, string> = {
     configured: 'Configured',
     disabled: 'Disabled',
     not_configured: 'Needs configuration',
     starting: 'Starting',
+    idle: 'Waiting to start',
     qr: 'Waiting for QR scan',
     authenticated: 'Authenticated',
     ready: 'Ready',
@@ -31,13 +66,21 @@ const statusLabels: Record<string, string> = {
 };
 
 export default function WhatsAppSettings({ setup }: Props) {
-    const ready = setup.status === 'ready' || setup.status === 'configured';
+    const ready =
+        setup.mode === 'web'
+            ? setup.accounts.some((account) => account.status === 'ready')
+            : setup.status === 'configured';
     const problem =
         setup.status === 'unreachable' || setup.status === 'auth_failure' || setup.status === 'disconnected';
-    const testForm = useForm({ phone: '' });
+    const testAccount = setup.accounts.find((account) => account.status === 'ready') ?? setup.accounts[0];
+    const testForm = useForm({ phone: '', account_id: testAccount?.id ?? '' });
+    const createForm = useForm({ label: '', job: 'general' });
 
     useEffect(() => {
-        if (setup.mode !== 'web' || setup.status === 'ready') {
+        if (
+            setup.mode !== 'web' ||
+            (setup.accounts.length > 0 && setup.accounts.every((account) => account.status === 'ready'))
+        ) {
             return;
         }
 
@@ -46,13 +89,38 @@ export default function WhatsAppSettings({ setup }: Props) {
         }, 5000);
 
         return () => window.clearInterval(interval);
-    }, [setup.mode, setup.status]);
+    }, [setup.mode, setup.status, setup.accounts]);
 
     const submitTest = (event: React.FormEvent) => {
         event.preventDefault();
         testForm.post('/settings/whatsapp/test', {
             preserveScroll: true,
             onSuccess: () => testForm.reset(),
+        });
+    };
+
+    const submitAccountUpdate = (event: React.FormEvent<HTMLFormElement>, account: WhatsAppAccount) => {
+        event.preventDefault();
+        const data = new FormData(event.currentTarget);
+        router.patch(
+            `/settings/whatsapp/accounts/${account.id}`,
+            {
+                label: String(data.get('label') ?? ''),
+                job: String(data.get('job') ?? 'general'),
+            },
+            { preserveScroll: true },
+        );
+    };
+
+    const disconnectAccount = (account: WhatsAppAccount) => {
+        router.post(`/settings/whatsapp/accounts/${account.id}/disconnect`, {}, { preserveScroll: true });
+    };
+
+    const submitCreate = (event: React.FormEvent) => {
+        event.preventDefault();
+        createForm.post('/settings/whatsapp/accounts', {
+            preserveScroll: true,
+            onSuccess: () => createForm.reset(),
         });
     };
 
@@ -149,6 +217,140 @@ export default function WhatsAppSettings({ setup }: Props) {
                     )}
                 </div>
 
+                {setup.mode === 'web' && (
+                    <section className="card mt-6 p-6">
+                        <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                            <div>
+                                <p className="eyebrow">Workspace accounts</p>
+                                <h2 className="section-title mt-2">Pair and assign delivery accounts</h2>
+                                <p className="mt-2 text-sm text-muted">
+                                    Each account has its own private bridge session. Assign a job so billing, support,
+                                    or operations messages use the intended phone number.
+                                </p>
+                            </div>
+                        </div>
+
+                        <form
+                            onSubmit={submitCreate}
+                            className="mt-5 grid gap-3 rounded-xl border border-line bg-sand/50 p-4 sm:grid-cols-[minmax(0,1fr)_220px_auto] sm:items-end"
+                        >
+                            <label>
+                                <span className="field-label">Account label</span>
+                                <input
+                                    className="field"
+                                    placeholder="Billing phone"
+                                    value={createForm.data.label}
+                                    onChange={(event) => createForm.setData('label', event.target.value)}
+                                />
+                                {createForm.errors.label && <p className="field-error">{createForm.errors.label}</p>}
+                            </label>
+                            <label>
+                                <span className="field-label">Assigned job</span>
+                                <select
+                                    className="field"
+                                    value={createForm.data.job}
+                                    onChange={(event) => createForm.setData('job', event.target.value)}
+                                >
+                                    {jobOptions.map((job) => (
+                                        <option key={job.value} value={job.value}>
+                                            {job.label}
+                                        </option>
+                                    ))}
+                                </select>
+                                {createForm.errors.job && <p className="field-error">{createForm.errors.job}</p>}
+                            </label>
+                            <button className="button-primary" disabled={createForm.processing}>
+                                <Plus size={16} /> Add account
+                            </button>
+                        </form>
+
+                        <div className="mt-5 grid gap-4 lg:grid-cols-2">
+                            {setup.accounts.map((account) => (
+                                <div key={account.id} className="rounded-2xl border border-line bg-white p-5">
+                                    <div className="flex items-start justify-between gap-4">
+                                        <div className="min-w-0">
+                                            <p className="text-lg font-semibold">{account.label}</p>
+                                            <p className="mt-1 text-sm text-muted">
+                                                {account.phone
+                                                    ? `+${account.phone}`
+                                                    : 'Phone will appear after pairing'}
+                                                {account.push_name ? ` · ${account.push_name}` : ''}
+                                            </p>
+                                        </div>
+                                        <span
+                                            className={`shrink-0 text-xs font-semibold ${account.status === 'ready' ? 'text-emerald-700' : account.status === 'unreachable' || account.status === 'auth_failure' ? 'text-coral' : 'text-amber-700'}`}
+                                        >
+                                            {statusLabels[account.status] ?? account.status}
+                                        </span>
+                                    </div>
+
+                                    <form
+                                        onSubmit={(event) => submitAccountUpdate(event, account)}
+                                        className="mt-4 grid gap-3 sm:grid-cols-[minmax(0,1fr)_190px_auto] sm:items-end"
+                                    >
+                                        <label>
+                                            <span className="field-label">Label</span>
+                                            <input
+                                                className="field"
+                                                name="label"
+                                                defaultValue={account.label}
+                                                maxLength={80}
+                                            />
+                                        </label>
+                                        <label>
+                                            <span className="field-label">Job</span>
+                                            <select className="field" name="job" defaultValue={account.job}>
+                                                {jobOptions.map((job) => (
+                                                    <option key={job.value} value={job.value}>
+                                                        {job.label}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </label>
+                                        <button className="button-secondary" type="submit">
+                                            <Save size={16} /> Save
+                                        </button>
+                                    </form>
+
+                                    <div className="mt-4 flex flex-wrap items-center gap-3">
+                                        <button
+                                            className="button-secondary"
+                                            type="button"
+                                            onClick={() => disconnectAccount(account)}
+                                        >
+                                            <Link2Off size={16} /> Disconnect and pair again
+                                        </button>
+                                        {account.last_ready_at && (
+                                            <span className="text-xs text-muted">
+                                                Last ready {new Date(account.last_ready_at).toLocaleString()}
+                                            </span>
+                                        )}
+                                    </div>
+
+                                    {account.qr_code && (
+                                        <div className="mt-4 flex items-center gap-4 rounded-xl border border-line bg-sand/50 p-3">
+                                            <img
+                                                src={account.qr_code}
+                                                alt={`Scan to pair ${account.label}`}
+                                                className="size-36 rounded-lg bg-white p-2"
+                                            />
+                                            <p className="text-xs text-muted">
+                                                On this account's phone, open WhatsApp → Linked devices → Link a device,
+                                                then scan this QR code.
+                                            </p>
+                                        </div>
+                                    )}
+                                    {account.last_error && (
+                                        <p className="mt-3 rounded-lg bg-rose-50 px-3 py-2 text-xs text-coral">
+                                            {account.last_error}
+                                        </p>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    </section>
+                )}
+
                 <section className="card mt-6 p-6">
                     <div>
                         <p className="eyebrow">Controlled delivery check</p>
@@ -158,7 +360,10 @@ export default function WhatsAppSettings({ setup }: Props) {
                             recipient is normalized server-side and the test is recorded in the message ledger.
                         </p>
                     </div>
-                    <form onSubmit={submitTest} className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-end">
+                    <form
+                        onSubmit={submitTest}
+                        className="mt-5 grid gap-3 sm:grid-cols-[minmax(0,1fr)_220px_auto] sm:items-end"
+                    >
                         <label className="min-w-0 flex-1">
                             <span className="field-label">Recipient phone with country code</span>
                             <input
@@ -171,6 +376,22 @@ export default function WhatsAppSettings({ setup }: Props) {
                             />
                             {testForm.errors.phone && <p className="field-error">{testForm.errors.phone}</p>}
                         </label>
+                        {setup.accounts.length > 0 && (
+                            <label>
+                                <span className="field-label">Send through</span>
+                                <select
+                                    className="field"
+                                    value={testForm.data.account_id}
+                                    onChange={(event) => testForm.setData('account_id', event.target.value)}
+                                >
+                                    {setup.accounts.map((account) => (
+                                        <option key={account.id} value={account.id}>
+                                            {account.label}
+                                        </option>
+                                    ))}
+                                </select>
+                            </label>
+                        )}
                         <button className="button-primary" disabled={testForm.processing || !ready}>
                             Send test message
                         </button>
