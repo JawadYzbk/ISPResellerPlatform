@@ -85,6 +85,7 @@ Route::middleware(['auth', 'tenant', '2fa'])->group(function (): void {
     Route::get('/search', WorkspaceSearchController::class)->name('workspace.search');
     Route::get('/settings/general', [SettingsController::class, 'general'])->name('settings.general');
     Route::get('/settings/whatsapp', [SettingsController::class, 'whatsapp'])->name('settings.whatsapp');
+    Route::post('/settings/whatsapp/test', [SettingsController::class, 'sendWhatsAppTest'])->middleware(['recent-auth', 'throttle:3,10'])->name('settings.whatsapp.test');
     Route::put('/settings/general', [SettingsController::class, 'updateGeneral'])->middleware('recent-auth')->name('settings.general.update');
     Route::get('/settings/users', [UserOperationsController::class, 'index'])->name('settings.users');
     Route::post('/settings/users/invite', [UserOperationsController::class, 'invite'])->middleware('recent-auth')->name('settings.users.invite');

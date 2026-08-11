@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Web;
 
 use App\Actions\GetWhatsAppSetupStatus;
+use App\Actions\QueueWhatsAppTestMessage;
 use App\Actions\UpdateTenantSettings;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\TenantSettingsRequest;
@@ -68,5 +69,28 @@ final class SettingsController extends Controller
         abort_unless($user instanceof User && $user->can('settings.manage'), 403);
 
         return Inertia::render('Settings/WhatsApp', ['setup' => $status->handle()]);
+    }
+
+    public function sendWhatsAppTest(Request $request, GetWhatsAppSetupStatus $status, QueueWhatsAppTestMessage $send): RedirectResponse
+    {
+        $user = $request->user();
+        abort_unless($user instanceof User && $user->can('settings.manage'), 403);
+        $tenant = Tenant::query()->find($user->tenant_id);
+        abort_unless($tenant instanceof Tenant, 403);
+
+        $setup = $status->handle();
+        $ready = $setup['mode'] === 'web'
+            ? $setup['status'] === 'ready'
+            : $setup['status'] === 'configured';
+        if (! $ready) {
+            return back()->with('error', $setup['detail'] ?? 'WhatsApp is not ready for a test message.');
+        }
+
+        $validated = $request->validate([
+            'phone' => ['required', 'string', 'max:32', 'regex:/^\+?[0-9\s().-]{8,32}$/'],
+        ]);
+        $send->handle($tenant, $user, (string) $validated['phone']);
+
+        return redirect()->route('settings.whatsapp')->with('success', 'WhatsApp test message queued.');
     }
 }

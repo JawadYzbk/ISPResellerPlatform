@@ -121,6 +121,19 @@ final class MessageTemplateProvisioner
                 'fr' => 'Alerte pour {{ customer_name }} : le service {{ service_username }} a atteint {{ quota_percent }}% de son quota.',
             ],
         ],
+        'whatsapp.test' => [
+            'variables' => ['tenant_name'],
+            'subjects' => [
+                'en' => 'WhatsApp delivery test',
+                'ar' => 'اختبار إرسال واتساب',
+                'fr' => 'Test d’envoi WhatsApp',
+            ],
+            'bodies' => [
+                'en' => 'This is a controlled WhatsApp delivery test from {{ tenant_name }}.',
+                'ar' => 'هذه رسالة اختبار مضبوطة لإرسال واتساب من {{ tenant_name }}.',
+                'fr' => 'Ceci est un test contrôlé d’envoi WhatsApp depuis {{ tenant_name }}.',
+            ],
+        ],
     ];
 
     public function provision(Tenant $tenant, ?string $templateKey = null, ?string $channel = null, ?string $locale = null): void

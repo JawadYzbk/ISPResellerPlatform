@@ -1,4 +1,4 @@
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, useForm } from '@inertiajs/react';
 import { ArrowLeft, CheckCircle2, MessageCircle, QrCode, RefreshCw, ShieldAlert, WifiOff } from 'lucide-react';
 
 import AppLayout from '@/layouts/AppLayout';
@@ -33,6 +33,15 @@ export default function WhatsAppSettings({ setup }: Props) {
     const ready = setup.status === 'ready' || setup.status === 'configured';
     const problem =
         setup.status === 'unreachable' || setup.status === 'auth_failure' || setup.status === 'disconnected';
+    const testForm = useForm({ phone: '' });
+
+    const submitTest = (event: React.FormEvent) => {
+        event.preventDefault();
+        testForm.post('/settings/whatsapp/test', {
+            preserveScroll: true,
+            onSuccess: () => testForm.reset(),
+        });
+    };
 
     return (
         <AppLayout>
@@ -124,6 +133,39 @@ export default function WhatsAppSettings({ setup }: Props) {
                         </div>
                     )}
                 </div>
+
+                <section className="card mt-6 p-6">
+                    <div>
+                        <p className="eyebrow">Controlled delivery check</p>
+                        <h2 className="section-title mt-2">Send one test message</h2>
+                        <p className="mt-2 text-sm text-muted">
+                            Verify delivery to a dedicated operator phone before enabling customer notifications. The
+                            recipient is normalized server-side and the test is recorded in the message ledger.
+                        </p>
+                    </div>
+                    <form onSubmit={submitTest} className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-end">
+                        <label className="min-w-0 flex-1">
+                            <span className="field-label">Recipient phone with country code</span>
+                            <input
+                                className="field"
+                                type="tel"
+                                inputMode="tel"
+                                placeholder="+961 70 123 456"
+                                value={testForm.data.phone}
+                                onChange={(event) => testForm.setData('phone', event.target.value)}
+                            />
+                            {testForm.errors.phone && <p className="field-error">{testForm.errors.phone}</p>}
+                        </label>
+                        <button className="button-primary" disabled={testForm.processing || !ready}>
+                            Send test message
+                        </button>
+                    </form>
+                    {!ready && (
+                        <p className="mt-3 text-xs text-amber-700">
+                            Pair the bridge and wait for a ready status before sending a test message.
+                        </p>
+                    )}
+                </section>
 
                 <div className="mt-6 rounded-xl border border-line bg-white px-5 py-4 text-sm text-muted">
                     <div className="flex items-center gap-2 font-semibold text-ink">
