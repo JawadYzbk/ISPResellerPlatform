@@ -3,7 +3,7 @@
 ## Liveness and dependency health
 
 - `GET /up` is the framework liveness probe.
-- `GET /api/v1/health` is the deeper dependency probe. It checks the database, cache, default queue depth, scheduler heartbeat, queue-worker heartbeat, and the count of unresolved router-unreachable incidents (`checks.router_incidents`).
+- `GET /api/v1/health` is the deeper dependency probe. It checks the database, cache, default queue depth, scheduler heartbeat, queue-worker heartbeat, and the count of unresolved router-unreachable incidents (`checks.router_incidents`). Set `MONITORING_QUEUE_DEPTH_THRESHOLD` for the largest acceptable default-queue backlog; above it, `checks.queue` becomes `degraded` while the raw `checks.queue_depth` and configured threshold remain visible.
 - `php artisan platform:heartbeat` records the scheduler heartbeat and queues the worker heartbeat job. The scheduler runs it every minute through `bootstrap/app.php`.
 - `php artisan platform:monitor` runs every five minutes, sends signed alerts for distinct degraded signal sets to the configured webhook, suppresses repeated identical failures, and emits a recovery event after the platform returns to healthy. Alert payloads include the actionable `signals` map, so a router outage appearing during an existing scheduler outage is not silently suppressed.
 - `php artisan ledger:check-invariants` checks balanced journal entries, customer projections and partner wallet invariants. It runs daily at 03:00.

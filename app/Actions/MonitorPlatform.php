@@ -63,7 +63,7 @@ final readonly class MonitorPlatform implements Action
     {
         $signals = [];
         foreach ($checks as $key => $value) {
-            if (in_array($value, ['failed', 'pending', 'stale'], true) || ($key === 'router_incidents' && is_int($value) && $value > 0)) {
+            if (in_array($value, ['failed', 'pending', 'stale', 'degraded'], true) || ($key === 'router_incidents' && is_int($value) && $value > 0)) {
                 $signals[$key] = $value;
             }
         }

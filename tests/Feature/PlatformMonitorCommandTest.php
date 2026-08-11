@@ -6,6 +6,7 @@ use App\Support\Tenancy;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Queue;
 
 uses(RefreshDatabase::class);
 
@@ -102,4 +103,19 @@ it('sends a new alert when a different degraded signal appears', function (): vo
 
     Http::assertSentCount(2);
     Http::assertSent(fn ($request): bool => (json_decode($request->body(), true, 512, JSON_THROW_ON_ERROR)['signals']['router_incidents'] ?? null) === 1);
+});
+
+it('includes a queue backlog as an actionable monitoring signal', function (): void {
+    configurePlatformMonitoring();
+    config()->set('monitoring.queue_depth_threshold', 2);
+    Http::fake(['https://alerts.isp.internal/*' => Http::response([], 202)]);
+    Cache::put('scheduler_heartbeat', now()->toIso8601String(), now()->addMinutes(5));
+    Cache::put('queue_worker_heartbeat', now()->toIso8601String(), now()->addMinutes(5));
+    Queue::shouldReceive('size')->once()->with('default')->andReturn(3);
+
+    $this->artisan('platform:monitor')
+        ->assertExitCode(1)
+        ->expectsOutput('Platform health: degraded; alert: sent.');
+
+    Http::assertSent(fn ($request): bool => (json_decode($request->body(), true, 512, JSON_THROW_ON_ERROR)['signals']['queue'] ?? null) === 'degraded');
 });

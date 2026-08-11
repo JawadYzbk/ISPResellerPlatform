@@ -41,11 +41,14 @@ final readonly class CheckApplicationHealth implements Action
         }
         try {
             $queueDepth = Queue::size('default');
-            $checks['queue'] = 'ok';
+            $queueThreshold = (int) config('monitoring.queue_depth_threshold', 1000);
+            $checks['queue'] = $queueDepth > $queueThreshold ? 'degraded' : 'ok';
             $checks['queue_depth'] = $queueDepth;
+            $checks['queue_depth_threshold'] = $queueThreshold;
         } catch (\Throwable) {
             $checks['queue'] = 'failed';
             $checks['queue_depth'] = -1;
+            $checks['queue_depth_threshold'] = (int) config('monitoring.queue_depth_threshold', 1000);
         }
         $checks['scheduler'] = $this->heartbeat('scheduler_heartbeat');
         $checks['queue_worker'] = $this->heartbeat('queue_worker_heartbeat');
@@ -59,7 +62,7 @@ final readonly class CheckApplicationHealth implements Action
         }
 
         $routerIncidents = $checks['router_incidents'];
-        $degraded = count(array_intersect(['failed', 'pending', 'stale'], $checks)) > 0
+        $degraded = count(array_intersect(['failed', 'pending', 'stale', 'degraded'], $checks)) > 0
             || (is_int($routerIncidents) && $routerIncidents > 0);
 
         return ['status' => $degraded ? 'degraded' : 'ok', 'checks' => $checks];

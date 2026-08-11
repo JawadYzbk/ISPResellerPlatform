@@ -6,6 +6,7 @@ use App\Support\Tenancy;
 use Illuminate\Database\Migrations\Migrator;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Queue;
 
 uses(RefreshDatabase::class);
 
@@ -51,6 +52,18 @@ it('degrades when database migrations are pending', function (): void {
         ->assertJsonPath('status', 'degraded')
         ->assertJsonPath('checks.migrations', 'pending')
         ->assertJsonPath('checks.migration_pending', 1);
+});
+
+it('degrades when the default queue exceeds its configured backlog threshold', function (): void {
+    config()->set('monitoring.queue_depth_threshold', 2);
+    Queue::shouldReceive('size')->once()->with('default')->andReturn(3);
+
+    $this->getJson('/api/v1/health')
+        ->assertStatus(503)
+        ->assertJsonPath('status', 'degraded')
+        ->assertJsonPath('checks.queue', 'degraded')
+        ->assertJsonPath('checks.queue_depth', 3)
+        ->assertJsonPath('checks.queue_depth_threshold', 2);
 });
 
 it('degrades when an unresolved router outage incident exists', function (): void {
