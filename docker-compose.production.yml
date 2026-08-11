@@ -227,9 +227,12 @@ services:
       MINIO_ROOT_PASSWORD: ${AWS_SECRET_ACCESS_KEY:-change-me}
       AWS_BUCKET: ${AWS_BUCKET:-isp-media}
     entrypoint: ["/bin/sh", "-c"]
-    command: >-
-      until mc alias set local http://minio:9000 "$$MINIO_ROOT_USER" "$$MINIO_ROOT_PASSWORD"; do sleep 2; done;
-      mc mb --ignore-existing "local/$$AWS_BUCKET"
+    command:
+      - |
+        until mc alias set local http://minio:9000 "$$MINIO_ROOT_USER" "$$MINIO_ROOT_PASSWORD"; do
+          sleep 2
+        done
+        mc mb --ignore-existing "local/$$AWS_BUCKET"
     depends_on:
       minio:
         condition: service_started
