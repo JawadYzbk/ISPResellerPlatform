@@ -83,7 +83,7 @@ SVG;
 
         $admin = $staff['tenant_owner'];
 
-        app(Tenancy::class)->run($tenant, function () use ($admin, $tenant): void {
+        app(Tenancy::class)->run($tenant, function () use ($admin): void {
             $postJournalEntry = app(PostJournalEntry::class);
             $zones = collect([
                 ['name' => 'Central District', 'code' => 'CENTRAL'],
@@ -138,7 +138,10 @@ SVG;
 
             $historyStart = now()->subMonths(6)->startOfMonth();
             $currentStart = now()->startOfDay();
-            $demoRateEffectiveFrom = now($tenant->timezone)->startOfDay();
+            // Store the demo rate in the application's UTC clock so it is usable
+            // immediately, including when the tenant's local midnight is still
+            // ahead of the database timestamp.
+            $demoRateEffectiveFrom = now()->startOfDay();
             ExchangeRate::updateOrCreate(
                 ['base_currency' => 'USD', 'quote_currency' => 'LBP', 'effective_from' => $demoRateEffectiveFrom],
                 [
