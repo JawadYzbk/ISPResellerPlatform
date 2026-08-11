@@ -184,6 +184,7 @@ services:
       WHATSAPP_WEBHOOK_SECRET: ${WHATSAPP_WEBHOOK_SECRET:-change-me}
       WHATSAPP_WEB_CLIENT_ID: ${WHATSAPP_WEB_CLIENT_ID:-isp-manager}
       WHATSAPP_WEB_HEADLESS: "true"
+      PUPPETEER_EXECUTABLE_PATH: ${PUPPETEER_EXECUTABLE_PATH:-/usr/bin/chromium}
       WHATSAPP_WEB_SESSION_PATH: /data/.wwebjs_auth
     volumes:
       - whatsapp-web-auth:/data
