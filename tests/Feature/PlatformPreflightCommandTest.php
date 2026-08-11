@@ -4,6 +4,7 @@ use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Console\Command;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 
 uses(RefreshDatabase::class);
 
@@ -56,6 +57,7 @@ it('passes the production preflight for a production-shaped configuration', func
         'session.secure' => true,
         'queue.default' => 'database',
         'cache.default' => 'database',
+        'database.default' => 'sqlite',
         'sentry.dsn' => 'https://public@sentry.io/123',
         'sentry.send_default_pii' => false,
         'backup.backup.destination.disks' => ['s3'],
@@ -80,6 +82,37 @@ it('passes the production preflight for a production-shaped configuration', func
     $this->artisan('platform:preflight', ['--production' => true])
         ->assertExitCode(Command::SUCCESS)
         ->expectsOutputToContain('Preflight passed.');
+});
+
+it('rejects placeholder database and Redis credentials in production', function (): void {
+    $originalDatabaseConnection = DB::getDefaultConnection();
+
+    config()->set([
+        'app.key' => 'base64:'.base64_encode(str_repeat('a', 32)),
+        'app.env' => 'production',
+        'app.debug' => false,
+        'app.url' => 'https://portal.isp.internal',
+        'session.secure' => true,
+        'session.driver' => 'redis',
+        'queue.default' => 'redis',
+        'cache.default' => 'redis',
+        'database.default' => 'pgsql',
+        'database.connections.pgsql.driver' => 'pgsql',
+        'database.connections.pgsql.password' => 'change-me',
+        'database.redis.default.url' => null,
+        'database.redis.default.password' => 'change-me',
+    ]);
+
+    try {
+        $this->artisan('platform:preflight', ['--production' => true])
+            ->assertExitCode(Command::FAILURE)
+            ->expectsOutputToContain('Database credentials')
+            ->expectsOutputToContain('Redis credentials');
+    } finally {
+        DB::purge('pgsql');
+        DB::setDefaultConnection($originalDatabaseConnection);
+        config()->set('database.default', $originalDatabaseConnection);
+    }
 });
 
 it('requires monitoring alert routing in production', function (): void {

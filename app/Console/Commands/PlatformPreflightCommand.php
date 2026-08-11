@@ -30,6 +30,8 @@ final class PlatformPreflightCommand extends Command
                 'Debug mode disabled' => config('app.debug') === false,
                 'Public HTTPS application URL' => $this->hasPublicHttpsUrl(),
                 'Secure session cookies' => config('session.secure') === true,
+                'Database credentials' => $this->databaseCredentialsAreConfigured(),
+                'Redis credentials' => $this->redisCredentialsAreConfigured(),
                 'Asynchronous queue connection' => $this->usesAsynchronousQueue(),
                 'Persistent cache store' => $this->usesPersistentCache(),
                 'Capability assignments' => $this->capabilityAssignmentsAreReady(),
@@ -119,6 +121,31 @@ final class PlatformPreflightCommand extends Command
     private function usesAsynchronousQueue(): bool
     {
         return ! in_array(strtolower((string) config('queue.default')), ['null', 'sync'], true);
+    }
+
+    private function databaseCredentialsAreConfigured(): bool
+    {
+        $connection = (string) config('database.default');
+        $database = config('database.connections.'.$connection, []);
+        if (! is_array($database) || (string) ($database['driver'] ?? '') === 'sqlite') {
+            return true;
+        }
+
+        return $this->hasConfiguredValue($database['url'] ?? null)
+            || $this->hasConfiguredValue($database['password'] ?? null);
+    }
+
+    private function redisCredentialsAreConfigured(): bool
+    {
+        $usesRedis = in_array(strtolower((string) config('cache.default')), ['redis', 'horizon'], true)
+            || strtolower((string) config('queue.default')) === 'redis'
+            || strtolower((string) config('session.driver')) === 'redis';
+        if (! $usesRedis) {
+            return true;
+        }
+
+        return $this->hasConfiguredValue(config('database.redis.default.url'))
+            || $this->hasConfiguredValue(config('database.redis.default.password'));
     }
 
     private function usesPersistentCache(): bool
