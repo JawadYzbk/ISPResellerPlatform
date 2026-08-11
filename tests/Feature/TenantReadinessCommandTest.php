@@ -133,7 +133,7 @@ it('does not pass WhatsApp Web.js readiness while the bridge is waiting for pair
         'services.webhooks.secrets.whatsapp_web' => 'webhook-secret',
     ]);
     Http::fake([
-        'http://whatsapp-web:3001/status' => Http::response(['status' => 'qr', 'qr' => 'pairing-code']),
+        'http://whatsapp-web:3001/accounts/*/status' => Http::response(['status' => 'qr', 'qr' => 'pairing-code']),
     ]);
 
     $tenant = Tenant::factory()->create(['slug' => 'pairing-tenant']);
