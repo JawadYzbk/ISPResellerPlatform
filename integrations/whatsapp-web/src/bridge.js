@@ -6,6 +6,10 @@ export class BridgeNotReadyError extends Error {}
 
 export class IdempotencyConflictError extends Error {}
 
+export function isHealthyStatus(status) {
+  return ['qr', 'authenticated', 'ready'].includes(status);
+}
+
 export function signPayload(body, secret) {
   return createHmac('sha256', secret).update(body).digest('hex');
 }

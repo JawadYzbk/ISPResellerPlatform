@@ -1,6 +1,6 @@
 import http from 'node:http';
 import whatsappWeb from 'whatsapp-web.js';
-import { JsonIdempotencyStore, WhatsAppBridge, bearerMatches } from './bridge.js';
+import { JsonIdempotencyStore, WhatsAppBridge, bearerMatches, isHealthyStatus } from './bridge.js';
 
 const { Client, LocalAuth } = whatsappWeb;
 
@@ -59,7 +59,12 @@ async function readJson(request) {
 const server = http.createServer(async (request, response) => {
     try {
         if (request.method === 'GET' && request.url === '/health') {
-            return json(response, 200, { ok: true, service: 'whatsapp-web', status: bridge.status().status });
+            const status = bridge.status();
+            return json(response, isHealthyStatus(status.status) ? 200 : 503, {
+                ok: isHealthyStatus(status.status),
+                service: 'whatsapp-web',
+                status: status.status,
+            });
         }
         if (!bearerMatches(request.headers.authorization, config.token)) {
             return json(response, 401, { error: 'unauthorized' });

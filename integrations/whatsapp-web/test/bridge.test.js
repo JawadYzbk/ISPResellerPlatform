@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import { EventEmitter } from 'node:events';
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { JsonIdempotencyStore, WhatsAppBridge, hasValidSignature, normalizeRecipient, signPayload } from '../src/bridge.js';
+import { JsonIdempotencyStore, WhatsAppBridge, hasValidSignature, isHealthyStatus, normalizeRecipient, signPayload } from '../src/bridge.js';
 
 class FakeClient extends EventEmitter {
   constructor() {
@@ -44,6 +44,9 @@ test('signatures, recipients and readiness are enforced', async () => {
   const body = '{"ok":true}';
   assert.equal(hasValidSignature(body, signPayload(body, 'secret'), 'secret'), true);
   assert.equal(hasValidSignature(body, 'invalid', 'secret'), false);
+  assert.equal(isHealthyStatus('qr'), true);
+  assert.equal(isHealthyStatus('ready'), true);
+  assert.equal(isHealthyStatus('disconnected'), false);
   assert.equal(normalizeRecipient('96170123456'), '96170123456@c.us');
   assert.throws(() => normalizeRecipient('123'), /international phone number/);
 
