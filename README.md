@@ -12,7 +12,7 @@ The current foundation is live:
 - Shared-schema tenant context with global model scoping
 - Tenant, branch, zone, customer, plan and service foundations
 - Encrypted service credentials and hidden serialization
-- Staff login, 2FA/re-authentication, session devices, dashboard, customer/service/report screens with tenant-safe zone/status/expiry directory filters
+- Staff login, password reset, 2FA/re-authentication, session devices, dashboard, customer/service/report screens with tenant-safe zone/status/expiry directory filters
 - Capability-gated tenant settings for locale, timezone, currencies, display, notification quiet hours and automation defaults
 - Capability-gated effective-dated FX rate administration using exact numerator/denominator ratios
 - Operator directory with role-limited one-time invitations and a public invitation acceptance flow
