@@ -106,7 +106,7 @@ Route::middleware(['auth', 'tenant', '2fa'])->group(function (): void {
     Route::get('/customers/{customer:public_id}/payments/create', [CustomerController::class, 'createPayment'])->name('customers.payments.create');
     Route::post('/customers/{customer:public_id}/payments', [CustomerController::class, 'storePayment'])->name('customers.payments.store');
     Route::post('/customers/{customer:public_id}/payments/whish', [CustomerController::class, 'storeWhishPayment'])->name('customers.payments.whish.store');
-    Route::get('/customers/{customer:public_id}/payments/whish/{attempt}', [CustomerController::class, 'whishStatus'])->name('customers.payments.whish.status');
+    Route::get('/customers/{customer:public_id}/payments/whish/{attempt}', [CustomerController::class, 'whishStatus'])->middleware('throttle:30,1')->name('customers.payments.whish.status');
     Route::get('/customers/{customer:public_id}/renew', [CustomerController::class, 'renew'])->name('customers.renew');
     Route::post('/customers/{customer:public_id}/renew', [CustomerController::class, 'storeRenewal'])->name('customers.renew.store');
     Route::get('/customers/{customer:public_id}/tickets/create', [TicketOperationsController::class, 'create'])->name('operations.tickets.create');
