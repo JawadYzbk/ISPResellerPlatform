@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Web;
 
+use App\Actions\GetWhatsAppSetupStatus;
 use App\Actions\UpdateTenantSettings;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\TenantSettingsRequest;
@@ -53,5 +54,13 @@ final class SettingsController extends Controller
         $update->handle($tenant, $request->validated());
 
         return redirect()->route('settings.general')->with('success', 'Workspace settings updated.');
+    }
+
+    public function whatsapp(Request $request, GetWhatsAppSetupStatus $status): Response
+    {
+        $user = $request->user();
+        abort_unless($user instanceof User && $user->can('settings.manage'), 403);
+
+        return Inertia::render('Settings/WhatsApp', ['setup' => $status->handle()]);
     }
 }

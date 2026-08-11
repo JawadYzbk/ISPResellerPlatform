@@ -53,6 +53,9 @@ export default function GeneralSettings({ tenant, settings }: Props) {
                     <Link href="/settings/users" className="button-secondary">
                         Users and invitations
                     </Link>
+                    <Link href="/settings/whatsapp" className="button-secondary">
+                        WhatsApp setup
+                    </Link>
                 </div>
                 <form onSubmit={submit} className="card mt-8 space-y-8 p-6">
                     <section>

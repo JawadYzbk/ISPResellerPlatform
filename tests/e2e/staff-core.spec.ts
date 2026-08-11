@@ -97,6 +97,7 @@ test.describe('staff core journeys', () => {
             '/reports/operations',
             '/settings/general',
             '/settings/users',
+            '/settings/whatsapp',
             '/security/sessions',
             '/profile',
             '/notifications',
