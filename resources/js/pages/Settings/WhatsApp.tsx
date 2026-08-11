@@ -12,8 +12,20 @@ import {
     Trash2,
     WifiOff,
 } from 'lucide-react';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useMediaQuery } from '@/hooks/useMediaQuery';
 import AppLayout from '@/layouts/AppLayout';
 
 type Setup = {
@@ -51,6 +63,49 @@ const jobOptions = [
     { value: 'marketing', label: 'Marketing' },
 ] as const;
 
+type SelectOption = { value: string; label: string };
+
+type ResponsiveSelectProps = {
+    name?: string;
+    options: readonly SelectOption[];
+    value: string;
+    onValueChange: (value: string) => void;
+};
+
+function ResponsiveSelect({ name, options, value, onValueChange }: ResponsiveSelectProps) {
+    const isMobile = useMediaQuery('(max-width: 767px)');
+
+    if (isMobile) {
+        return (
+            <select className="field" name={name} value={value} onChange={(event) => onValueChange(event.target.value)}>
+                {options.map((option) => (
+                    <option key={option.value} value={option.value}>
+                        {option.label}
+                    </option>
+                ))}
+            </select>
+        );
+    }
+
+    return (
+        <>
+            <Select value={value} onValueChange={onValueChange}>
+                <SelectTrigger aria-label={name}>
+                    <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                    {options.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                        </SelectItem>
+                    ))}
+                </SelectContent>
+            </Select>
+            {name && <input type="hidden" name={name} value={value} />}
+        </>
+    );
+}
+
 const statusLabels: Record<string, string> = {
     configured: 'Configured',
     disabled: 'Disabled',
@@ -76,6 +131,8 @@ export default function WhatsAppSettings({ setup }: Props) {
     const testAccount = setup.accounts.find((account) => account.status === 'ready') ?? setup.accounts[0];
     const testForm = useForm({ phone: '', account_id: testAccount?.id ?? '' });
     const createForm = useForm({ label: '', job: 'general' });
+    const [accountJobs, setAccountJobs] = useState<Record<string, string>>({});
+    const [accountToDelete, setAccountToDelete] = useState<WhatsAppAccount | null>(null);
 
     useEffect(() => {
         if (
@@ -117,14 +174,21 @@ export default function WhatsAppSettings({ setup }: Props) {
         router.post(`/settings/whatsapp/accounts/${account.id}/disconnect`, {}, { preserveScroll: true });
     };
 
-    const deleteAccount = (account: WhatsAppAccount) => {
+    const requestDeleteAccount = (account: WhatsAppAccount) => {
         if (setup.accounts.length <= 1) {
             return;
         }
-        if (!window.confirm(`Delete the ${account.label} WhatsApp account and its private bridge session?`)) {
+
+        setAccountToDelete(account);
+    };
+
+    const deleteAccount = () => {
+        if (!accountToDelete) {
             return;
         }
 
+        const account = accountToDelete;
+        setAccountToDelete(null);
         router.delete(`/settings/whatsapp/accounts/${account.id}`, { preserveScroll: true });
     };
 
@@ -258,17 +322,12 @@ export default function WhatsAppSettings({ setup }: Props) {
                             </label>
                             <label>
                                 <span className="field-label">Assigned job</span>
-                                <select
-                                    className="field"
+                                <ResponsiveSelect
+                                    name="job"
+                                    options={jobOptions}
                                     value={createForm.data.job}
-                                    onChange={(event) => createForm.setData('job', event.target.value)}
-                                >
-                                    {jobOptions.map((job) => (
-                                        <option key={job.value} value={job.value}>
-                                            {job.label}
-                                        </option>
-                                    ))}
-                                </select>
+                                    onValueChange={(value) => createForm.setData('job', value)}
+                                />
                                 {createForm.errors.job && <p className="field-error">{createForm.errors.job}</p>}
                             </label>
                             <button className="button-primary" disabled={createForm.processing}>
@@ -311,13 +370,14 @@ export default function WhatsAppSettings({ setup }: Props) {
                                         </label>
                                         <label>
                                             <span className="field-label">Job</span>
-                                            <select className="field" name="job" defaultValue={account.job}>
-                                                {jobOptions.map((job) => (
-                                                    <option key={job.value} value={job.value}>
-                                                        {job.label}
-                                                    </option>
-                                                ))}
-                                            </select>
+                                            <ResponsiveSelect
+                                                name="job"
+                                                options={jobOptions}
+                                                value={accountJobs[account.id] ?? account.job}
+                                                onValueChange={(value) =>
+                                                    setAccountJobs((current) => ({ ...current, [account.id]: value }))
+                                                }
+                                            />
                                         </label>
                                         <button className="button-secondary" type="submit">
                                             <Save size={16} /> Save
@@ -341,7 +401,7 @@ export default function WhatsAppSettings({ setup }: Props) {
                                                     ? 'Keep one WhatsApp account configured for this workspace.'
                                                     : 'Delete this WhatsApp account and its private bridge session.'
                                             }
-                                            onClick={() => deleteAccount(account)}
+                                            onClick={() => requestDeleteAccount(account)}
                                         >
                                             <Trash2 size={16} /> Delete account
                                         </button>
@@ -376,6 +436,30 @@ export default function WhatsAppSettings({ setup }: Props) {
                     </section>
                 )}
 
+                <AlertDialog
+                    open={accountToDelete !== null}
+                    onOpenChange={(open) => {
+                        if (!open) {
+                            setAccountToDelete(null);
+                        }
+                    }}
+                >
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                            <AlertDialogTitle>Delete this WhatsApp account?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                                {accountToDelete
+                                    ? `This removes ${accountToDelete.label}, its bridge session, and its pairing data. Message history stays in the ledger.`
+                                    : 'This removes the selected WhatsApp account and its bridge session.'}
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <AlertDialogCancel>Keep account</AlertDialogCancel>
+                            <AlertDialogAction onClick={deleteAccount}>Delete account</AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
+
                 <section className="card mt-6 p-6">
                     <div>
                         <p className="eyebrow">Controlled delivery check</p>
@@ -404,17 +488,15 @@ export default function WhatsAppSettings({ setup }: Props) {
                         {setup.accounts.length > 0 && (
                             <label>
                                 <span className="field-label">Send through</span>
-                                <select
-                                    className="field"
+                                <ResponsiveSelect
+                                    name="account_id"
+                                    options={setup.accounts.map((account) => ({
+                                        value: account.id,
+                                        label: account.label,
+                                    }))}
                                     value={testForm.data.account_id}
-                                    onChange={(event) => testForm.setData('account_id', event.target.value)}
-                                >
-                                    {setup.accounts.map((account) => (
-                                        <option key={account.id} value={account.id}>
-                                            {account.label}
-                                        </option>
-                                    ))}
-                                </select>
+                                    onValueChange={(value) => testForm.setData('account_id', value)}
+                                />
                             </label>
                         )}
                         <button className="button-primary" disabled={testForm.processing || !ready}>
