@@ -43,6 +43,11 @@ export default function CurrencyCombobox({
         return currencies.filter((currency) => `${currency.code} ${currency.name}`.toLowerCase().includes(normalized));
     }, [currencies, query]);
 
+    const selectCurrency = (code: string) => {
+        onChange(code);
+        setOpen(false);
+    };
+
     if (isMobile) {
         return (
             <select
@@ -101,9 +106,14 @@ export default function CurrencyCombobox({
                                 <CommandItem
                                     key={currency.code}
                                     value={currency.code}
+                                    onPointerDown={(event) => {
+                                        if (event.pointerType === 'mouse') {
+                                            event.preventDefault();
+                                            selectCurrency(currency.code);
+                                        }
+                                    }}
                                     onSelect={() => {
-                                        onChange(currency.code);
-                                        setOpen(false);
+                                        selectCurrency(currency.code);
                                     }}
                                 >
                                     <Check
