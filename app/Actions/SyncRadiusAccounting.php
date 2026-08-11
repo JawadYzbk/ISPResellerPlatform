@@ -26,7 +26,7 @@ final readonly class SyncRadiusAccounting implements Action
             }
 
             $observedAt = $at ?? CarbonImmutable::now();
-            $rows = RadiusAccounting::query()
+            $rows = RadiusAccounting::withoutGlobalScopes()
                 ->where(function (Builder $query) use ($tenant, $nasNames): void {
                     $query->where('tenant_id', $tenant->id)
                         ->orWhere(function (Builder $query) use ($nasNames): void {
