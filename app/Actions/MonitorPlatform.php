@@ -23,30 +23,54 @@ final readonly class MonitorPlatform implements Action
             return [...$health, 'alert' => 'disabled'];
         }
 
+        $signals = $this->degradedSignals($health['checks']);
+        $signature = hash('sha256', json_encode($signals, JSON_THROW_ON_ERROR));
         $previous = Cache::get(self::STATE_KEY);
-        if ($previous === $status) {
+        $previousState = is_array($previous) && is_string($previous['status'] ?? null) && is_string($previous['signature'] ?? null)
+            ? ['status' => $previous['status'], 'signature' => $previous['signature']]
+            : (is_string($previous) && in_array($previous, ['ok', 'degraded'], true)
+                ? ['status' => $previous, 'signature' => $previous === $status ? $signature : null]
+                : null);
+
+        if ($previousState !== null && $previousState['status'] === $status && $previousState['signature'] === $signature) {
             return [...$health, 'alert' => 'suppressed'];
         }
 
-        if ($status === 'ok' && $previous === null) {
-            Cache::put(self::STATE_KEY, $status, now()->addDay());
+        if ($status === 'ok' && $previousState === null) {
+            Cache::put(self::STATE_KEY, ['status' => $status, 'signature' => $signature], now()->addDay());
 
             return [...$health, 'alert' => 'baseline'];
         }
 
-        $event = $status === 'ok' && $previous === 'degraded' ? 'recovered' : 'degraded';
+        $event = $status === 'ok' && ($previousState['status'] ?? null) === 'degraded' ? 'recovered' : 'degraded';
         $payload = [
             'event' => $event,
             'status' => $status,
             'checks' => $health['checks'],
+            'signals' => $signals,
             'environment' => (string) config('app.env'),
             'release' => (string) config('app.version', 'unknown'),
             'observed_at' => now()->toIso8601String(),
         ];
         $this->deliver($payload);
-        Cache::put(self::STATE_KEY, $status, now()->addDay());
+        Cache::put(self::STATE_KEY, ['status' => $status, 'signature' => $signature], now()->addDay());
 
         return [...$health, 'alert' => 'sent'];
+    }
+
+    /** @param array<string, string|int> $checks @return array<string, string|int> */
+    private function degradedSignals(array $checks): array
+    {
+        $signals = [];
+        foreach ($checks as $key => $value) {
+            if (in_array($value, ['failed', 'pending', 'stale'], true) || ($key === 'router_incidents' && is_int($value) && $value > 0)) {
+                $signals[$key] = $value;
+            }
+        }
+
+        ksort($signals);
+
+        return $signals;
     }
 
     /** @param array<string, mixed> $payload */

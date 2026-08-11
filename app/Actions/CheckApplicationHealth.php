@@ -49,8 +49,20 @@ final readonly class CheckApplicationHealth implements Action
         }
         $checks['scheduler'] = $this->heartbeat('scheduler_heartbeat');
         $checks['queue_worker'] = $this->heartbeat('queue_worker_heartbeat');
+        try {
+            $checks['router_incidents'] = (int) DB::table('incidents')
+                ->where('type', 'router_unreachable')
+                ->whereIn('status', ['open', 'acknowledged'])
+                ->count();
+        } catch (\Throwable) {
+            $checks['router_incidents'] = 'failed';
+        }
 
-        return ['status' => count(array_intersect(['failed', 'pending', 'stale'], $checks)) > 0 ? 'degraded' : 'ok', 'checks' => $checks];
+        $routerIncidents = $checks['router_incidents'];
+        $degraded = count(array_intersect(['failed', 'pending', 'stale'], $checks)) > 0
+            || (is_int($routerIncidents) && $routerIncidents > 0);
+
+        return ['status' => $degraded ? 'degraded' : 'ok', 'checks' => $checks];
     }
 
     private function heartbeat(string $key): string

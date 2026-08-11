@@ -1,5 +1,8 @@
 <?php
 
+use App\Models\Incident;
+use App\Models\Tenant;
+use App\Support\Tenancy;
 use Illuminate\Database\Migrations\Migrator;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
@@ -48,4 +51,16 @@ it('degrades when database migrations are pending', function (): void {
         ->assertJsonPath('status', 'degraded')
         ->assertJsonPath('checks.migrations', 'pending')
         ->assertJsonPath('checks.migration_pending', 1);
+});
+
+it('degrades when an unresolved router outage incident exists', function (): void {
+    $tenant = Tenant::create(['name' => 'Northline', 'slug' => 'northline', 'base_currency' => 'USD', 'collection_currency' => 'USD']);
+    app(Tenancy::class)->set($tenant);
+    Incident::create(['type' => 'router_unreachable', 'severity' => 'critical', 'status' => 'open', 'title' => 'Core router unreachable', 'description' => 'Router did not respond.', 'opened_at' => now()]);
+    app(Tenancy::class)->clear();
+
+    $this->getJson('/api/v1/health')
+        ->assertStatus(503)
+        ->assertJsonPath('status', 'degraded')
+        ->assertJsonPath('checks.router_incidents', 1);
 });

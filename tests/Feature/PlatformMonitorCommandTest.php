@@ -1,5 +1,8 @@
 <?php
 
+use App\Models\Incident;
+use App\Models\Tenant;
+use App\Support\Tenancy;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
@@ -79,4 +82,24 @@ it('reports health without alert delivery when monitoring is disabled', function
     $this->artisan('platform:monitor')
         ->assertSuccessful()
         ->expectsOutput('Platform health: ok; alert: disabled.');
+});
+
+it('sends a new alert when a different degraded signal appears', function (): void {
+    configurePlatformMonitoring();
+    Http::fake(['https://alerts.isp.internal/*' => Http::response([], 202)]);
+    Cache::put('scheduler_heartbeat', now()->subMinutes(6)->toIso8601String(), now()->addMinutes(5));
+    Cache::put('queue_worker_heartbeat', now()->toIso8601String(), now()->addMinutes(5));
+
+    $this->artisan('platform:monitor')->assertExitCode(1)->expectsOutput('Platform health: degraded; alert: sent.');
+
+    $tenant = Tenant::create(['name' => 'Northline', 'slug' => 'northline', 'base_currency' => 'USD', 'collection_currency' => 'USD']);
+    app(Tenancy::class)->set($tenant);
+    Incident::create(['type' => 'router_unreachable', 'severity' => 'critical', 'status' => 'open', 'title' => 'Core router unreachable', 'description' => 'Router did not respond.', 'opened_at' => now()]);
+    app(Tenancy::class)->clear();
+    Cache::put('scheduler_heartbeat', now()->toIso8601String(), now()->addMinutes(5));
+
+    $this->artisan('platform:monitor')->assertExitCode(1)->expectsOutput('Platform health: degraded; alert: sent.');
+
+    Http::assertSentCount(2);
+    Http::assertSent(fn ($request): bool => (json_decode($request->body(), true, 512, JSON_THROW_ON_ERROR)['signals']['router_incidents'] ?? null) === 1);
 });
