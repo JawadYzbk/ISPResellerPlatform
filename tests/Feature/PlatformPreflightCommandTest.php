@@ -31,6 +31,22 @@ it('fails the production preflight for unsafe public configuration', function ()
         ->expectsOutputToContain('Preflight failed:');
 });
 
+it('rejects reserved placeholder hosts in production URLs', function (): void {
+    config()->set([
+        'app.key' => 'base64:'.base64_encode(str_repeat('a', 32)),
+        'app.env' => 'production',
+        'app.debug' => false,
+        'app.url' => 'https://example.invalid',
+        'session.secure' => true,
+        'queue.default' => 'database',
+        'cache.default' => 'database',
+    ]);
+
+    $this->artisan('platform:preflight', ['--production' => true])
+        ->assertExitCode(Command::FAILURE)
+        ->expectsOutputToContain('Public HTTPS application URL');
+});
+
 it('passes the production preflight for a production-shaped configuration', function (): void {
     config()->set([
         'app.key' => 'base64:'.base64_encode(str_repeat('a', 32)),

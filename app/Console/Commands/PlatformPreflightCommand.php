@@ -109,12 +109,7 @@ final class PlatformPreflightCommand extends Command
         $host = is_array($url) ? strtolower((string) ($url['host'] ?? '')) : '';
         $scheme = is_array($url) ? strtolower((string) ($url['scheme'] ?? '')) : '';
 
-        return $scheme === 'https' && $host !== '' && ! in_array($host, [
-            'localhost',
-            '127.0.0.1',
-            '::1',
-            '[::1]',
-        ], true);
+        return $scheme === 'https' && ! $this->isReservedHost($host);
     }
 
     private function usesAsynchronousQueue(): bool
@@ -263,7 +258,7 @@ final class PlatformPreflightCommand extends Command
         $host = is_array($parsed) ? strtolower((string) ($parsed['host'] ?? '')) : '';
         $scheme = is_array($parsed) ? strtolower((string) ($parsed['scheme'] ?? '')) : '';
 
-        return $scheme === 'https' && $host !== '' && ! in_array($host, ['localhost', '127.0.0.1', '::1', '[::1]'], true);
+        return $scheme === 'https' && ! $this->isReservedHost($host);
     }
 
     private function hasConfiguredValue(mixed $value): bool
@@ -277,5 +272,17 @@ final class PlatformPreflightCommand extends Command
         return ! in_array($normalized, ['null', 'replace-me', 'change-me', 'placeholder', 'set-me'], true)
             && ! str_contains($normalized, 'example.')
             && ! in_array($normalized, ['localhost', '127.0.0.1', '::1', '[::1]'], true);
+    }
+
+    private function isReservedHost(string $host): bool
+    {
+        $host = strtolower(trim($host, '[]'));
+
+        return $host === ''
+            || in_array($host, ['localhost', '127.0.0.1', '::1', 'example.com', 'example.net', 'example.org', 'example.invalid'], true)
+            || str_ends_with($host, '.example')
+            || str_ends_with($host, '.invalid')
+            || str_ends_with($host, '.localhost')
+            || str_ends_with($host, '.test');
     }
 }
