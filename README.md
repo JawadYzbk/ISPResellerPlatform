@@ -77,6 +77,22 @@ composer run dev
 
 Open [http://localhost:8000](http://localhost:8000). Demo account: `admin@example.com` / `password`.
 
+The demo seeder also creates one account for each tenant staff role so the role-specific views can be inspected locally. Every account below uses the development-only password `password`:
+
+| Role | Account |
+| --- | --- |
+| Tenant owner | `admin@example.com` |
+| Operations manager | `operations.manager@example.com` |
+| Billing manager | `billing.manager@example.com` |
+| Cashier | `cashier@example.com` |
+| Collector | `collector@example.com` |
+| Support agent | `support.agent@example.com` |
+| Technician | `technician@example.com` |
+| Network administrator | `network.admin@example.com` |
+| Reseller owner | `reseller.owner@example.com` |
+| Reseller staff | `reseller.staff@example.com` |
+| Auditor | `auditor@example.com` |
+
 ### Docker
 
 ```powershell

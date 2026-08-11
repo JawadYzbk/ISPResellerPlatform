@@ -38,13 +38,38 @@ use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
+    /** @var list<array{email: string, name: string, role: string}> */
+    private const DEMO_STAFF_ACCOUNTS = [
+        ['email' => 'admin@example.com', 'name' => 'Maya Haddad', 'role' => 'tenant_owner'],
+        ['email' => 'operations.manager@example.com', 'name' => 'Karim Nasser', 'role' => 'operations_manager'],
+        ['email' => 'billing.manager@example.com', 'name' => 'Rita Khoury', 'role' => 'billing_manager'],
+        ['email' => 'cashier@example.com', 'name' => 'Hadi Salem', 'role' => 'cashier'],
+        ['email' => 'collector@example.com', 'name' => 'Nadia Haddad', 'role' => 'collector'],
+        ['email' => 'support.agent@example.com', 'name' => 'Tarek Mansour', 'role' => 'support_agent'],
+        ['email' => 'technician@example.com', 'name' => 'Fadi Saad', 'role' => 'technician'],
+        ['email' => 'network.admin@example.com', 'name' => 'Jad Youssef', 'role' => 'network_administrator'],
+        ['email' => 'reseller.owner@example.com', 'name' => 'Samer Khalil', 'role' => 'reseller_owner'],
+        ['email' => 'reseller.staff@example.com', 'name' => 'Lara Bitar', 'role' => 'reseller_staff'],
+        ['email' => 'auditor@example.com', 'name' => 'Mira Farah', 'role' => 'auditor'],
+    ];
+
     public function run(): void
     {
         $tenant = Tenant::updateOrCreate(['slug' => 'northline'], ['name' => 'Northline Broadband', 'base_currency' => 'USD', 'collection_currency' => 'USD', 'timezone' => 'Asia/Beirut', 'locale' => 'en']);
-        $admin = User::updateOrCreate(['email' => 'admin@example.com'], ['tenant_id' => $tenant->id, 'name' => 'Maya Haddad', 'password' => Hash::make('password'), 'role' => 'tenant_owner', 'locale' => 'en', 'email_verified_at' => now()]);
 
         $this->call(CapabilitySeeder::class);
-        app(Tenancy::class)->run($tenant, fn (): mixed => $admin->assignRole('tenant_owner'));
+
+        $staff = [];
+        foreach (self::DEMO_STAFF_ACCOUNTS as $account) {
+            $user = User::updateOrCreate(
+                ['email' => $account['email']],
+                ['tenant_id' => $tenant->id, 'name' => $account['name'], 'password' => Hash::make('password'), 'role' => $account['role'], 'locale' => 'en', 'email_verified_at' => now()],
+            );
+            app(Tenancy::class)->run($tenant, fn (): mixed => $user->syncRoles([$account['role']]));
+            $staff[$account['role']] = $user;
+        }
+
+        $admin = $staff['tenant_owner'];
 
         app(Tenancy::class)->run($tenant, function () use ($admin): void {
             $postJournalEntry = app(PostJournalEntry::class);
