@@ -1,6 +1,6 @@
 <?php
 
-use Sentry\Event;
+use App\Support\SentryPrivacyScrubber;
 
 /**
  * Sentry Laravel SDK configuration file.
@@ -56,14 +56,7 @@ return [
     'send_default_pii' => env('SENTRY_SEND_DEFAULT_PII', false),
 
     // Keep user identity and request payloads out of exception events by default.
-    'before_send' => static function (Event $event): ?Event {
-        $event->setUser(null);
-        $request = $event->getRequest();
-        unset($request['data'], $request['cookies'], $request['headers']);
-        $event->setRequest($request);
-
-        return $event;
-    },
+    'before_send' => [SentryPrivacyScrubber::class, 'scrub'],
 
     // @see: https://docs.sentry.io/platforms/php/guides/laravel/configuration/options/#ignore_exceptions
     // 'ignore_exceptions' => [],

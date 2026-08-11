@@ -1,5 +1,6 @@
 <?php
 
+use App\Support\SentryPrivacyScrubber;
 use Sentry\Event;
 
 it('keeps telemetry privacy-safe and backup destinations explicitly configured', function (): void {
@@ -8,7 +9,8 @@ it('keeps telemetry privacy-safe and backup destinations explicitly configured',
         ->and(config('backup.backup.verify_backup'))->toBeTrue()
         ->and(config('backup.backup.encryption'))->toBe('default')
         ->and(config('broadcasting.connections.reverb.driver'))->toBe('reverb')
-        ->and(config('reverb.apps.apps.0.allowed_origins'))->not->toContain('*');
+        ->and(config('reverb.apps.apps.0.allowed_origins'))->not->toContain('*')
+        ->and(config('sentry.before_send'))->toBe([SentryPrivacyScrubber::class, 'scrub']);
 
     $event = Event::createEvent()->setRequest([
         'url' => 'https://example.test/health',
