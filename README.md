@@ -15,6 +15,7 @@ The current foundation is live:
 - Staff login, password reset, 2FA/re-authentication, session devices, dashboard, customer/service/report screens with tenant-safe zone/status/expiry directory filters
 - Capability-gated tenant settings for locale, timezone, currencies, display, notification quiet hours and automation defaults
 - Capability-gated effective-dated FX rate administration using exact numerator/denominator ratios
+- Owner-facing pilot readiness checklist covering tenant setup, currencies, FX freshness, branding, payments, notifications and WhatsApp
 - Operator directory with role-limited one-time invitations and a public invitation acceptance flow
 - Staff invoice and payment queues with allocation-backed balances, audited reversals, router health registry and network command operations screen
 - Atomic subscriber registration that can create the customer, pending service, installation work order and audit event together, plus an invoice-first renewal desk with duplicate-open-invoice protection
@@ -93,6 +94,8 @@ The demo seeder also creates one account for each tenant staff role so the role-
 | Reseller owner | `reseller.owner@example.com` |
 | Reseller staff | `reseller.staff@example.com` |
 | Auditor | `auditor@example.com` |
+
+The tenant owner can use **Settings → Pilot readiness** or `php artisan platform:tenant-readiness northline --json` before a pilot handoff. The readiness report treats missing provider credentials and branding as explicit warnings/failures, and flags collection rates older than `FX_RATE_MAX_AGE_HOURS` (72 hours by default).
 
 ### Docker
 
