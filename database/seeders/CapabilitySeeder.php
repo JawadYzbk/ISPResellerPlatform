@@ -70,7 +70,7 @@ class CapabilitySeeder extends Seeder
                 User::query()
                     ->where('tenant_id', $tenant->id)
                     ->whereIn('role', array_keys(self::ROLE_PERMISSIONS))
-                    ->each(fn (User $user): mixed => $user->assignRole((string) $user->role));
+                    ->each(fn (User $user): mixed => $user->assignRole((string) $user->getAttribute('role')));
             });
 
             app(MessageTemplateProvisioner::class)->provision($tenant);
