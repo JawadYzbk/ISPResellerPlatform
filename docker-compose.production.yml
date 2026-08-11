@@ -71,7 +71,7 @@ x-app-environment: &app-environment
   MAIL_SCHEME: ${MAIL_SCHEME:-tls}
   MAIL_USERNAME: ${MAIL_USERNAME:-}
   MAIL_PASSWORD: ${MAIL_PASSWORD:-}
-  MAIL_FROM_ADDRESS: ${MAIL_FROM_ADDRESS:-noreply@example.invalid}
+  MAIL_FROM_ADDRESS: ${MAIL_FROM_ADDRESS:-noreply@example.com}
   MAIL_FROM_NAME: ${MAIL_FROM_NAME:-ISP Manager}
 
 x-app-service: &app-service
