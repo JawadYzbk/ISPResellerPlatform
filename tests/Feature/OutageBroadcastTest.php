@@ -28,8 +28,14 @@ it('broadcasts router and POP outages once and sends recovery notices', function
     $router = Router::create(['pop_id' => $pop->id, 'name' => 'Core', 'host' => 'router.example.test', 'username' => 'api', 'password_encrypted' => 'secret']);
     $customer = Customer::factory()->create();
     Service::factory()->create(['customer_id' => $customer->id, 'router_id' => $router->id, 'status' => ServiceStatus::Active]);
-    MessageTemplate::create(['key' => 'outage.notice', 'channel' => 'sms', 'locale' => 'en', 'body' => 'Outage: {{ incident_title }}']);
-    MessageTemplate::create(['key' => 'outage.resolved', 'channel' => 'sms', 'locale' => 'en', 'body' => 'Resolved: {{ incident_title }}']);
+    MessageTemplate::updateOrCreate(
+        ['key' => 'outage.notice', 'channel' => 'sms', 'locale' => 'en'],
+        ['body' => 'Outage: {{ incident_title }}'],
+    );
+    MessageTemplate::updateOrCreate(
+        ['key' => 'outage.resolved', 'channel' => 'sms', 'locale' => 'en'],
+        ['body' => 'Resolved: {{ incident_title }}'],
+    );
 
     expect(app(CheckRouterHealth::class)->handle($router, 3))->toBeNull()
         ->and(app(CheckRouterHealth::class)->handle($router, 3))->toBeNull();
@@ -52,7 +58,10 @@ it('targets a zone scope without notifying customers outside it', function (): v
     $zone = Zone::factory()->create(['name' => 'North zone']);
     $inside = Customer::factory()->create(['zone_id' => $zone->id]);
     $outside = Customer::factory()->create();
-    MessageTemplate::create(['key' => 'outage.notice', 'channel' => 'sms', 'locale' => 'en', 'body' => 'Outage: {{ incident_title }}']);
+    MessageTemplate::updateOrCreate(
+        ['key' => 'outage.notice', 'channel' => 'sms', 'locale' => 'en'],
+        ['body' => 'Outage: {{ incident_title }}'],
+    );
     $incident = Incident::create(['type' => 'zone_outage', 'severity' => 'warning', 'status' => 'open', 'title' => 'Zone interruption', 'opened_at' => now(), 'metadata' => ['zone_id' => $zone->id]]);
 
     expect(app(BroadcastIncidentNotification::class)->handle($incident, 'outage.notice'))->toBe(1)

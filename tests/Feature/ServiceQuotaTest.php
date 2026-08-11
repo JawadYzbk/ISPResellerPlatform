@@ -48,7 +48,10 @@ it('queues each configured quota warning threshold once', function (): void {
     Queue::fake();
     $tenant = Tenant::create(['name' => 'Eastline', 'slug' => 'eastline', 'base_currency' => 'USD', 'collection_currency' => 'USD']);
     app(Tenancy::class)->set($tenant);
-    MessageTemplate::create(['key' => 'service.quota_warning', 'channel' => 'sms', 'locale' => 'en', 'body' => '{{ customer_name }} used {{ quota_percent }}% of the quota for {{ service_username }}.']);
+    MessageTemplate::updateOrCreate(
+        ['key' => 'service.quota_warning', 'channel' => 'sms', 'locale' => 'en'],
+        ['body' => '{{ customer_name }} used {{ quota_percent }}% of the quota for {{ service_username }}.'],
+    );
     $service = Service::factory()->create(['status' => ServiceStatus::Active, 'expires_at' => CarbonImmutable::parse('2026-08-30')]);
     $service->plan->forceFill(['metadata' => ['quota_bytes' => 1000, 'quota_warning_thresholds' => [0.8, 0.95], 'fup_action' => 'throttle']])->save();
     UsageDaily::create(['service_id' => $service->id, 'usage_date' => '2026-08-10', 'input_octets' => 1000, 'output_octets' => 0, 'total_octets' => 1000, 'rolled_up_at' => now()]);

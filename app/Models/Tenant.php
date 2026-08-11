@@ -39,7 +39,7 @@ class Tenant extends Model
             app(TenantProvisioner::class)->provision($tenant);
         });
         static::updated(function (self $tenant): void {
-            if ($tenant->wasChanged(['base_currency', 'collection_currency'])) {
+            if ($tenant->wasChanged(['base_currency', 'collection_currency', 'locale'])) {
                 app(TenantProvisioner::class)->provision($tenant);
             }
         });

@@ -57,7 +57,10 @@ it('resends a collector payment receipt through the selected channel', function 
     $user->assignRole('collector');
     $customer = Customer::factory()->create();
     $payment = Payment::create(['customer_id' => $customer->id, 'number' => 'RCT-COLLECTOR-001', 'status' => 'posted', 'amount' => 300, 'currency' => 'USD', 'method' => 'cash', 'idempotency_key' => 'collector-receipt-payment-001', 'received_at' => now(), 'actor_id' => $user->id]);
-    MessageTemplate::create(['key' => 'payment.receipt', 'channel' => 'sms', 'locale' => 'en', 'body' => 'Receipt {{ receipt_number }}']);
+    MessageTemplate::updateOrCreate(
+        ['key' => 'payment.receipt', 'channel' => 'sms', 'locale' => 'en'],
+        ['body' => 'Receipt {{ receipt_number }}'],
+    );
     $token = $user->createToken('collector-receipt', ['api', 'staff:collector'])->plainTextToken;
 
     $response = $this->withToken($token)

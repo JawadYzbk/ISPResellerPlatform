@@ -11,7 +11,7 @@ final class MessageTemplateProvisioner
     private const CHANNELS = ['whatsapp', 'sms', 'email'];
 
     /** @var list<string> */
-    private const LOCALES = ['en', 'ar', 'fr'];
+    private const SUPPORTED_LOCALES = ['en', 'ar', 'fr'];
 
     /**
      * @var array<string, array{variables: list<string>, subjects: array<string, string>, bodies: array<string, string>}>
@@ -125,27 +125,27 @@ final class MessageTemplateProvisioner
 
     public function provision(Tenant $tenant): void
     {
-        app(Tenancy::class)->run($tenant, function (): void {
+        app(Tenancy::class)->run($tenant, function () use ($tenant): void {
             $tenantId = app(Tenancy::class)->requireId();
             $timestamp = now();
             $templates = [];
+            $locale = strtolower((string) ($tenant->locale ?: 'en'));
+            $locale = in_array($locale, self::SUPPORTED_LOCALES, true) ? $locale : 'en';
 
             foreach (self::DEFAULT_TEMPLATES as $key => $definition) {
                 foreach (self::CHANNELS as $channel) {
-                    foreach (self::LOCALES as $locale) {
-                        $templates[] = [
-                            'tenant_id' => $tenantId,
-                            'key' => $key,
-                            'channel' => $channel,
-                            'locale' => $locale,
-                            'subject' => $channel === 'email' ? $definition['subjects'][$locale] : null,
-                            'body' => $definition['bodies'][$locale],
-                            'variables' => json_encode($definition['variables'], JSON_THROW_ON_ERROR),
-                            'is_active' => true,
-                            'created_at' => $timestamp,
-                            'updated_at' => $timestamp,
-                        ];
-                    }
+                    $templates[] = [
+                        'tenant_id' => $tenantId,
+                        'key' => $key,
+                        'channel' => $channel,
+                        'locale' => $locale,
+                        'subject' => $channel === 'email' ? $definition['subjects'][$locale] : null,
+                        'body' => $definition['bodies'][$locale],
+                        'variables' => json_encode($definition['variables'], JSON_THROW_ON_ERROR),
+                        'is_active' => true,
+                        'created_at' => $timestamp,
+                        'updated_at' => $timestamp,
+                    ];
                 }
             }
 

@@ -17,7 +17,10 @@ it('queues one tenant-local expiry reminder and respects opt-out and quiet hours
     Queue::fake();
     $tenant = Tenant::create(['name' => 'Northline', 'slug' => 'northline', 'timezone' => 'Asia/Beirut', 'base_currency' => 'USD', 'collection_currency' => 'USD', 'settings' => ['expiry_reminder_send_hour' => 9]]);
     app(Tenancy::class)->set($tenant);
-    $template = MessageTemplate::create(['key' => 'service.expiry_reminder', 'channel' => 'sms', 'locale' => 'en', 'body' => '{{ customer_name }} · {{ service_username }} expires {{ expiry_date }} ({{ days_remaining }} days).']);
+    $template = MessageTemplate::updateOrCreate(
+        ['key' => 'service.expiry_reminder', 'channel' => 'sms', 'locale' => 'en'],
+        ['body' => '{{ customer_name }} · {{ service_username }} expires {{ expiry_date }} ({{ days_remaining }} days).'],
+    );
     $localNow = CarbonImmutable::parse('2026-08-10 09:00:00', 'Asia/Beirut');
     $service = Service::factory()->create(['status' => ServiceStatus::Active, 'expires_at' => $localNow->addDays(7)->setTimezone('UTC')]);
     $optedOut = Service::factory()->create(['status' => ServiceStatus::Active, 'expires_at' => $localNow->addDays(7)->setTimezone('UTC')]);
@@ -33,8 +36,14 @@ it('uses the customer channel order so an expiry reminder can fall back', functi
     Queue::fake();
     $tenant = Tenant::create(['name' => 'Fallbackline', 'slug' => 'fallbackline', 'timezone' => 'Asia/Beirut', 'base_currency' => 'USD', 'collection_currency' => 'USD']);
     app(Tenancy::class)->set($tenant);
-    MessageTemplate::create(['key' => 'service.expiry_reminder', 'channel' => 'sms', 'locale' => 'en', 'body' => 'SMS {{ service_username }}']);
-    MessageTemplate::create(['key' => 'service.expiry_reminder', 'channel' => 'email', 'locale' => 'en', 'body' => 'Email {{ service_username }}']);
+    MessageTemplate::updateOrCreate(
+        ['key' => 'service.expiry_reminder', 'channel' => 'sms', 'locale' => 'en'],
+        ['body' => 'SMS {{ service_username }}'],
+    );
+    MessageTemplate::updateOrCreate(
+        ['key' => 'service.expiry_reminder', 'channel' => 'email', 'locale' => 'en'],
+        ['body' => 'Email {{ service_username }}'],
+    );
     $localNow = CarbonImmutable::parse('2026-08-10 09:00:00', 'Asia/Beirut');
     $service = Service::factory()->create([
         'status' => ServiceStatus::Active,
