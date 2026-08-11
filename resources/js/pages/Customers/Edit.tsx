@@ -1,3 +1,4 @@
+import ResponsiveSelect from '@/components/ui/responsive-select';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { ArrowLeft, Save } from 'lucide-react';
 
@@ -100,7 +101,7 @@ export default function CustomersEdit({ customer, zones }: Props) {
                             <label className="field-label" htmlFor="zone_id">
                                 Zone
                             </label>
-                            <select
+                            <ResponsiveSelect
                                 id="zone_id"
                                 className="field"
                                 value={form.data.zone_id}
@@ -112,7 +113,7 @@ export default function CustomersEdit({ customer, zones }: Props) {
                                         {zone.name}
                                     </option>
                                 ))}
-                            </select>
+                            </ResponsiveSelect>
                             {form.errors.zone_id && <p className="field-error">{form.errors.zone_id}</p>}
                         </div>
                         <div>

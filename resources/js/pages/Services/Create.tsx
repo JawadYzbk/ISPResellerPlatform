@@ -1,3 +1,4 @@
+import ResponsiveSelect from '@/components/ui/responsive-select';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { ArrowLeft, KeyRound, Save, Wifi } from 'lucide-react';
 import { useMemo } from 'react';
@@ -95,7 +96,7 @@ export default function ServicesCreate({ customer, plans, routers }: Props) {
                         <label className="field-label" htmlFor="plan_id">
                             Plan
                         </label>
-                        <select
+                        <ResponsiveSelect
                             id="plan_id"
                             className="field"
                             value={form.data.plan_id}
@@ -107,7 +108,7 @@ export default function ServicesCreate({ customer, plans, routers }: Props) {
                                     {plan.duration_days} days
                                 </option>
                             ))}
-                        </select>
+                        </ResponsiveSelect>
                         {form.errors.plan_id && <p className="field-error">{form.errors.plan_id}</p>}
                         {selectedPlan && (
                             <p className="mt-1 text-xs text-muted">Plan currency: {selectedPlan.currency}</p>
@@ -187,7 +188,7 @@ export default function ServicesCreate({ customer, plans, routers }: Props) {
                             <label className="field-label" htmlFor="router_id">
                                 Router
                             </label>
-                            <select
+                            <ResponsiveSelect
                                 id="router_id"
                                 className="field"
                                 value={form.data.router_id}
@@ -199,7 +200,7 @@ export default function ServicesCreate({ customer, plans, routers }: Props) {
                                         {router.name}
                                     </option>
                                 ))}
-                            </select>
+                            </ResponsiveSelect>
                             {form.errors.router_id && <p className="field-error">{form.errors.router_id}</p>}
                         </div>
                     )}

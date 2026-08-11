@@ -1,3 +1,4 @@
+import ResponsiveSelect from '@/components/ui/responsive-select';
 import { Head, Link } from '@inertiajs/react';
 import { Elements, PaymentElement, useElements, useStripe } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
@@ -409,7 +410,7 @@ export default function PortalDashboard({ tenant }: Props) {
                                         <div className="mt-5 flex flex-col gap-4 sm:flex-row sm:items-end">
                                             <label className="block flex-1">
                                                 <span className="field-label">Invoice</span>
-                                                <select
+                                                <ResponsiveSelect
                                                     className="field"
                                                     value={
                                                         selectedInvoiceId ||
@@ -440,7 +441,7 @@ export default function PortalDashboard({ tenant }: Props) {
                                                                 )}
                                                             </option>
                                                         ))}
-                                                </select>
+                                                </ResponsiveSelect>
                                             </label>
                                             <button
                                                 type="button"
@@ -534,7 +535,7 @@ export default function PortalDashboard({ tenant }: Props) {
                                 <h2 className="section-title">Open a ticket</h2>
                                 <label className="block">
                                     <span className="field-label">Category</span>
-                                    <select
+                                    <ResponsiveSelect
                                         className="field"
                                         value={ticketForm.category}
                                         onChange={(event) =>
@@ -546,7 +547,7 @@ export default function PortalDashboard({ tenant }: Props) {
                                         <option value="billing">Billing</option>
                                         <option value="relocation">Relocation</option>
                                         <option value="other">Other</option>
-                                    </select>
+                                    </ResponsiveSelect>
                                 </label>
                                 <label className="block">
                                     <span className="field-label">Subject</span>

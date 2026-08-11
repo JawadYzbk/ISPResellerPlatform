@@ -1,3 +1,4 @@
+import ResponsiveSelect from '@/components/ui/responsive-select';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { ArrowLeft, BookOpen, Plus, WalletCards } from 'lucide-react';
 
@@ -131,7 +132,7 @@ export default function Commercial({ partners, selectedPartner, catalog, settlem
                     <div className="grid gap-4 md:grid-cols-3">
                         <label>
                             <span className="field-label">Parent account</span>
-                            <select
+                            <ResponsiveSelect
                                 className="field"
                                 value={form.data.parent_id}
                                 onChange={(event) => form.setData('parent_id', event.target.value)}
@@ -142,7 +143,7 @@ export default function Commercial({ partners, selectedPartner, catalog, settlem
                                         {partner.name} · {partner.code}
                                     </option>
                                 ))}
-                            </select>
+                            </ResponsiveSelect>
                             {form.errors.parent_id && <span className="field-error">{form.errors.parent_id}</span>}
                         </label>
                         <label>

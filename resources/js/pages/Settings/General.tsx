@@ -1,3 +1,4 @@
+import ResponsiveSelect from '@/components/ui/responsive-select';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { AlertCircle, ArrowLeft, CheckCircle2, ImagePlus, Save, Settings2 } from 'lucide-react';
 
@@ -238,7 +239,7 @@ export default function GeneralSettings({ tenant, settings, payments, setup }: P
                             </label>
                             <label>
                                 <span className="field-label">Locale</span>
-                                <select
+                                <ResponsiveSelect
                                     className="field"
                                     value={form.data.locale}
                                     onChange={(event) =>
@@ -248,7 +249,7 @@ export default function GeneralSettings({ tenant, settings, payments, setup }: P
                                     <option value="en">English</option>
                                     <option value="ar">Arabic</option>
                                     <option value="fr">French</option>
-                                </select>
+                                </ResponsiveSelect>
                             </label>
                             <label>
                                 <span className="field-label">Timezone</span>

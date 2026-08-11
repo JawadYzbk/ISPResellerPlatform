@@ -1,3 +1,4 @@
+import ResponsiveSelect from '@/components/ui/responsive-select';
 import { Head, Link, router, useForm } from '@inertiajs/react';
 import { ChevronLeft, ChevronRight, Copy, MailPlus, Search, Users } from 'lucide-react';
 import { useState } from 'react';
@@ -208,7 +209,7 @@ export default function UsersPage({ users, invitations, roles, filters, invitati
                         </label>
                         <label>
                             <span className="field-label">Role</span>
-                            <select
+                            <ResponsiveSelect
                                 className="field"
                                 value={form.data.role}
                                 onChange={(event) => form.setData('role', event.target.value)}
@@ -218,7 +219,7 @@ export default function UsersPage({ users, invitations, roles, filters, invitati
                                         {role.replaceAll('_', ' ')}
                                     </option>
                                 ))}
-                            </select>
+                            </ResponsiveSelect>
                             {form.errors.role && <p className="field-error">{form.errors.role}</p>}
                         </label>
                         <button className="button-primary w-full" disabled={form.processing}>

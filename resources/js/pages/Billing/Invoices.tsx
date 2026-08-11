@@ -1,3 +1,4 @@
+import ResponsiveSelect from '@/components/ui/responsive-select';
 import { Head, Link, router } from '@inertiajs/react';
 import { ChevronLeft, ChevronRight, FileText, Search } from 'lucide-react';
 import { useState } from 'react';
@@ -70,12 +71,16 @@ export default function InvoicesPage({ invoices, filters, canIssue = false }: Pr
                 </label>
                 <label className="block sm:min-w-48">
                     <span className="field-label">Invoice status</span>
-                    <select className="field" value={status} onChange={(event) => setStatus(event.target.value)}>
+                    <ResponsiveSelect
+                        className="field"
+                        value={status}
+                        onChange={(event) => setStatus(event.target.value)}
+                    >
                         <option value="">All statuses</option>
                         <option value="draft">Draft</option>
                         <option value="issued">Issued</option>
                         <option value="void">Void</option>
-                    </select>
+                    </ResponsiveSelect>
                 </label>
                 <button type="submit" className="button-primary">
                     Apply filters

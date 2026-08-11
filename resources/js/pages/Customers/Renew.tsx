@@ -1,3 +1,4 @@
+import ResponsiveSelect from '@/components/ui/responsive-select';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { ArrowLeft, CalendarClock, Receipt, Save } from 'lucide-react';
 
@@ -52,7 +53,7 @@ export default function CustomerRenew({ customer, services }: Props) {
                         <label className="field-label" htmlFor="service_id">
                             Service
                         </label>
-                        <select
+                        <ResponsiveSelect
                             id="service_id"
                             className="field"
                             value={form.data.service_id}
@@ -63,7 +64,7 @@ export default function CustomerRenew({ customer, services }: Props) {
                                     {service.username} / {service.plan?.name ?? 'Plan unavailable'}
                                 </option>
                             ))}
-                        </select>
+                        </ResponsiveSelect>
                         {form.errors.service_id && <p className="field-error">{form.errors.service_id}</p>}
                     </div>
                     {selectedService && (

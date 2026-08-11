@@ -1,3 +1,4 @@
+import ResponsiveSelect from '@/components/ui/responsive-select';
 import { Head, Link, router, useForm } from '@inertiajs/react';
 import { Archive, ChevronLeft, ChevronRight, Plus, Search, Tags } from 'lucide-react';
 import { useState } from 'react';
@@ -146,11 +147,15 @@ export default function PlansIndex({ plans, filters, addons, promotions, availab
                 </label>
                 <label className="block sm:min-w-48">
                     <span className="field-label">Status</span>
-                    <select className="field" value={status} onChange={(event) => setStatus(event.target.value)}>
+                    <ResponsiveSelect
+                        className="field"
+                        value={status}
+                        onChange={(event) => setStatus(event.target.value)}
+                    >
                         <option value="">All statuses</option>
                         <option value="active">Active</option>
                         <option value="inactive">Inactive</option>
-                    </select>
+                    </ResponsiveSelect>
                 </label>
                 <button type="submit" className="button-primary">
                     Apply filters
@@ -288,7 +293,7 @@ export default function PlansIndex({ plans, filters, addons, promotions, availab
                         </label>
                         <label>
                             <span className="field-label">Type</span>
-                            <select
+                            <ResponsiveSelect
                                 className="field"
                                 value={promotionForm.data.type}
                                 onChange={(event) => promotionForm.setData('type', event.target.value)}
@@ -296,7 +301,7 @@ export default function PlansIndex({ plans, filters, addons, promotions, availab
                                 <option value="percent">Percent</option>
                                 <option value="fixed">Fixed minor units</option>
                                 <option value="free_days">Free days</option>
-                            </select>
+                            </ResponsiveSelect>
                         </label>
                         <label>
                             <span className="field-label">

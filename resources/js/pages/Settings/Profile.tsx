@@ -1,3 +1,4 @@
+import ResponsiveSelect from '@/components/ui/responsive-select';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { ArrowLeft, KeyRound, Save, ShieldCheck } from 'lucide-react';
 
@@ -69,7 +70,7 @@ export default function ProfilePage({ profile }: Props) {
                             </label>
                             <label>
                                 <span className="field-label">Language</span>
-                                <select
+                                <ResponsiveSelect
                                     className="field"
                                     value={form.data.locale}
                                     onChange={(event) =>
@@ -79,7 +80,7 @@ export default function ProfilePage({ profile }: Props) {
                                     <option value="en">English</option>
                                     <option value="ar">Arabic</option>
                                     <option value="fr">French</option>
-                                </select>
+                                </ResponsiveSelect>
                             </label>
                             <label className="sm:col-span-2">
                                 <span className="field-label">Personal timezone</span>

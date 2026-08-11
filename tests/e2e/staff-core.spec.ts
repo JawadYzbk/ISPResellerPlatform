@@ -247,13 +247,15 @@ test.describe('staff core journeys', () => {
         await Promise.all([page.waitForURL('**/dashboard'), page.getByRole('button', { name: 'Confirm' }).click()]);
 
         await page.goto('/settings/general');
-        await page.getByLabel('Locale').selectOption('ar');
+        await page.getByLabel('Locale').click();
+        await page.getByRole('option', { name: 'Arabic' }).click();
         await page.getByRole('button', { name: 'Save settings' }).click();
         await expect(page.locator('#app > div[dir="rtl"]')).toBeVisible({ timeout: 15_000 });
         await expect(page.locator('html')).toHaveAttribute('dir', 'rtl', { timeout: 15_000 });
 
         await page.goto('/settings/general');
-        await page.getByLabel('Locale').selectOption('en');
+        await page.getByLabel('Locale').click();
+        await page.getByRole('option', { name: 'English' }).click();
         await page.getByRole('button', { name: 'Save settings' }).click();
         await expect(page.locator('html')).toHaveAttribute('dir', 'ltr', { timeout: 15_000 });
         await expect(page.locator('#app > div[dir="ltr"]')).toBeVisible({ timeout: 15_000 });

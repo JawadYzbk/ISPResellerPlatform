@@ -1,3 +1,4 @@
+import ResponsiveSelect from '@/components/ui/responsive-select';
 import { Head, Link, router, useForm } from '@inertiajs/react';
 import { ArrowLeft, CreditCard, QrCode, Receipt, Save } from 'lucide-react';
 
@@ -197,7 +198,7 @@ export default function PaymentCreate({ customer, invoices, defaultCurrency, pay
                         <label className="field-label" htmlFor="currency">
                             Payment currency
                         </label>
-                        <select
+                        <ResponsiveSelect
                             id="currency"
                             className="field"
                             value={form.data.currency}
@@ -208,7 +209,7 @@ export default function PaymentCreate({ customer, invoices, defaultCurrency, pay
                                     {currency.code} · {currency.name}
                                 </option>
                             ))}
-                        </select>
+                        </ResponsiveSelect>
                         {selectedRate ? (
                             <p className="mt-1 text-xs text-muted">Current rate: {formatRate(selectedRate)}</p>
                         ) : needsFx ? (
@@ -222,7 +223,7 @@ export default function PaymentCreate({ customer, invoices, defaultCurrency, pay
                         <label className="field-label" htmlFor="invoice_id">
                             Apply to invoice (optional)
                         </label>
-                        <select
+                        <ResponsiveSelect
                             id="invoice_id"
                             className="field"
                             value={form.data.invoice_id}
@@ -235,14 +236,14 @@ export default function PaymentCreate({ customer, invoices, defaultCurrency, pay
                                     outstanding
                                 </option>
                             ))}
-                        </select>
+                        </ResponsiveSelect>
                         {form.errors.invoice_id && <p className="field-error">{form.errors.invoice_id}</p>}
                     </div>
                     <div>
                         <label className="field-label" htmlFor="method">
                             Payment method
                         </label>
-                        <select
+                        <ResponsiveSelect
                             id="method"
                             className="field"
                             value={form.data.method}
@@ -252,7 +253,7 @@ export default function PaymentCreate({ customer, invoices, defaultCurrency, pay
                             <option value="bank_transfer">Bank transfer</option>
                             <option value="card">Card (manual record)</option>
                             <option value="mobile_wallet">Mobile wallet</option>
-                        </select>
+                        </ResponsiveSelect>
                         {form.errors.method && <p className="field-error">{form.errors.method}</p>}
                     </div>
                     {needsFx && (
@@ -329,7 +330,7 @@ export default function PaymentCreate({ customer, invoices, defaultCurrency, pay
                                 <label className="field-label" htmlFor="rounding_mode">
                                     Conversion rounding
                                 </label>
-                                <select
+                                <ResponsiveSelect
                                     id="rounding_mode"
                                     className="field"
                                     value={form.data.rounding_mode}
@@ -338,7 +339,7 @@ export default function PaymentCreate({ customer, invoices, defaultCurrency, pay
                                     <option value="half_up">Half up (standard)</option>
                                     <option value="floor">Floor (never over-collect)</option>
                                     <option value="ceil">Ceiling</option>
-                                </select>
+                                </ResponsiveSelect>
                                 <p className="mt-1 text-xs text-muted">
                                     The selected policy is saved with the payment rate for audit and receipt history.
                                 </p>

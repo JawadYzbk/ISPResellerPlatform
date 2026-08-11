@@ -1,3 +1,4 @@
+import ResponsiveSelect from '@/components/ui/responsive-select';
 import { Head, Link, router, useForm } from '@inertiajs/react';
 import {
     CalendarClock,
@@ -160,7 +161,7 @@ export default function CustomersIndex({ customers, filters, zones, savedViews, 
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
                     <label className="block min-w-56">
                         <span className="field-label">Saved view</span>
-                        <select
+                        <ResponsiveSelect
                             className="field"
                             value={selectedViewId}
                             onChange={(event) => setSelectedViewId(event.target.value)}
@@ -171,7 +172,7 @@ export default function CustomersIndex({ customers, filters, zones, savedViews, 
                                     {view.name}
                                 </option>
                             ))}
-                        </select>
+                        </ResponsiveSelect>
                     </label>
                     <button
                         type="button"
@@ -261,7 +262,7 @@ export default function CustomersIndex({ customers, filters, zones, savedViews, 
                             <div className="flex flex-wrap items-end gap-3">
                                 <label className="block min-w-44">
                                     <span className="field-label">Customer status</span>
-                                    <select
+                                    <ResponsiveSelect
                                         className="field"
                                         value={status}
                                         onChange={(event) => setStatus(event.target.value)}
@@ -270,11 +271,11 @@ export default function CustomersIndex({ customers, filters, zones, savedViews, 
                                         <option value="active">Active</option>
                                         <option value="inactive">Inactive</option>
                                         <option value="archived">Archived</option>
-                                    </select>
+                                    </ResponsiveSelect>
                                 </label>
                                 <label className="block min-w-48">
                                     <span className="field-label">Zone</span>
-                                    <select
+                                    <ResponsiveSelect
                                         className="field"
                                         value={zoneId}
                                         onChange={(event) => setZoneId(event.target.value)}
@@ -285,7 +286,7 @@ export default function CustomersIndex({ customers, filters, zones, savedViews, 
                                                 {zone.name}
                                             </option>
                                         ))}
-                                    </select>
+                                    </ResponsiveSelect>
                                 </label>
                                 <label className="block min-w-40">
                                     <span className="field-label">Expiry from</span>

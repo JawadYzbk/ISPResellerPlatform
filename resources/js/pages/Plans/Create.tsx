@@ -1,3 +1,4 @@
+import ResponsiveSelect from '@/components/ui/responsive-select';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { ArrowLeft, Save, Tags } from 'lucide-react';
 
@@ -165,7 +166,7 @@ export default function PlanCreate() {
                     <label className="field-label" htmlFor="status">
                         Plan status
                     </label>
-                    <select
+                    <ResponsiveSelect
                         id="status"
                         className="field"
                         value={form.data.status}
@@ -173,7 +174,7 @@ export default function PlanCreate() {
                     >
                         <option value="active">Active</option>
                         <option value="inactive">Inactive</option>
-                    </select>
+                    </ResponsiveSelect>
                 </div>
                 <div className="flex items-center gap-2 rounded-xl border border-line bg-sand/40 p-4 text-sm text-muted">
                     <Tags size={17} className="text-brand" /> Router rate-limit preview:{' '}

@@ -1,3 +1,4 @@
+import ResponsiveSelect from '@/components/ui/responsive-select';
 import { Head, Link, router } from '@inertiajs/react';
 import { ChevronLeft, ChevronRight, Search, Wifi } from 'lucide-react';
 import { useState } from 'react';
@@ -49,13 +50,17 @@ export default function ServicesIndex({ services, filters }: Props) {
                     </label>
                     <label className="block sm:min-w-48">
                         <span className="field-label">Service status</span>
-                        <select className="field" value={status} onChange={(event) => setStatus(event.target.value)}>
+                        <ResponsiveSelect
+                            className="field"
+                            value={status}
+                            onChange={(event) => setStatus(event.target.value)}
+                        >
                             <option value="">All statuses</option>
                             <option value="pending">Pending</option>
                             <option value="active">Active</option>
                             <option value="suspended">Suspended</option>
                             <option value="terminated">Terminated</option>
-                        </select>
+                        </ResponsiveSelect>
                     </label>
                     <button type="submit" className="button-primary">
                         Apply filters
