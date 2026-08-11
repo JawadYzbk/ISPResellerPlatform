@@ -126,6 +126,33 @@ test.describe('staff core journeys', () => {
         await expect(page.getByText('Tenant logo', { exact: true })).toBeVisible();
     });
 
+    test('renders the billing, FX, reports, and messaging workspaces', async ({ page }) => {
+        await signIn(page);
+
+        await page.goto('/customers');
+        await page.getByRole('link', { name: 'Open', exact: true }).first().click();
+        await expect(page.getByRole('link', { name: 'Take payment', exact: true })).toBeVisible();
+        await page.getByRole('link', { name: 'Take payment', exact: true }).click();
+        await expect(page.getByRole('heading', { name: 'Record payment' })).toBeVisible();
+        await expect(page.getByLabel('Payment currency')).toBeVisible();
+        await expect(page.getByLabel('Conversion rounding')).toBeVisible();
+
+        await page.goto('/billing/exchange-rates');
+        await expect(page.getByRole('heading', { name: 'Exchange rates' })).toBeVisible();
+        await expect(page.getByText('Frankfurter market rates', { exact: true })).toBeVisible();
+
+        await page.goto('/reports/finance');
+        await expect(page.getByRole('heading', { name: 'Collections and revenue' })).toBeVisible();
+        await expect(page.getByRole('link', { name: 'Download CSV' })).toBeVisible();
+
+        await page.goto('/reports/operations');
+        await expect(page.getByRole('heading', { name: 'Network and field health' })).toBeVisible();
+
+        await page.goto('/settings/whatsapp');
+        await expect(page.getByRole('heading', { name: 'WhatsApp delivery' })).toBeVisible();
+        await expect(page.getByRole('heading', { name: 'Send one test message' })).toBeVisible();
+    });
+
     test('opens the profile menu and notifications center from the header', async ({ page }) => {
         await signIn(page);
         await expect(page.getByRole('heading', { name: 'Your operations at a glance.' })).toBeVisible();
