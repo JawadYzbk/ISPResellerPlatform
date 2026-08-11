@@ -73,7 +73,7 @@ it('passes the production preflight for a production-shaped configuration', func
         'broadcasting.default' => 'reverb',
         'broadcasting.connections.reverb.key' => 'reverb-key',
         'broadcasting.connections.reverb.secret' => 'reverb-secret',
-        'broadcasting.connections.reverb.host' => 'realtime.provider.test',
+        'broadcasting.connections.reverb.options.host' => 'realtime.provider.test',
         'reverb.apps.apps.0.allowed_origins' => ['https://portal.provider.test'],
     ]);
 

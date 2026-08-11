@@ -186,10 +186,11 @@ final class PlatformPreflightCommand extends Command
         }
 
         $allowedOrigins = config('reverb.apps.apps.0.allowed_origins');
+        $host = config('broadcasting.connections.reverb.options.host');
 
         return $this->hasConfiguredValue(config('broadcasting.connections.reverb.key'))
             && $this->hasConfiguredValue(config('broadcasting.connections.reverb.secret'))
-            && $this->hasConfiguredValue(config('broadcasting.connections.reverb.host'))
+            && $this->hasConfiguredValue($host)
             && is_array($allowedOrigins)
             && $allowedOrigins !== [];
     }
