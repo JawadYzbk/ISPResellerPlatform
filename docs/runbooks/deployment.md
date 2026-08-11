@@ -5,7 +5,7 @@ Use this procedure for a production-shaped deployment. Keep the release artifact
 ## Before the window
 
 - Confirm the target release commit and a tested rollback artifact.
-- Confirm database, Redis, queue, mail, object storage, Sentry, backup, payment, notification, router, and Reverb secrets are present in the secret store. If using Web.js notifications, also provision the bridge token, callback secret, and persistent session volume.
+- Confirm database, Redis, queue, mail, object storage, Sentry, backup, monitoring alert, payment, notification, router, and Reverb secrets are present in the secret store. If using Web.js notifications, also provision the bridge token, callback secret, and persistent session volume.
 - Confirm a recent backup and a successful isolated restore rehearsal. A successful backup listing alone is not a restore test.
 - Announce the window to operations and support. Pause imports and planned network maintenance during schema changes.
 
@@ -51,7 +51,7 @@ php artisan route:cache
 php artisan platform:preflight --production
 ```
 
-`platform:preflight --production` must pass before traffic is admitted. It checks the application key, database connectivity, migration state, production environment, debug mode, public HTTPS URL, secure session cookies, asynchronous queue, persistent cache, tenant capability assignments, Sentry privacy configuration, encrypted off-site backups, private object storage, Reverb credentials when realtime is enabled, and the Web.js bridge configuration when that provider is selected. It does not replace the scheduler, queue-worker, backup-restore, or external alert checks below.
+`platform:preflight --production` must pass before traffic is admitted. It checks the application key, database connectivity, migration state, production environment, debug mode, public HTTPS URL, secure session cookies, asynchronous queue, persistent cache, tenant capability assignments, Sentry privacy configuration, encrypted off-site backups, private object storage, monitoring alert routing, Reverb credentials when realtime is enabled, and the Web.js bridge configuration when that provider is selected. It does not replace the scheduler, queue-worker, backup-restore, or external alert checks below.
 
 Start or restart the long-running processes from the deployment supervisor:
 

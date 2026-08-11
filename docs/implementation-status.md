@@ -45,7 +45,7 @@ Last updated: 2026-08-11
 - WhatsApp Web.js QR pairing, session supervision and account-policy acceptance; the private bridge is implemented and opt-in, but no live account is claimed here.
 - Live customer self-service settlement through Stripe credentials/webhook delivery and realtime deployment rollout remain external acceptance gates; the repository-side Stripe integration is delivered under ISP-033B.
 - Whish Pay still requires live sandbox/merchant acceptance: verify the current official endpoint contract, callback field names, credentials, callback delivery and QR collection behavior before enabling production. The referenced community client remains a contract reference only; its Node package is not shipped in this Laravel application.
-- Monitoring alert routing and external dashboard signal delivery.
+- External monitoring destination, escalation policy and dashboard signal delivery; the repository-side signed, deduplicated platform health monitor is implemented and scheduled.
 - Security operations: deployment-shaped PostgreSQL/object-media backup restore rehearsal, off-site retention and Sentry project validation; the local encrypted SQLite rehearsal passed.
 - PostgreSQL 17 production-shaped pool and infrastructure-level cold-cache acceptance against the 50k-service seed; the isolated PostgreSQL 17 data/query-plan and post-restart evidence is recorded in the performance runbook.
 
