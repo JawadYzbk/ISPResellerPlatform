@@ -5,7 +5,7 @@ import { AlertTriangle, Check, CreditCard, LogOut, RefreshCw, Send, UserRound, W
 import { useEffect, useMemo, useState } from 'react';
 
 import { StatusBadge } from '@/components/StatusBadge';
-import { formatDate } from '@/lib/format';
+import { formatDate, formatMoney } from '@/lib/format';
 import type { Customer, PortalBalance, PortalBilling, PortalNotice, PortalTicket, PublicTenant } from '@/types';
 
 type Props = { tenant: PublicTenant };
@@ -227,7 +227,7 @@ export default function PortalDashboard({ tenant }: Props) {
                                 <p
                                     className={`mt-3 text-3xl font-semibold ${customer.balance_amount > 0 ? 'text-rose-700' : 'text-ink'}`}
                                 >
-                                    {(customer.balance_amount / 100).toFixed(2)} {customer.balance_currency}
+                                    {formatMoney(customer.balance_amount, customer.balance_currency)}
                                 </p>
                                 <p className="mt-2 text-sm text-muted">
                                     {balance?.next_due
@@ -358,7 +358,7 @@ export default function PortalDashboard({ tenant }: Props) {
                                                     <small className="mt-1 block text-muted">{invoice.status}</small>
                                                 </span>
                                                 <span className="font-semibold">
-                                                    {(invoice.total_amount / 100).toFixed(2)} {invoice.currency}
+                                                    {formatMoney(invoice.total_amount, invoice.currency)}
                                                 </span>
                                             </div>
                                         ))}
@@ -380,7 +380,7 @@ export default function PortalDashboard({ tenant }: Props) {
                                                     <small className="mt-1 block text-muted">{payment.status}</small>
                                                 </span>
                                                 <span className="font-semibold">
-                                                    {(payment.amount / 100).toFixed(2)} {payment.currency}
+                                                    {formatMoney(payment.amount, payment.currency)}
                                                 </span>
                                             </div>
                                         ))}
@@ -434,8 +434,10 @@ export default function PortalDashboard({ tenant }: Props) {
                                                         .map((invoice) => (
                                                             <option key={invoice.id} value={invoice.id}>
                                                                 {invoice.number} ·{' '}
-                                                                {(invoice.outstanding_amount / 100).toFixed(2)}{' '}
-                                                                {invoice.currency}
+                                                                {formatMoney(
+                                                                    invoice.outstanding_amount,
+                                                                    invoice.currency,
+                                                                )}
                                                             </option>
                                                         ))}
                                                 </select>
