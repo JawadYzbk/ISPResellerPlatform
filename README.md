@@ -84,6 +84,8 @@ docker compose up --build
 
 The app is at [http://localhost:8000](http://localhost:8000), Mailpit at [http://localhost:8025](http://localhost:8025), and the MinIO console at [http://localhost:9001](http://localhost:9001).
 
+The development app keeps Composer dependencies and framework cache in named volumes, enables CLI OPcache with code-change revalidation, and skips dependency installation when the lockfiles are unchanged. Rebuild the app image after changing Docker PHP settings with `docker compose build app && docker compose up -d app`.
+
 For the production-shaped PHP-FPM/Nginx topology, use the release procedure in [the deployment runbook](docs/runbooks/deployment.md) with `docker-compose.production.yml`.
 
 ## Quality gates
