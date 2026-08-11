@@ -67,7 +67,6 @@ final class TenantProvisioner
             }
         });
 
-        app(MessageTemplateProvisioner::class)->provision($tenant);
     }
 
     private function decimalDigits(string $currency): int

@@ -123,24 +123,32 @@ final class MessageTemplateProvisioner
         ],
     ];
 
-    public function provision(Tenant $tenant): void
+    public function provision(Tenant $tenant, ?string $templateKey = null, ?string $channel = null, ?string $locale = null): void
     {
-        app(Tenancy::class)->run($tenant, function () use ($tenant): void {
+        app(Tenancy::class)->run($tenant, function () use ($tenant, $templateKey, $channel, $locale): void {
             $tenantId = app(Tenancy::class)->requireId();
             $timestamp = now();
             $templates = [];
-            $locale = strtolower((string) ($tenant->locale ?: 'en'));
-            $locale = in_array($locale, self::SUPPORTED_LOCALES, true) ? $locale : 'en';
+            $requestedLocale = strtolower((string) ($locale ?? ($tenant->locale ?: 'en')));
+            $resolvedLocale = in_array($requestedLocale, self::SUPPORTED_LOCALES, true) ? $requestedLocale : 'en';
+            $definitions = $templateKey === null
+                ? self::DEFAULT_TEMPLATES
+                : (array_key_exists($templateKey, self::DEFAULT_TEMPLATES) ? [$templateKey => self::DEFAULT_TEMPLATES[$templateKey]] : []);
+            $channels = $channel === null ? self::CHANNELS : [$channel];
 
-            foreach (self::DEFAULT_TEMPLATES as $key => $definition) {
-                foreach (self::CHANNELS as $channel) {
+            if ($definitions === [] || array_diff($channels, self::CHANNELS) !== []) {
+                return;
+            }
+
+            foreach ($definitions as $key => $definition) {
+                foreach ($channels as $channel) {
                     $templates[] = [
                         'tenant_id' => $tenantId,
                         'key' => $key,
                         'channel' => $channel,
-                        'locale' => $locale,
-                        'subject' => $channel === 'email' ? $definition['subjects'][$locale] : null,
-                        'body' => $definition['bodies'][$locale],
+                        'locale' => $resolvedLocale,
+                        'subject' => $channel === 'email' ? $definition['subjects'][$resolvedLocale] : null,
+                        'body' => $definition['bodies'][$resolvedLocale],
                         'variables' => json_encode($definition['variables'], JSON_THROW_ON_ERROR),
                         'is_active' => true,
                         'created_at' => $timestamp,

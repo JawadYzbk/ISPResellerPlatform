@@ -33,9 +33,7 @@ it('provisions the operational defaults for a new tenant', function (): void {
         ->and(Currency::where('code', 'USD')->exists())->toBeTrue()
         ->and(Currency::where('code', 'LBP')->exists())->toBeTrue()
         ->and(DocumentSequence::count())->toBe(7)
-        ->and(DocumentSequence::where('key', 'work_order')->exists())->toBeTrue()
-        ->and(MessageTemplate::where('key', 'customer.welcome')->count())->toBe(3)
-        ->and(MessageTemplate::where('key', 'payment.receipt')->where('channel', 'email')->where('locale', 'ar')->exists())->toBeTrue();
+        ->and(DocumentSequence::where('key', 'work_order')->exists())->toBeTrue();
 });
 
 it('does not overwrite customized notification templates during reconciliation', function (): void {
@@ -47,6 +45,7 @@ it('does not overwrite customized notification templates during reconciliation',
     ]);
 
     app(Tenancy::class)->set($tenant);
+    app(MessageTemplateProvisioner::class)->provision($tenant);
     $template = MessageTemplate::query()
         ->where('key', 'payment.receipt')
         ->where('channel', 'whatsapp')
@@ -73,6 +72,7 @@ it('provisions the active locale when a tenant changes language', function (): v
 
     $tenant->update(['locale' => 'ar']);
     app(Tenancy::class)->set($tenant);
+    app(MessageTemplateProvisioner::class)->provision($tenant);
 
     expect(MessageTemplate::where('key', 'customer.welcome')->where('channel', 'whatsapp')->where('locale', 'ar')->exists())->toBeTrue();
 });

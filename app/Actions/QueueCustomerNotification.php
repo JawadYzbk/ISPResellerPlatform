@@ -7,6 +7,7 @@ use App\Models\Customer;
 use App\Models\Message;
 use App\Models\MessageTemplate;
 use App\Models\Tenant;
+use App\Support\MessageTemplateProvisioner;
 
 final readonly class QueueCustomerNotification implements Action
 {
@@ -16,7 +17,7 @@ final readonly class QueueCustomerNotification implements Action
     /** @var list<string> */
     private const SUPPORTED_CHANNELS = ['whatsapp', 'sms', 'email'];
 
-    public function __construct(private QueueMessage $queueMessage) {}
+    public function __construct(private QueueMessage $queueMessage, private MessageTemplateProvisioner $templateProvisioner) {}
 
     /**
      * @param  array<string, scalar|null>  $variables
@@ -43,6 +44,16 @@ final readonly class QueueCustomerNotification implements Action
                 ->where('locale', $locale)
                 ->where('is_active', true)
                 ->first();
+            if ($template === null) {
+                $tenant = Tenant::query()->findOrFail($customer->tenant_id);
+                $this->templateProvisioner->provision($tenant, $templateKey, $channel, $locale);
+                $template = MessageTemplate::query()
+                    ->where('key', $templateKey)
+                    ->where('channel', $channel)
+                    ->where('locale', $locale)
+                    ->where('is_active', true)
+                    ->first();
+            }
             if ($template === null) {
                 continue;
             }
