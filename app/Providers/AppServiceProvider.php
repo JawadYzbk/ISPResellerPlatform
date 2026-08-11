@@ -71,7 +71,8 @@ class AppServiceProvider extends ServiceProvider
             $email = Str::lower($request->string('email')->toString());
 
             return [
-                Limit::perMinute(5)->by('ip:'.$request->ip()),
+                // Shared office NAT should not lock out legitimate staff while the account limit contains spraying.
+                Limit::perMinute(30)->by('ip:'.$request->ip()),
                 Limit::perMinute(5)->by('account:'.$email),
             ];
         });

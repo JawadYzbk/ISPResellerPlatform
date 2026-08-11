@@ -4,6 +4,20 @@ const adminEmail = process.env.E2E_ADMIN_EMAIL ?? 'admin@example.com';
 const adminPassword = process.env.E2E_ADMIN_PASSWORD ?? 'password';
 type BrowserStorageState = Awaited<ReturnType<BrowserContext['storageState']>>;
 
+const seededRoleJourneys = [
+    { label: 'tenant owner', email: 'admin@example.com', path: '/partners/commercial' },
+    { label: 'operations manager', email: 'operations.manager@example.com', path: '/operations/inventory' },
+    { label: 'billing manager', email: 'billing.manager@example.com', path: '/billing/invoices' },
+    { label: 'cashier', email: 'cashier@example.com', path: '/billing/invoices' },
+    { label: 'collector', email: 'collector@example.com', path: '/billing/payments' },
+    { label: 'support agent', email: 'support.agent@example.com', path: '/operations/tickets' },
+    { label: 'technician', email: 'technician@example.com', path: '/operations/work-orders' },
+    { label: 'network administrator', email: 'network.admin@example.com', path: '/operations/sessions' },
+    { label: 'reseller owner', email: 'reseller.owner@example.com', path: '/partners/commercial' },
+    { label: 'reseller staff', email: 'reseller.staff@example.com', path: '/customers' },
+    { label: 'auditor', email: 'auditor@example.com', path: '/reports/finance' },
+] as const;
+
 let authenticatedState: BrowserStorageState | null = null;
 
 async function signIn(page: Page): Promise<void> {
@@ -21,6 +35,13 @@ async function signIn(page: Page): Promise<void> {
     await page.getByLabel('Password').fill(adminPassword);
     await Promise.all([page.waitForURL('**/dashboard'), page.getByRole('button', { name: 'Enter workspace' }).click()]);
     authenticatedState = await page.context().storageState();
+}
+
+async function signInAs(page: Page, email: string): Promise<void> {
+    await page.goto('/login');
+    await page.getByLabel('Email address').fill(email);
+    await page.getByLabel('Password').fill(adminPassword);
+    await Promise.all([page.waitForURL('**/dashboard'), page.getByRole('button', { name: 'Enter workspace' }).click()]);
 }
 
 test.describe('staff core journeys', () => {
@@ -121,6 +142,19 @@ test.describe('staff core journeys', () => {
             expect(response?.status(), path).toBe(200);
         }
     });
+
+    for (const account of seededRoleJourneys) {
+        test(`keeps the ${account.label} seeded workspace usable`, async ({ page }) => {
+            test.setTimeout(90_000);
+            await signInAs(page, account.email);
+
+            for (const path of ['/dashboard', '/profile', '/notifications', account.path]) {
+                const response = await page.goto(path, { waitUntil: 'domcontentloaded', timeout: 90_000 });
+
+                expect(response?.status(), `${account.label} ${path}`).toBe(200);
+            }
+        });
+    }
 
     test('shows field navigation on a mobile viewport', async ({ page }) => {
         await page.setViewportSize({ width: 390, height: 844 });
