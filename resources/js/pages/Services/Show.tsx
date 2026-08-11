@@ -1,9 +1,11 @@
+import ResponsiveSelect from '@/components/ui/responsive-select';
 import { Head, Link, router, useForm } from '@inertiajs/react';
 import { ArrowLeft, CalendarDays, CircleAlert, Network, RefreshCw, Wifi, WifiOff } from 'lucide-react';
 import { useEffect } from 'react';
 
 import { StatusBadge, type Status } from '@/components/StatusBadge';
 import AppLayout from '@/layouts/AppLayout';
+import ConfirmDialog from '@/components/ui/confirm-dialog';
 import { formatBytes, formatDate, formatDuration } from '@/lib/format';
 import type { PageProps } from '@/types';
 
@@ -141,56 +143,63 @@ export default function ServiceShow({
                 </div>
                 <div className="flex flex-wrap gap-2">
                     {service.status === 'active' && canSuspend && (
-                        <button
-                            type="button"
-                            className="button-secondary text-coral"
-                            onClick={() =>
-                                window.confirm('Suspend this service?') &&
+                        <ConfirmDialog
+                            title="Suspend this service?"
+                            description="The service will be suspended and its network access will be restricted."
+                            confirmLabel="Suspend service"
+                            destructive
+                            onConfirm={() =>
                                 router.post(`/services/${service.public_id}/suspend`, { reason: 'manual_operator' })
                             }
                         >
-                            Suspend
-                        </button>
+                            <button type="button" className="button-secondary text-coral">
+                                Suspend
+                            </button>
+                        </ConfirmDialog>
                     )}
                     {service.status === 'active' && canPause && (
-                        <button
-                            type="button"
-                            className="button-secondary text-violet-700"
-                            onClick={() =>
-                                window.confirm('Pause this service?') &&
+                        <ConfirmDialog
+                            title="Pause this service?"
+                            description="The service will pause without closing the account or removing its plan."
+                            confirmLabel="Pause service"
+                            onConfirm={() =>
                                 router.post(`/services/${service.public_id}/pause`, { reason: 'customer_requested' })
                             }
                         >
-                            Pause
-                        </button>
+                            <button type="button" className="button-secondary text-violet-700">
+                                Pause
+                            </button>
+                        </ConfirmDialog>
                     )}
                     {((service.status === 'suspended' && canActivate) ||
                         (service.status === 'paused' && canActivate)) && (
-                        <button
-                            type="button"
-                            className="button-primary"
-                            onClick={() =>
-                                window.confirm(
-                                    service.status === 'paused'
-                                        ? 'Resume this service from pause?'
-                                        : 'Resume this service?',
-                                ) && router.post(`/services/${service.public_id}/resume`)
+                        <ConfirmDialog
+                            title={
+                                service.status === 'paused' ? 'Resume this service from pause?' : 'Resume this service?'
                             }
+                            description="The service will be active again and network provisioning will resume."
+                            confirmLabel="Resume service"
+                            onConfirm={() => router.post(`/services/${service.public_id}/resume`)}
                         >
-                            Resume
-                        </button>
+                            <button type="button" className="button-primary">
+                                Resume
+                            </button>
+                        </ConfirmDialog>
                     )}
                     {canTerminate && service.status !== 'terminated' && (
-                        <button
-                            type="button"
-                            className="button-secondary text-coral"
-                            onClick={() =>
-                                window.confirm('Terminate this service?') &&
+                        <ConfirmDialog
+                            title="Terminate this service?"
+                            description="Equipment will be marked for recovery and this service cannot be reactivated."
+                            confirmLabel="Terminate service"
+                            destructive
+                            onConfirm={() =>
                                 router.post(`/services/${service.public_id}/terminate`, { reason: 'manual_operator' })
                             }
                         >
-                            Terminate
-                        </button>
+                            <button type="button" className="button-secondary text-coral">
+                                Terminate
+                            </button>
+                        </ConfirmDialog>
                     )}
                     {service.status !== 'terminated' && (canActivate || canSuspend || canPause) && (
                         <button
@@ -288,16 +297,22 @@ export default function ServiceShow({
                                     </div>
                                     <div className="flex items-end justify-start sm:justify-end">
                                         {canDisconnectSession && (
-                                            <button
-                                                type="button"
-                                                className="inline-flex items-center gap-1.5 text-sm font-semibold text-coral"
-                                                onClick={() =>
-                                                    window.confirm('Disconnect the current network session?') &&
+                                            <ConfirmDialog
+                                                title="Disconnect the current network session?"
+                                                description="The active network session will be disconnected immediately."
+                                                confirmLabel="Disconnect session"
+                                                destructive
+                                                onConfirm={() =>
                                                     router.post(`/services/${service.public_id}/disconnect-session`)
                                                 }
                                             >
-                                                <WifiOff size={14} /> Disconnect
-                                            </button>
+                                                <button
+                                                    type="button"
+                                                    className="inline-flex items-center gap-1.5 text-sm font-semibold text-coral"
+                                                >
+                                                    <WifiOff size={14} /> Disconnect
+                                                </button>
+                                            </ConfirmDialog>
                                         )}
                                     </div>
                                 </div>
@@ -372,7 +387,7 @@ export default function ServiceShow({
                             <form onSubmit={submitPlanChange} className="mt-5 space-y-4">
                                 <label>
                                     <span className="field-label">New plan</span>
-                                    <select
+                                    <ResponsiveSelect
                                         className="field"
                                         value={planForm.data.plan_id}
                                         onChange={(event) => planForm.setData('plan_id', event.target.value)}
@@ -382,21 +397,21 @@ export default function ServiceShow({
                                                 {plan.name} · {plan.download_kbps / 1000}/{plan.upload_kbps / 1000} Mbps
                                             </option>
                                         ))}
-                                    </select>
+                                    </ResponsiveSelect>
                                     {planForm.errors.plan_id && (
                                         <p className="field-error">{planForm.errors.plan_id}</p>
                                     )}
                                 </label>
                                 <label>
                                     <span className="field-label">Effective</span>
-                                    <select
+                                    <ResponsiveSelect
                                         className="field"
                                         value={planForm.data.effective}
                                         onChange={(event) => planForm.setData('effective', event.target.value)}
                                     >
                                         <option value="next_cycle">At next renewal</option>
                                         <option value="immediate">Immediately with proration</option>
-                                    </select>
+                                    </ResponsiveSelect>
                                 </label>
                                 {planForm.data.effective === 'immediate' && (
                                     <p className="rounded-lg bg-sand px-3 py-2 text-xs text-muted">

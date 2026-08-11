@@ -2,6 +2,7 @@ import { Head, Link, router } from '@inertiajs/react';
 import { ArrowLeft, CreditCard, Download, Printer } from 'lucide-react';
 
 import StatusBadge from '@/components/StatusBadge';
+import ConfirmDialog from '@/components/ui/confirm-dialog';
 import AppLayout from '@/layouts/AppLayout';
 import { formatDate, formatMoney } from '@/lib/format';
 
@@ -37,9 +38,7 @@ type Props = { payment: Payment; canReverse: boolean };
 
 export default function PaymentShowPage({ payment, canReverse }: Props) {
     const reverse = () => {
-        if (window.confirm(`Reverse payment ${payment.number}?`)) {
-            router.post(`/billing/payments/${payment.public_id}/reverse`);
-        }
+        router.post(`/billing/payments/${payment.public_id}/reverse`);
     };
 
     return (
@@ -196,9 +195,17 @@ export default function PaymentShowPage({ payment, canReverse }: Props) {
                             <Printer size={16} /> Print receipt
                         </button>
                         {canReverse && payment.status === 'posted' && (
-                            <button type="button" className="button-danger w-full justify-center" onClick={reverse}>
-                                Reverse posted payment
-                            </button>
+                            <ConfirmDialog
+                                title={`Reverse payment ${payment.number}?`}
+                                description="The reversal is append-only and the original receipt remains available for audit."
+                                confirmLabel="Reverse payment"
+                                destructive
+                                onConfirm={reverse}
+                            >
+                                <button type="button" className="button-danger w-full justify-center">
+                                    Reverse posted payment
+                                </button>
+                            </ConfirmDialog>
                         )}
                     </div>
                     <p className="mt-4 text-xs leading-5 text-muted">

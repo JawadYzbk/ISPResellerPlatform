@@ -1,3 +1,4 @@
+import ResponsiveSelect from '@/components/ui/responsive-select';
 import { Head, Link, router, useForm } from '@inertiajs/react';
 import {
     ArrowLeft,
@@ -23,6 +24,7 @@ import {
 import { StatusBadge } from '@/components/StatusBadge';
 import MapView from '@/components/MapView';
 import AppLayout from '@/layouts/AppLayout';
+import ConfirmDialog from '@/components/ui/confirm-dialog';
 import { formatBytes, formatDate, formatDuration, formatExpiryCountdown, formatMoney } from '@/lib/format';
 import type { Customer, PageProps } from '@/types';
 
@@ -132,20 +134,18 @@ export default function CustomerShow({
                         </Link>
                     )}
                     {canAnonymize && !customer.anonymized_at && (
-                        <button
-                            type="button"
-                            className="button-secondary text-coral"
-                            onClick={() => {
-                                if (
-                                    window.confirm('Anonymize this customer record? Personal data cannot be recovered.')
-                                ) {
-                                    router.post(`/customers/${customer.public_id}/anonymize`);
-                                }
-                            }}
+                        <ConfirmDialog
+                            title="Anonymize this customer record?"
+                            description="Personal data cannot be recovered after anonymization."
+                            confirmLabel="Anonymize customer"
+                            destructive
+                            onConfirm={() => router.post(`/customers/${customer.public_id}/anonymize`)}
                         >
-                            <ShieldOff size={16} />
-                            Anonymize
-                        </button>
+                            <button type="button" className="button-secondary text-coral">
+                                <ShieldOff size={16} />
+                                Anonymize
+                            </button>
+                        </ConfirmDialog>
                     )}
                 </div>
             </div>
@@ -296,20 +296,24 @@ export default function CustomerShow({
                                                                 · Assigned {formatDate(unit.assigned_at)}
                                                             </span>
                                                             {canManageEquipment && (
-                                                                <button
-                                                                    type="button"
-                                                                    className="font-semibold text-coral hover:underline"
-                                                                    onClick={() =>
-                                                                        window.confirm(
-                                                                            `Mark ${unit.serial_number} as returned?`,
-                                                                        ) &&
+                                                                <ConfirmDialog
+                                                                    title={`Mark ${unit.serial_number} as returned?`}
+                                                                    description="The equipment will be removed from this service and made available for recovery."
+                                                                    confirmLabel="Mark returned"
+                                                                    destructive
+                                                                    onConfirm={() =>
                                                                         router.post(
                                                                             `/services/${service.public_id}/equipment/${unit.id}/return`,
                                                                         )
                                                                     }
                                                                 >
-                                                                    Return
-                                                                </button>
+                                                                    <button
+                                                                        type="button"
+                                                                        className="font-semibold text-coral hover:underline"
+                                                                    >
+                                                                        Return
+                                                                    </button>
+                                                                </ConfirmDialog>
                                                             )}
                                                         </div>
                                                     ))}
@@ -320,76 +324,101 @@ export default function CustomerShow({
                                         </div>
                                         <div className="flex flex-wrap items-center gap-3 sm:justify-end">
                                             {service.status === 'pending' && canActivateServices && (
-                                                <button
-                                                    type="button"
-                                                    className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand"
-                                                    onClick={() =>
-                                                        window.confirm('Activate this service?') &&
+                                                <ConfirmDialog
+                                                    title="Activate this service?"
+                                                    description="The service will be activated and its network provisioning will resume."
+                                                    confirmLabel="Activate service"
+                                                    onConfirm={() =>
                                                         router.post(`/services/${service.public_id}/activate`)
                                                     }
                                                 >
-                                                    <Play size={14} /> Activate
-                                                </button>
+                                                    <button
+                                                        type="button"
+                                                        className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand"
+                                                    >
+                                                        <Play size={14} /> Activate
+                                                    </button>
+                                                </ConfirmDialog>
                                             )}
                                             {service.status === 'active' && canSuspendServices && (
-                                                <button
-                                                    type="button"
-                                                    className="inline-flex items-center gap-1.5 text-sm font-semibold text-coral"
-                                                    onClick={() =>
-                                                        window.confirm('Suspend this service?') &&
+                                                <ConfirmDialog
+                                                    title="Suspend this service?"
+                                                    description="The service will be suspended and its network access will be restricted."
+                                                    confirmLabel="Suspend service"
+                                                    destructive
+                                                    onConfirm={() =>
                                                         router.post(`/services/${service.public_id}/suspend`, {
                                                             reason: 'manual_operator',
                                                         })
                                                     }
                                                 >
-                                                    <Pause size={14} /> Suspend
-                                                </button>
+                                                    <button
+                                                        type="button"
+                                                        className="inline-flex items-center gap-1.5 text-sm font-semibold text-coral"
+                                                    >
+                                                        <Pause size={14} /> Suspend
+                                                    </button>
+                                                </ConfirmDialog>
                                             )}
                                             {service.status === 'active' && canPauseServices && (
-                                                <button
-                                                    type="button"
-                                                    className="inline-flex items-center gap-1.5 text-sm font-semibold text-violet-700"
-                                                    onClick={() =>
-                                                        window.confirm('Pause this service?') &&
+                                                <ConfirmDialog
+                                                    title="Pause this service?"
+                                                    description="The service will pause without closing the account or removing its plan."
+                                                    confirmLabel="Pause service"
+                                                    onConfirm={() =>
                                                         router.post(`/services/${service.public_id}/pause`, {
                                                             reason: 'customer_requested',
                                                         })
                                                     }
                                                 >
-                                                    <Pause size={14} /> Pause
-                                                </button>
+                                                    <button
+                                                        type="button"
+                                                        className="inline-flex items-center gap-1.5 text-sm font-semibold text-violet-700"
+                                                    >
+                                                        <Pause size={14} /> Pause
+                                                    </button>
+                                                </ConfirmDialog>
                                             )}
                                             {((service.status === 'suspended' &&
                                                 canActivateServices &&
                                                 (service.suspension_reason === 'auto_overdue' ||
                                                     canForceResumeServices)) ||
                                                 (service.status === 'paused' && canActivateServices)) && (
-                                                <button
-                                                    type="button"
-                                                    className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand"
-                                                    onClick={() =>
-                                                        window.confirm('Reactivate this service?') &&
+                                                <ConfirmDialog
+                                                    title="Reactivate this service?"
+                                                    description="The service will be active again and network provisioning will resume."
+                                                    confirmLabel="Reactivate service"
+                                                    onConfirm={() =>
                                                         router.post(`/services/${service.public_id}/resume`)
                                                     }
                                                 >
-                                                    <Play size={14} /> Resume
-                                                </button>
+                                                    <button
+                                                        type="button"
+                                                        className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand"
+                                                    >
+                                                        <Play size={14} /> Resume
+                                                    </button>
+                                                </ConfirmDialog>
                                             )}
                                             {canTerminateServices && service.status !== 'terminated' && (
-                                                <button
-                                                    type="button"
-                                                    className="inline-flex items-center gap-1.5 text-sm font-semibold text-coral"
-                                                    onClick={() =>
-                                                        window.confirm(
-                                                            'Terminate this service? Equipment will be marked for recovery.',
-                                                        ) &&
+                                                <ConfirmDialog
+                                                    title="Terminate this service?"
+                                                    description="Equipment will be marked for recovery and this service cannot be reactivated."
+                                                    confirmLabel="Terminate service"
+                                                    destructive
+                                                    onConfirm={() =>
                                                         router.post(`/services/${service.public_id}/terminate`, {
                                                             reason: 'manual_operator',
                                                         })
                                                     }
                                                 >
-                                                    <ShieldOff size={14} /> Terminate
-                                                </button>
+                                                    <button
+                                                        type="button"
+                                                        className="inline-flex items-center gap-1.5 text-sm font-semibold text-coral"
+                                                    >
+                                                        <ShieldOff size={14} /> Terminate
+                                                    </button>
+                                                </ConfirmDialog>
                                             )}
                                             {canResyncServices && service.status !== 'terminated' && (
                                                 <button
@@ -401,16 +430,22 @@ export default function CustomerShow({
                                                 </button>
                                             )}
                                             {canDisconnectSessions && service.session && (
-                                                <button
-                                                    type="button"
-                                                    className="inline-flex items-center gap-1.5 text-sm font-semibold text-coral"
-                                                    onClick={() =>
-                                                        window.confirm('Disconnect the current network session?') &&
+                                                <ConfirmDialog
+                                                    title="Disconnect the current network session?"
+                                                    description="The active network session will be disconnected immediately."
+                                                    confirmLabel="Disconnect session"
+                                                    destructive
+                                                    onConfirm={() =>
                                                         router.post(`/services/${service.public_id}/disconnect-session`)
                                                     }
                                                 >
-                                                    <WifiOff size={14} /> Disconnect
-                                                </button>
+                                                    <button
+                                                        type="button"
+                                                        className="inline-flex items-center gap-1.5 text-sm font-semibold text-coral"
+                                                    >
+                                                        <WifiOff size={14} /> Disconnect
+                                                    </button>
+                                                </ConfirmDialog>
                                             )}
                                         </div>
                                     </div>
@@ -508,7 +543,7 @@ export default function CustomerShow({
                                 </label>
                                 <label>
                                     <span className="field-label">Document type</span>
-                                    <select
+                                    <ResponsiveSelect
                                         className="field"
                                         value={documentForm.data.document_type}
                                         onChange={(event) => documentForm.setData('document_type', event.target.value)}
@@ -517,7 +552,7 @@ export default function CustomerShow({
                                         <option value="identity">Identity</option>
                                         <option value="proof_of_address">Proof of address</option>
                                         <option value="other">Other</option>
-                                    </select>
+                                    </ResponsiveSelect>
                                     {documentForm.errors.document_type && (
                                         <p className="field-error">{documentForm.errors.document_type}</p>
                                     )}

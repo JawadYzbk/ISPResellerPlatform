@@ -1,9 +1,11 @@
+import ResponsiveSelect from '@/components/ui/responsive-select';
 import { Head, Link, router, useForm } from '@inertiajs/react';
 import { ChevronLeft, ChevronRight, KeyRound, Search, Upload } from 'lucide-react';
 import { useState } from 'react';
 
 import StatusBadge from '@/components/StatusBadge';
 import AppLayout from '@/layouts/AppLayout';
+import ConfirmDialog from '@/components/ui/confirm-dialog';
 import { formatDate } from '@/lib/format';
 import type { PageProps, Paginator } from '@/types';
 
@@ -76,11 +78,9 @@ export default function CredentialsPage({
             return;
         }
 
-        if (window.confirm(`Assign ${credential.identifier} to this service?`)) {
-            router.post(`/operations/credentials/${credential.id}/assign`, {
-                service_public_id: servicePublicId,
-            });
-        }
+        router.post(`/operations/credentials/${credential.id}/assign`, {
+            service_public_id: servicePublicId,
+        });
     };
 
     const importCredentials = (event: React.FormEvent) => {
@@ -128,7 +128,7 @@ export default function CredentialsPage({
                     <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
                         <label>
                             <span className="field-label">Supplier</span>
-                            <select
+                            <ResponsiveSelect
                                 className="field"
                                 value={importForm.data.supplier_id}
                                 onChange={(event) => importForm.setData('supplier_id', event.target.value)}
@@ -139,7 +139,7 @@ export default function CredentialsPage({
                                         {supplier.name} ({supplier.code})
                                     </option>
                                 ))}
-                            </select>
+                            </ResponsiveSelect>
                             {importForm.errors.supplier_id && (
                                 <p className="field-error">{importForm.errors.supplier_id}</p>
                             )}
@@ -210,14 +210,18 @@ export default function CredentialsPage({
                 </label>
                 <label className="block sm:min-w-48">
                     <span className="field-label">Credential status</span>
-                    <select className="field" value={status} onChange={(event) => setStatus(event.target.value)}>
+                    <ResponsiveSelect
+                        className="field"
+                        value={status}
+                        onChange={(event) => setStatus(event.target.value)}
+                    >
                         <option value="">All statuses</option>
                         <option value="available">Available</option>
                         <option value="reserved">Reserved</option>
                         <option value="assigned">Assigned</option>
                         <option value="expired">Expired</option>
                         <option value="revoked">Revoked</option>
-                    </select>
+                    </ResponsiveSelect>
                 </label>
                 <button type="submit" className="button-primary">
                     Apply filters
@@ -308,7 +312,7 @@ export default function CredentialsPage({
                                             credential.status === 'available' &&
                                             assignableServices.length > 0 && (
                                                 <div className="flex items-center justify-end gap-2">
-                                                    <select
+                                                    <ResponsiveSelect
                                                         className="field max-w-56 py-2 text-xs"
                                                         value={selectedServices[credential.id] ?? ''}
                                                         onChange={(event) =>
@@ -324,14 +328,20 @@ export default function CredentialsPage({
                                                                 {service.username} · {service.customer ?? 'No customer'}
                                                             </option>
                                                         ))}
-                                                    </select>
-                                                    <button
-                                                        type="button"
-                                                        className="text-sm font-semibold text-brand"
-                                                        onClick={() => assignCredential(credential)}
+                                                    </ResponsiveSelect>
+                                                    <ConfirmDialog
+                                                        title={`Assign ${credential.identifier}?`}
+                                                        description="This credential will be assigned to the selected service."
+                                                        confirmLabel="Assign credential"
+                                                        onConfirm={() => assignCredential(credential)}
                                                     >
-                                                        Assign
-                                                    </button>
+                                                        <button
+                                                            type="button"
+                                                            className="text-sm font-semibold text-brand"
+                                                        >
+                                                            Assign
+                                                        </button>
+                                                    </ConfirmDialog>
                                                 </div>
                                             )}
                                     </td>

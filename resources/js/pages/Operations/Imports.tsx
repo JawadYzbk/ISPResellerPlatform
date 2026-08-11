@@ -1,8 +1,10 @@
+import ResponsiveSelect from '@/components/ui/responsive-select';
 import { Head, useForm, usePage } from '@inertiajs/react';
 import { AlertTriangle, CheckCircle2, FileUp, RotateCcw, Upload } from 'lucide-react';
 import { useMemo } from 'react';
 
 import AppLayout from '@/layouts/AppLayout';
+import ConfirmDialog from '@/components/ui/confirm-dialog';
 import type { ImportBatchReportRow, ImportBatchResult, PageProps } from '@/types';
 
 type ImportType = {
@@ -99,7 +101,7 @@ export default function Imports({ types, routers, batches }: Props) {
 
                     <label>
                         <span className="field-label">Import type</span>
-                        <select
+                        <ResponsiveSelect
                             className="field"
                             value={form.data.type}
                             onChange={(event) => form.setData('type', event.target.value)}
@@ -109,14 +111,14 @@ export default function Imports({ types, routers, batches }: Props) {
                                     {type.label}
                                 </option>
                             ))}
-                        </select>
+                        </ResponsiveSelect>
                         {form.errors.type && <p className="field-error">{form.errors.type}</p>}
                     </label>
 
                     {isRouterDiscovery ? (
                         <label>
                             <span className="field-label">Router</span>
-                            <select
+                            <ResponsiveSelect
                                 className="field"
                                 value={form.data.router_public_id}
                                 onChange={(event) => form.setData('router_public_id', event.target.value)}
@@ -127,7 +129,7 @@ export default function Imports({ types, routers, batches }: Props) {
                                         {router.name} · {router.host}
                                     </option>
                                 ))}
-                            </select>
+                            </ResponsiveSelect>
                             {form.errors.router_public_id && (
                                 <p className="field-error">{form.errors.router_public_id}</p>
                             )}
@@ -340,21 +342,21 @@ function HistoryRow({ batch, types, canRollback }: { batch: Batch; types: Import
             <td className="px-6 py-4 text-sm text-muted">{formatDate(batch.created_at)}</td>
             <td className="px-6 py-4 text-end">
                 {canRollback && batch.status === 'completed' && (
-                    <button
-                        type="button"
-                        className="inline-flex items-center gap-2 text-sm font-semibold text-coral hover:underline"
-                        disabled={form.processing}
-                        onClick={() => {
-                            if (
-                                window.confirm(
-                                    'Roll back this completed import? Financial balance imports are reversed through the journal.',
-                                )
-                            )
-                                form.post(`/operations/imports/${batch.id}/rollback`);
-                        }}
+                    <ConfirmDialog
+                        title="Roll back this completed import?"
+                        description="Financial balance imports are reversed through the journal."
+                        confirmLabel="Roll back import"
+                        destructive
+                        onConfirm={() => form.post(`/operations/imports/${batch.id}/rollback`)}
                     >
-                        <RotateCcw size={14} /> Roll back
-                    </button>
+                        <button
+                            type="button"
+                            className="inline-flex items-center gap-2 text-sm font-semibold text-coral hover:underline"
+                            disabled={form.processing}
+                        >
+                            <RotateCcw size={14} /> Roll back
+                        </button>
+                    </ConfirmDialog>
                 )}
             </td>
         </tr>

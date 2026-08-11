@@ -1,9 +1,11 @@
+import ResponsiveSelect from '@/components/ui/responsive-select';
 import { Head, Link, router } from '@inertiajs/react';
 import { ChevronLeft, ChevronRight, CreditCard, Search } from 'lucide-react';
 import { useState } from 'react';
 
 import StatusBadge from '@/components/StatusBadge';
 import AppLayout from '@/layouts/AppLayout';
+import ConfirmDialog from '@/components/ui/confirm-dialog';
 import { formatDate, formatMoney } from '@/lib/format';
 import type { PageProps, Paginator } from '@/types';
 
@@ -70,21 +72,29 @@ export default function PaymentsPage({ payments, filters, canReverse = false }: 
                 </label>
                 <label className="block sm:min-w-40">
                     <span className="field-label">Payment status</span>
-                    <select className="field" value={status} onChange={(event) => setStatus(event.target.value)}>
+                    <ResponsiveSelect
+                        className="field"
+                        value={status}
+                        onChange={(event) => setStatus(event.target.value)}
+                    >
                         <option value="">All statuses</option>
                         <option value="posted">Posted</option>
                         <option value="reversed">Reversed</option>
-                    </select>
+                    </ResponsiveSelect>
                 </label>
                 <label className="block sm:min-w-44">
                     <span className="field-label">Method</span>
-                    <select className="field" value={method} onChange={(event) => setMethod(event.target.value)}>
+                    <ResponsiveSelect
+                        className="field"
+                        value={method}
+                        onChange={(event) => setMethod(event.target.value)}
+                    >
                         <option value="">All methods</option>
                         <option value="cash">Cash</option>
                         <option value="bank_transfer">Bank transfer</option>
                         <option value="card">Card</option>
                         <option value="mobile_wallet">Mobile wallet</option>
-                    </select>
+                    </ResponsiveSelect>
                 </label>
                 <button type="submit" className="button-primary">
                     Apply filters
@@ -152,17 +162,19 @@ export default function PaymentsPage({ payments, filters, canReverse = false }: 
                                     <td className="px-5 py-4 text-sm text-muted">{formatDate(payment.received_at)}</td>
                                     <td className="px-5 py-4 text-end">
                                         {canReverse && payment.status === 'posted' && (
-                                            <button
-                                                type="button"
-                                                className="text-sm font-semibold text-coral"
-                                                onClick={() => {
-                                                    if (window.confirm(`Reverse payment ${payment.number}?`)) {
-                                                        router.post(`/billing/payments/${payment.public_id}/reverse`);
-                                                    }
-                                                }}
+                                            <ConfirmDialog
+                                                title={`Reverse payment ${payment.number}?`}
+                                                description="The reversal is append-only and the original receipt remains available for audit."
+                                                confirmLabel="Reverse payment"
+                                                destructive
+                                                onConfirm={() =>
+                                                    router.post(`/billing/payments/${payment.public_id}/reverse`)
+                                                }
                                             >
-                                                Reverse
-                                            </button>
+                                                <button type="button" className="text-sm font-semibold text-coral">
+                                                    Reverse
+                                                </button>
+                                            </ConfirmDialog>
                                         )}
                                     </td>
                                 </tr>

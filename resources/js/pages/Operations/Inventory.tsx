@@ -1,9 +1,11 @@
+import ResponsiveSelect from '@/components/ui/responsive-select';
 import { Head, Link, router, useForm } from '@inertiajs/react';
 import { ChevronLeft, ChevronRight, Package, Search } from 'lucide-react';
 import { useState } from 'react';
 
 import StatusBadge from '@/components/StatusBadge';
 import AppLayout from '@/layouts/AppLayout';
+import ConfirmDialog from '@/components/ui/confirm-dialog';
 import { formatDate } from '@/lib/format';
 import type { PageProps, Paginator } from '@/types';
 
@@ -98,9 +100,7 @@ export default function InventoryPage({
             return;
         }
 
-        if (window.confirm(`Assign unit ${unit.serial_number} to this service?`)) {
-            router.post(`/operations/inventory/${unit.id}/assign`, { service_public_id: servicePublicId });
-        }
+        router.post(`/operations/inventory/${unit.id}/assign`, { service_public_id: servicePublicId });
     };
 
     const submitReceive = (event: React.FormEvent<HTMLFormElement>) => {
@@ -137,13 +137,17 @@ export default function InventoryPage({
                 </label>
                 <label className="block sm:min-w-48">
                     <span className="field-label">Unit status</span>
-                    <select className="field" value={status} onChange={(event) => setStatus(event.target.value)}>
+                    <ResponsiveSelect
+                        className="field"
+                        value={status}
+                        onChange={(event) => setStatus(event.target.value)}
+                    >
                         <option value="">All statuses</option>
                         <option value="available">Available</option>
                         <option value="assigned">Assigned</option>
                         <option value="returned">Returned</option>
                         <option value="damaged">Damaged</option>
-                    </select>
+                    </ResponsiveSelect>
                 </label>
                 <button type="submit" className="button-primary">
                     Apply filters
@@ -184,7 +188,7 @@ export default function InventoryPage({
                     >
                         <label>
                             <span className="field-label">Material</span>
-                            <select
+                            <ResponsiveSelect
                                 className="field"
                                 value={receiveForm.data.inventory_item_id}
                                 onChange={(event) => receiveForm.setData('inventory_item_id', event.target.value)}
@@ -195,11 +199,11 @@ export default function InventoryPage({
                                         {item.sku} · {item.name}
                                     </option>
                                 ))}
-                            </select>
+                            </ResponsiveSelect>
                         </label>
                         <label>
                             <span className="field-label">Warehouse</span>
-                            <select
+                            <ResponsiveSelect
                                 className="field"
                                 value={receiveForm.data.warehouse_id}
                                 onChange={(event) => receiveForm.setData('warehouse_id', event.target.value)}
@@ -210,7 +214,7 @@ export default function InventoryPage({
                                         {warehouse.code} · {warehouse.name}
                                     </option>
                                 ))}
-                            </select>
+                            </ResponsiveSelect>
                         </label>
                         <label>
                             <span className="field-label">Quantity received</span>
@@ -251,7 +255,7 @@ export default function InventoryPage({
                     </div>
                     <label className="min-w-40">
                         <span className="sr-only">Movement type</span>
-                        <select
+                        <ResponsiveSelect
                             className="field py-2 text-xs"
                             value={movementType}
                             onChange={(event) => setMovementType(event.target.value)}
@@ -262,7 +266,7 @@ export default function InventoryPage({
                             <option value="assign">Assign</option>
                             <option value="return">Return</option>
                             <option value="transfer">Transfer</option>
-                        </select>
+                        </ResponsiveSelect>
                     </label>
                 </div>
                 <div className="overflow-x-auto">
@@ -383,7 +387,7 @@ export default function InventoryPage({
                                     <td className="px-5 py-4 text-end">
                                         {canAssign && unit.status === 'available' && assignableServices.length > 0 && (
                                             <div className="flex items-center justify-end gap-2">
-                                                <select
+                                                <ResponsiveSelect
                                                     className="field max-w-56 py-2 text-xs"
                                                     value={selectedServices[unit.id] ?? ''}
                                                     onChange={(event) =>
@@ -399,21 +403,24 @@ export default function InventoryPage({
                                                             {service.username} · {service.customer ?? 'No customer'}
                                                         </option>
                                                     ))}
-                                                </select>
-                                                <button
-                                                    type="button"
-                                                    className="text-sm font-semibold text-brand"
-                                                    onClick={() => assignUnit(unit)}
+                                                </ResponsiveSelect>
+                                                <ConfirmDialog
+                                                    title={`Assign unit ${unit.serial_number}?`}
+                                                    description="This unit will be assigned to the selected service."
+                                                    confirmLabel="Assign unit"
+                                                    onConfirm={() => assignUnit(unit)}
                                                 >
-                                                    Assign
-                                                </button>
+                                                    <button type="button" className="text-sm font-semibold text-brand">
+                                                        Assign
+                                                    </button>
+                                                </ConfirmDialog>
                                             </div>
                                         )}
                                         {canTransfer &&
                                             ['available', 'returned'].includes(unit.status) &&
                                             transferWarehouses.length > 0 && (
                                                 <div className="mt-2 flex items-center justify-end gap-2">
-                                                    <select
+                                                    <ResponsiveSelect
                                                         className="field max-w-56 py-2 text-xs"
                                                         value={selectedWarehouses[unit.id] ?? ''}
                                                         onChange={(event) =>
@@ -433,7 +440,7 @@ export default function InventoryPage({
                                                                     {warehouse.code} · {warehouse.name}
                                                                 </option>
                                                             ))}
-                                                    </select>
+                                                    </ResponsiveSelect>
                                                     <button
                                                         type="button"
                                                         className="text-sm font-semibold text-brand"

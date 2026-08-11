@@ -2,6 +2,7 @@ import { Head, Link, router } from '@inertiajs/react';
 import { ChevronLeft, ChevronRight, Radio, RefreshCw, WifiOff } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
+import ConfirmDialog from '@/components/ui/confirm-dialog';
 import AppLayout from '@/layouts/AppLayout';
 import { formatBytes, formatDate, formatDuration } from '@/lib/format';
 import type { PageProps, Paginator } from '@/types';
@@ -153,20 +154,24 @@ export default function SessionsPage({ sessions, filters, canDisconnect = false 
                                     </td>
                                     <td className="px-5 py-4 text-end">
                                         {canDisconnect && session.service && (
-                                            <button
-                                                type="button"
-                                                className="inline-flex items-center gap-1.5 text-sm font-semibold text-coral"
-                                                onClick={() =>
-                                                    window.confirm(
-                                                        `Disconnect ${session.username}'s current session?`,
-                                                    ) &&
+                                            <ConfirmDialog
+                                                title={`Disconnect ${session.username}'s current session?`}
+                                                description="The active network session will be disconnected immediately."
+                                                confirmLabel="Disconnect session"
+                                                destructive
+                                                onConfirm={() =>
                                                     router.post(
                                                         `/services/${session.service?.public_id}/disconnect-session`,
                                                     )
                                                 }
                                             >
-                                                <WifiOff size={14} /> Disconnect
-                                            </button>
+                                                <button
+                                                    type="button"
+                                                    className="inline-flex items-center gap-1.5 text-sm font-semibold text-coral"
+                                                >
+                                                    <WifiOff size={14} /> Disconnect
+                                                </button>
+                                            </ConfirmDialog>
                                         )}
                                     </td>
                                 </tr>
