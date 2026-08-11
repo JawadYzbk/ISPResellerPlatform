@@ -30,7 +30,7 @@ final class SettingsController extends Controller
         return Inertia::render('Settings/General', [
             'tenant' => [
                 ...$tenant->only(['public_id', 'name', 'slug']),
-                'logo_url' => $tenant->logo_path === null ? null : route('tenant.logo', $tenant),
+                'logo_url' => $tenant->logoUrl(),
             ],
             'settings' => [
                 'locale' => $settings->locale,

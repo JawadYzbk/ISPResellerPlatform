@@ -50,6 +50,17 @@ class Tenant extends Model
         return TenantSettings::fromTenant($this);
     }
 
+    public function logoUrl(): ?string
+    {
+        $path = is_string($this->logo_path) ? trim($this->logo_path) : '';
+
+        if ($path === '') {
+            return null;
+        }
+
+        return route('tenant.logo', $this).'?v='.substr(hash('sha256', $path), 0, 12);
+    }
+
     public function users(): HasMany
     {
         return $this->hasMany(User::class);

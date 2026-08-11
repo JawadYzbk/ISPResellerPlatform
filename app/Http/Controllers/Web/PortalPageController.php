@@ -24,7 +24,7 @@ final class PortalPageController
         return [
             'slug' => $tenant->slug,
             'name' => $tenant->name,
-            'logo_url' => $tenant->logo_path === null ? null : route('tenant.logo', $tenant),
+            'logo_url' => $tenant->logoUrl(),
         ];
     }
 }

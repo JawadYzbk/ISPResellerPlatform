@@ -62,10 +62,12 @@ it('lets an owner upload a tenant logo for staff and portal branding', function 
     expect($tenant->logo_path)->toStartWith('tenants/'.$tenant->public_id.'/');
     Storage::disk($disk)->assertExists($tenant->logo_path);
 
+    $logoUrl = route('tenant.logo', $tenant).'?v='.substr(hash('sha256', $tenant->logo_path), 0, 12);
+
     $this->get(route('tenant.logo', $tenant))->assertOk();
     $this->actingAs($owner)
         ->get(route('settings.general'))
-        ->assertInertia(fn ($page) => $page->where('tenant.logo_url', route('tenant.logo', $tenant)));
+        ->assertInertia(fn ($page) => $page->where('tenant.logo_url', $logoUrl));
     $this->get(route('portal.sign-in', $tenant))
-        ->assertInertia(fn ($page) => $page->where('tenant.logo_url', route('tenant.logo', $tenant)));
+        ->assertInertia(fn ($page) => $page->where('tenant.logo_url', $logoUrl));
 });
