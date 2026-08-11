@@ -90,4 +90,9 @@ class Tenant extends Model
     {
         return $this->hasMany(Zone::class);
     }
+
+    public function whatsappAccounts(): HasMany
+    {
+        return $this->hasMany(WhatsAppAccount::class);
+    }
 }
