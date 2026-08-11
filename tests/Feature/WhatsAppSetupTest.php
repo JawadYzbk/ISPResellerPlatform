@@ -150,4 +150,17 @@ it('creates, reassigns, disconnects, and returns a WhatsApp account to QR pairin
 
     expect($account->refresh()->status)->toBe('qr');
     Http::assertSent(fn ($request): bool => str_ends_with($request->url(), '/disconnect'));
+
+    $this->actingAs($owner)
+        ->post(route('settings.whatsapp.accounts.store'), ['label' => 'Old phone', 'job' => 'support'])
+        ->assertRedirect(route('settings.whatsapp'));
+
+    app(Tenancy::class)->set($tenant);
+    $deletable = WhatsAppAccount::query()->where('label', 'Old phone')->firstOrFail();
+    $this->actingAs($owner)
+        ->delete(route('settings.whatsapp.accounts.delete', $deletable->public_id))
+        ->assertRedirect(route('settings.whatsapp'));
+
+    expect(WhatsAppAccount::query()->whereKey($deletable->id)->exists())->toBeFalse();
+    Http::assertSent(fn ($request): bool => $request->method() === 'DELETE');
 });

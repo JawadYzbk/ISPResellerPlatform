@@ -90,6 +90,7 @@ Route::middleware(['auth', 'tenant', '2fa'])->group(function (): void {
     Route::post('/settings/whatsapp/accounts', [SettingsController::class, 'createWhatsAppAccount'])->middleware('recent-auth')->name('settings.whatsapp.accounts.store');
     Route::patch('/settings/whatsapp/accounts/{whatsappAccount:public_id}', [SettingsController::class, 'updateWhatsAppAccount'])->middleware('recent-auth')->name('settings.whatsapp.accounts.update');
     Route::post('/settings/whatsapp/accounts/{whatsappAccount:public_id}/disconnect', [SettingsController::class, 'disconnectWhatsAppAccount'])->middleware('recent-auth')->name('settings.whatsapp.accounts.disconnect');
+    Route::delete('/settings/whatsapp/accounts/{whatsappAccount:public_id}', [SettingsController::class, 'deleteWhatsAppAccount'])->middleware('recent-auth')->name('settings.whatsapp.accounts.delete');
     Route::put('/settings/general', [SettingsController::class, 'updateGeneral'])->middleware('recent-auth')->name('settings.general.update');
     Route::get('/settings/users', [UserOperationsController::class, 'index'])->name('settings.users');
     Route::post('/settings/users/invite', [UserOperationsController::class, 'invite'])->middleware('recent-auth')->name('settings.users.invite');

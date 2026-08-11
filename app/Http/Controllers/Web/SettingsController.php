@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Web;
 
 use App\Actions\CreateWhatsAppAccount;
+use App\Actions\DeleteWhatsAppAccount;
 use App\Actions\DisconnectWhatsAppAccount;
 use App\Actions\GetPaymentSetupStatus;
 use App\Actions\GetTenantReadiness;
@@ -138,6 +139,25 @@ final class SettingsController extends Controller
         $disconnect->handle($whatsappAccount);
 
         return redirect()->route('settings.whatsapp')->with('success', 'WhatsApp account disconnected and returned to pairing.');
+    }
+
+    public function deleteWhatsAppAccount(Request $request, WhatsAppAccount $whatsappAccount, DeleteWhatsAppAccount $delete): RedirectResponse
+    {
+        $user = $request->user();
+        abort_unless($user instanceof User && $user->can('settings.manage'), 403);
+        abort_unless($whatsappAccount->tenant_id === $user->tenant_id, 404);
+
+        $tenant = Tenant::query()->find($user->tenant_id);
+        abort_unless($tenant instanceof Tenant, 403);
+        abort_if(
+            $tenant->whatsappAccounts()->where('is_active', true)->count() <= 1,
+            422,
+            'Keep one WhatsApp account configured for this workspace; disconnect it if you only need to re-pair.',
+        );
+
+        $delete->handle($whatsappAccount);
+
+        return redirect()->route('settings.whatsapp')->with('success', 'WhatsApp account deleted.');
     }
 
     public function sendWhatsAppTest(Request $request, GetWhatsAppSetupStatus $status, QueueWhatsAppTestMessage $send): RedirectResponse

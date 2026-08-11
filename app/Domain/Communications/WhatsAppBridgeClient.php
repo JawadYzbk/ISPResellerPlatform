@@ -28,6 +28,12 @@ final class WhatsAppBridgeClient
     }
 
     /** @return array<string, mixed> */
+    public function remove(WhatsAppAccount $account): array
+    {
+        return $this->request('delete', '/accounts/'.rawurlencode($account->bridge_id));
+    }
+
+    /** @return array<string, mixed> */
     public function send(WhatsAppAccount $account, string $idempotencyKey, string $recipient, string $body): array
     {
         return $this->request('post', '/accounts/'.rawurlencode($account->bridge_id).'/messages', [
@@ -56,9 +62,11 @@ final class WhatsAppBridgeClient
             $request = Http::withToken((string) config('services.whatsapp.web.token'))
                 ->acceptJson()
                 ->timeout($timeout);
-            $response = $method === 'get'
-                ? $request->get($this->url($path))
-                : $request->post($this->url($path), $payload ?? []);
+            $response = match ($method) {
+                'get' => $request->get($this->url($path)),
+                'delete' => $request->delete($this->url($path)),
+                default => $request->post($this->url($path), $payload ?? []),
+            };
         } catch (ConnectionException $exception) {
             throw new RuntimeException('The private WhatsApp bridge is unreachable.', previous: $exception);
         }
