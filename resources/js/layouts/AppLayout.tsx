@@ -32,6 +32,7 @@ import type { LucideIcon } from 'lucide-react';
 import { useEffect, useRef, useState, type PropsWithChildren } from 'react';
 
 import RealtimeBridge from '@/components/RealtimeBridge';
+import OfflineBanner from '@/components/OfflineBanner';
 import type { PageProps } from '@/types';
 
 type NavigationItem = {
@@ -44,7 +45,9 @@ type NavigationItem = {
 type SearchResult = { type: string; label: string; detail: string; href: string };
 
 export default function AppLayout({ children }: PropsWithChildren) {
-    const { auth, app } = usePage<PageProps>().props;
+    const page = usePage<PageProps>();
+    const { auth, app } = page.props;
+    const { url } = page;
     const [searchOpen, setSearchOpen] = useState(false);
     const [search, setSearch] = useState('');
     const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
@@ -149,6 +152,14 @@ export default function AppLayout({ children }: PropsWithChildren) {
         { label: 'Settings', href: '/settings/general', icon: Wrench, permission: 'settings.manage' },
     ].filter((item) => item.permission === undefined || can(item.permission));
 
+    const fieldNav: NavigationItem[] = [
+        { label: 'Home', href: '/dashboard', icon: LayoutDashboard },
+        { label: 'Customers', href: '/customers', icon: Users, permission: 'customers.view' },
+        { label: 'Payments', href: '/billing/payments', icon: CreditCard, permission: 'payments.collect' },
+        { label: 'Shifts', href: '/billing/shifts', icon: WalletCards, permission: 'payments.collect' },
+        { label: 'Work', href: '/operations/work-orders', icon: ClipboardList, permission: 'workorders.complete' },
+    ].filter((item) => item.permission === undefined || can(item.permission));
+
     return (
         <div className="min-h-screen bg-canvas text-ink" dir={app.direction}>
             <RealtimeBridge />
@@ -238,6 +249,7 @@ export default function AppLayout({ children }: PropsWithChildren) {
                         </Form>
                     </div>
                 </header>
+                <OfflineBanner />
                 {searchOpen && (
                     <div
                         className="fixed inset-0 z-50 bg-ink/20 p-4 sm:p-8"
@@ -305,8 +317,30 @@ export default function AppLayout({ children }: PropsWithChildren) {
                         </div>
                     </div>
                 )}
-                <main className="mx-auto max-w-[1440px] px-5 py-8 lg:px-8">{children}</main>
+                <main className="mx-auto max-w-[1440px] px-5 py-8 pb-24 lg:px-8 lg:pb-8">{children}</main>
             </div>
+            <nav
+                className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-white/95 px-2 pb-[env(safe-area-inset-bottom)] shadow-[0_-6px_20px_rgba(14,31,29,0.08)] backdrop-blur lg:hidden"
+                aria-label="Field navigation"
+            >
+                <div className="mx-auto flex max-w-lg items-stretch justify-around">
+                    {fieldNav.map(({ label, href, icon: Icon }) => {
+                        const active = url === href || url?.startsWith(`${href}/`) === true;
+
+                        return (
+                            <Link
+                                key={href}
+                                href={href}
+                                className={`flex min-h-16 min-w-16 flex-1 flex-col items-center justify-center gap-1 px-1 text-[11px] font-semibold transition ${active ? 'text-brand' : 'text-muted hover:text-ink'}`}
+                                aria-current={active ? 'page' : undefined}
+                            >
+                                <Icon size={20} strokeWidth={active ? 2.2 : 1.8} />
+                                <span>{label}</span>
+                            </Link>
+                        );
+                    })}
+                </div>
+            </nav>
         </div>
     );
 }
