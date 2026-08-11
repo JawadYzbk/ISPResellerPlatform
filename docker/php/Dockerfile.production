@@ -16,11 +16,15 @@ FROM php:8.3-fpm-alpine AS app
 
 RUN apk add --no-cache \
         bash \
+        freetype-dev \
         icu-dev \
+        libjpeg-turbo-dev \
+        libpng-dev \
         libzip-dev \
         postgresql-dev \
         unzip \
-    && docker-php-ext-install -j"$(nproc)" intl opcache pcntl pdo_pgsql zip \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install -j"$(nproc)" gd intl opcache pcntl pdo_pgsql zip \
     && rm -rf /var/cache/apk/*
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
