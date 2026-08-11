@@ -41,6 +41,7 @@ final class FrankfurterExchangeRateProvider implements ExchangeRateProvider
         }
 
         $result = [];
+        $receivedQuotes = [];
         foreach ($rows as $row) {
             if (! is_array($row) || ! is_string($row['date'] ?? null) || ! is_string($row['base'] ?? null) || ! is_string($row['quote'] ?? null) || (! is_int($row['rate'] ?? null) && ! is_float($row['rate'] ?? null) && ! is_string($row['rate'] ?? null))) {
                 throw new RuntimeException('Frankfurter returned a malformed rate row.');
@@ -53,6 +54,12 @@ final class FrankfurterExchangeRateProvider implements ExchangeRateProvider
             $rateText = is_string($row['rate']) ? $row['rate'] : (string) $row['rate'];
             [$numerator, $denominator] = $this->ratio($rateText);
             $result[] = new ExchangeRateQuote($baseCurrency, $quote, $numerator, $denominator, CarbonImmutable::parse($row['date'])->startOfDay(), $rateText);
+            $receivedQuotes[$quote] = true;
+        }
+
+        $missingQuotes = array_values(array_diff($quotes, array_keys($receivedQuotes)));
+        if ($missingQuotes !== []) {
+            throw new RuntimeException('Frankfurter omitted requested quote currency/currencies: '.implode(', ', $missingQuotes).'.');
         }
 
         return $result;
