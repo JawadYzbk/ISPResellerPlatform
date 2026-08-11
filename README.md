@@ -107,6 +107,8 @@ The app is at [http://localhost:8000](http://localhost:8000), Mailpit at [http:/
 
 The development app keeps Composer dependencies and framework cache in named volumes, clears the Laravel configuration cache on each app start so `.env` and PHPUnit overrides remain effective, runs the Docker PHP server with four CLI workers and OPcache timestamp validation disabled for faster bind-mounted requests, and keeps the frontend dependency install behind a lockfile hash. Restart the app after changing PHP source, `.env` or PHP configuration; set `PHP_OPCACHE_VALIDATE_TIMESTAMPS=1` when live code revalidation is more important than request speed. Set `PHP_CLI_SERVER_WORKERS=1` when debugging process-specific behavior. Rebuild the app image after changing Docker PHP settings with `docker compose build app && docker compose up -d app`.
 
+WhatsApp Web.js is opt-in and runs as a private Compose service. Set `WHATSAPP_PROVIDER=web`, `WHATSAPP_WEB_ENABLED=true`, `WHATSAPP_WEB_TOKEN`, `WHATSAPP_WEBHOOK_SECRET`, and `WHATSAPP_WEBHOOK_URL` in `.env`, then start it with `docker compose --profile whatsapp up --build`. The bridge is not published to the host; after it starts, the owner can open **Settings → WhatsApp setup** and scan the QR code shown by the application. Keep the `whatsapp-web-auth` volume private and backed up. Use the Cloud API path instead when a dedicated Web.js account is not approved for the pilot.
+
 For the production-shaped PHP-FPM/Nginx topology, use the release procedure in [the deployment runbook](docs/runbooks/deployment.md) with `docker-compose.production.yml`.
 
 ## Quality gates
