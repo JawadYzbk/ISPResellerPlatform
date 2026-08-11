@@ -11,6 +11,7 @@ use App\Http\Controllers\Web\CredentialOperationsController;
 use App\Http\Controllers\Web\CustomerController;
 use App\Http\Controllers\Web\DashboardController;
 use App\Http\Controllers\Web\ExchangeRateOperationsController;
+use App\Http\Controllers\Web\FieldController;
 use App\Http\Controllers\Web\ImportOperationsController;
 use App\Http\Controllers\Web\IncidentOperationsController;
 use App\Http\Controllers\Web\InventoryOperationsController;
@@ -79,6 +80,9 @@ Route::middleware(['auth', 'tenant'])->group(function (): void {
 
 Route::middleware(['auth', 'tenant', '2fa'])->group(function (): void {
     Route::get('/dashboard', DashboardController::class)->name('dashboard');
+    Route::get('/field', [FieldController::class, 'index'])->name('field.index');
+    Route::get('/field/sync', [FieldController::class, 'sync'])->name('field.sync');
+    Route::post('/field/push', [FieldController::class, 'push'])->name('field.push');
     Route::get('/profile', [ProfileController::class, 'show'])->name('profile');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications');
