@@ -281,6 +281,9 @@ final class PlatformPreflightCommand extends Command
         return $host === ''
             || in_array($host, ['localhost', '127.0.0.1', '::1', 'example.com', 'example.net', 'example.org', 'example.invalid'], true)
             || str_ends_with($host, '.example')
+            || str_ends_with($host, '.example.com')
+            || str_ends_with($host, '.example.net')
+            || str_ends_with($host, '.example.org')
             || str_ends_with($host, '.invalid')
             || str_ends_with($host, '.localhost')
             || str_ends_with($host, '.test');
