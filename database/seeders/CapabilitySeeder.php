@@ -10,6 +10,7 @@ use App\Support\Tenancy;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
+use Spatie\Permission\PermissionRegistrar;
 
 class CapabilitySeeder extends Seeder
 {
@@ -51,9 +52,13 @@ class CapabilitySeeder extends Seeder
 
     public function run(): void
     {
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
+
         foreach (PermissionCatalog::all() as $permission) {
             Permission::findOrCreate($permission, 'web');
         }
+
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
 
         Tenant::query()->each(function (Tenant $tenant): void {
             app(Tenancy::class)->run($tenant, function () use ($tenant): void {
