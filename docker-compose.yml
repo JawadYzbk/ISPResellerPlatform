@@ -29,6 +29,8 @@ services:
       DB_PASSWORD: isp_manager
       REDIS_CLIENT: predis
       REDIS_HOST: redis
+      CACHE_STORE: redis
+      SESSION_DRIVER: redis
       QUEUE_CONNECTION: redis
       PAYMENT_GATEWAY: ${PAYMENT_GATEWAY:-null}
       STRIPE_SECRET: ${STRIPE_SECRET:-}
@@ -77,6 +79,7 @@ services:
       DB_PASSWORD: isp_manager
       REDIS_CLIENT: predis
       REDIS_HOST: redis
+      CACHE_STORE: redis
       QUEUE_CONNECTION: redis
     depends_on:
       app:
@@ -102,6 +105,7 @@ services:
       DB_PASSWORD: isp_manager
       REDIS_CLIENT: predis
       REDIS_HOST: redis
+      CACHE_STORE: redis
       QUEUE_CONNECTION: redis
     depends_on:
       app:
