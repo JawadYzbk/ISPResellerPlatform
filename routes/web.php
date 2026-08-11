@@ -87,6 +87,9 @@ Route::middleware(['auth', 'tenant', '2fa'])->group(function (): void {
     Route::get('/settings/readiness', [SettingsController::class, 'readiness'])->name('settings.readiness');
     Route::get('/settings/whatsapp', [SettingsController::class, 'whatsapp'])->name('settings.whatsapp');
     Route::post('/settings/whatsapp/test', [SettingsController::class, 'sendWhatsAppTest'])->middleware(['recent-auth', 'throttle:3,10'])->name('settings.whatsapp.test');
+    Route::post('/settings/whatsapp/accounts', [SettingsController::class, 'createWhatsAppAccount'])->middleware('recent-auth')->name('settings.whatsapp.accounts.store');
+    Route::patch('/settings/whatsapp/accounts/{whatsappAccount:public_id}', [SettingsController::class, 'updateWhatsAppAccount'])->middleware('recent-auth')->name('settings.whatsapp.accounts.update');
+    Route::post('/settings/whatsapp/accounts/{whatsappAccount:public_id}/disconnect', [SettingsController::class, 'disconnectWhatsAppAccount'])->middleware('recent-auth')->name('settings.whatsapp.accounts.disconnect');
     Route::put('/settings/general', [SettingsController::class, 'updateGeneral'])->middleware('recent-auth')->name('settings.general.update');
     Route::get('/settings/users', [UserOperationsController::class, 'index'])->name('settings.users');
     Route::post('/settings/users/invite', [UserOperationsController::class, 'invite'])->middleware('recent-auth')->name('settings.users.invite');

@@ -4,6 +4,7 @@ use App\Jobs\DeliverMessage;
 use App\Models\Message;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Models\WhatsAppAccount;
 use App\Support\Tenancy;
 use Database\Seeders\CapabilitySeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -14,7 +15,8 @@ uses(RefreshDatabase::class);
 
 it('shows the server-side WhatsApp Web.js status and QR pairing state', function (): void {
     Http::fake([
-        'http://whatsapp-web:3001/status' => Http::response([
+        'http://whatsapp-web:3001/accounts/*/status' => Http::response([
+            'account_id' => 'isp-manager',
             'status' => 'qr',
             'qr' => 'qr-payload-for-northline',
             'lastError' => null,
@@ -40,6 +42,7 @@ it('shows the server-side WhatsApp Web.js status and QR pairing state', function
     app(CapabilitySeeder::class)->run();
     app(Tenancy::class)->set($tenant);
     $owner->assignRole('tenant_owner');
+    $owner->forceFill(['last_authenticated_at' => now()])->save();
 
     $this->actingAs($owner)
         ->get(route('settings.whatsapp'))
@@ -59,7 +62,7 @@ it('shows the server-side WhatsApp Web.js status and QR pairing state', function
 it('queues an audited WhatsApp test message only after the bridge is ready', function (): void {
     Queue::fake();
     Http::fake([
-        'http://whatsapp-web:3001/status' => Http::response(['status' => 'ready']),
+        'http://whatsapp-web:3001/accounts/*/status' => Http::response(['account_id' => 'isp-manager', 'status' => 'ready']),
     ]);
     config()->set([
         'services.whatsapp.mode' => 'web',
@@ -92,4 +95,59 @@ it('queues an audited WhatsApp test message only after the bridge is ready', fun
     expect($message->recipient)->toBe('96170123456')
         ->and($message->metadata['test_notification'])->toBeTrue();
     Queue::assertPushed(DeliverMessage::class);
+});
+
+it('creates, reassigns, disconnects, and returns a WhatsApp account to QR pairing', function (): void {
+    Http::fake(function ($request) {
+        static $statusCalls = 0;
+        if (str_ends_with($request->url(), '/disconnect')) {
+            return Http::response(['status' => 'qr', 'qr' => 'new-qr']);
+        }
+        $statusCalls++;
+
+        return Http::response(['status' => $statusCalls === 1 ? 'ready' : 'qr', 'qr' => $statusCalls === 1 ? null : 'new-qr']);
+    });
+    config()->set([
+        'services.whatsapp.mode' => 'web',
+        'services.whatsapp.web.enabled' => true,
+        'services.whatsapp.web.endpoint' => 'http://whatsapp-web:3001',
+        'services.whatsapp.web.token' => 'bridge-token',
+    ]);
+    $tenant = Tenant::create(['name' => 'Northline', 'slug' => 'northline', 'base_currency' => 'USD', 'collection_currency' => 'LBP']);
+    $owner = User::create([
+        'tenant_id' => $tenant->id,
+        'name' => 'Maya Haddad',
+        'email' => 'maya-whatsapp-accounts@example.test',
+        'password' => 'password',
+        'role' => 'tenant_owner',
+        'last_authenticated_at' => now(),
+    ]);
+    app(CapabilitySeeder::class)->run();
+    app(Tenancy::class)->set($tenant);
+    $owner->assignRole('tenant_owner');
+    $owner->forceFill(['last_authenticated_at' => now()])->save();
+
+    $this->actingAs($owner)
+        ->post(route('settings.whatsapp.accounts.store'), ['label' => 'Billing phone', 'job' => 'billing'])
+        ->assertRedirect(route('settings.whatsapp'));
+
+    app(Tenancy::class)->set($tenant);
+    $account = WhatsAppAccount::query()->firstOrFail();
+    expect($account->label)->toBe('Billing phone')
+        ->and($account->job)->toBe('billing')
+        ->and($account->status)->toBe('ready');
+
+    $this->actingAs($owner)
+        ->patch(route('settings.whatsapp.accounts.update', $account->public_id), ['label' => 'Collections phone', 'job' => 'collections'])
+        ->assertRedirect(route('settings.whatsapp'));
+
+    expect($account->refresh()->label)->toBe('Collections phone')
+        ->and($account->job)->toBe('collections');
+
+    $this->actingAs($owner)
+        ->post(route('settings.whatsapp.accounts.disconnect', $account->public_id))
+        ->assertRedirect(route('settings.whatsapp'));
+
+    expect($account->refresh()->status)->toBe('qr');
+    Http::assertSent(fn ($request): bool => str_ends_with($request->url(), '/disconnect'));
 });

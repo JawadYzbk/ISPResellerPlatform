@@ -93,7 +93,7 @@ final readonly class GetTenantReadiness implements Action
             'Cash collection' => $this->check('PASS', 'Cash collection is available to authorized staff.'),
             'Stripe gateway' => $this->stripeCheck(),
             'Whish Pay gateway' => $this->whishCheck(),
-            'WhatsApp channel' => $this->whatsappCheck(),
+            'WhatsApp channel' => $this->whatsappCheck($tenant),
         ];
     }
 
@@ -199,11 +199,11 @@ final readonly class GetTenantReadiness implements Action
     }
 
     /** @return array{status: 'PASS'|'WARN'|'FAIL', detail: string} */
-    private function whatsappCheck(): array
+    private function whatsappCheck(Tenant $tenant): array
     {
         $mode = strtolower((string) config('services.whatsapp.mode', 'cloud'));
         if ($mode === 'web') {
-            $setup = $this->whatsappStatus->handle();
+            $setup = $this->whatsappStatus->handle(tenant: $tenant);
 
             return match ($setup['status']) {
                 'ready' => $this->check('PASS', 'The private Web.js bridge is paired and ready.'),

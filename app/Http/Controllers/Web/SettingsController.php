@@ -2,18 +2,24 @@
 
 namespace App\Http\Controllers\Web;
 
+use App\Actions\CreateWhatsAppAccount;
+use App\Actions\DisconnectWhatsAppAccount;
 use App\Actions\GetPaymentSetupStatus;
 use App\Actions\GetTenantReadiness;
 use App\Actions\GetWhatsAppSetupStatus;
 use App\Actions\GetWorkspaceSetupSignals;
 use App\Actions\QueueWhatsAppTestMessage;
 use App\Actions\UpdateTenantSettings;
+use App\Actions\UpdateWhatsAppAccount;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\TenantSettingsRequest;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Models\WhatsAppAccount;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -87,7 +93,51 @@ final class SettingsController extends Controller
         $user = $request->user();
         abort_unless($user instanceof User && $user->can('settings.manage'), 403);
 
-        return Inertia::render('Settings/WhatsApp', ['setup' => $status->handle()]);
+        $tenant = Tenant::query()->find($user->tenant_id);
+        abort_unless($tenant instanceof Tenant, 403);
+
+        return Inertia::render('Settings/WhatsApp', ['setup' => $status->handle(tenant: $tenant)]);
+    }
+
+    public function createWhatsAppAccount(Request $request, CreateWhatsAppAccount $create): RedirectResponse
+    {
+        $user = $request->user();
+        abort_unless($user instanceof User && $user->can('settings.manage'), 403);
+        $tenant = Tenant::query()->find($user->tenant_id);
+        abort_unless($tenant instanceof Tenant, 403);
+        $validated = $request->validate([
+            'label' => ['required', 'string', 'max:80'],
+            'job' => ['required', Rule::in(WhatsAppAccount::JOBS)],
+        ]);
+
+        $create->handle($tenant, (string) $validated['label'], (string) $validated['job']);
+
+        return redirect()->route('settings.whatsapp')->with('success', 'WhatsApp account added.');
+    }
+
+    public function updateWhatsAppAccount(Request $request, WhatsAppAccount $whatsappAccount, UpdateWhatsAppAccount $update): RedirectResponse
+    {
+        $user = $request->user();
+        abort_unless($user instanceof User && $user->can('settings.manage'), 403);
+        abort_unless($whatsappAccount->tenant_id === $user->tenant_id, 404);
+        $validated = $request->validate([
+            'label' => ['required', 'string', 'max:80'],
+            'job' => ['required', Rule::in(WhatsAppAccount::JOBS)],
+        ]);
+
+        $update->handle($whatsappAccount, (string) $validated['label'], (string) $validated['job']);
+
+        return redirect()->route('settings.whatsapp')->with('success', 'WhatsApp account updated.');
+    }
+
+    public function disconnectWhatsAppAccount(Request $request, WhatsAppAccount $whatsappAccount, DisconnectWhatsAppAccount $disconnect): RedirectResponse
+    {
+        $user = $request->user();
+        abort_unless($user instanceof User && $user->can('settings.manage'), 403);
+        abort_unless($whatsappAccount->tenant_id === $user->tenant_id, 404);
+        $disconnect->handle($whatsappAccount);
+
+        return redirect()->route('settings.whatsapp')->with('success', 'WhatsApp account disconnected and returned to pairing.');
     }
 
     public function sendWhatsAppTest(Request $request, GetWhatsAppSetupStatus $status, QueueWhatsAppTestMessage $send): RedirectResponse
@@ -97,10 +147,19 @@ final class SettingsController extends Controller
         $tenant = Tenant::query()->find($user->tenant_id);
         abort_unless($tenant instanceof Tenant, 403);
 
-        $setup = $status->handle();
-        $ready = $setup['mode'] === 'web'
-            ? $setup['status'] === 'ready'
-            : $setup['status'] === 'configured';
+        $setup = $status->handle(tenant: $tenant);
+        $accountId = $request->string('account_id')->trim()->toString();
+        if ($accountId === '') {
+            $account = null;
+        } else {
+            $account = $tenant->whatsappAccounts()->where('public_id', $accountId)->first();
+            if (! $account instanceof WhatsAppAccount) {
+                throw ValidationException::withMessages(['account_id' => 'Choose a WhatsApp account from this workspace.']);
+            }
+        }
+        $ready = $account instanceof WhatsAppAccount
+            ? collect($setup['accounts'])->contains(fn (array $item): bool => $item['id'] === $account->public_id && $item['status'] === 'ready')
+            : ($setup['mode'] === 'web' ? $setup['status'] === 'ready' : $setup['status'] === 'configured');
         if (! $ready) {
             return back()->with('error', $setup['detail'] ?? 'WhatsApp is not ready for a test message.');
         }
@@ -108,7 +167,7 @@ final class SettingsController extends Controller
         $validated = $request->validate([
             'phone' => ['required', 'string', 'max:32', 'regex:/^\+?[0-9\s().-]{8,32}$/'],
         ]);
-        $send->handle($tenant, $user, (string) $validated['phone']);
+        $send->handle($tenant, $user, (string) $validated['phone'], $account);
 
         return redirect()->route('settings.whatsapp')->with('success', 'WhatsApp test message queued.');
     }

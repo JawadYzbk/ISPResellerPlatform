@@ -36,7 +36,7 @@ final readonly class GetWorkspaceSetupSignals implements Action
                 ->orderByDesc('effective_from')
                 ->first();
             $rateReady = $base === $collection || ($rate instanceof ExchangeRate && $this->isFresh($rate, $now));
-            $whatsapp = $this->whatsapp->handle(false);
+            $whatsapp = $this->whatsapp->handle(false, $tenant);
 
             return [
                 'logo_ready' => $this->logoReady($tenant),
