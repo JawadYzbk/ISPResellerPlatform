@@ -85,3 +85,32 @@ it('isolates supplier workspaces and forbids supplier writes without management 
         ->post(route('operations.suppliers.store'), ['name' => 'Blocked', 'code' => 'BLOCKED'])
         ->assertForbidden();
 });
+
+it('updates and deactivates a supplier without removing its history', function (): void {
+    $tenant = Tenant::create(['name' => 'Northline', 'slug' => 'northline', 'base_currency' => 'USD', 'collection_currency' => 'USD']);
+    $user = supplierOperator($tenant, 'supplier-update@example.test');
+    app(Tenancy::class)->set($tenant);
+    $supplier = Supplier::create([
+        'name' => 'Transit ISP',
+        'code' => 'TRANSIT',
+        'contact_email' => 'old@transit.test',
+        'is_active' => true,
+    ]);
+
+    $this->actingAs($user)
+        ->patch(route('operations.suppliers.update', $supplier), [
+            'name' => 'Transit Networks',
+            'code' => 'TRANSIT-NETWORKS',
+            'contact_email' => 'billing@transit.test',
+            'is_active' => false,
+        ])
+        ->assertRedirect(route('operations.suppliers'));
+
+    expect($supplier->refresh()->only(['name', 'code', 'contact_email', 'is_active']))
+        ->toMatchArray([
+            'name' => 'Transit Networks',
+            'code' => 'TRANSIT-NETWORKS',
+            'contact_email' => 'billing@transit.test',
+            'is_active' => false,
+        ]);
+});

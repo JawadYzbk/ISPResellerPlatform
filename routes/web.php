@@ -201,6 +201,7 @@ Route::middleware(['auth', 'tenant', '2fa'])->group(function (): void {
     Route::post('/operations/credentials/{credential}/assign', [CredentialOperationsController::class, 'assign'])->middleware('recent-auth')->name('operations.credentials.assign');
     Route::get('/operations/suppliers', [SupplierOperationsController::class, 'index'])->name('operations.suppliers');
     Route::post('/operations/suppliers', [SupplierOperationsController::class, 'store'])->middleware('recent-auth')->name('operations.suppliers.store');
+    Route::patch('/operations/suppliers/{supplier}', [SupplierOperationsController::class, 'update'])->middleware('recent-auth')->name('operations.suppliers.update');
     Route::post('/operations/suppliers/{supplier}/contracts', [SupplierOperationsController::class, 'storeContract'])->middleware('recent-auth')->name('operations.suppliers.contracts.store');
     Route::post('/operations/suppliers/{supplier}/bills', [SupplierOperationsController::class, 'storeBill'])->middleware('recent-auth')->name('operations.suppliers.bills.store');
     Route::post('/operations/supplier-bills/{bill}/payments', [SupplierOperationsController::class, 'storePayment'])->middleware('recent-auth')->name('operations.supplier-bills.payments.store');

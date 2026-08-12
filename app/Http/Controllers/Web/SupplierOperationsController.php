@@ -7,6 +7,7 @@ use App\Actions\CreateSupplierBill;
 use App\Actions\CreateSupplierContract;
 use App\Actions\GetCurrencyCatalog;
 use App\Actions\RecordSupplierPayment;
+use App\Actions\UpdateSupplier;
 use App\Http\Controllers\Controller;
 use App\Models\Supplier;
 use App\Models\SupplierBill;
@@ -32,6 +33,7 @@ final class SupplierOperationsController extends Controller
                 'name' => $supplier->name,
                 'code' => $supplier->code,
                 'contact_email' => $supplier->contact_email,
+                'is_active' => $supplier->is_active,
                 'contracts' => $supplier->contracts->map(fn (SupplierContract $contract): array => [
                     'id' => $contract->id,
                     'service_type' => $contract->service_type,
@@ -67,6 +69,28 @@ final class SupplierOperationsController extends Controller
         $create->handle($validated);
 
         return redirect()->route('operations.suppliers')->with('success', 'Supplier created.');
+    }
+
+    public function update(Request $request, Supplier $supplier, UpdateSupplier $update): RedirectResponse
+    {
+        $this->ensureManager($request);
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'code' => [
+                'required',
+                'string',
+                'max:32',
+                'alpha_dash',
+                Rule::unique('suppliers', 'code')
+                    ->where('tenant_id', $request->user()->tenant_id)
+                    ->ignore($supplier->id),
+            ],
+            'contact_email' => ['nullable', 'email', 'max:255'],
+            'is_active' => ['required', 'boolean'],
+        ]);
+        $update->handle($supplier, $validated);
+
+        return redirect()->route('operations.suppliers')->with('success', 'Supplier updated.');
     }
 
     public function storeContract(Request $request, Supplier $supplier, CreateSupplierContract $create): RedirectResponse
