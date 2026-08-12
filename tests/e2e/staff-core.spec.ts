@@ -727,7 +727,7 @@ test.describe('staff core journeys', () => {
         await expect(page.getByRole('link', { name: 'Payments' }).last()).toBeVisible();
 
         await page.context().setOffline(true);
-        await expect(page.getByRole('status')).toContainText('Offline.');
+        await expect(page.getByTestId('offline-banner')).toContainText('Offline.');
         await page.context().setOffline(false);
     });
 

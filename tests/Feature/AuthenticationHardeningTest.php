@@ -52,6 +52,17 @@ it('throttles repeated login attempts by account and IP', function (): void {
     $this->post(route('login.store'), ['email' => 'unknown@example.test', 'password' => 'wrong'])->assertStatus(429);
 });
 
+it('keeps the shared office login budget configurable without changing the account limit', function (): void {
+    config()->set('security.login_ip_limit', 2);
+    RateLimiter::clear('account:office-one@example.test');
+    RateLimiter::clear('account:office-two@example.test');
+    RateLimiter::clear('ip:127.0.0.1');
+
+    $this->post(route('login.store'), ['email' => 'office-one@example.test', 'password' => 'wrong'])->assertRedirect();
+    $this->post(route('login.store'), ['email' => 'office-two@example.test', 'password' => 'wrong'])->assertRedirect();
+    $this->post(route('login.store'), ['email' => 'office-three@example.test', 'password' => 'wrong'])->assertStatus(429);
+});
+
 it('supports the staff authentication contract with a separate two-factor exchange', function (): void {
     $tenant = Tenant::create(['name' => 'Northline', 'slug' => 'northline', 'base_currency' => 'USD', 'collection_currency' => 'USD']);
     $user = User::create(['tenant_id' => $tenant->id, 'name' => 'Owner', 'email' => 'staff-auth-owner@example.test', 'password' => Hash::make('password'), 'role' => 'tenant_owner']);

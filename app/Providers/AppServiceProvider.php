@@ -76,7 +76,7 @@ class AppServiceProvider extends ServiceProvider
 
             return [
                 // Shared office NAT should not lock out legitimate staff while the account limit contains spraying.
-                Limit::perMinute(30)->by('ip:'.$request->ip()),
+                Limit::perMinute(max(1, (int) config('security.login_ip_limit', 60)))->by('ip:'.$request->ip()),
                 Limit::perMinute(5)->by('account:'.$email),
             ];
         });

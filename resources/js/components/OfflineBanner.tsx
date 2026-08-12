@@ -21,6 +21,7 @@ export default function OfflineBanner() {
 
     return (
         <div
+            data-testid="offline-banner"
             className="flex items-center gap-2 border-b border-amber-200 bg-amber-50 px-5 py-3 text-sm font-medium text-amber-900 lg:px-8"
             role="status"
             aria-live="polite"
