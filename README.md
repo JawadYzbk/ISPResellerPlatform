@@ -55,7 +55,7 @@ The current foundation is live:
 - Operations report with service/network/work-order/incident status, low-stock signals and CSV export
 - Finance report with collection rate, allocation-based aging, plan/zone/POP revenue, upstream cost and margin, collector performance, retention, ARPU and top-usage breakdowns
 - Server-generated A4 invoice and receipt PDFs with tenant-scoped billing authorization
-- Deferred owner dashboard metrics and manager attention panels with server-rendered loading fallbacks
+- Owner dashboard finance metrics, six-month service-status trend, deferred loading fallbacks, and manager attention panels with actionable deep links
 - Capability-aware global command palette for customers, services, billing records, tickets, equipment and incidents
 - Transactional APP_KEY rotation command with an operator runbook for encrypted credentials
 - Coherent Lebanon-oriented demo tenant seed with USD base currency, LBP collection, a demo FX rate, one LBP settlement against a USD invoice, 200 customers/services, billing history, routers/POPs, tickets, work orders and serialized stock
