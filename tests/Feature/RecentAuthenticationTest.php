@@ -31,3 +31,16 @@ it('refreshes the authentication timestamp after a correct password', function (
     expect($user->refresh()->last_authenticated_at)->toBeInstanceOf(Carbon::class)
         ->and($user->last_authenticated_at->greaterThan(now()->subMinute()))->toBeTrue();
 });
+
+it('returns to the referring workspace page when reauthentication is opened directly', function (): void {
+    $tenant = Tenant::create(['name' => 'Eastline', 'slug' => 'eastline', 'base_currency' => 'USD', 'collection_currency' => 'USD']);
+    $user = User::create(['tenant_id' => $tenant->id, 'name' => 'Operator', 'email' => 'operator-direct-reauth@example.test', 'password' => Hash::make('password'), 'role' => 'operator', 'last_authenticated_at' => now()->subMinutes(11)]);
+
+    $this->actingAs($user)
+        ->withHeader('referer', route('settings.general'))
+        ->get(route('security.reauthenticate'))
+        ->assertOk();
+
+    $this->actingAs($user)->post(route('security.reauthenticate.store'), ['password' => 'password'])
+        ->assertRedirect(route('settings.general'));
+});
