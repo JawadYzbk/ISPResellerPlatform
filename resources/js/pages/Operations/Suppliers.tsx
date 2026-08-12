@@ -133,6 +133,7 @@ function SupplierCard({
     canManage: boolean;
 }) {
     const [contractOpen, setContractOpen] = useState(false);
+    const [editingContractId, setEditingContractId] = useState<number | null>(null);
     const [billOpen, setBillOpen] = useState(false);
     const [editOpen, setEditOpen] = useState(false);
     const [paymentBillId, setPaymentBillId] = useState<number | null>(null);
@@ -146,6 +147,13 @@ function SupplierCard({
         service_type: 'upstream_credential',
         wholesale_currency: currencies[0]?.code ?? 'USD',
         effective_from: new Date().toISOString().slice(0, 10),
+        effective_to: '',
+        status: 'active',
+    });
+    const contractEditForm = useForm({
+        service_type: '',
+        wholesale_currency: currencies[0]?.code ?? 'USD',
+        effective_from: '',
         effective_to: '',
         status: 'active',
     });
@@ -198,6 +206,30 @@ function SupplierCard({
     const submitEdit = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         editForm.patch(`/operations/suppliers/${supplier.id}`, { onSuccess: () => setEditOpen(false) });
+    };
+
+    const startContractEdit = (contract: Contract) => {
+        setEditingContractId(contract.id);
+        contractEditForm.setData({
+            service_type: contract.service_type,
+            wholesale_currency: contract.wholesale_currency,
+            effective_from: contract.effective_from,
+            effective_to: contract.effective_to ?? '',
+            status: contract.status,
+        });
+        contractEditForm.clearErrors();
+    };
+
+    const cancelContractEdit = () => {
+        setEditingContractId(null);
+        contractEditForm.reset();
+        contractEditForm.clearErrors();
+    };
+
+    const saveContract = (contract: Contract) => {
+        contractEditForm.patch(`/operations/supplier-contracts/${contract.id}`, {
+            onSuccess: cancelContractEdit,
+        });
     };
 
     return (
@@ -433,14 +465,120 @@ function SupplierCard({
                     <div className="mt-3 divide-y divide-line">
                         {supplier.contracts.map((contract) => (
                             <div key={contract.id} className="py-3 text-sm">
-                                <div className="flex justify-between gap-3">
-                                    <span className="font-semibold">{contract.service_type}</span>
-                                    <span className="status-badge">{contract.status}</span>
-                                </div>
-                                <p className="mt-1 text-xs text-muted">
-                                    {contract.wholesale_currency} · {contract.effective_from}{' '}
-                                    {contract.effective_to && `→ ${contract.effective_to}`}
-                                </p>
+                                {editingContractId === contract.id ? (
+                                    <div className="grid gap-3 rounded-lg bg-sand/50 p-4 md:grid-cols-2">
+                                        <label>
+                                            <span className="field-label">Service type</span>
+                                            <input
+                                                className="field"
+                                                value={contractEditForm.data.service_type}
+                                                onChange={(event) =>
+                                                    contractEditForm.setData('service_type', event.target.value)
+                                                }
+                                                required
+                                            />
+                                            {contractEditForm.errors.service_type && (
+                                                <p className="field-error">{contractEditForm.errors.service_type}</p>
+                                            )}
+                                        </label>
+                                        <label>
+                                            <span className="field-label">Wholesale currency</span>
+                                            <CurrencyCombobox
+                                                className="field"
+                                                value={contractEditForm.data.wholesale_currency}
+                                                currencies={currencies}
+                                                onChange={(value) => contractEditForm.setData('wholesale_currency', value)}
+                                            />
+                                            {contractEditForm.errors.wholesale_currency && (
+                                                <p className="field-error">{contractEditForm.errors.wholesale_currency}</p>
+                                            )}
+                                        </label>
+                                        <label>
+                                            <span className="field-label">Effective from</span>
+                                            <input
+                                                className="field"
+                                                type="date"
+                                                value={contractEditForm.data.effective_from}
+                                                onChange={(event) =>
+                                                    contractEditForm.setData('effective_from', event.target.value)
+                                                }
+                                                required
+                                            />
+                                            {contractEditForm.errors.effective_from && (
+                                                <p className="field-error">{contractEditForm.errors.effective_from}</p>
+                                            )}
+                                        </label>
+                                        <label>
+                                            <span className="field-label">Effective to</span>
+                                            <input
+                                                className="field"
+                                                type="date"
+                                                value={contractEditForm.data.effective_to}
+                                                onChange={(event) =>
+                                                    contractEditForm.setData('effective_to', event.target.value)
+                                                }
+                                            />
+                                            {contractEditForm.errors.effective_to && (
+                                                <p className="field-error">{contractEditForm.errors.effective_to}</p>
+                                            )}
+                                        </label>
+                                        <label>
+                                            <span className="field-label">Status</span>
+                                            <ResponsiveSelect
+                                                className="field"
+                                                value={contractEditForm.data.status}
+                                                onChange={(event) => contractEditForm.setData('status', event.target.value)}
+                                            >
+                                                <option value="active">Active</option>
+                                                <option value="suspended">Suspended</option>
+                                                <option value="expired">Expired</option>
+                                            </ResponsiveSelect>
+                                            {contractEditForm.errors.status && (
+                                                <p className="field-error">{contractEditForm.errors.status}</p>
+                                            )}
+                                        </label>
+                                        <div className="flex items-end gap-2">
+                                            <button
+                                                type="button"
+                                                className="button-secondary"
+                                                disabled={contractEditForm.processing}
+                                                onClick={() => saveContract(contract)}
+                                            >
+                                                <Save size={14} /> Save contract
+                                            </button>
+                                            <button
+                                                type="button"
+                                                className="button-quiet"
+                                                disabled={contractEditForm.processing}
+                                                onClick={cancelContractEdit}
+                                            >
+                                                <X size={14} /> Cancel
+                                            </button>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <>
+                                        <div className="flex items-start justify-between gap-3">
+                                            <span className="font-semibold">{contract.service_type}</span>
+                                            <div className="flex items-center gap-2">
+                                                <span className="status-badge">{contract.status}</span>
+                                                {canManage && (
+                                                    <button
+                                                        type="button"
+                                                        className="text-xs font-semibold text-brand hover:underline"
+                                                        onClick={() => startContractEdit(contract)}
+                                                    >
+                                                        Edit
+                                                    </button>
+                                                )}
+                                            </div>
+                                        </div>
+                                        <p className="mt-1 text-xs text-muted">
+                                            {contract.wholesale_currency} · {contract.effective_from}{' '}
+                                            {contract.effective_to && `→ ${contract.effective_to}`}
+                                        </p>
+                                    </>
+                                )}
                             </div>
                         ))}
                         {supplier.contracts.length === 0 && (
