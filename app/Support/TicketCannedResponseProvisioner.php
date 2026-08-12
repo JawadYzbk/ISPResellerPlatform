@@ -4,6 +4,7 @@ namespace App\Support;
 
 use App\Models\Tenant;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 final class TicketCannedResponseProvisioner
 {
@@ -33,7 +34,7 @@ final class TicketCannedResponseProvisioner
             foreach (self::DEFAULTS as $title => $definition) {
                 $responses[] = [
                     'tenant_id' => $tenantId,
-                    'public_id' => (string) \Illuminate\Support\Str::ulid(),
+                    'public_id' => (string) Str::ulid(),
                     'title' => $title,
                     'body' => $definition['body'],
                     'category' => $definition['category'],
