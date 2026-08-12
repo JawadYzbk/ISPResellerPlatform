@@ -23,6 +23,9 @@ export type Status =
     | 'void'
     | 'posted'
     | 'reversed'
+    | 'imported'
+    | 'reserved'
+    | 'invalid'
     | 'open'
     | 'in_progress'
     | 'resolved'
@@ -67,19 +70,21 @@ const styles: Record<Status, string> = {
     void: 'bg-slate-100 text-slate-500 ring-slate-500/20',
     posted: 'bg-emerald-50 text-emerald-700 ring-emerald-600/20',
     reversed: 'bg-rose-50 text-rose-700 ring-rose-600/20',
+    imported: 'bg-slate-100 text-slate-600 ring-slate-500/20',
+    reserved: 'bg-blue-50 text-blue-700 ring-blue-600/20',
+    expired: 'bg-amber-50 text-amber-700 ring-amber-600/20',
+    revoked: 'bg-rose-50 text-rose-700 ring-rose-600/20',
+    invalid: 'bg-rose-50 text-rose-700 ring-rose-600/20',
     open: 'bg-amber-50 text-amber-700 ring-amber-600/20',
     in_progress: 'bg-blue-50 text-blue-700 ring-blue-600/20',
     resolved: 'bg-emerald-50 text-emerald-700 ring-emerald-600/20',
     closed: 'bg-slate-100 text-slate-500 ring-slate-500/20',
     cancelled: 'bg-slate-100 text-slate-500 ring-slate-500/20',
-    assigned: 'bg-blue-50 text-blue-700 ring-blue-600/20',
+    assigned: 'bg-violet-50 text-violet-700 ring-violet-600/20',
     en_route: 'bg-indigo-50 text-indigo-700 ring-indigo-600/20',
     available: 'bg-emerald-50 text-emerald-700 ring-emerald-600/20',
     returned: 'bg-slate-100 text-slate-600 ring-slate-500/20',
     damaged: 'bg-rose-50 text-rose-700 ring-rose-600/20',
-    reserved: 'bg-amber-50 text-amber-700 ring-amber-600/20',
-    expired: 'bg-slate-100 text-slate-500 ring-slate-500/20',
-    revoked: 'bg-rose-50 text-rose-700 ring-rose-600/20',
     free: 'bg-emerald-50 text-emerald-700 ring-emerald-600/20',
     conflict: 'bg-rose-50 text-rose-700 ring-rose-600/20',
     maintenance: 'bg-amber-50 text-amber-700 ring-amber-600/20',

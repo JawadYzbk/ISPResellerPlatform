@@ -1,6 +1,7 @@
 <?php
 
 use App\Actions\ImportCredentials;
+use App\Enums\ProvisioningMode;
 use App\Models\CredentialBatch;
 use App\Models\Customer;
 use App\Models\Plan;
@@ -66,7 +67,7 @@ it('assigns an available credential through the tenant-safe web action', functio
     $batch = CredentialBatch::create(['supplier_id' => $supplier->id, 'reference' => 'BATCH-02', 'imported_at' => now()]);
     app(ImportCredentials::class)->handle($batch, [['identifier' => 'cust-002', 'secret' => 'must-not-render']]);
     $customer = Customer::factory()->create();
-    $service = Service::factory()->create(['customer_id' => $customer->id, 'plan_id' => Plan::factory()->create()->id, 'username' => 'upstream-service']);
+    $service = Service::factory()->create(['customer_id' => $customer->id, 'plan_id' => Plan::factory()->create()->id, 'username' => 'upstream-service', 'provisioning_mode' => ProvisioningMode::UpstreamCredential]);
     $credential = UpstreamCredential::firstOrFail();
     $user->forceFill(['last_authenticated_at' => now()])->save();
 
@@ -85,4 +86,22 @@ it('assigns an available credential through the tenant-safe web action', functio
 
     expect($credential->refresh()->assigned_service_id)->toBe($service->id)
         ->and($credential->status->value)->toBe('assigned');
+});
+
+it('only offers upstream-credential services as assignment targets', function (): void {
+    $tenant = Tenant::create(['name' => 'Northline', 'slug' => 'northline', 'base_currency' => 'USD', 'collection_currency' => 'USD']);
+    $user = User::create(['tenant_id' => $tenant->id, 'name' => 'Owner', 'email' => 'credentials-targets@example.test', 'password' => Hash::make('password'), 'role' => 'tenant_owner']);
+    app(CapabilitySeeder::class)->run();
+    app(Tenancy::class)->set($tenant);
+    $user->assignRole('tenant_owner');
+    $supplier = Supplier::create(['name' => 'Upstream', 'code' => 'UP-01']);
+    $batch = CredentialBatch::create(['supplier_id' => $supplier->id, 'reference' => 'BATCH-03', 'imported_at' => now()]);
+    app(ImportCredentials::class)->handle($batch, [['identifier' => 'cust-003', 'secret' => 'secret']]);
+    $manual = Service::factory()->create(['username' => 'manual-service']);
+    $upstream = Service::factory()->create(['username' => 'upstream-service', 'provisioning_mode' => ProvisioningMode::UpstreamCredential]);
+
+    $this->actingAs($user)->get(route('operations.credentials'))->assertInertia(fn ($page) => $page
+        ->where('assignableServices.0.public_id', $upstream->public_id)
+        ->where('assignableServices', fn ($services): bool => collect($services)->pluck('public_id')->doesntContain($manual->public_id))
+    );
 });

@@ -4,6 +4,7 @@ namespace App\Actions;
 
 use App\Contracts\Action;
 use App\Enums\CredentialStatus;
+use App\Enums\ProvisioningMode;
 use App\Models\CredentialAssignment;
 use App\Models\Service;
 use App\Models\UpstreamCredential;
@@ -20,8 +21,16 @@ final readonly class AssignUpstreamCredential implements Action
             if ($locked->tenant_id !== $service->tenant_id || ($actor !== null && $actor->tenant_id !== $locked->tenant_id)) {
                 throw new DomainException('Credentials, services, and actors must belong to the same tenant.');
             }
+            if ($service->provisioning_mode !== ProvisioningMode::UpstreamCredential) {
+                throw new DomainException('Credentials can only be assigned to upstream-credential services.');
+            }
             if ($locked->status !== CredentialStatus::Available || $locked->assigned_service_id !== null) {
                 throw new DomainException('The upstream credential is not available.');
+            }
+            if ($locked->expires_at?->isPast()) {
+                $locked->forceFill(['status' => CredentialStatus::Expired])->save();
+
+                throw new DomainException('The upstream credential has expired.');
             }
             if (UpstreamCredential::query()->where('assigned_service_id', $service->id)->exists()) {
                 throw new DomainException('The service already has an upstream credential.');

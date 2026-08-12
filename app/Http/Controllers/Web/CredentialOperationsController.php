@@ -6,6 +6,7 @@ use App\Actions\AssignUpstreamCredential;
 use App\Actions\ImportCredentialCsv;
 use App\Actions\ListUpstreamCredentials;
 use App\Actions\RevealUpstreamCredential;
+use App\Enums\ProvisioningMode;
 use App\Http\Controllers\Controller;
 use App\Models\Service;
 use App\Models\Supplier;
@@ -67,6 +68,7 @@ final class CredentialOperationsController extends Controller
         $assignableServices = $canAssign
             ? Service::query()
                 ->with('customer')
+                ->where('provisioning_mode', ProvisioningMode::UpstreamCredential)
                 ->whereNotIn('id', UpstreamCredential::query()->whereNotNull('assigned_service_id')->select('assigned_service_id'))
                 ->orderBy('username')
                 ->get(['id', 'public_id', 'customer_id', 'username'])

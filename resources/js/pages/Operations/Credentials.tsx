@@ -12,7 +12,7 @@ import type { PageProps, Paginator } from '@/types';
 type Credential = {
     id: number;
     identifier: string;
-    status: 'available' | 'reserved' | 'assigned' | 'expired' | 'revoked';
+    status: 'imported' | 'available' | 'reserved' | 'assigned' | 'active' | 'expired' | 'revoked' | 'invalid';
     expires_at: string | null;
     supplier: { name: string; code: string } | null;
     batch_reference: string | null;
@@ -216,11 +216,14 @@ export default function CredentialsPage({
                         onChange={(event) => setStatus(event.target.value)}
                     >
                         <option value="">All statuses</option>
+                        <option value="imported">Imported</option>
                         <option value="available">Available</option>
                         <option value="reserved">Reserved</option>
                         <option value="assigned">Assigned</option>
+                        <option value="active">Active</option>
                         <option value="expired">Expired</option>
                         <option value="revoked">Revoked</option>
+                        <option value="invalid">Invalid</option>
                     </ResponsiveSelect>
                 </label>
                 <button type="submit" className="button-primary">
