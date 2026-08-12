@@ -71,13 +71,14 @@ const server = http.createServer(async (request, response) => {
     const url = new URL(request.url || '/', `http://${config.host}:${config.port}`);
     if (request.method === 'GET' && url.pathname === '/health') {
       const summary = manager.summary();
+      const resources = manager.resources();
       return json(response, isHealthyStatus(summary.status) ? 200 : 503, {
         ok: isHealthyStatus(summary.status),
         service: 'whatsapp-web',
         status: summary.status,
         accounts: summary.accounts,
-        resources: manager.resources(),
-        warnings: manager.resources().rss_mb >= config.memoryWarningMb ? ['memory'] : [],
+        resources,
+        warnings: config.memoryWarningMb > 0 && resources.rss_mb >= config.memoryWarningMb ? ['memory'] : [],
       });
     }
     if (!bearerMatches(request.headers.authorization, config.token)) {
