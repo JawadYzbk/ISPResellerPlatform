@@ -51,6 +51,41 @@ it('keeps the last known rate when Frankfurter is unavailable', function (): voi
         ->and(ExchangeRate::firstOrFail()->source)->toBe('manual');
 });
 
+it('replaces a same-day seeded demo rate with the provider quote', function (): void {
+    config([
+        'services.frankfurter.enabled' => true,
+        'services.frankfurter.quotes' => ['LBP'],
+    ]);
+    Http::fake([
+        'https://api.frankfurter.dev/*' => Http::response([
+            ['date' => '2026-08-12', 'base' => 'USD', 'quote' => 'LBP', 'rate' => 89797],
+        ]),
+    ]);
+    $tenant = Tenant::create([
+        'name' => 'Northline',
+        'slug' => 'northline',
+        'base_currency' => 'USD',
+        'collection_currency' => 'LBP',
+    ]);
+
+    app(Tenancy::class)->run($tenant, function (): void {
+        ExchangeRate::create([
+            'base_currency' => 'USD',
+            'quote_currency' => 'LBP',
+            'rate_numerator' => 90_000,
+            'rate_denominator' => 1,
+            'effective_from' => '2026-08-12',
+            'source' => 'demo',
+        ]);
+    });
+
+    expect(Artisan::call('fx:sync-frankfurter'))->toBe(0)
+        ->and(app(Tenancy::class)->set($tenant))->toBeNull()
+        ->and(ExchangeRate::count())->toBe(1)
+        ->and(ExchangeRate::firstOrFail()->rate_numerator)->toBe(89_797)
+        ->and(ExchangeRate::firstOrFail()->source)->toBe('frankfurter');
+});
+
 it('fails closed when Frankfurter omits a requested quote', function (): void {
     config(['services.frankfurter.enabled' => true]);
     Http::fake([

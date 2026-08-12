@@ -18,16 +18,16 @@ final readonly class ImportFrankfurterExchangeRates implements Action
         return $this->tenancy->run($tenant, function () use ($tenant, $quoteCurrencies): int {
             $imported = 0;
             foreach ($this->provider->fetch($tenant->base_currency, $quoteCurrencies) as $quote) {
-                $exists = ExchangeRate::query()
+                $existing = ExchangeRate::query()
                     ->where('base_currency', $quote->baseCurrency)
                     ->where('quote_currency', $quote->quoteCurrency)
                     ->where('effective_from', $quote->effectiveFrom)
-                    ->exists();
-                if ($exists) {
+                    ->first();
+                if ($existing instanceof ExchangeRate && $existing->source !== 'demo') {
                     continue;
                 }
 
-                ExchangeRate::create([
+                $attributes = [
                     'base_currency' => $quote->baseCurrency,
                     'quote_currency' => $quote->quoteCurrency,
                     'rate_numerator' => $quote->numerator,
@@ -39,7 +39,13 @@ final readonly class ImportFrankfurterExchangeRates implements Action
                         'provider_date' => $quote->effectiveFrom->toDateString(),
                         'rate_text' => $quote->rateText,
                     ],
-                ]);
+                ];
+
+                if ($existing instanceof ExchangeRate) {
+                    $existing->forceFill($attributes)->save();
+                } else {
+                    ExchangeRate::create($attributes);
+                }
                 $imported++;
             }
 
