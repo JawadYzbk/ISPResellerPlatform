@@ -40,7 +40,7 @@ For a paid renewal, use the service renewal action or API preview before issuing
 
 ## Payments and collections
 
-Use **Billing -> Invoices** to search draft and issued invoices. A billing user with the invoice-issue capability can issue a draft from the queue; an issued invoice links to the customer payment form and shows the outstanding allocation-backed balance. Do not treat a displayed invoice as settled until the posted allocation is visible.
+Use **Billing -> Invoices** to search draft and issued invoices. A billing user with the invoice-issue capability can select **Create invoice** for a one-off customer charge, search by customer name, code, or phone, choose an active workspace currency, enter the amount and optional due date, and either save a draft or issue it immediately. The saved line keeps the operator description, currency, decimal precision, and minor-unit amount as an immutable snapshot. The same capability can issue a draft from the queue; an issued invoice links to the customer payment form and shows the outstanding allocation-backed balance. Do not treat a displayed invoice as settled until the posted allocation is visible.
 
 Open an invoice number to inspect its immutable line snapshots, posted payment trail and outstanding balance. Use **Download PDF** for the server-generated A4 copy or **Print invoice** for the current browser print layout. Open a receipt number from **Billing -> Payments** to inspect its allocation trail and use **Download PDF** or **Print receipt**; a reversed receipt stays visible and is never deleted.
 
