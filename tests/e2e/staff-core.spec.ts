@@ -477,7 +477,7 @@ test.describe('staff core journeys', () => {
             await page.goto('/settings/whatsapp');
             await expect(page.getByRole('heading', { name: 'Livraison WhatsApp' })).toBeVisible();
             await expect(
-                page.getByRole('heading', { name: 'Jumeler et affecter les comptes de livraison' }),
+                page.getByRole('heading', { name: 'Jumelage et livraison' }),
             ).toBeVisible();
             await expect(page.getByRole('button', { name: 'Ajouter un compte' })).toBeVisible();
             await expect(
@@ -488,7 +488,7 @@ test.describe('staff core journeys', () => {
                     .first(),
             ).toBeVisible();
             await page
-                .getByRole('combobox', { name: /^(Job|Tâche)$/ })
+                .getByRole('combobox', { name: /^(Assigned job|Tâche affectée)$/ })
                 .first()
                 .click();
             await expect(page.getByRole('option', { name: 'Livraison générale' })).toBeVisible();
