@@ -220,7 +220,12 @@ export class WhatsAppBridge {
       await this.disconnect();
       return;
     }
-    await this.client.initialize();
+    try {
+      await this.client.initialize();
+    } catch (error) {
+      await this.forceTerminateBrowser();
+      throw error;
+    }
     if (this.stopRequested) {
       await this.disconnect();
     }

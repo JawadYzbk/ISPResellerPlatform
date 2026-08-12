@@ -229,6 +229,36 @@ test('does not initialize after disconnect is requested during preparation', asy
   }
 });
 
+test('terminates the browser when initialization fails', async () => {
+  const directory = await mkdtemp(join(tmpdir(), 'isp-whatsapp-'));
+  const exits = new EventEmitter();
+  let killed = false;
+
+  try {
+    const client = new FakeClient();
+    client.initialize = async () => {
+      throw new Error('browser initialization failed');
+    };
+    client.pupBrowser = {
+      process: () => ({
+        pid: 0,
+        killed: false,
+        kill: () => {
+          killed = true;
+          exits.emit('exit');
+        },
+        once: (event, listener) => exits.once(event, listener),
+      }),
+    };
+    const bridge = new WhatsAppBridge({ client, store: new JsonIdempotencyStore(directory) });
+
+    await assert.rejects(() => bridge.start(), /browser initialization failed/);
+    assert.equal(killed, true);
+  } finally {
+    await rm(directory, { recursive: true, force: true });
+  }
+});
+
 test('retries session cleanup while Chromium releases profile locks', async () => {
   const directory = await mkdtemp(join(tmpdir(), 'isp-whatsapp-'));
   const profile = join(directory, 'session-locked-account');
