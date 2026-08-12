@@ -1,4 +1,4 @@
-import { Check, ChevronsUpDown } from 'lucide-react';
+import { Check, ChevronsUpDown, LoaderCircle } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
 import { useMediaQuery } from '@/hooks/useMediaQuery';
@@ -32,6 +32,7 @@ type CustomerComboboxProps = {
     className?: string;
     disabled?: boolean;
     placeholder?: string;
+    searchStatus?: 'idle' | 'loading' | 'error';
 };
 
 export default function CustomerCombobox({
@@ -44,6 +45,7 @@ export default function CustomerCombobox({
     className,
     disabled = false,
     placeholder,
+    searchStatus = 'idle',
 }: CustomerComboboxProps) {
     const { app } = usePage<PageProps>().props;
     const t = createTranslator(app.locale);
@@ -106,6 +108,7 @@ export default function CustomerCombobox({
                     role="combobox"
                     aria-label={ariaLabel}
                     aria-expanded={open}
+                    aria-busy={searchStatus === 'loading'}
                     disabled={disabled}
                     className={cn('field flex items-center justify-between gap-2 text-start', className)}
                 >
@@ -127,7 +130,9 @@ export default function CustomerCombobox({
                         aria-label={t('Search customers')}
                     />
                     <CommandList>
-                        <CommandEmpty>{t('No matching customers.')}</CommandEmpty>
+                        <CommandEmpty>
+                            {searchStatus === 'loading' ? t('Searching customers…') : t('No matching customers.')}
+                        </CommandEmpty>
                         <CommandGroup>
                             {filtered.map((customer) => (
                                 <CommandItem key={customer.id} value={customer.id} onSelect={selectCustomer}>
@@ -152,6 +157,20 @@ export default function CustomerCombobox({
                             ))}
                         </CommandGroup>
                     </CommandList>
+                    {searchStatus === 'loading' && (
+                        <p
+                            className="flex items-center gap-2 border-t border-line px-3 py-2 text-xs text-muted"
+                            role="status"
+                        >
+                            <LoaderCircle className="size-3.5 animate-spin" />
+                            {t('Searching customers…')}
+                        </p>
+                    )}
+                    {searchStatus === 'error' && (
+                        <p className="border-t border-line px-3 py-2 text-xs text-danger" role="alert">
+                            {t('Customer search is unavailable. Showing available customers.')}
+                        </p>
+                    )}
                 </Command>
             </PopoverContent>
         </Popover>

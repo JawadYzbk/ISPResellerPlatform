@@ -30,39 +30,64 @@ export default function CreateInvoice({ customerOptions, selectedCustomer, curre
         issue: true,
     });
     const [customers, setCustomers] = useState(customerOptions);
+    const [customerSearchStatus, setCustomerSearchStatus] = useState<'idle' | 'loading' | 'error'>('idle');
     const searchTimer = useRef<number | null>(null);
+    const searchController = useRef<AbortController | null>(null);
+    const searchSequence = useRef(0);
     const selectedCurrency = currencies.find((currency) => currency.code === form.data.currency);
     const fractionDigits = selectedCurrency?.decimal_digits ?? currencyFractionDigits(form.data.currency);
 
     useEffect(() => {
         return () => {
             if (searchTimer.current !== null) window.clearTimeout(searchTimer.current);
+            searchController.current?.abort();
         };
     }, []);
 
     const searchCustomers = (query: string) => {
         if (searchTimer.current !== null) window.clearTimeout(searchTimer.current);
+        searchController.current?.abort();
+        const sequence = ++searchSequence.current;
         if (query.trim() === '') {
-            setCustomers(customerOptions);
+            setCustomerSearchStatus('idle');
+            setCustomers((current) => {
+                const selected = current.find((customer) => customer.id === form.data.customer_id);
+                const merged = new Map(customerOptions.map((customer) => [customer.id, customer]));
+                if (selected) merged.set(selected.id, selected);
+
+                return Array.from(merged.values());
+            });
             return;
         }
 
+        setCustomerSearchStatus('loading');
         searchTimer.current = window.setTimeout(async () => {
+            const controller = new AbortController();
+            searchController.current = controller;
+
             try {
                 const response = await fetch(`/billing/invoices/customers?search=${encodeURIComponent(query)}`, {
                     headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                    signal: controller.signal,
                 });
-                if (!response.ok) return;
+                if (!response.ok) throw new Error(`Customer search failed with status ${response.status}`);
 
                 const payload = (await response.json()) as CustomerSearchResponse;
+                if (sequence !== searchSequence.current) return;
+
                 setCustomers((current) => {
-                    const merged = new Map(current.map((customer) => [customer.id, customer]));
-                    payload.data.forEach((customer) => merged.set(customer.id, customer));
+                    const selected = current.find((customer) => customer.id === form.data.customer_id);
+                    const merged = new Map(payload.data.map((customer) => [customer.id, customer]));
+                    if (selected) merged.set(selected.id, selected);
 
                     return Array.from(merged.values());
                 });
-            } catch {
-                // The initial tenant-scoped options remain usable if search is unavailable.
+                setCustomerSearchStatus('idle');
+            } catch (error) {
+                if (error instanceof DOMException && error.name === 'AbortError') return;
+                if (sequence === searchSequence.current) setCustomerSearchStatus('error');
+            } finally {
+                if (searchController.current === controller) searchController.current = null;
             }
         }, 250);
     };
@@ -108,6 +133,7 @@ export default function CreateInvoice({ customerOptions, selectedCustomer, curre
                             customers={customers}
                             onChange={(value) => form.setData('customer_id', value)}
                             onSearch={searchCustomers}
+                            searchStatus={customerSearchStatus}
                             placeholder={t('Select a customer')}
                         />
                         {form.errors.customer_id && <p className="field-error">{form.errors.customer_id}</p>}

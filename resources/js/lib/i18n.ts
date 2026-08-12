@@ -342,6 +342,9 @@ const messages: Record<Exclude<Locale, 'en'>, Messages> = {
             'أنشئ رسماً لمرة واحدة مع حفظ العملة ولقطة المبلغ.',
         'Select a customer': 'اختر عميلاً',
         'No matching customers.': 'لا يوجد عملاء مطابقون.',
+        'Searching customers…': 'جارٍ البحث عن العملاء…',
+        'Customer search is unavailable. Showing available customers.':
+            'البحث عن العملاء غير متاح. يتم عرض العملاء المتاحين.',
         Description: 'الوصف',
         'Installation, equipment, or other one-off charge': 'تركيب أو معدات أو رسم آخر لمرة واحدة',
         'The saved invoice uses the smallest unit for exact ledger math.':
@@ -938,6 +941,9 @@ const messages: Record<Exclude<Locale, 'en'>, Messages> = {
             'Créez une charge ponctuelle avec un instantané enregistré de la devise et du montant.',
         'Select a customer': 'Sélectionner un client',
         'No matching customers.': 'Aucun client correspondant.',
+        'Searching customers…': 'Recherche de clients…',
+        'Customer search is unavailable. Showing available customers.':
+            'La recherche de clients est indisponible. Les clients disponibles sont affichés.',
         Description: 'Description',
         'Installation, equipment, or other one-off charge': 'Installation, équipement ou autre charge ponctuelle',
         'The saved invoice uses the smallest unit for exact ledger math.':
