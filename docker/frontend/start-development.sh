@@ -2,6 +2,12 @@
 
 set -eu
 
+hot_file="public/hot"
+rm -f "$hot_file"
+trap 'rm -f "$hot_file"' EXIT
+trap 'exit 143' TERM
+trap 'exit 130' INT
+
 lock_hash="$(sha256sum package-lock.json | awk '{print $1}')"
 stamp="node_modules/.isp-package-lock.sha256"
 
@@ -21,4 +27,5 @@ if [ ! -f "$build_stamp" ] || [ "$(cat "$build_stamp")" != "$source_hash" ] || [
     printf '%s\n' "$source_hash" > "$build_stamp"
 fi
 
-exec npm run dev -- --host 0.0.0.0
+npm run dev -- --host 0.0.0.0 || status=$?
+exit "${status:-0}"
