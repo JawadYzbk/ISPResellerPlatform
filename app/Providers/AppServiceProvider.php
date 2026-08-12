@@ -63,7 +63,11 @@ class AppServiceProvider extends ServiceProvider
     {
         Event::listen(ScheduledTaskFinished::class, RecordScheduledTaskFinished::class);
         Event::listen(ScheduledTaskFailed::class, RecordScheduledTaskFailed::class);
-        Inertia::encryptHistory();
+        $encryptInertiaHistory = config('security.encrypt_inertia_history');
+
+        if ($encryptInertiaHistory === null ? app()->isProduction() : (bool) $encryptInertiaHistory) {
+            Inertia::encryptHistory();
+        }
         Gate::policy(Customer::class, CustomerPolicy::class);
         Gate::policy(Plan::class, PlanPolicy::class);
         Gate::policy(Service::class, ServicePolicy::class);
