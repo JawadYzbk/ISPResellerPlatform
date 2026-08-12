@@ -165,6 +165,7 @@ export default function AppLayout({ children }: PropsWithChildren) {
             ],
         },
         { label: 'Credentials', href: '/operations/credentials', icon: KeyRound, permission: 'suppliers.view' },
+        { label: 'Suppliers', href: '/operations/suppliers', icon: Store, permission: 'suppliers.view' },
         { label: 'Partners', href: '/partners/commercial', icon: Store, permission: 'wallets.view' },
         { label: 'Reports', href: '/reports/operations', icon: BarChart3, permission: 'reports.operations' },
         { label: 'Live sessions', href: '/operations/sessions', icon: Radio, permission: 'network.view' },

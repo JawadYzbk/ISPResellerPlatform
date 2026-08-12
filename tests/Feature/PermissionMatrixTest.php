@@ -51,6 +51,7 @@ it('allows a seeded tenant owner to load every static staff workspace', function
         '/operations/inventory',
         '/operations/imports',
         '/operations/credentials',
+        '/operations/suppliers',
         '/plans',
         '/partners/commercial',
         '/reports/finance',

@@ -25,6 +25,7 @@ class CapabilitySeeder extends Seeder
             'plans.manage',
             'tickets.view', 'tickets.create', 'tickets.assign', 'tickets.close', 'workorders.complete',
             'inventory.view', 'inventory.receive', 'inventory.transfer', 'inventory.assign',
+            'suppliers.view', 'suppliers.manage',
             'reports.operations', 'reports.export', 'users.manage', 'audit.view',
         ],
         'billing_manager' => [

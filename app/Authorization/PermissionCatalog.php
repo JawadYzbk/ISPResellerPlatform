@@ -16,7 +16,7 @@ final class PermissionCatalog
         'payments.collect', 'payments.backdate', 'payments.void', 'refunds.approve',
         'partners.manage', 'wallets.view', 'wallets.fund', 'settlements.approve',
         'network.view', 'network.provision', 'network.disconnect', 'network.credentials.reveal',
-        'suppliers.view', 'credentials.import', 'credentials.reserve', 'credentials.assign', 'credentials.reveal',
+        'suppliers.view', 'suppliers.manage', 'credentials.import', 'credentials.reserve', 'credentials.assign', 'credentials.reveal',
         'inventory.view', 'inventory.receive', 'inventory.transfer', 'inventory.assign', 'inventory.write_off',
         'workorders.complete',
         'tickets.view', 'tickets.create', 'tickets.assign', 'tickets.close',
