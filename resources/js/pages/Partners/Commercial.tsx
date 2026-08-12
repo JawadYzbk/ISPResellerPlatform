@@ -1,13 +1,22 @@
 import CurrencyCombobox, { type CurrencyOption } from '@/components/ui/currency-combobox';
 import ResponsiveSelect from '@/components/ui/responsive-select';
 import { Head, Link, useForm } from '@inertiajs/react';
-import { ArrowLeft, BookOpen, Plus, WalletCards } from 'lucide-react';
+import { ArrowLeft, BookOpen, Edit3, Plus, Save, WalletCards, X } from 'lucide-react';
+import { useState } from 'react';
 
 import AppLayout from '@/layouts/AppLayout';
 import { formatDate, formatMoney } from '@/lib/format';
 import type { PageProps } from '@/types';
 
-type Partner = { id: string; name: string; code: string; currency?: string };
+type Partner = {
+    id: string;
+    name: string;
+    code: string;
+    currency?: string;
+    credit_limit?: number;
+    low_balance_threshold?: number;
+    status?: string;
+};
 type CatalogItem = {
     id: string;
     name: string;
@@ -48,6 +57,7 @@ export default function Commercial({
     canManage,
     currencies,
 }: Props) {
+    const [editOpen, setEditOpen] = useState(false);
     const form = useForm({
         name: '',
         code: '',
@@ -56,10 +66,45 @@ export default function Commercial({
         credit_limit: 0,
         low_balance_threshold: 0,
     });
+    const editForm = useForm({
+        name: selectedPartner?.name ?? '',
+        code: selectedPartner?.code ?? '',
+        credit_limit: selectedPartner?.credit_limit ?? 0,
+        low_balance_threshold: selectedPartner?.low_balance_threshold ?? 0,
+        status: selectedPartner?.status ?? 'active',
+    });
 
     const submit = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         form.post('/partners', { preserveScroll: true, onSuccess: () => form.reset() });
+    };
+
+    const startEdit = () => {
+        if (!selectedPartner) return;
+        editForm.setData({
+            name: selectedPartner.name,
+            code: selectedPartner.code,
+            credit_limit: selectedPartner.credit_limit ?? 0,
+            low_balance_threshold: selectedPartner.low_balance_threshold ?? 0,
+            status: selectedPartner.status ?? 'active',
+        });
+        editForm.clearErrors();
+        setEditOpen(true);
+    };
+
+    const cancelEdit = () => {
+        setEditOpen(false);
+        editForm.reset();
+        editForm.clearErrors();
+    };
+
+    const submitEdit = (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        if (!selectedPartner) return;
+        editForm.patch(`/partners/${selectedPartner.id}`, {
+            preserveScroll: true,
+            onSuccess: () => setEditOpen(false),
+        });
     };
 
     return (
@@ -190,6 +235,97 @@ export default function Commercial({
                         </button>
                     </div>
                 </form>
+            )}
+            {selectedPartner && canManage && (
+                <section className="card mt-8 p-6">
+                    <div className="flex items-start justify-between gap-4">
+                        <div>
+                            <p className="section-title">Partner account</p>
+                            <p className="mt-1 text-sm text-muted">
+                                Update operating limits and status. Currency and hierarchy stay fixed after creation.
+                            </p>
+                        </div>
+                        {!editOpen && (
+                            <button type="button" className="button-quiet" onClick={startEdit}>
+                                <Edit3 size={15} /> Edit account
+                            </button>
+                        )}
+                    </div>
+                    {editOpen && (
+                        <form onSubmit={submitEdit} className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-5">
+                            <label>
+                                <span className="field-label">Name</span>
+                                <input
+                                    className="field"
+                                    value={editForm.data.name}
+                                    onChange={(event) => editForm.setData('name', event.target.value)}
+                                    required
+                                />
+                                {editForm.errors.name && <span className="field-error">{editForm.errors.name}</span>}
+                            </label>
+                            <label>
+                                <span className="field-label">Code</span>
+                                <input
+                                    className="field uppercase"
+                                    value={editForm.data.code}
+                                    onChange={(event) => editForm.setData('code', event.target.value)}
+                                    required
+                                />
+                                {editForm.errors.code && <span className="field-error">{editForm.errors.code}</span>}
+                            </label>
+                            <label>
+                                <span className="field-label">Credit limit</span>
+                                <input
+                                    className="field"
+                                    type="number"
+                                    min="0"
+                                    value={editForm.data.credit_limit}
+                                    onChange={(event) => editForm.setData('credit_limit', Number(event.target.value))}
+                                    required
+                                />
+                                {editForm.errors.credit_limit && (
+                                    <span className="field-error">{editForm.errors.credit_limit}</span>
+                                )}
+                            </label>
+                            <label>
+                                <span className="field-label">Low balance alert</span>
+                                <input
+                                    className="field"
+                                    type="number"
+                                    min="0"
+                                    value={editForm.data.low_balance_threshold}
+                                    onChange={(event) =>
+                                        editForm.setData('low_balance_threshold', Number(event.target.value))
+                                    }
+                                    required
+                                />
+                                {editForm.errors.low_balance_threshold && (
+                                    <span className="field-error">{editForm.errors.low_balance_threshold}</span>
+                                )}
+                            </label>
+                            <label>
+                                <span className="field-label">Status</span>
+                                <ResponsiveSelect
+                                    className="field"
+                                    value={editForm.data.status}
+                                    onChange={(event) => editForm.setData('status', event.target.value)}
+                                >
+                                    <option value="active">Active</option>
+                                    <option value="suspended">Suspended</option>
+                                </ResponsiveSelect>
+                                {editForm.errors.status && <span className="field-error">{editForm.errors.status}</span>}
+                            </label>
+                            <div className="flex items-end gap-2 md:col-span-2 xl:col-span-5">
+                                <button type="submit" className="button-primary" disabled={editForm.processing}>
+                                    <Save size={15} /> Save changes
+                                </button>
+                                <button type="button" className="button-quiet" disabled={editForm.processing} onClick={cancelEdit}>
+                                    <X size={15} /> Cancel
+                                </button>
+                            </div>
+                        </form>
+                    )}
+                </section>
             )}
             {selectedPartner ? (
                 <div className="mt-8 grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
