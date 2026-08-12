@@ -12,11 +12,11 @@ class CredentialBatch extends Model
 {
     use Auditable, BelongsToTenant;
 
-    protected $fillable = ['tenant_id', 'supplier_id', 'reference', 'imported_at', 'expires_at', 'metadata'];
+    protected $fillable = ['tenant_id', 'supplier_id', 'reference', 'contract_reference', 'unit_cost_amount', 'total_cost_amount', 'currency', 'imported_at', 'expires_at', 'metadata'];
 
     protected function casts(): array
     {
-        return ['imported_at' => 'datetime', 'expires_at' => 'datetime', 'metadata' => 'array'];
+        return ['imported_at' => 'datetime', 'expires_at' => 'datetime', 'unit_cost_amount' => 'integer', 'total_cost_amount' => 'integer', 'metadata' => 'array'];
     }
 
     public function tenant(): BelongsTo
