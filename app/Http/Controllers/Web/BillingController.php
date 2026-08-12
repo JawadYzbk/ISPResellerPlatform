@@ -8,10 +8,12 @@ use App\Actions\GetInvoiceDetails;
 use App\Actions\GetPaymentDetails;
 use App\Actions\IssueCreditNote;
 use App\Actions\IssueInvoice;
+use App\Actions\ListCreditNotes;
 use App\Actions\ListInvoices;
 use App\Actions\ListPayments;
 use App\Actions\ReversePayment;
 use App\Http\Controllers\Controller;
+use App\Models\CreditNote;
 use App\Models\Invoice;
 use App\Models\Payment;
 use App\Models\PaymentAllocation;
@@ -76,6 +78,50 @@ final class BillingController extends Controller
             'invoices' => $invoices,
             'filters' => $request->only(['status', 'search']),
             'canIssue' => $user->can('billing.invoices.issue'),
+        ]);
+    }
+
+    public function creditNotes(Request $request, ListCreditNotes $listCreditNotes): Response
+    {
+        $user = $request->user();
+        abort_unless($user instanceof User && $user->can('billing.invoices.view'), 403);
+        $creditNotes = $listCreditNotes->handle($request->string('search')->toString() ?: null);
+        $rows = $creditNotes->getCollection()->map(function (mixed $note): array {
+            if (! $note instanceof CreditNote) {
+                throw new \LogicException('Credit-note paginator contained an invalid record.');
+            }
+
+            return [
+                'public_id' => $note->public_id,
+                'number' => $note->number,
+                'amount' => $note->amount,
+                'currency' => $note->currency,
+                'status' => $note->status,
+                'reason' => $note->reason,
+                'issued_at' => $note->issued_at?->toIso8601String(),
+                'invoice' => [
+                    'public_id' => $note->invoice->public_id,
+                    'number' => $note->invoice->number,
+                ],
+                'customer' => [
+                    'public_id' => $note->customer->public_id,
+                    'code' => $note->customer->code,
+                    'name' => $note->customer->full_name,
+                ],
+                'creator' => $note->creator?->name,
+            ];
+        })->values();
+        $creditNotes = new LengthAwarePaginator(
+            $rows,
+            $creditNotes->total(),
+            $creditNotes->perPage(),
+            $creditNotes->currentPage(),
+            ['path' => $request->url(), 'query' => $request->query()],
+        );
+
+        return Inertia::render('Billing/CreditNotes', [
+            'creditNotes' => $creditNotes,
+            'filters' => $request->only(['search']),
         ]);
     }
 
