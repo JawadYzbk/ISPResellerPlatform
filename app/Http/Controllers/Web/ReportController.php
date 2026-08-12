@@ -8,9 +8,13 @@ use App\Actions\ExportOperationsReportCsv;
 use App\Actions\ExportOperationsReportXlsx;
 use App\Actions\GetFinanceReport;
 use App\Actions\GetOperationsReport;
+use App\Actions\GetSupplierPayablesAging;
 use App\Http\Controllers\Controller;
+use App\Models\Supplier;
+use App\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -57,5 +61,31 @@ final class ReportController extends Controller
         }
 
         return Inertia::render('Reports/Operations', ['report' => $report->handle($from, $to)]);
+    }
+
+    public function supplierPayables(Request $request, GetSupplierPayablesAging $report): Response
+    {
+        $user = $request->user();
+        abort_unless($user instanceof User && $user->can('reports.finance'), 403);
+        $validated = $request->validate([
+            'as_of' => ['nullable', 'date'],
+            'supplier_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('suppliers', 'id')->where('tenant_id', $user->tenant_id),
+            ],
+            'include_settled' => ['nullable', 'boolean'],
+        ]);
+        $asOf = CarbonImmutable::parse($validated['as_of'] ?? now()->toDateString());
+        $supplierId = isset($validated['supplier_id']) ? (int) $validated['supplier_id'] : null;
+
+        return Inertia::render('Reports/SupplierPayables', [
+            'report' => $report->handle($asOf, $supplierId, $request->boolean('include_settled')),
+            'suppliers' => Supplier::query()->orderBy('name')->get(['id', 'name', 'code'])->map(fn (Supplier $supplier): array => [
+                'id' => $supplier->id,
+                'name' => $supplier->name,
+                'code' => $supplier->code,
+            ])->values()->all(),
+        ]);
     }
 }

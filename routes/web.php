@@ -207,5 +207,6 @@ Route::middleware(['auth', 'tenant', '2fa'])->group(function (): void {
     Route::get('/partners/commercial', [PartnerController::class, 'commercial'])->name('partners.commercial');
     Route::post('/partners', [PartnerController::class, 'store'])->middleware('recent-auth')->name('partners.store');
     Route::get('/reports/finance', [ReportController::class, 'finance'])->name('reports.finance');
+    Route::get('/reports/supplier-payables', [ReportController::class, 'supplierPayables'])->name('reports.supplier-payables');
     Route::get('/reports/operations', [ReportController::class, 'operations'])->name('reports.operations');
 });
