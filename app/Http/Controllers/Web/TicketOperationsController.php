@@ -12,6 +12,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Customer;
 use App\Models\Service;
 use App\Models\Ticket;
+use App\Models\TicketCannedResponse;
 use App\Models\TicketMessage;
 use App\Models\User;
 use Carbon\CarbonImmutable;
@@ -102,6 +103,14 @@ final class TicketOperationsController extends Controller
         $user = $request->user();
         abort_unless($user instanceof User && $user->can('tickets.view'), 403);
         $ticket->load(['customer', 'service', 'assignee', 'messages']);
+        $cannedResponses = $user->can('tickets.create')
+            ? TicketCannedResponse::query()
+                ->where('is_active', true)
+                ->orderBy('title')
+                ->get(['public_id', 'title', 'body', 'category'])
+                ->values()
+                ->all()
+            : [];
         $assignees = User::query()
             ->where('tenant_id', $user->tenant_id)
             ->whereIn('role', ['tenant_owner', 'operations_manager', 'support_agent', 'technician', 'network_administrator', 'reseller_owner'])
@@ -123,6 +132,7 @@ final class TicketOperationsController extends Controller
                 ])->values()->all(),
             ],
             'assignees' => $assignees,
+            'cannedResponses' => $cannedResponses,
             'canAssign' => $user->can('tickets.assign'),
             'canMutate' => $user->can('tickets.create'),
             'canClose' => $user->can('tickets.close'),

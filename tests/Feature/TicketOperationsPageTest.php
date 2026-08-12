@@ -54,6 +54,7 @@ it('renders staff tickets and applies status and public reply workflows', functi
             ->component('Operations/TicketShow')
             ->where('ticket.number', 'TCK-00001')
             ->where('ticket.satisfaction_rating', 5)
+            ->where('cannedResponses.0.title', 'Investigation in progress')
             ->where('ticket.messages.0.body', 'It started yesterday.')
         );
 

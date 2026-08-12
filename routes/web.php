@@ -34,6 +34,7 @@ use App\Http\Controllers\Web\SettingsController;
 use App\Http\Controllers\Web\SupplierOperationsController;
 use App\Http\Controllers\Web\TenantLogoController;
 use App\Http\Controllers\Web\TicketOperationsController;
+use App\Http\Controllers\Web\TicketCannedResponseController;
 use App\Http\Controllers\Web\UserOperationsController;
 use App\Http\Controllers\Web\WorkOrderOperationsController;
 use App\Http\Controllers\Web\WorkspaceSearchController;
@@ -91,6 +92,10 @@ Route::middleware(['auth', 'tenant', '2fa'])->group(function (): void {
     Route::get('/settings/general', [SettingsController::class, 'general'])->name('settings.general');
     Route::get('/settings/readiness', [SettingsController::class, 'readiness'])->name('settings.readiness');
     Route::get('/settings/whatsapp', [SettingsController::class, 'whatsapp'])->name('settings.whatsapp');
+    Route::get('/settings/ticket-responses', [TicketCannedResponseController::class, 'index'])->name('settings.ticket-responses');
+    Route::post('/settings/ticket-responses', [TicketCannedResponseController::class, 'store'])->middleware('recent-auth')->name('settings.ticket-responses.store');
+    Route::patch('/settings/ticket-responses/{ticketCannedResponse:public_id}', [TicketCannedResponseController::class, 'update'])->middleware('recent-auth')->name('settings.ticket-responses.update');
+    Route::delete('/settings/ticket-responses/{ticketCannedResponse:public_id}', [TicketCannedResponseController::class, 'archive'])->middleware('recent-auth')->name('settings.ticket-responses.archive');
     Route::post('/settings/whatsapp/test', [SettingsController::class, 'sendWhatsAppTest'])->middleware(['recent-auth', 'throttle:3,10'])->name('settings.whatsapp.test');
     Route::post('/settings/whatsapp/accounts', [SettingsController::class, 'createWhatsAppAccount'])->middleware('recent-auth')->name('settings.whatsapp.accounts.store');
     Route::patch('/settings/whatsapp/accounts/{whatsappAccount:public_id}', [SettingsController::class, 'updateWhatsAppAccount'])->middleware('recent-auth')->name('settings.whatsapp.accounts.update');
