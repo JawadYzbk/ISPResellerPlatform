@@ -1,5 +1,5 @@
 import { Check, ChevronsUpDown } from 'lucide-react';
-import { useMemo, useState, type MouseEvent } from 'react';
+import { useMemo, useState } from 'react';
 
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { cn } from '@/lib/utils';
@@ -71,11 +71,6 @@ export default function CurrencyCombobox({
         setOpen(false);
     };
 
-    const selectWithMouse = (event: MouseEvent, code: string) => {
-        event.preventDefault();
-        selectCurrency(code);
-    };
-
     if (isMobile) {
         return (
             <select
@@ -132,14 +127,7 @@ export default function CurrencyCombobox({
                         <CommandEmpty>No matching currencies.</CommandEmpty>
                         <CommandGroup>
                             {emptyLabel && (
-                                <CommandItem
-                                    value="__empty__"
-                                    onMouseDown={(event) => selectWithMouse(event, '')}
-                                    onSelect={() => {
-                                        onChange('');
-                                        setOpen(false);
-                                    }}
-                                >
+                                <CommandItem value="__empty__" onSelect={() => selectCurrency('')}>
                                     <Check className={cn('me-2 size-4', value === '' ? 'opacity-100' : 'opacity-0')} />
                                     {emptyLabel}
                                 </CommandItem>
@@ -148,10 +136,7 @@ export default function CurrencyCombobox({
                                 <CommandItem
                                     key={currency.code}
                                     value={currency.code}
-                                    onMouseDown={(event) => selectWithMouse(event, currency.code)}
-                                    onSelect={() => {
-                                        selectCurrency(currency.code);
-                                    }}
+                                    onSelect={() => selectCurrency(currency.code)}
                                 >
                                     <Check
                                         className={cn(
