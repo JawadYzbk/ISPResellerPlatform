@@ -2,6 +2,7 @@ import { expect, test, type BrowserContext, type Page } from '@playwright/test';
 
 const adminEmail = process.env.E2E_ADMIN_EMAIL ?? 'admin@example.com';
 const adminPassword = process.env.E2E_ADMIN_PASSWORD ?? 'password';
+const platformEmail = process.env.E2E_PLATFORM_EMAIL ?? 'platform@example.com';
 type BrowserStorageState = Awaited<ReturnType<BrowserContext['storageState']>>;
 
 const seededRoleJourneys = [
@@ -76,6 +77,16 @@ async function signInAs(page: Page, email: string): Promise<void> {
     await page.goto('/dashboard');
 }
 
+async function signInAsPlatformOperator(page: Page): Promise<void> {
+    await page.goto('/login');
+    await page.getByLabel('Email address').fill(platformEmail);
+    await page.getByLabel('Password').fill(adminPassword);
+    await Promise.all([
+        page.waitForURL('**/admin/tenants'),
+        page.getByRole('button', { name: 'Enter workspace' }).click(),
+    ]);
+}
+
 async function restoreEnglishProfile(page: Page): Promise<void> {
     await page.goto('/profile');
     await page.getByRole('combobox').click();
@@ -106,6 +117,16 @@ test.describe('staff core journeys', () => {
         await expect(page.locator('.auth-root')).toHaveAttribute('dir', 'ltr');
         await expect(page.locator('.auth-ambient')).toBeVisible();
         await expect(page.locator('.auth-orb-one')).toBeVisible();
+    });
+
+    test('routes the platform operator to the tenant administration workspace', async ({ page }) => {
+        await signInAsPlatformOperator(page);
+
+        await expect(page).toHaveURL(/\/admin\/tenants$/);
+        await expect(page.getByRole('heading', { name: 'Tenant workspaces' })).toBeVisible();
+        await expect(page.getByRole('heading', { name: 'Create workspace' })).toBeVisible();
+        await expect(page.getByRole('button', { name: 'Create workspace' })).toBeVisible();
+        await expect(page.getByText('Platform administration', { exact: true })).toBeVisible();
     });
 
     test('redirects guests away from the partner commercial workspace', async ({ page }) => {
