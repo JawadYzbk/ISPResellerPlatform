@@ -3,10 +3,13 @@
 namespace App\Http\Controllers\Web;
 
 use App\Actions\AssignInventoryUnit;
+use App\Actions\CreateInventoryItem;
+use App\Actions\CreateWarehouse;
 use App\Actions\ListBulkStock;
 use App\Actions\ListInventoryMovements;
 use App\Actions\ListInventoryUnits;
 use App\Actions\ReceiveBulkStock;
+use App\Actions\ReceiveInventoryUnit;
 use App\Actions\TransferInventoryUnit;
 use App\Http\Controllers\Controller;
 use App\Models\InventoryItem;
@@ -107,6 +110,9 @@ final class InventoryOperationsController extends Controller
             'bulkItems' => $canReceive
                 ? InventoryItem::query()->where('is_serialized', false)->where('is_active', true)->orderBy('name')->get(['id', 'sku', 'name'])->values()
                 : [],
+            'serializedItems' => $canReceive
+                ? InventoryItem::query()->where('is_serialized', true)->where('is_active', true)->orderBy('name')->get(['id', 'sku', 'name'])->values()
+                : [],
             'bulkWarehouses' => $canReceive
                 ? Warehouse::query()->where('is_active', true)->orderBy('code')->get(['id', 'code', 'name'])->values()
                 : [],
@@ -114,6 +120,64 @@ final class InventoryOperationsController extends Controller
                 ? Warehouse::query()->where('is_active', true)->orderBy('code')->get(['id', 'code', 'name'])->values()
                 : [],
         ]);
+    }
+
+    public function storeItem(Request $request, CreateInventoryItem $create): RedirectResponse
+    {
+        $user = $request->user();
+        abort_unless($user instanceof User && $user->can('inventory.receive'), 403);
+        $validated = $request->validate([
+            'sku' => ['required', 'string', 'max:64'],
+            'name' => ['required', 'string', 'max:255'],
+            'category' => ['required', 'string', 'max:32'],
+            'is_serialized' => ['required', 'boolean'],
+            'reorder_level' => ['nullable', 'integer', 'min:0'],
+        ]);
+        $sku = strtoupper(trim((string) $validated['sku']));
+        if (InventoryItem::query()->where('sku', $sku)->exists()) {
+            throw ValidationException::withMessages(['sku' => 'An inventory item with this SKU already exists.']);
+        }
+        $item = $create->handle($validated);
+
+        return redirect()->route('operations.inventory')->with('success', "Inventory item {$item->sku} created.");
+    }
+
+    public function storeWarehouse(Request $request, CreateWarehouse $create): RedirectResponse
+    {
+        $user = $request->user();
+        abort_unless($user instanceof User && $user->can('inventory.receive'), 403);
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'code' => ['required', 'string', 'max:32'],
+            'type' => ['required', 'string', 'max:16', 'in:warehouse,van'],
+        ]);
+        $code = strtoupper(trim((string) $validated['code']));
+        if (Warehouse::query()->where('code', $code)->exists()) {
+            throw ValidationException::withMessages(['code' => 'A warehouse with this code already exists.']);
+        }
+        $warehouse = $create->handle($validated);
+
+        return redirect()->route('operations.inventory')->with('success', "Warehouse {$warehouse->code} created.");
+    }
+
+    public function receiveUnit(Request $request, ReceiveInventoryUnit $receive): RedirectResponse
+    {
+        $user = $request->user();
+        abort_unless($user instanceof User && $user->can('inventory.receive'), 403);
+        $validated = $request->validate([
+            'inventory_item_id' => ['required', 'integer'],
+            'warehouse_id' => ['required', 'integer'],
+            'serial_number' => ['required', 'string', 'max:128'],
+        ]);
+        $item = InventoryItem::query()->findOrFail($validated['inventory_item_id']);
+        $warehouse = Warehouse::query()->findOrFail($validated['warehouse_id']);
+        try {
+            $unit = $receive->handle($item, $warehouse, $user, (string) $validated['serial_number']);
+        } catch (DomainException $exception) {
+            throw ValidationException::withMessages(['serial_number' => $exception->getMessage()]);
+        }
+
+        return redirect()->route('operations.inventory')->with('success', "Serialized unit {$unit->serial_number} received.");
     }
 
     public function receiveBulk(Request $request, ReceiveBulkStock $receive): RedirectResponse

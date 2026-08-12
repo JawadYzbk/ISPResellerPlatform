@@ -86,3 +86,56 @@ it('assigns an available unit through the tenant-safe web action', function (): 
     expect($unit->refresh()->service_id)->toBe($service->id)
         ->and($unit->status)->toBe('assigned');
 });
+
+it('lets an inventory manager create stock masters and receive serialized equipment', function (): void {
+    $tenant = Tenant::create(['name' => 'Northline', 'slug' => 'northline', 'base_currency' => 'USD', 'collection_currency' => 'USD']);
+    $user = User::create([
+        'tenant_id' => $tenant->id,
+        'name' => 'Inventory manager',
+        'email' => 'inventory-manager@example.test',
+        'password' => Hash::make('password'),
+        'role' => 'tenant_owner',
+        'last_authenticated_at' => now(),
+    ]);
+    app(CapabilitySeeder::class)->run();
+    app(Tenancy::class)->set($tenant);
+    $user->assignRole('tenant_owner');
+    $user->forceFill(['last_authenticated_at' => now()])->save();
+
+    $this->actingAs($user)
+        ->post(route('operations.inventory.items.store'), [
+            'sku' => 'CPE-ONU',
+            'name' => 'Fiber ONU',
+            'category' => 'onu',
+            'is_serialized' => true,
+            'reorder_level' => 2,
+        ])
+        ->assertRedirect(route('operations.inventory'))
+        ->assertSessionHas('success', 'Inventory item CPE-ONU created.');
+
+    $this->actingAs($user)
+        ->post(route('operations.inventory.warehouses.store'), [
+            'name' => 'Main warehouse',
+            'code' => 'main',
+            'type' => 'warehouse',
+        ])
+        ->assertRedirect(route('operations.inventory'))
+        ->assertSessionHas('success', 'Warehouse MAIN created.');
+
+    app(Tenancy::class)->set($tenant);
+    $item = InventoryItem::query()->where('sku', 'CPE-ONU')->firstOrFail();
+    $warehouse = Warehouse::query()->where('code', 'MAIN')->firstOrFail();
+
+    $this->actingAs($user)
+        ->post(route('operations.inventory.serialized-receive'), [
+            'inventory_item_id' => $item->id,
+            'warehouse_id' => $warehouse->id,
+            'serial_number' => 'ONU-0001',
+        ])
+        ->assertRedirect(route('operations.inventory'))
+        ->assertSessionHas('success', 'Serialized unit ONU-0001 received.');
+
+    app(Tenancy::class)->set($tenant);
+    expect(InventoryUnit::query()->where('serial_number', 'ONU-0001')->value('warehouse_id'))->toBe($warehouse->id)
+        ->and(InventoryMovement::query()->where('movement_type', 'receive')->where('inventory_unit_id', InventoryUnit::query()->where('serial_number', 'ONU-0001')->value('id'))->exists())->toBeTrue();
+});
