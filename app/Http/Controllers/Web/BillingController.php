@@ -98,10 +98,7 @@ final class BillingController extends Controller
         $selectedCustomer = $selectedId === ''
             ? null
             : Customer::query()->where('public_id', $selectedId)->first();
-        $customerOptions = $searchCustomers->handle(null);
-        if ($selectedCustomer instanceof Customer && ! collect($customerOptions)->contains('id', $selectedCustomer->public_id)) {
-            array_unshift($customerOptions, $searchCustomers->option($selectedCustomer));
-        }
+        $customerOptions = $searchCustomers->handle(null, 25, $selectedCustomer);
 
         $activeCodes = Currency::query()
             ->where('is_active', true)
@@ -116,7 +113,9 @@ final class BillingController extends Controller
 
         return Inertia::render('Billing/Invoices/Create', [
             'customerOptions' => $customerOptions,
-            'selectedCustomer' => $selectedCustomer instanceof Customer ? $searchCustomers->option($selectedCustomer) : null,
+            'selectedCustomer' => $selectedCustomer instanceof Customer
+                ? collect($customerOptions)->firstWhere('id', $selectedCustomer->public_id)
+                : null,
             'currencies' => $currencies,
             'defaultCurrency' => strtoupper((string) ($tenant?->base_currency ?: 'USD')),
         ]);
