@@ -241,6 +241,10 @@ test.describe('staff core journeys', () => {
         await expect(page.getByRole('heading', { name: 'Exchange rates' })).toBeVisible();
         await expect(page.getByText('Frankfurter market rates', { exact: true })).toBeVisible();
 
+        await page.goto('/billing/credit-notes');
+        await expect(page.getByRole('heading', { name: 'Credit notes' })).toBeVisible();
+        await expect(page.getByLabel('Search credit note or customer')).toBeVisible();
+
         await page.goto('/reports/finance');
         await expect(page.getByRole('heading', { name: 'Collections and revenue' })).toBeVisible();
         await expect(page.getByRole('link', { name: 'Download CSV' })).toBeVisible();
