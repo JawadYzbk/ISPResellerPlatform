@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Web;
 
+use App\Actions\SaveBranchLocation;
+use App\Actions\SaveZoneLocation;
 use App\Http\Controllers\Controller;
 use App\Models\Branch;
 use App\Models\Tenant;
@@ -9,7 +11,6 @@ use App\Models\User;
 use App\Models\Zone;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
@@ -45,69 +46,44 @@ final class LocationOperationsController extends Controller
         ]);
     }
 
-    public function storeBranch(Request $request): RedirectResponse
+    public function storeBranch(Request $request, SaveBranchLocation $saveBranch): RedirectResponse
     {
         $user = $this->settingsUser($request);
         $this->normalizeCode($request);
         $validated = $request->validate($this->branchRules($user->tenant_id));
 
-        DB::transaction(function () use ($validated, $user): void {
-            $isFirst = ! Branch::query()->exists();
-            $isDefault = $isFirst || (bool) ($validated['is_default'] ?? false);
-            if ($isDefault) {
-                Branch::query()->update(['is_default' => false]);
-            }
-
-            Branch::create([
-                ...$validated,
-                'tenant_id' => $user->tenant_id,
-                'is_default' => $isDefault,
-            ]);
-        });
+        $tenant = Tenant::query()->findOrFail($user->tenant_id);
+        $saveBranch->handle($tenant, $validated);
 
         return redirect()->route('settings.locations')->with('success', 'Branch created.');
     }
 
-    public function updateBranch(Request $request, Branch $branch): RedirectResponse
+    public function updateBranch(Request $request, Branch $branch, SaveBranchLocation $saveBranch): RedirectResponse
     {
         $user = $this->settingsUser($request);
         $this->assertTenantRecord($branch, $user);
         $this->normalizeCode($request);
         $validated = $request->validate($this->branchRules($user->tenant_id, $branch));
 
-        DB::transaction(function () use ($branch, $validated): void {
-            $isDefault = (bool) ($validated['is_default'] ?? false);
-            if (! $isDefault && $branch->is_default) {
-                $replacement = Branch::query()->whereKeyNot($branch->id)->orderBy('name')->first();
-                if (! $replacement instanceof Branch) {
-                    throw ValidationException::withMessages(['is_default' => 'Keep at least one default branch configured.']);
-                }
-
-                $replacement->forceFill(['is_default' => true])->save();
-            }
-
-            if ($isDefault) {
-                Branch::query()->whereKeyNot($branch->id)->update(['is_default' => false]);
-            }
-
-            $branch->update($validated);
-        });
+        $tenant = Tenant::query()->findOrFail($user->tenant_id);
+        $saveBranch->handle($tenant, $validated, $branch);
 
         return redirect()->route('settings.locations')->with('success', 'Branch updated.');
     }
 
-    public function storeZone(Request $request): RedirectResponse
+    public function storeZone(Request $request, SaveZoneLocation $saveZone): RedirectResponse
     {
         $user = $this->settingsUser($request);
         $this->normalizeCode($request);
         $validated = $request->validate($this->zoneRules($user->tenant_id));
 
-        Zone::create([...$validated, 'tenant_id' => $user->tenant_id]);
+        $tenant = Tenant::query()->findOrFail($user->tenant_id);
+        $saveZone->handle($tenant, $validated);
 
         return redirect()->route('settings.locations')->with('success', 'Service zone created.');
     }
 
-    public function updateZone(Request $request, Zone $zone): RedirectResponse
+    public function updateZone(Request $request, Zone $zone, SaveZoneLocation $saveZone): RedirectResponse
     {
         $user = $this->settingsUser($request);
         $this->assertTenantRecord($zone, $user);
@@ -117,7 +93,8 @@ final class LocationOperationsController extends Controller
             throw ValidationException::withMessages(['parent_id' => 'A service zone cannot be its own parent.']);
         }
 
-        $zone->update($validated);
+        $tenant = Tenant::query()->findOrFail($user->tenant_id);
+        $saveZone->handle($tenant, $validated, $zone);
 
         return redirect()->route('settings.locations')->with('success', 'Service zone updated.');
     }
