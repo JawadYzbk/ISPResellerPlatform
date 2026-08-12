@@ -110,3 +110,54 @@ it('updates reseller limits and status without changing wallet currency or hiera
             'status' => 'suspended',
         ]);
 });
+
+it('manages versioned partner price book items from the commercial workspace', function (): void {
+    $tenant = Tenant::create(['name' => 'Northline', 'slug' => 'northline', 'base_currency' => 'USD', 'collection_currency' => 'USD']);
+    app(Tenancy::class)->set($tenant);
+    $partner = app(CreatePartner::class)->handle('Reseller', 'RESELLER', 'USD');
+    $plan = Plan::factory()->create(['name' => 'Home 50', 'slug' => 'home-50', 'currency' => 'USD', 'status' => 'active', 'amount_minor' => 3500]);
+    $user = User::create([
+        'tenant_id' => $tenant->id,
+        'name' => 'Owner',
+        'email' => 'commercial-price-book@example.test',
+        'password' => Hash::make('password'),
+        'role' => 'tenant_owner',
+    ]);
+    app(CapabilitySeeder::class)->run();
+    $user->assignRole('tenant_owner');
+    $user->forceFill(['last_authenticated_at' => now()])->save();
+
+    $this->actingAs($user)
+        ->post(route('partners.price-books.items.store', $partner), [
+            'plan_id' => $plan->public_id,
+            'currency' => 'USD',
+            'buy_amount_minor' => 2000,
+            'sell_amount_minor' => 3000,
+            'min_amount_minor' => 2500,
+            'max_amount_minor' => 4000,
+            'effective_from' => '2026-08-01',
+        ])
+        ->assertRedirect(route('partners.commercial', ['partner' => $partner->public_id]));
+
+    app(Tenancy::class)->set($tenant);
+    $first = PriceBookItem::query()->firstOrFail();
+    expect($first->buy_amount_minor)->toBe(2000)
+        ->and($first->sell_amount_minor)->toBe(3000)
+        ->and($first->commissionRule)->not->toBeNull();
+
+    $this->actingAs($user)
+        ->post(route('partners.price-books.items.store', $partner), [
+            'plan_id' => $plan->public_id,
+            'currency' => 'USD',
+            'buy_amount_minor' => 2200,
+            'sell_amount_minor' => 3200,
+            'effective_from' => '2026-09-01',
+        ])
+        ->assertRedirect();
+
+    app(Tenancy::class)->set($tenant);
+    $latest = PriceBookItem::query()->latest('effective_from')->firstOrFail();
+    expect(PriceBookItem::query()->count())->toBe(2)
+        ->and($first->refresh()->effective_to?->toDateString())->toBe('2026-09-01')
+        ->and($latest->sell_amount_minor)->toBe(3200);
+});

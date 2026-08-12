@@ -5,12 +5,15 @@ namespace App\Http\Controllers\Web;
 use App\Actions\CreatePartner;
 use App\Actions\GetCurrencyCatalog;
 use App\Actions\ResolvePartnerPrice;
+use App\Actions\SavePartnerPriceBookItem;
 use App\Actions\UpdatePartner;
 use App\Http\Controllers\Controller;
 use App\Models\Partner;
 use App\Models\Plan;
+use App\Models\PriceBookItem;
 use App\Models\Settlement;
 use App\Models\User;
+use DomainException;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\RedirectResponse;
@@ -46,6 +49,46 @@ final class PartnerController extends Controller
             ]);
         }
         $showCost = $user->partner_id === null && $user->can('settlements.approve');
+        $now = now();
+        $partnerItems = PriceBookItem::query()
+            ->where('currency', $partner->currency)
+            ->where('effective_from', '<=', $now)
+            ->where(fn ($query) => $query->whereNull('effective_to')->orWhere('effective_to', '>', $now))
+            ->whereHas('priceBook', fn ($query) => $query->where('partner_id', $partner->id)->where('status', 'active'))
+            ->with('priceBook')
+            ->orderByDesc('effective_from')
+            ->get()
+            ->unique('plan_id')
+            ->keyBy('plan_id');
+        $pricingPlans = Plan::query()
+            ->where('status', 'active')
+            ->with(['prices' => fn ($query) => $query
+                ->where('currency', $partner->currency)
+                ->where('effective_from', '<=', $now)
+                ->where(fn ($price) => $price->whereNull('effective_to')->orWhere('effective_to', '>', $now))
+                ->latest('effective_from')])
+            ->orderBy('name')
+            ->get()
+            ->map(function (Plan $plan) use ($partnerItems): array {
+                $price = $plan->prices->first();
+                $override = $partnerItems->get($plan->id);
+
+                return [
+                    'id' => $plan->public_id,
+                    'name' => $plan->name,
+                    'duration_days' => $plan->duration_days,
+                    'currency' => $override instanceof PriceBookItem ? $override->currency : $plan->currency,
+                    'base_amount_minor' => $price?->amount_minor,
+                    'override' => $override instanceof PriceBookItem ? [
+                        'id' => $override->id,
+                        'buy_amount_minor' => $override->buy_amount_minor,
+                        'sell_amount_minor' => $override->sell_amount_minor,
+                        'min_amount_minor' => $override->min_amount_minor,
+                        'max_amount_minor' => $override->max_amount_minor,
+                        'effective_from' => $override->effective_from->toDateString(),
+                    ] : null,
+                ];
+            })->values();
         $catalog = [];
 
         foreach (Plan::query()->where('status', 'active')->orderBy('name')->get() as $plan) {
@@ -90,6 +133,7 @@ final class PartnerController extends Controller
                 'status' => $partner->status,
             ],
             'catalog' => $catalog,
+            'pricingPlans' => $user->can('partners.manage') ? $pricingPlans : [],
             'settlements' => $settlements,
             'showCost' => $showCost,
             'canManage' => $user->can('partners.manage'),
@@ -159,6 +203,31 @@ final class PartnerController extends Controller
         $update->handle($partner, $data);
 
         return redirect()->route('partners.commercial', ['partner' => $partner->public_id])->with('success', "Partner {$partner->name} updated.");
+    }
+
+    public function savePriceBookItem(Request $request, Partner $partner, SavePartnerPriceBookItem $save): RedirectResponse
+    {
+        $user = $request->user();
+        abort_unless($user instanceof User && $user->can('partners.manage'), 403);
+        $partner = $this->visible($user)->whereKey($partner->id)->firstOrFail();
+        $data = $request->validate([
+            'plan_id' => ['required', 'string', 'max:26', Rule::exists('plans', 'public_id')->where('tenant_id', $user->tenant_id)],
+            'currency' => ['required', 'string', 'size:3', Rule::in([$partner->currency])],
+            'buy_amount_minor' => ['required', 'integer', 'min:0'],
+            'sell_amount_minor' => ['required', 'integer', 'min:0', 'gte:buy_amount_minor'],
+            'min_amount_minor' => ['nullable', 'integer', 'min:0'],
+            'max_amount_minor' => ['nullable', 'integer', 'gte:min_amount_minor'],
+            'effective_from' => ['required', 'date'],
+        ]);
+        $plan = Plan::query()->where('public_id', $data['plan_id'])->firstOrFail();
+
+        try {
+            $save->handle($partner, $plan, $data);
+        } catch (DomainException $exception) {
+            throw ValidationException::withMessages(['buy_amount_minor' => $exception->getMessage()]);
+        }
+
+        return redirect()->route('partners.commercial', ['partner' => $partner->public_id])->with('success', 'Partner price updated.');
     }
 
     /** @return Builder<Partner> */
