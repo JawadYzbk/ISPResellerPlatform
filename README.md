@@ -104,7 +104,7 @@ The tenant owner can use **Settings → Pilot readiness** or `php artisan platfo
 docker compose up --build
 ```
 
-The app is at [http://localhost:8000](http://localhost:8000), Mailpit at [http://localhost:8025](http://localhost:8025), and the MinIO console at [http://localhost:9001](http://localhost:9001).
+The app is at [http://localhost:8000](http://localhost:8000), Vite serves the development assets at `http://127.0.0.1:5173`, Mailpit is at [http://localhost:8025](http://localhost:8025), and the MinIO console is at [http://localhost:9001](http://localhost:9001). Keep the `frontend` service running while using the local app; it owns the Vite dev server and HMR endpoint.
 
 On a fresh Docker database, run the demo fixture once after the stack is healthy:
 
