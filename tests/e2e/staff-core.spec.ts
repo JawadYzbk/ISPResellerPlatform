@@ -280,7 +280,7 @@ test.describe('staff core journeys', () => {
 
         await page.getByRole('button', { name: 'Open account menu' }).click();
         await Promise.all([page.waitForURL('**/profile'), page.getByRole('menuitem', { name: 'Profile' }).click()]);
-        await expect(page.getByRole('heading', { name: 'Your profile' })).toBeVisible();
+        await expect(page.getByRole('heading', { name: /^(Your profile|Votre profil|ملفك الشخصي)$/ })).toBeVisible();
 
         await Promise.all([
             page.waitForURL('**/notifications'),
@@ -292,13 +292,25 @@ test.describe('staff core journeys', () => {
     test('saves French as the profile language', async ({ page }) => {
         await signIn(page);
         await page.goto('/profile');
-        await expect(page.getByRole('heading', { name: 'Your profile' })).toBeVisible();
+        await expect(page.getByRole('heading', { name: /^(Your profile|Votre profil|ملفك الشخصي)$/ })).toBeVisible();
 
-        await page.getByLabel('Language').click();
-        await page.getByRole('option', { name: 'French' }).click();
-        await page.getByRole('button', { name: 'Save profile' }).click();
+        await page.getByRole('combobox').click();
+        await page.getByRole('option', { name: /^(French|Français|الفرنسية)$/ }).click();
+        await page.getByRole('button', { name: /^(Save profile|Enregistrer le profil|حفظ الملف الشخصي)$/ }).click();
 
-        await expect(page.getByRole('combobox', { name: 'Language' })).toContainText('French');
+        await expect(page.getByRole('combobox')).toContainText(/^(French|Français|الفرنسية)$/);
+    });
+
+    test('renders the shared shell in French after switching locale', async ({ page }) => {
+        await signIn(page);
+        await page.goto('/profile');
+        await page.getByRole('combobox').click();
+        await page.getByRole('option', { name: /^(French|Français|الفرنسية)$/ }).click();
+        await page.getByRole('button', { name: /^(Save profile|Enregistrer le profil|حفظ الملف الشخصي)$/ }).click();
+
+        await expect(page.getByRole('link', { name: 'Clients' })).toBeVisible();
+        await expect(page.getByRole('link', { name: 'Paramètres de l’espace de travail' })).toBeVisible();
+        await expect(page.getByText('Votre profil')).toBeVisible();
     });
 
     test('keeps the owner workspace routes free of authorization and not-found failures', async ({ page }) => {

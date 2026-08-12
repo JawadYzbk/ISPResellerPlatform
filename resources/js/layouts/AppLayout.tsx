@@ -35,6 +35,7 @@ import { useEffect, useRef, useState, type PropsWithChildren } from 'react';
 
 import RealtimeBridge from '@/components/RealtimeBridge';
 import OfflineBanner from '@/components/OfflineBanner';
+import { createTranslator, roleLabel } from '@/lib/i18n';
 import type { PageProps } from '@/types';
 
 type NavigationItem = {
@@ -50,6 +51,7 @@ export default function AppLayout({ children }: PropsWithChildren) {
     const page = usePage<PageProps>();
     const { auth, app } = page.props;
     const { url } = page;
+    const t = createTranslator(app.locale);
     const [searchOpen, setSearchOpen] = useState(false);
     const [search, setSearch] = useState('');
     const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
@@ -197,12 +199,14 @@ export default function AppLayout({ children }: PropsWithChildren) {
                     </div>
                     <div>
                         <p className="font-display text-sm font-bold tracking-tight">ISP Manager</p>
-                        <p className="text-xs text-muted">Operations desk</p>
+                        <p className="text-xs text-muted">{t('Operations desk')}</p>
                     </div>
                 </div>
                 <div className="px-4 py-5">
                     <div className="mb-5 rounded-xl bg-sand px-3 py-3">
-                        <p className="text-[11px] font-semibold uppercase tracking-wider text-muted">Workspace</p>
+                        <p className="text-[11px] font-semibold uppercase tracking-wider text-muted">
+                            {t('Workspace')}
+                        </p>
                         <p className="mt-1 truncate text-sm font-semibold">{auth.tenant?.name ?? 'Platform'}</p>
                     </div>
                     <nav className="space-y-1">
@@ -213,7 +217,7 @@ export default function AppLayout({ children }: PropsWithChildren) {
                                 className="group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-muted transition hover:bg-sand hover:text-ink"
                             >
                                 <Icon size={18} strokeWidth={1.8} />
-                                <span>{label}</span>
+                                <span>{t(label)}</span>
                             </Link>
                         ))}
                     </nav>
@@ -228,8 +232,8 @@ export default function AppLayout({ children }: PropsWithChildren) {
                             type="button"
                             onClick={() => setSearchOpen(true)}
                             className="hidden rounded-lg border border-line bg-white p-2 text-muted hover:text-brand lg:block"
-                            title="Search customers"
-                            aria-label="Search customers"
+                            title={t('Search customers')}
+                            aria-label={t('Search customers')}
                         >
                             <Command size={17} />
                         </button>
@@ -239,7 +243,7 @@ export default function AppLayout({ children }: PropsWithChildren) {
                             className="hidden items-center gap-2 text-sm text-muted hover:text-ink sm:flex"
                         >
                             <Search size={16} />
-                            <span>Search customers, services…</span>
+                            <span>{t('Search customers, services…')}</span>
                             <kbd className="ms-2 rounded border border-line bg-white px-1.5 py-0.5 text-[10px]">
                                 ⌘ K
                             </kbd>
@@ -249,8 +253,8 @@ export default function AppLayout({ children }: PropsWithChildren) {
                         <Link
                             href="/notifications"
                             className="relative rounded-lg p-2.5 text-muted hover:bg-white"
-                            title="Open notifications center"
-                            aria-label="Open notifications center"
+                            title={t('Open notifications center')}
+                            aria-label={t('Open notifications center')}
                         >
                             <Bell size={19} strokeWidth={1.8} />
                         </Link>
@@ -262,7 +266,7 @@ export default function AppLayout({ children }: PropsWithChildren) {
                                 aria-haspopup="menu"
                                 aria-expanded={accountOpen}
                                 aria-controls="account-menu"
-                                aria-label="Open account menu"
+                                aria-label={t('Open account menu')}
                             >
                                 <span className="grid size-9 place-items-center rounded-full bg-brand-soft text-sm font-bold text-brand">
                                     {auth.user?.name.slice(0, 1).toUpperCase()}
@@ -270,7 +274,7 @@ export default function AppLayout({ children }: PropsWithChildren) {
                                 <span className="hidden sm:block">
                                     <span className="block text-sm font-semibold">{auth.user?.name}</span>
                                     <span className="block text-xs capitalize text-muted">
-                                        {auth.user?.role.replaceAll('_', ' ')}
+                                        {roleLabel(auth.user?.role ?? '', t)}
                                     </span>
                                 </span>
                                 <ChevronDown size={16} className="text-muted" />
@@ -279,7 +283,7 @@ export default function AppLayout({ children }: PropsWithChildren) {
                                 <div
                                     id="account-menu"
                                     role="menu"
-                                    aria-label="Account menu"
+                                    aria-label={t('Account menu')}
                                     className="absolute end-0 top-full z-30 mt-2 w-56 overflow-hidden rounded-xl border border-line bg-white p-1 shadow-xl"
                                 >
                                     <Link
@@ -287,14 +291,14 @@ export default function AppLayout({ children }: PropsWithChildren) {
                                         role="menuitem"
                                         className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold hover:bg-sand"
                                     >
-                                        <UserRound size={16} className="text-brand" /> Profile
+                                        <UserRound size={16} className="text-brand" /> {t('Profile')}
                                     </Link>
                                     <Link
                                         href="/security/sessions"
                                         role="menuitem"
                                         className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold hover:bg-sand"
                                     >
-                                        <KeyRound size={16} className="text-brand" /> Active sessions
+                                        <KeyRound size={16} className="text-brand" /> {t('Active sessions')}
                                     </Link>
                                     {can('settings.manage') && (
                                         <Link
@@ -302,7 +306,7 @@ export default function AppLayout({ children }: PropsWithChildren) {
                                             role="menuitem"
                                             className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold hover:bg-sand"
                                         >
-                                            <Wrench size={16} className="text-brand" /> Workspace settings
+                                            <Wrench size={16} className="text-brand" /> {t('Workspace settings')}
                                         </Link>
                                     )}
                                     <Form action="/logout" method="post" className="mt-1 border-t border-line pt-1">
@@ -311,7 +315,7 @@ export default function AppLayout({ children }: PropsWithChildren) {
                                             role="menuitem"
                                             className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold text-coral hover:bg-rose-50"
                                         >
-                                            <LogOut size={16} /> Sign out
+                                            <LogOut size={16} /> {t('Sign out')}
                                         </button>
                                     </Form>
                                 </div>
@@ -330,7 +334,7 @@ export default function AppLayout({ children }: PropsWithChildren) {
                             className="mx-auto max-w-2xl overflow-hidden rounded-2xl border border-line bg-white shadow-2xl"
                             role="dialog"
                             aria-modal="true"
-                            aria-label="Global search"
+                            aria-label={t('Global search')}
                         >
                             <div className="flex items-center gap-3 border-b border-line px-5 py-4">
                                 <Search size={19} className="text-brand" />
@@ -340,8 +344,8 @@ export default function AppLayout({ children }: PropsWithChildren) {
                                     onChange={(event) => setSearch(event.target.value)}
                                     onKeyDown={(event) => event.key === 'Escape' && setSearchOpen(false)}
                                     className="min-w-0 flex-1 border-0 bg-transparent text-base outline-none placeholder:text-muted"
-                                    placeholder="Search customer, service, IP, invoice, ticket…"
-                                    aria-label="Search workspace"
+                                    placeholder={t('Search customer, service, IP, invoice, ticket…')}
+                                    aria-label={t('Search workspace')}
                                 />
                                 <kbd className="rounded border border-line px-1.5 py-0.5 text-[10px] text-muted">
                                     ESC
@@ -349,16 +353,18 @@ export default function AppLayout({ children }: PropsWithChildren) {
                             </div>
                             <div className="max-h-[min(60vh,32rem)] overflow-y-auto p-2">
                                 {searching && (
-                                    <p className="px-3 py-8 text-center text-sm text-muted">Searching workspace…</p>
+                                    <p className="px-3 py-8 text-center text-sm text-muted">
+                                        {t('Searching workspace…')}
+                                    </p>
                                 )}
                                 {!searching && search.trim().length < 2 && (
                                     <p className="px-3 py-8 text-center text-sm text-muted">
-                                        Type at least two characters to search.
+                                        {t('Type at least two characters to search.')}
                                     </p>
                                 )}
                                 {!searching && search.trim().length >= 2 && searchResults.length === 0 && (
                                     <p className="px-3 py-8 text-center text-sm text-muted">
-                                        No matching records found.
+                                        {t('No matching records found.')}
                                     </p>
                                 )}
                                 {!searching &&
@@ -405,7 +411,7 @@ export default function AppLayout({ children }: PropsWithChildren) {
                                 aria-current={active ? 'page' : undefined}
                             >
                                 <Icon size={20} strokeWidth={active ? 2.2 : 1.8} />
-                                <span>{label}</span>
+                                <span>{t(label)}</span>
                             </Link>
                         );
                     })}
