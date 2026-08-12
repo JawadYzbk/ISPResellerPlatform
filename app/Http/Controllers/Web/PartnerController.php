@@ -78,7 +78,7 @@ final class PartnerController extends Controller
                     'id' => $plan->public_id,
                     'name' => $plan->name,
                     'duration_days' => $plan->duration_days,
-                    'currency' => $override instanceof PriceBookItem ? $override->currency : $plan->currency,
+                    'currency' => $partner->currency,
                     'base_amount_minor' => $price?->amount_minor,
                     'override' => $override instanceof PriceBookItem ? [
                         'id' => $override->id,
