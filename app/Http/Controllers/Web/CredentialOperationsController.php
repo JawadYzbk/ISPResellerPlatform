@@ -11,6 +11,7 @@ use App\Enums\ProvisioningMode;
 use App\Http\Controllers\Controller;
 use App\Models\Service;
 use App\Models\Supplier;
+use App\Models\SupplierContract;
 use App\Models\Tenant;
 use App\Models\UpstreamCredential;
 use App\Models\User;
@@ -49,6 +50,11 @@ final class CredentialOperationsController extends Controller
                     'code' => $credential->batch->supplier->code,
                 ],
                 'batch_reference' => $credential->batch?->reference,
+                'supplier_contract' => $credential->batch?->supplierContract === null ? null : [
+                    'id' => $credential->batch->supplierContract->id,
+                    'service_type' => $credential->batch->supplierContract->service_type,
+                    'status' => $credential->batch->supplierContract->status,
+                ],
                 'assigned_service' => $credential->assignedService === null ? null : [
                     'public_id' => $credential->assignedService->public_id,
                     'username' => $credential->assignedService->username,
@@ -90,7 +96,17 @@ final class CredentialOperationsController extends Controller
             'canImport' => $user->can('credentials.import'),
             'canReveal' => $user->can('credentials.reveal'),
             'suppliers' => $user->can('credentials.import')
-                ? Supplier::query()->where('is_active', true)->orderBy('name')->get(['id', 'name', 'code'])->values()
+                ? Supplier::query()->with(['contracts' => fn ($query) => $query->whereIn('status', ['active', 'suspended'])->orderBy('effective_from', 'desc')])->where('is_active', true)->orderBy('name')->get(['id', 'name', 'code'])->map(fn (Supplier $supplier): array => [
+                    'id' => $supplier->id,
+                    'name' => $supplier->name,
+                    'code' => $supplier->code,
+                    'contracts' => $supplier->contracts->map(fn (SupplierContract $contract): array => [
+                        'id' => $contract->id,
+                        'service_type' => $contract->service_type,
+                        'wholesale_currency' => $contract->wholesale_currency,
+                        'status' => $contract->status,
+                    ])->values()->all(),
+                ])->values()->all()
                 : [],
             'currencies' => $user->can('credentials.import') ? $currencyCatalog->handle() : [],
         ]);
@@ -102,6 +118,7 @@ final class CredentialOperationsController extends Controller
         abort_unless($user instanceof User && $user->can('credentials.import') && $user->tenant instanceof Tenant, 403);
         $validated = $request->validate([
             'supplier_id' => [Rule::exists('suppliers', 'id')->where('tenant_id', $user->tenant->id)],
+            'supplier_contract_id' => ['nullable', Rule::exists('supplier_contracts', 'id')->where('tenant_id', $user->tenant->id)],
             'reference' => ['required', 'string', 'max:64'],
             'contract_reference' => ['nullable', 'string', 'max:64'],
             'unit_cost_amount' => ['nullable', 'integer', 'min:0'],
@@ -113,7 +130,11 @@ final class CredentialOperationsController extends Controller
         $file = $validated['file'];
         abort_unless($file instanceof UploadedFile, 422, 'A credential CSV file is required.');
         $supplier = Supplier::query()->findOrFail((int) $validated['supplier_id']);
+        $contract = isset($validated['supplier_contract_id'])
+            ? SupplierContract::query()->where('supplier_id', $supplier->id)->findOrFail((int) $validated['supplier_contract_id'])
+            : null;
         $batch = $import->handle($supplier, (string) $validated['reference'], $validated['expires_at'] ?? null, $file->get(), [
+            'supplier_contract_id' => $contract?->id,
             'contract_reference' => $validated['contract_reference'] ?? null,
             'unit_cost_amount' => $validated['unit_cost_amount'] ?? null,
             'total_cost_amount' => $validated['total_cost_amount'] ?? null,

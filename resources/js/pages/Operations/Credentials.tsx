@@ -17,6 +17,7 @@ type Credential = {
     expires_at: string | null;
     supplier: { name: string; code: string } | null;
     batch_reference: string | null;
+    supplier_contract: { id: number; service_type: string; status: string } | null;
     assigned_service: {
         public_id: string;
         username: string;
@@ -31,7 +32,8 @@ type AssignableService = {
     customer: string | null;
 };
 
-type Supplier = { id: number; name: string; code: string };
+type SupplierContract = { id: number; service_type: string; wholesale_currency: string; status: string };
+type Supplier = { id: number; name: string; code: string; contracts: SupplierContract[] };
 
 type Props = PageProps & {
     credentials: Paginator<Credential>;
@@ -61,6 +63,7 @@ export default function CredentialsPage({
     const [revealError, setRevealError] = useState<string | null>(null);
     const importForm = useForm({
         supplier_id: suppliers[0]?.id.toString() ?? '',
+        supplier_contract_id: '',
         reference: '',
         contract_reference: '',
         unit_cost_amount: '',
@@ -69,6 +72,7 @@ export default function CredentialsPage({
         expires_at: '',
         file: null as File | null,
     });
+    const selectedSupplier = suppliers.find((supplier) => supplier.id.toString() === importForm.data.supplier_id);
 
     const applyFilters = (event: React.FormEvent) => {
         event.preventDefault();
@@ -138,7 +142,10 @@ export default function CredentialsPage({
                             <ResponsiveSelect
                                 className="field"
                                 value={importForm.data.supplier_id}
-                                onChange={(event) => importForm.setData('supplier_id', event.target.value)}
+                                onChange={(event) => {
+                                    importForm.setData('supplier_id', event.target.value);
+                                    importForm.setData('supplier_contract_id', '');
+                                }}
                             >
                                 <option value="">Select supplier</option>
                                 {suppliers.map((supplier) => (
@@ -149,6 +156,25 @@ export default function CredentialsPage({
                             </ResponsiveSelect>
                             {importForm.errors.supplier_id && (
                                 <p className="field-error">{importForm.errors.supplier_id}</p>
+                            )}
+                        </label>
+                        <label>
+                            <span className="field-label">Supplier contract (optional)</span>
+                            <ResponsiveSelect
+                                className="field"
+                                value={importForm.data.supplier_contract_id}
+                                onChange={(event) => importForm.setData('supplier_contract_id', event.target.value)}
+                                disabled={!selectedSupplier || selectedSupplier.contracts.length === 0}
+                            >
+                                <option value="">No contract selected</option>
+                                {selectedSupplier?.contracts.map((contract) => (
+                                    <option key={contract.id} value={contract.id}>
+                                        {contract.service_type} · {contract.wholesale_currency} · {contract.status}
+                                    </option>
+                                ))}
+                            </ResponsiveSelect>
+                            {importForm.errors.supplier_contract_id && (
+                                <p className="field-error">{importForm.errors.supplier_contract_id}</p>
                             )}
                         </label>
                         <label>
@@ -313,6 +339,11 @@ export default function CredentialsPage({
                                         </p>
                                         <p className="mt-1 text-xs text-muted">
                                             {credential.batch_reference ?? 'No batch reference'}
+                                            {credential.supplier_contract && (
+                                                <span className="ms-2">
+                                                    · {credential.supplier_contract.service_type}
+                                                </span>
+                                            )}
                                         </p>
                                     </td>
                                     <td className="px-5 py-4">

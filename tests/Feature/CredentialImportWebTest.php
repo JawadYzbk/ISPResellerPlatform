@@ -2,6 +2,7 @@
 
 use App\Models\CredentialBatch;
 use App\Models\Supplier;
+use App\Models\SupplierContract;
 use App\Models\Tenant;
 use App\Models\UpstreamCredential;
 use App\Models\User;
@@ -21,10 +22,18 @@ it('imports and reveals supplier credentials through guarded web endpoints', fun
     $user->assignRole('tenant_owner');
     $user->forceFill(['last_authenticated_at' => now()])->save();
     $supplier = Supplier::create(['name' => 'Upstream', 'code' => 'UP-01']);
+    $contract = SupplierContract::create([
+        'supplier_id' => $supplier->id,
+        'service_type' => 'upstream_credential',
+        'wholesale_currency' => 'USD',
+        'effective_from' => '2026-08-01',
+        'status' => 'active',
+    ]);
 
     $this->actingAs($user)
         ->post(route('operations.credentials.import'), [
             'supplier_id' => $supplier->id,
+            'supplier_contract_id' => $contract->id,
             'reference' => 'BATCH-01',
             'contract_reference' => 'CONTRACT-01',
             'unit_cost_amount' => 125,
@@ -39,6 +48,7 @@ it('imports and reveals supplier credentials through guarded web endpoints', fun
     $batch = CredentialBatch::query()->firstOrFail();
     $credential = UpstreamCredential::query()->where('identifier', 'user-001')->firstOrFail();
     expect($batch->reference)->toBe('BATCH-01')
+        ->and($batch->supplier_contract_id)->toBe($contract->id)
         ->and($batch->contract_reference)->toBe('CONTRACT-01')
         ->and($batch->unit_cost_amount)->toBe(125)
         ->and($batch->total_cost_amount)->toBe(250)

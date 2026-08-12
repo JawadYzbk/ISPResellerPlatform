@@ -26,6 +26,7 @@ final readonly class ImportCredentialCsv implements Action
         return DB::transaction(function () use ($supplier, $reference, $expiresAt, $rows, $commercial): CredentialBatch {
             $batch = CredentialBatch::create([
                 'supplier_id' => $supplier->id,
+                'supplier_contract_id' => $commercial['supplier_contract_id'] ?? null,
                 'reference' => $reference,
                 'contract_reference' => $commercial['contract_reference'] ?? null,
                 'unit_cost_amount' => $commercial['unit_cost_amount'] ?? null,
