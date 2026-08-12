@@ -70,7 +70,7 @@ final class PartnerController extends Controller
                 ->latest('effective_from')])
             ->orderBy('name')
             ->get()
-            ->map(function (Plan $plan) use ($partnerItems): array {
+            ->map(function (Plan $plan) use ($partner, $partnerItems): array {
                 $price = $plan->prices->first();
                 $override = $partnerItems->get($plan->id);
 
