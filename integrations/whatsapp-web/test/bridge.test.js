@@ -7,6 +7,7 @@ import assert from 'node:assert/strict';
 import {
   clearStaleChromiumProfileLocks,
   JsonIdempotencyStore,
+  removeSessionDirectory,
   WhatsAppBridge,
   WhatsAppBridgeManager,
   hasValidSignature,
@@ -184,6 +185,65 @@ test('removes an account while its client is still initializing', async () => {
     assert.equal(removed.status, 'deleted');
     assert.equal(clients.get('removing-account').destroyed, true);
     releaseInitialization();
+  } finally {
+    await rm(directory, { recursive: true, force: true });
+  }
+});
+
+test('retries session cleanup while Chromium releases profile locks', async () => {
+  const directory = await mkdtemp(join(tmpdir(), 'isp-whatsapp-'));
+  const profile = join(directory, 'session-locked-account');
+  let attempts = 0;
+
+  try {
+    await mkdir(profile, { recursive: true });
+    await writeFile(join(profile, 'lockfile'), 'busy');
+
+    await removeSessionDirectory(profile, {
+      removePath: async (path, options) => {
+        attempts++;
+        if (attempts < 3) {
+          const error = new Error('profile is still locked');
+          error.code = 'EBUSY';
+          throw error;
+        }
+
+        return rm(path, options);
+      },
+      retries: 3,
+      retryDelayMs: 0,
+    });
+
+    assert.equal(attempts, 3);
+    await assert.rejects(() => readFile(profile), { code: 'ENOENT' });
+  } finally {
+    await rm(directory, { recursive: true, force: true });
+  }
+});
+
+test('terminates a browser process when a client operation times out', async () => {
+  const directory = await mkdtemp(join(tmpdir(), 'isp-whatsapp-'));
+  const exits = new EventEmitter();
+  let killed = false;
+
+  try {
+    const client = new FakeClient();
+    client.destroy = () => new Promise(() => {});
+    client.pupBrowser = {
+      process: () => ({
+        killed: false,
+        kill: () => {
+          killed = true;
+          exits.emit('exit');
+        },
+        once: (event, listener) => exits.once(event, listener),
+      }),
+    };
+    const bridge = new WhatsAppBridge({ client, store: new JsonIdempotencyStore(directory) });
+
+    await bridge.clientOperation('destroy');
+
+    assert.equal(killed, true);
   } finally {
     await rm(directory, { recursive: true, force: true });
   }

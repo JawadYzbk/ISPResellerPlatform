@@ -1,6 +1,8 @@
 import { mkdir, readdir, readFile, rename, rm, unlink, writeFile } from 'node:fs/promises';
 import { createHash, createHmac, timingSafeEqual } from 'node:crypto';
+import { execFile } from 'node:child_process';
 import { join } from 'node:path';
+import { promisify } from 'node:util';
 
 export class BridgeNotReadyError extends Error {}
 
@@ -30,6 +32,33 @@ export function resourceSnapshot({
 
 const CHROMIUM_PROFILE_LOCKS = new Set(['SingletonCookie', 'SingletonLock', 'SingletonSocket']);
 const CLIENT_OPERATION_TIMEOUT_MS = 5000;
+const SESSION_CLEANUP_RETRIES = 40;
+const SESSION_CLEANUP_RETRY_DELAY_MS = 250;
+const execFileAsync = promisify(execFile);
+
+const sleep = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds));
+
+export async function removeSessionDirectory(
+  path,
+  {
+    removePath = rm,
+    retries = SESSION_CLEANUP_RETRIES,
+    retryDelayMs = SESSION_CLEANUP_RETRY_DELAY_MS,
+  } = {},
+) {
+  for (let attempt = 0; ; attempt++) {
+    try {
+      await removePath(path, { recursive: true, force: true, maxRetries: 0 });
+      return;
+    } catch (error) {
+      if (!['EBUSY', 'ENOTEMPTY', 'EPERM'].includes(error.code) || attempt >= retries) {
+        throw error;
+      }
+
+      await sleep(retryDelayMs);
+    }
+  }
+}
 
 export async function clearStaleChromiumProfileLocks(directory) {
   const pending = [directory];
@@ -227,16 +256,43 @@ export class WhatsAppBridge {
 
     let timer;
     try {
-      await Promise.race([
-        this.client[method](),
+      const result = await Promise.race([
+        Promise.resolve().then(() => this.client[method]()).then(() => 'completed'),
         new Promise((resolve) => {
-          timer = setTimeout(resolve, CLIENT_OPERATION_TIMEOUT_MS);
+          timer = setTimeout(() => resolve('timed_out'), CLIENT_OPERATION_TIMEOUT_MS);
         }),
       ]);
+
+      if (result === 'timed_out') {
+        await this.forceTerminateBrowser();
+      }
     } catch (error) {
       this.logger.warn(`WhatsApp ${method} failed: ${error.message}`);
+      await this.forceTerminateBrowser();
     } finally {
       clearTimeout(timer);
+    }
+  }
+
+  async forceTerminateBrowser() {
+    const browser = this.client.pupBrowser;
+    const browserProcess = browser?.process?.();
+
+    if (!browserProcess || browserProcess.killed) {
+      return;
+    }
+
+    try {
+      browserProcess.kill();
+      if (process.platform === 'win32' && browserProcess.pid) {
+        await execFileAsync('taskkill', ['/pid', String(browserProcess.pid), '/t', '/f']);
+      }
+      await Promise.race([
+        new Promise((resolve) => browserProcess.once('exit', resolve)),
+        sleep(1000),
+      ]);
+    } catch (error) {
+      this.logger.warn(`WhatsApp browser termination failed: ${error.message}`);
     }
   }
 
@@ -347,12 +403,24 @@ export function normalizeRecipient(value) {
 }
 
 export class WhatsAppBridgeManager {
-  constructor({ clientFactory, sessionPath, webhookUrl = '', webhookSecret = '', logger = console }) {
+  constructor({
+    clientFactory,
+    sessionPath,
+    webhookUrl = '',
+    webhookSecret = '',
+    logger = console,
+    removePath = rm,
+    cleanupRetries = SESSION_CLEANUP_RETRIES,
+    cleanupRetryDelayMs = SESSION_CLEANUP_RETRY_DELAY_MS,
+  }) {
     this.clientFactory = clientFactory;
     this.sessionPath = sessionPath;
     this.webhookUrl = webhookUrl;
     this.webhookSecret = webhookSecret;
     this.logger = logger;
+    this.removePath = removePath;
+    this.cleanupRetries = cleanupRetries;
+    this.cleanupRetryDelayMs = cleanupRetryDelayMs;
     this.bridges = new Map();
     this.starting = new Map();
     this.removing = new Set();
@@ -443,8 +511,16 @@ export class WhatsAppBridgeManager {
       }
 
       await Promise.all([
-        rm(join(this.sessionPath, `session-${accountId}`), { recursive: true, force: true }),
-        rm(join(this.sessionPath, `account-${accountId}`), { recursive: true, force: true }),
+        removeSessionDirectory(join(this.sessionPath, `session-${accountId}`), {
+          removePath: this.removePath,
+          retries: this.cleanupRetries,
+          retryDelayMs: this.cleanupRetryDelayMs,
+        }),
+        removeSessionDirectory(join(this.sessionPath, `account-${accountId}`), {
+          removePath: this.removePath,
+          retries: this.cleanupRetries,
+          retryDelayMs: this.cleanupRetryDelayMs,
+        }),
       ]);
 
       return { account_id: accountId, status: 'deleted' };
