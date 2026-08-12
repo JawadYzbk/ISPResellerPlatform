@@ -52,7 +52,7 @@ export default function TicketResponses({ responses }: Props) {
             title: response.title,
             body: response.body,
             category: response.category,
-            is_active: true,
+            is_active: response.is_active,
         });
     };
 
