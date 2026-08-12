@@ -250,6 +250,28 @@ test.describe('staff core journeys', () => {
         }
     });
 
+    test('localizes finance and operations reports in French', async ({ page }) => {
+        test.setTimeout(90_000);
+        await signIn(page);
+        await page.goto('/profile');
+        try {
+            await page.getByRole('combobox').click();
+            await page.getByRole('option', { name: /^(French|Français|الفرنسية)$/ }).click();
+            await Promise.all([
+                page.waitForResponse(
+                    (response) => response.url().endsWith('/profile') && response.request().method() === 'PATCH',
+                ),
+                page.getByRole('button', { name: /^(Save profile|Enregistrer le profil|حفظ الملف الشخصي)$/ }).click(),
+            ]);
+            await page.goto('/reports/finance');
+            await expect(page.getByRole('heading', { name: 'Encaissements et revenus' })).toBeVisible();
+            await page.goto('/reports/operations');
+            await expect(page.getByRole('heading', { name: 'État du réseau et du terrain' })).toBeVisible();
+        } finally {
+            await restoreEnglishProfile(page);
+        }
+    });
+
     test('uses shadcn selects on desktop and the native fallback only on mobile', async ({ page }) => {
         await signIn(page);
         await page.goto('/settings/general');

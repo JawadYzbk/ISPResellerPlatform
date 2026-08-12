@@ -1,9 +1,10 @@
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import { ArrowLeft, BarChart3, Download, Receipt, TrendingUp, Wallet } from 'lucide-react';
 import { useState } from 'react';
 
 import AppLayout from '@/layouts/AppLayout';
 import { formatMoney } from '@/lib/format';
+import { createTranslator } from '@/lib/i18n';
 import type { FinanceReport, PageProps } from '@/types';
 
 type Props = PageProps & { report: FinanceReport };
@@ -35,6 +36,8 @@ const formatBytes = (bytes: number) => {
 };
 
 export default function FinanceReportPage({ report }: Props) {
+    const { app } = usePage<PageProps>().props;
+    const t = createTranslator(app.locale);
     const [from, setFrom] = useState(report.from);
     const [to, setTo] = useState(report.to);
     const query = `from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`;
@@ -46,39 +49,39 @@ export default function FinanceReportPage({ report }: Props) {
 
     return (
         <AppLayout>
-            <Head title="Finance report" />
+            <Head title={t('Finance report')} />
             <Link
                 href="/dashboard"
                 className="mb-6 inline-flex items-center gap-2 text-sm font-semibold text-muted hover:text-brand"
             >
                 <ArrowLeft size={16} />
-                Back to overview
+                {t('Back to overview')}
             </Link>
             <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
                 <div>
-                    <p className="eyebrow">Finance</p>
-                    <h1 className="page-title">Collections and revenue</h1>
+                    <p className="eyebrow">{t('Finance')}</p>
+                    <h1 className="page-title">{t('Collections and revenue')}</h1>
                     <p className="page-subtitle">
-                        Issued invoices and posted payments for {report.from} through {report.to}.
+                        {t('Issued invoices and posted payments for')} {report.from} {t('through')} {report.to}.
                     </p>
                 </div>
                 <div className="flex gap-2">
                     <Link href="/reports/operations" className="button-quiet">
-                        Operations report
+                        {t('Operations report')}
                     </Link>
                     <a href={`/reports/finance?format=csv&${query}`} className="button-quiet">
                         <Download size={15} />
-                        Download CSV
+                        {t('Download CSV')}
                     </a>
                     <a href={`/reports/finance?format=xlsx&${query}`} className="button-quiet">
                         <Download size={15} />
-                        Download XLSX
+                        {t('Download XLSX')}
                     </a>
                 </div>
             </div>
             <form onSubmit={applyPeriod} className="card mt-6 flex flex-col gap-4 p-5 sm:flex-row sm:items-end">
                 <label className="block sm:min-w-48">
-                    <span className="field-label">From</span>
+                    <span className="field-label">{t('From')}</span>
                     <input
                         className="field"
                         type="date"
@@ -87,53 +90,54 @@ export default function FinanceReportPage({ report }: Props) {
                     />
                 </label>
                 <label className="block sm:min-w-48">
-                    <span className="field-label">To</span>
+                    <span className="field-label">{t('To')}</span>
                     <input className="field" type="date" value={to} onChange={(event) => setTo(event.target.value)} />
                 </label>
                 <button type="submit" className="button-primary">
-                    Apply period
+                    {t('Apply period')}
                 </button>
             </form>
             <div className="mt-8 grid gap-4 md:grid-cols-4">
                 <div className="card p-5">
                     <Receipt className="text-brand" size={20} />
-                    <p className="mt-4 text-sm text-muted">Issued invoices</p>
+                    <p className="mt-4 text-sm text-muted">{t('Issued invoices')}</p>
                     <p className="mt-1 font-display text-2xl font-semibold">{report.invoice_count}</p>
                     <p className="mt-1 text-sm text-muted">{formatAmounts(report.invoiced_by_currency)}</p>
                 </div>
                 <div className="card p-5">
                     <Wallet className="text-brand" size={20} />
-                    <p className="mt-4 text-sm text-muted">Posted payments</p>
+                    <p className="mt-4 text-sm text-muted">{t('Posted payments')}</p>
                     <p className="mt-1 font-display text-2xl font-semibold">{report.payment_count}</p>
                     <p className="mt-1 text-sm text-muted">{formatAmounts(report.collected_by_currency)}</p>
                 </div>
                 <div className="card p-5">
                     <TrendingUp className="text-brand" size={20} />
-                    <p className="mt-4 text-sm text-muted">Collection rate</p>
+                    <p className="mt-4 text-sm text-muted">{t('Collection rate')}</p>
                     <p className="mt-1 font-display text-2xl font-semibold">
                         {formatRates(report.collection_rate_by_currency)}
                     </p>
-                    <p className="mt-1 text-sm text-muted">Collected against invoiced</p>
+                    <p className="mt-1 text-sm text-muted">{t('Collected against invoiced')}</p>
                 </div>
                 <div className="card p-5">
                     <BarChart3 className="text-brand" size={20} />
-                    <p className="mt-4 text-sm text-muted">Open accounts receivable</p>
+                    <p className="mt-4 text-sm text-muted">{t('Open accounts receivable')}</p>
                     <p className="mt-1 font-display text-2xl font-semibold">
                         {formatAmounts(report.outstanding_by_currency)}
                     </p>
-                    <p className="mt-1 text-sm text-muted">Issued invoices less allocations</p>
+                    <p className="mt-1 text-sm text-muted">{t('Issued invoices less allocations')}</p>
                 </div>
             </div>
             <div className="mt-6 card p-6">
-                <h2 className="section-title">Currency detail</h2>
+                <h2 className="section-title">{t('Currency detail')}</h2>
                 <div className="mt-4 divide-y divide-line text-sm">
                     {Object.keys({ ...report.invoiced_by_currency, ...report.collected_by_currency }).map(
                         (currency) => (
                             <div key={currency} className="flex items-center justify-between py-3">
                                 <span className="font-semibold">{currency}</span>
                                 <span className="text-muted">
-                                    Invoiced {formatMoney(report.invoiced_by_currency[currency] ?? 0, currency)} ·
-                                    Collected {formatMoney(report.collected_by_currency[currency] ?? 0, currency)}
+                                    {t('Invoiced')} {formatMoney(report.invoiced_by_currency[currency] ?? 0, currency)}{' '}
+                                    ·{t('Collected')}{' '}
+                                    {formatMoney(report.collected_by_currency[currency] ?? 0, currency)}
                                 </span>
                             </div>
                         ),
@@ -141,17 +145,17 @@ export default function FinanceReportPage({ report }: Props) {
                 </div>
             </div>
             <div className="mt-6 card p-6">
-                <h2 className="section-title">Accounts receivable aging</h2>
+                <h2 className="section-title">{t('Accounts receivable aging')}</h2>
                 <div className="mt-4 overflow-x-auto">
                     <table className="w-full min-w-[720px] text-left text-sm">
                         <thead className="text-xs uppercase tracking-[0.14em] text-muted">
                             <tr>
-                                <th className="pb-3">Currency</th>
-                                <th className="pb-3">Current</th>
-                                <th className="pb-3">1–30 days</th>
-                                <th className="pb-3">31–60 days</th>
-                                <th className="pb-3">61–90 days</th>
-                                <th className="pb-3">90+ days</th>
+                                <th className="pb-3">{t('Currency')}</th>
+                                <th className="pb-3">{t('Current')}</th>
+                                <th className="pb-3">{t('1–30 days')}</th>
+                                <th className="pb-3">{t('31–60 days')}</th>
+                                <th className="pb-3">{t('61–90 days')}</th>
+                                <th className="pb-3">{t('90+ days')}</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-line">
@@ -171,7 +175,7 @@ export default function FinanceReportPage({ report }: Props) {
             </div>
             <div className="mt-6 grid gap-6 lg:grid-cols-2">
                 <div className="card p-6">
-                    <h2 className="section-title">Revenue by plan</h2>
+                    <h2 className="section-title">{t('Revenue by plan')}</h2>
                     <div className="mt-4 divide-y divide-line text-sm">
                         {Object.entries(report.revenue_by_plan).map(([plan, amounts]) => (
                             <div key={plan} className="flex items-center justify-between py-3">
@@ -186,14 +190,14 @@ export default function FinanceReportPage({ report }: Props) {
                     </div>
                 </div>
                 <div className="card p-6">
-                    <h2 className="section-title">Top usage</h2>
+                    <h2 className="section-title">{t('Top usage')}</h2>
                     <div className="mt-4 divide-y divide-line text-sm">
                         {report.top_usage.map((usage) => (
                             <div
                                 key={usage.service_id ?? usage.username}
                                 className="flex items-center justify-between py-3"
                             >
-                                <span className="font-semibold">{usage.username ?? 'Unknown service'}</span>
+                                <span className="font-semibold">{usage.username ?? t('Unknown service')}</span>
                                 <span className="text-muted">{formatBytes(usage.total_octets)}</span>
                             </div>
                         ))}
@@ -202,7 +206,7 @@ export default function FinanceReportPage({ report }: Props) {
             </div>
             <div className="mt-6 grid gap-6 lg:grid-cols-2">
                 <div className="card p-6">
-                    <h2 className="section-title">Margin by POP</h2>
+                    <h2 className="section-title">{t('Margin by POP')}</h2>
                     <div className="mt-4 divide-y divide-line text-sm">
                         {Object.entries(report.margin_by_pop).map(([pop, amounts]) => (
                             <div key={pop} className="py-3">
@@ -215,11 +219,11 @@ export default function FinanceReportPage({ report }: Props) {
                                     </span>
                                 </div>
                                 <p className="mt-1 text-xs text-muted">
-                                    Revenue{' '}
+                                    {t('Revenue')}{' '}
                                     {Object.entries(amounts.revenue_by_currency)
                                         .map(([currency, amount]) => formatMoney(amount, currency))
                                         .join(' · ')}{' '}
-                                    · Upstream cost{' '}
+                                    · {t('Upstream cost')}{' '}
                                     {Object.entries(amounts.upstream_cost_by_currency)
                                         .map(([currency, amount]) => formatMoney(amount, currency))
                                         .join(' · ') || '—'}
@@ -229,13 +233,15 @@ export default function FinanceReportPage({ report }: Props) {
                     </div>
                 </div>
                 <div className="card p-6">
-                    <h2 className="section-title">Collector performance</h2>
+                    <h2 className="section-title">{t('Collector performance')}</h2>
                     <div className="mt-4 divide-y divide-line text-sm">
                         {report.collector_performance.map((collector) => (
                             <div key={collector.collector} className="flex items-center justify-between py-3">
                                 <span>
                                     <span className="block font-semibold">{collector.collector}</span>
-                                    <span className="text-xs text-muted">{collector.payment_count} payment(s)</span>
+                                    <span className="text-xs text-muted">
+                                        {collector.payment_count} {t('payment(s)')}
+                                    </span>
                                 </span>
                                 <span className="text-muted">
                                     {Object.entries(collector.totals_by_currency)
@@ -250,33 +256,33 @@ export default function FinanceReportPage({ report }: Props) {
             <div className="mt-6 card p-6">
                 <div className="grid gap-6 sm:grid-cols-3">
                     <div>
-                        <p className="text-xs font-semibold uppercase tracking-wider text-muted">Retention</p>
+                        <p className="text-xs font-semibold uppercase tracking-wider text-muted">{t('Retention')}</p>
                         <p className="mt-2 font-display text-2xl font-semibold">
                             {report.retention_by_period.retention_rate_percent === null
                                 ? '—'
                                 : `${report.retention_by_period.retention_rate_percent.toFixed(2)}%`}
                         </p>
-                        <p className="mt-1 text-xs text-muted">Based on period-start services</p>
+                        <p className="mt-1 text-xs text-muted">{t('Based on period-start services')}</p>
                     </div>
                     <div>
-                        <p className="text-xs font-semibold uppercase tracking-wider text-muted">Tax recorded</p>
+                        <p className="text-xs font-semibold uppercase tracking-wider text-muted">{t('Tax recorded')}</p>
                         <p className="mt-2 font-display text-2xl font-semibold">
                             {formatAmounts(report.tax_by_currency)}
                         </p>
-                        <p className="mt-1 text-xs text-muted">Issued invoices in the selected period</p>
+                        <p className="mt-1 text-xs text-muted">{t('Issued invoices in the selected period')}</p>
                     </div>
                     <div>
-                        <p className="text-xs font-semibold uppercase tracking-wider text-muted">ARPU</p>
+                        <p className="text-xs font-semibold uppercase tracking-wider text-muted">{t('ARPU')}</p>
                         <p className="mt-2 font-display text-2xl font-semibold">
                             {formatAmounts(report.arpu_by_currency)}
                         </p>
-                        <p className="mt-1 text-xs text-muted">Posted collections per active customer</p>
+                        <p className="mt-1 text-xs text-muted">{t('Posted collections per active customer')}</p>
                     </div>
                 </div>
             </div>
             <div className="mt-6 text-sm text-muted">
-                {report.active_customer_count} active customers · {report.churned_services} churned services in the
-                selected period
+                {report.active_customer_count} {t('active customers')} · {report.churned_services}{' '}
+                {t('churned services in the selected period')}
             </div>
         </AppLayout>
     );
