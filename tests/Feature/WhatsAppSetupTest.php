@@ -45,6 +45,13 @@ it('shows the server-side WhatsApp Web.js status and QR pairing state', function
     app(Tenancy::class)->set($tenant);
     $owner->assignRole('tenant_owner');
     $owner->forceFill(['last_authenticated_at' => now()])->save();
+    WhatsAppAccount::create([
+        'label' => 'Primary WhatsApp',
+        'job' => 'general',
+        'bridge_id' => 'isp-manager',
+        'status' => 'disconnected',
+        'is_active' => true,
+    ]);
 
     $this->actingAs($owner)
         ->get(route('settings.whatsapp'))
@@ -121,6 +128,13 @@ it('queues an audited WhatsApp test message only after the bridge is ready', fun
     app(Tenancy::class)->set($tenant);
     $owner->assignRole('tenant_owner');
     $owner->forceFill(['last_authenticated_at' => now()])->save();
+    WhatsAppAccount::create([
+        'label' => 'Primary WhatsApp',
+        'job' => 'general',
+        'bridge_id' => 'isp-manager',
+        'status' => 'ready',
+        'is_active' => true,
+    ]);
 
     $this->actingAs($owner)
         ->post(route('settings.whatsapp.test'), ['phone' => '+961 (70) 123-456'])
@@ -198,8 +212,21 @@ it('creates, reassigns, disconnects, and returns a WhatsApp account to QR pairin
         ->delete(route('settings.whatsapp.accounts.delete', $deletable->public_id))
         ->assertRedirect(route('settings.whatsapp'));
 
+    app(Tenancy::class)->set($tenant);
     expect(WhatsAppAccount::query()->whereKey($deletable->id)->exists())->toBeFalse();
     Http::assertSent(fn ($request): bool => $request->method() === 'DELETE');
+
+    $remaining = WhatsAppAccount::query()->firstOrFail();
+    $this->actingAs($owner)
+        ->delete(route('settings.whatsapp.accounts.delete', $remaining->public_id))
+        ->assertRedirect(route('settings.whatsapp'));
+
+    app(Tenancy::class)->set($tenant);
+    expect(WhatsAppAccount::query()->count())->toBe(0);
+
+    $setup = app(GetWhatsAppSetupStatus::class)->handle(false, $tenant);
+    expect($setup['status'])->toBe('not_configured')
+        ->and($setup['accounts'])->toBe([]);
 });
 
 it('keeps a WhatsApp account when the bridge cannot confirm deletion', function (): void {

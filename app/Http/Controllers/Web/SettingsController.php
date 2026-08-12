@@ -155,11 +155,6 @@ final class SettingsController extends Controller
 
         $tenant = Tenant::query()->find($user->tenant_id);
         abort_unless($tenant instanceof Tenant, 403);
-        abort_if(
-            $tenant->whatsappAccounts()->where('is_active', true)->count() <= 1,
-            422,
-            'Keep one WhatsApp account configured for this workspace; disconnect it if you only need to re-pair.',
-        );
 
         if (! $delete->handle($whatsappAccount)) {
             return redirect()->route('settings.whatsapp')->with(

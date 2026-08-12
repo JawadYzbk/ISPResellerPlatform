@@ -138,10 +138,6 @@ export default function WhatsAppSettings({ setup }: Props) {
     };
 
     const requestDeleteAccount = (account: WhatsAppAccount) => {
-        if (setup.accounts.length <= 1) {
-            return;
-        }
-
         setAccountToDelete(account);
     };
 
@@ -378,12 +374,7 @@ export default function WhatsAppSettings({ setup }: Props) {
                                         <button
                                             className="button-secondary text-coral"
                                             type="button"
-                                            disabled={setup.accounts.length <= 1}
-                                            title={
-                                                setup.accounts.length <= 1
-                                                    ? t('Keep one WhatsApp account configured for this workspace.')
-                                                    : t('Delete this WhatsApp account and its private bridge session.')
-                                            }
+                                            title={t('Delete this WhatsApp account and its private bridge session.')}
                                             onClick={() => requestDeleteAccount(account)}
                                         >
                                             <Trash2 size={16} /> {t('Delete account')}

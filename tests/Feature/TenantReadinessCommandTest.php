@@ -6,6 +6,7 @@ use App\Models\MessageTemplate;
 use App\Models\Plan;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Models\WhatsAppAccount;
 use App\Support\MessageTemplateProvisioner;
 use App\Support\Tenancy;
 use Illuminate\Console\Command;
@@ -29,6 +30,13 @@ it('reports a tenant readiness checklist and allows optional integration warning
     ]);
 
     app(Tenancy::class)->run($tenant, function () use ($owner): void {
+        WhatsAppAccount::create([
+            'label' => 'Primary WhatsApp',
+            'job' => 'general',
+            'bridge_id' => 'isp-manager',
+            'status' => 'ready',
+            'is_active' => true,
+        ]);
         Role::findOrCreate('tenant_owner', 'web');
         Permission::findOrCreate('settings.manage', 'web');
         Permission::findOrCreate('customers.view', 'web');
@@ -140,6 +148,15 @@ it('does not pass WhatsApp Web.js readiness while the bridge is waiting for pair
     ]);
 
     $tenant = Tenant::factory()->create(['slug' => 'pairing-tenant']);
+    app(Tenancy::class)->run($tenant, function (): void {
+        WhatsAppAccount::create([
+            'label' => 'Primary WhatsApp',
+            'job' => 'general',
+            'bridge_id' => 'isp-manager',
+            'status' => 'disconnected',
+            'is_active' => true,
+        ]);
+    });
 
     $this->artisan('platform:tenant-readiness', ['tenant' => $tenant->slug, '--json' => true])
         ->assertExitCode(Command::FAILURE)

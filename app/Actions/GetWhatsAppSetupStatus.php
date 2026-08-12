@@ -13,7 +13,6 @@ final readonly class GetWhatsAppSetupStatus implements Action
 {
     public function __construct(
         private QrCodeRenderer $qrCode,
-        private EnsureWhatsAppAccount $ensureAccount,
         private SynchronizeWhatsAppAccount $synchronizeAccount,
         private Tenancy $tenancy,
     ) {}
@@ -122,7 +121,16 @@ final readonly class GetWhatsAppSetupStatus implements Action
             ->oldest('id')
             ->get();
         if ($accounts->isEmpty()) {
-            $accounts = collect([$this->ensureAccount->handle($tenant)]);
+            return [
+                'mode' => 'web',
+                'enabled' => true,
+                'configured' => true,
+                'status' => 'not_configured',
+                'detail' => 'No WhatsApp delivery accounts are configured. Add an account to begin QR pairing.',
+                'qr_code' => null,
+                'webhook_configured' => $webhookConfigured,
+                'accounts' => [],
+            ];
         }
 
         $statuses = $accounts->map(fn (WhatsAppAccount $account): array => $this->synchronizeAccount->handle($account, $probeBridge))->values()->all();
