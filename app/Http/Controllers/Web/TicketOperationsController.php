@@ -181,6 +181,7 @@ final class TicketOperationsController extends Controller
             'due_at' => $this->isoDate($ticket->due_at),
             'resolved_at' => $this->isoDate($ticket->resolved_at),
             'closed_at' => $this->isoDate($ticket->closed_at),
+            'satisfaction_rating' => $ticket->satisfaction_rating,
             'message_count' => $ticket->messages_count ?? $ticket->messages->count(),
             'customer' => $ticket->customer === null ? null : [
                 'public_id' => $ticket->customer->public_id,

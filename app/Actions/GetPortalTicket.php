@@ -25,6 +25,7 @@ final readonly class GetPortalTicket implements Action
             'category' => $ticket->metadata['category'] ?? 'other',
             'priority' => $ticket->priority,
             'status' => $ticket->status->value,
+            'satisfaction_rating' => $ticket->satisfaction_rating,
             'description' => $ticket->description,
             'due_at' => $ticket->due_at?->toIso8601String(),
             'messages' => $ticket->messages->map(fn (TicketMessage $message): array => [

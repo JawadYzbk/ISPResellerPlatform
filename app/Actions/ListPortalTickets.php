@@ -21,6 +21,7 @@ final readonly class ListPortalTickets implements Action
                 'category' => $ticket->metadata['category'] ?? 'other',
                 'priority' => $ticket->priority,
                 'status' => $ticket->status->value,
+                'satisfaction_rating' => $ticket->satisfaction_rating,
                 'due_at' => $ticket->due_at?->toIso8601String(),
                 'updated_at' => $ticket->updated_at?->toIso8601String(),
                 'message_count' => $ticket->public_messages_count,

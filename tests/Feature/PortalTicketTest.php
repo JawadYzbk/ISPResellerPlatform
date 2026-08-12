@@ -51,3 +51,44 @@ it('does not disclose another customer ticket through the portal', function (): 
 
     $this->withToken($session['token'])->getJson('/api/v1/portal/southline/me/tickets/'.$ticket->public_id)->assertNotFound();
 });
+
+it('allows a customer to rate a resolved ticket and keeps the rating tenant-owned', function (): void {
+    $tenant = Tenant::create(['name' => 'Northline', 'slug' => 'northline', 'base_currency' => 'USD', 'collection_currency' => 'USD']);
+    app(Tenancy::class)->set($tenant);
+    $customer = Customer::factory()->create(['phone' => '+96170666666']);
+    $ticket = Ticket::create([
+        'customer_id' => $customer->id,
+        'number' => 'TCK-RATE-001',
+        'subject' => 'Connection restored',
+        'description' => 'The connection is working again.',
+        'status' => 'resolved',
+    ]);
+    $result = app(RequestPortalOtp::class)->handle($tenant, $customer->phone);
+    $session = app(VerifyPortalOtp::class)->handle($tenant, $result['challenge']->public_id, $result['code']);
+
+    $this->withToken($session['token'])
+        ->postJson('/api/v1/portal/northline/me/tickets/'.$ticket->public_id.'/rating', ['rating' => 4])
+        ->assertOk()
+        ->assertJsonPath('data.satisfaction_rating', 4);
+
+    app(Tenancy::class)->set($tenant);
+    expect($ticket->refresh()->satisfaction_rating)->toBe(4)
+        ->and($ticket->events()->where('event_type', 'satisfaction_rated')->count())->toBe(1);
+
+    $this->withToken($session['token'])
+        ->postJson('/api/v1/portal/northline/me/tickets/'.$ticket->public_id.'/rating', ['rating' => 6])
+        ->assertUnprocessable();
+
+    app(Tenancy::class)->set($tenant);
+    $openTicket = Ticket::create([
+        'customer_id' => $customer->id,
+        'number' => 'TCK-RATE-002',
+        'subject' => 'Still investigating',
+        'description' => 'This ticket is not resolved yet.',
+        'status' => 'open',
+    ]);
+    $this->withToken($session['token'])
+        ->postJson('/api/v1/portal/northline/me/tickets/'.$openTicket->public_id.'/rating', ['rating' => 5])
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors('rating');
+});

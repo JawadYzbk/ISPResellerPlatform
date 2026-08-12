@@ -67,6 +67,7 @@ Route::prefix('v1')->middleware(ApiResponseHeaders::class)->group(function (): v
         Route::post('/me/tickets', [PortalTicketController::class, 'store'])->middleware('portal.auth')->name('api.portal.tickets.store');
         Route::get('/me/tickets/{ticket}', [PortalTicketController::class, 'show'])->middleware('portal.auth')->name('api.portal.tickets.show');
         Route::post('/me/tickets/{ticket}/messages', [PortalTicketController::class, 'message'])->middleware('portal.auth')->name('api.portal.tickets.messages');
+        Route::post('/me/tickets/{ticket}/rating', [PortalTicketController::class, 'rating'])->middleware('portal.auth')->name('api.portal.tickets.rating');
         Route::get('/billing', [PortalBillingController::class, 'show'])->middleware('portal.auth')->name('api.portal.billing');
         Route::get('/me/balance', [PortalBillingController::class, 'balance'])->middleware('portal.auth')->name('api.portal.balance');
         Route::get('/me/invoices', [PortalBillingController::class, 'invoices'])->middleware('portal.auth')->name('api.portal.invoices');
@@ -88,6 +89,7 @@ Route::prefix('v1')->middleware(ApiResponseHeaders::class)->group(function (): v
         Route::post('/me/tickets', [PortalTicketController::class, 'store'])->name('api.customer.tickets.store');
         Route::get('/me/tickets/{ticket}', [PortalTicketController::class, 'showRoot'])->name('api.customer.tickets.show');
         Route::post('/me/tickets/{ticket}/messages', [PortalTicketController::class, 'messageRoot'])->name('api.customer.tickets.messages');
+        Route::post('/me/tickets/{ticket}/rating', [PortalTicketController::class, 'ratingRoot'])->name('api.customer.tickets.rating');
         Route::get('/me/balance', [PortalBillingController::class, 'balance'])->name('api.customer.balance');
         Route::get('/me/invoices', [PortalBillingController::class, 'invoices'])->name('api.customer.invoices');
         Route::get('/me/invoices/{invoice}/pdf', [PortalBillingController::class, 'invoicePdfRoot'])->name('api.customer.invoices.pdf');

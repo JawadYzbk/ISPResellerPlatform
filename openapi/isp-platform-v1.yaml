@@ -589,6 +589,28 @@ paths:
         '200': { description: Ticket with the appended public message }
         '401': { description: Invalid portal session }
         '404': { description: Ticket not found }
+  /me/tickets/{ticket}/rating:
+    post:
+      summary: Rate a resolved or closed customer-owned ticket
+      parameters:
+        - in: path
+          name: ticket
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [rating]
+              properties:
+                rating: { type: integer, minimum: 1, maximum: 5 }
+      responses:
+        '200': { description: Ticket with the saved satisfaction rating }
+        '401': { description: Invalid portal session }
+        '404': { description: Ticket not found }
+        '422': { description: Ticket is not resolved or rating is invalid }
   /me/balance:
     get:
       summary: Read the authenticated customer's balance

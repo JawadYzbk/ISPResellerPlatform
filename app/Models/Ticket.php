@@ -17,13 +17,14 @@ use Illuminate\Support\Str;
  * @property TicketStatus $status
  * @property CarbonInterface|null $due_at
  * @property CarbonInterface|null $resolved_at
+ * @property int|null $satisfaction_rating
  * @property int $public_messages_count
  */
 class Ticket extends Model
 {
     use Auditable, BelongsToTenant;
 
-    protected $fillable = ['tenant_id', 'public_id', 'number', 'customer_id', 'service_id', 'subject', 'description', 'priority', 'status', 'assigned_to', 'due_at', 'resolved_at', 'closed_at', 'metadata'];
+    protected $fillable = ['tenant_id', 'public_id', 'number', 'customer_id', 'service_id', 'subject', 'description', 'priority', 'status', 'assigned_to', 'due_at', 'resolved_at', 'closed_at', 'satisfaction_rating', 'metadata'];
 
     protected function casts(): array
     {

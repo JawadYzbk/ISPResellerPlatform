@@ -43,7 +43,8 @@ it('lists, creates, replies to, and changes ticket status through the operator A
 
     $this->withToken($token)->postJson('/api/v1/tickets/'.$created.'/status', ['status' => 'in_progress'])
         ->assertOk()
-        ->assertJsonPath('status', 'in_progress');
+        ->assertJsonPath('status', 'in_progress')
+        ->assertJsonPath('satisfaction_rating', null);
 
     expect(Ticket::withoutGlobalScopes()->where('public_id', $created)->firstOrFail()->status->value)->toBe('in_progress');
 });

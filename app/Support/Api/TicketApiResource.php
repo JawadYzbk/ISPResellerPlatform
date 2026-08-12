@@ -24,6 +24,7 @@ final readonly class TicketApiResource
             'category' => $ticket->metadata['category'] ?? 'other',
             'priority' => $ticket->priority,
             'status' => $ticket->status->value,
+            'satisfaction_rating' => $ticket->satisfaction_rating,
             'due_at' => $this->isoDate($ticket->due_at),
             'resolved_at' => $this->isoDate($ticket->resolved_at),
             'closed_at' => $this->isoDate($ticket->closed_at),
