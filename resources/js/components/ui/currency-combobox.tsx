@@ -2,7 +2,11 @@ import { Check, ChevronsUpDown } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
 import { useMediaQuery } from '@/hooks/useMediaQuery';
+import { createTranslator } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
+import { usePage } from '@inertiajs/react';
+
+import type { PageProps } from '@/types';
 
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from './command';
 import { Popover, PopoverContent, PopoverTrigger } from './popover';
@@ -36,6 +40,8 @@ export default function CurrencyCombobox({
     disabled = false,
     emptyLabel,
 }: CurrencyComboboxProps) {
+    const { app } = usePage<PageProps>().props;
+    const t = createTranslator(app.locale);
     const isMobile = useMediaQuery('(max-width: 767px)');
     const [open, setOpen] = useState(false);
     const [query, setQuery] = useState('');
@@ -110,7 +116,7 @@ export default function CurrencyCombobox({
                     className={cn('field flex items-center justify-between gap-2 text-start', className)}
                 >
                     <span className="min-w-0 truncate">
-                        {selected ? `${selected.code} — ${selected.name}` : (emptyLabel ?? 'Select a currency')}
+                        {selected ? `${selected.code} — ${selected.name}` : (emptyLabel ?? t('Select a currency'))}
                     </span>
                     <ChevronsUpDown className="size-4 shrink-0 opacity-60" />
                 </button>
@@ -120,11 +126,11 @@ export default function CurrencyCombobox({
                     <CommandInput
                         value={query}
                         onValueChange={setQuery}
-                        placeholder="Search code or currency"
-                        aria-label="Search currencies"
+                        placeholder={t('Search code or currency')}
+                        aria-label={t('Search currencies')}
                     />
                     <CommandList>
-                        <CommandEmpty>No matching currencies.</CommandEmpty>
+                        <CommandEmpty>{t('No matching currencies.')}</CommandEmpty>
                         <CommandGroup>
                             {emptyLabel && (
                                 <CommandItem value="__empty__" onSelect={() => selectCurrency('')}>
