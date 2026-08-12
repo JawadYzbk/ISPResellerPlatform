@@ -61,6 +61,7 @@ class Tenant extends Model
         return route('tenant.logo', $this).'?v='.substr(hash('sha256', $path), 0, 12);
     }
 
+    /** @return HasMany<User, $this> */
     public function users(): HasMany
     {
         return $this->hasMany(User::class);
