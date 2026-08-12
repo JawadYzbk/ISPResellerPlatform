@@ -136,7 +136,10 @@ test.describe('staff core journeys', () => {
         const openCustomer = page.getByRole('link', { name: 'Open', exact: true }).first();
         await Promise.all([page.waitForURL('**/customers/**'), openCustomer.click()]);
         await expect(page.getByRole('link', { name: 'Take payment', exact: true })).toBeVisible();
-        await page.getByRole('link', { name: 'Take payment', exact: true }).click();
+        await Promise.all([
+            page.waitForURL('**/payments/create'),
+            page.getByRole('link', { name: 'Take payment', exact: true }).click(),
+        ]);
         await expect(page.getByRole('heading', { name: 'Record payment' })).toBeVisible();
         await expect(page.getByLabel('Payment currency')).toBeVisible();
         await expect(page.getByLabel('Conversion rounding')).toBeVisible();

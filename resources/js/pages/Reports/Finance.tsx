@@ -8,16 +8,22 @@ import type { FinanceReport, PageProps } from '@/types';
 
 type Props = PageProps & { report: FinanceReport };
 
-const firstAmount = (amounts: Record<string, number>) => {
-    const currency = Object.keys(amounts)[0] ?? 'USD';
-    return formatMoney(amounts[currency] ?? 0, currency);
+const formatAmounts = (amounts: Record<string, number | null>) => {
+    const entries = Object.entries(amounts);
+
+    return entries.length === 0
+        ? '—'
+        : entries
+              .map(([currency, amount]) => `${currency} ${amount === null ? '—' : formatMoney(amount, currency)}`)
+              .join(' · ');
 };
 
-const firstRate = (rates: Record<string, number | null>) => {
-    const currency = Object.keys(rates)[0];
-    const rate = currency === undefined ? null : rates[currency];
+const formatRates = (rates: Record<string, number | null>) => {
+    const entries = Object.entries(rates);
 
-    return rate === null || rate === undefined ? '—' : `${rate.toFixed(2)}%`;
+    return entries.length === 0
+        ? '—'
+        : entries.map(([currency, rate]) => `${currency} ${rate === null ? '—' : `${rate.toFixed(2)}%`}`).join(' · ');
 };
 
 const formatBytes = (bytes: number) => {
@@ -93,19 +99,19 @@ export default function FinanceReportPage({ report }: Props) {
                     <Receipt className="text-brand" size={20} />
                     <p className="mt-4 text-sm text-muted">Issued invoices</p>
                     <p className="mt-1 font-display text-2xl font-semibold">{report.invoice_count}</p>
-                    <p className="mt-1 text-sm text-muted">{firstAmount(report.invoiced_by_currency)}</p>
+                    <p className="mt-1 text-sm text-muted">{formatAmounts(report.invoiced_by_currency)}</p>
                 </div>
                 <div className="card p-5">
                     <Wallet className="text-brand" size={20} />
                     <p className="mt-4 text-sm text-muted">Posted payments</p>
                     <p className="mt-1 font-display text-2xl font-semibold">{report.payment_count}</p>
-                    <p className="mt-1 text-sm text-muted">{firstAmount(report.collected_by_currency)}</p>
+                    <p className="mt-1 text-sm text-muted">{formatAmounts(report.collected_by_currency)}</p>
                 </div>
                 <div className="card p-5">
                     <TrendingUp className="text-brand" size={20} />
                     <p className="mt-4 text-sm text-muted">Collection rate</p>
                     <p className="mt-1 font-display text-2xl font-semibold">
-                        {firstRate(report.collection_rate_by_currency)}
+                        {formatRates(report.collection_rate_by_currency)}
                     </p>
                     <p className="mt-1 text-sm text-muted">Collected against invoiced</p>
                 </div>
@@ -113,7 +119,7 @@ export default function FinanceReportPage({ report }: Props) {
                     <BarChart3 className="text-brand" size={20} />
                     <p className="mt-4 text-sm text-muted">Open accounts receivable</p>
                     <p className="mt-1 font-display text-2xl font-semibold">
-                        {firstAmount(report.outstanding_by_currency)}
+                        {formatAmounts(report.outstanding_by_currency)}
                     </p>
                     <p className="mt-1 text-sm text-muted">Issued invoices less allocations</p>
                 </div>
@@ -255,14 +261,14 @@ export default function FinanceReportPage({ report }: Props) {
                     <div>
                         <p className="text-xs font-semibold uppercase tracking-wider text-muted">Tax recorded</p>
                         <p className="mt-2 font-display text-2xl font-semibold">
-                            {firstAmount(report.tax_by_currency)}
+                            {formatAmounts(report.tax_by_currency)}
                         </p>
                         <p className="mt-1 text-xs text-muted">Issued invoices in the selected period</p>
                     </div>
                     <div>
                         <p className="text-xs font-semibold uppercase tracking-wider text-muted">ARPU</p>
                         <p className="mt-2 font-display text-2xl font-semibold">
-                            {firstAmount(report.arpu_by_currency as Record<string, number>)}
+                            {formatAmounts(report.arpu_by_currency)}
                         </p>
                         <p className="mt-1 text-xs text-muted">Posted collections per active customer</p>
                     </div>
