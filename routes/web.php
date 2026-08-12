@@ -164,6 +164,9 @@ Route::middleware(['auth', 'tenant', '2fa'])->group(function (): void {
     Route::patch('/operations/ip-pools/{pool}', [IpPoolOperationsController::class, 'updatePool'])->middleware('recent-auth')->name('operations.ip-pools.update');
     Route::post('/operations/ip-pools/{pool}/addresses', [IpPoolOperationsController::class, 'storeAddress'])->middleware('recent-auth')->name('operations.ip-pools.addresses.store');
     Route::get('/billing/invoices', [BillingController::class, 'invoices'])->name('billing.invoices');
+    Route::get('/billing/invoices/create', [BillingController::class, 'createInvoice'])->name('billing.invoices.create');
+    Route::get('/billing/invoices/customers', [BillingController::class, 'invoiceCustomers'])->name('billing.invoices.customers');
+    Route::post('/billing/invoices', [BillingController::class, 'storeInvoice'])->name('billing.invoices.store');
     Route::get('/billing/credit-notes', [BillingController::class, 'creditNotes'])->name('billing.credit-notes');
     Route::get('/billing/invoices/{invoice:public_id}', [BillingController::class, 'showInvoice'])->name('billing.invoices.show');
     Route::get('/billing/invoices/{invoice:public_id}/pdf', [BillingController::class, 'invoicePdf'])->name('billing.invoices.pdf');

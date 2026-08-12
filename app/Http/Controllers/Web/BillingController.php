@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers\Web;
 
+use App\Actions\CreateManualInvoice;
 use App\Actions\GenerateInvoicePdf;
 use App\Actions\GeneratePaymentReceiptPdf;
+use App\Actions\GetCurrencyCatalog;
 use App\Actions\GetInvoiceDetails;
 use App\Actions\GetPaymentDetails;
 use App\Actions\IssueCreditNote;
@@ -12,13 +14,19 @@ use App\Actions\ListCreditNotes;
 use App\Actions\ListInvoices;
 use App\Actions\ListPayments;
 use App\Actions\ReversePayment;
+use App\Actions\SearchBillingCustomers;
 use App\Http\Controllers\Controller;
 use App\Models\CreditNote;
+use App\Models\Currency;
+use App\Models\Customer;
 use App\Models\Invoice;
 use App\Models\Payment;
 use App\Models\PaymentAllocation;
+use App\Models\Tenant;
 use App\Models\User;
+use Carbon\CarbonImmutable;
 use DomainException;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -79,6 +87,89 @@ final class BillingController extends Controller
             'filters' => $request->only(['status', 'search']),
             'canIssue' => $user->can('billing.invoices.issue'),
         ]);
+    }
+
+    public function createInvoice(Request $request, GetCurrencyCatalog $currencyCatalog, SearchBillingCustomers $searchCustomers): Response
+    {
+        $user = $request->user();
+        abort_unless($user instanceof User && $user->can('billing.invoices.issue'), 403);
+
+        $selectedId = (string) ($request->old('customer_id') ?: $request->string('customer_id')->toString());
+        $selectedCustomer = $selectedId === ''
+            ? null
+            : Customer::query()->where('public_id', $selectedId)->first();
+        $customerOptions = $searchCustomers->handle(null);
+        if ($selectedCustomer instanceof Customer && ! collect($customerOptions)->contains('id', $selectedCustomer->public_id)) {
+            array_unshift($customerOptions, $searchCustomers->option($selectedCustomer));
+        }
+
+        $activeCodes = Currency::query()
+            ->where('is_active', true)
+            ->pluck('code')
+            ->map(fn (mixed $code): string => strtoupper((string) $code))
+            ->all();
+        $currencies = array_values(array_filter(
+            $currencyCatalog->handle(),
+            fn (array $currency): bool => in_array($currency['code'], $activeCodes, true),
+        ));
+        $tenant = Tenant::query()->find($user->tenant_id);
+
+        return Inertia::render('Billing/Invoices/Create', [
+            'customerOptions' => $customerOptions,
+            'selectedCustomer' => $selectedCustomer instanceof Customer ? $searchCustomers->option($selectedCustomer) : null,
+            'currencies' => $currencies,
+            'defaultCurrency' => strtoupper((string) ($tenant?->base_currency ?: 'USD')),
+        ]);
+    }
+
+    public function invoiceCustomers(Request $request, SearchBillingCustomers $searchCustomers): JsonResponse
+    {
+        abort_unless($request->user()?->can('billing.invoices.issue') === true, 403);
+
+        $validated = $request->validate(['search' => ['nullable', 'string', 'max:100']]);
+
+        return response()->json(['data' => $searchCustomers->handle($validated['search'] ?? null)]);
+    }
+
+    public function storeInvoice(Request $request, CreateManualInvoice $create, IssueInvoice $issue): RedirectResponse
+    {
+        $user = $request->user();
+        abort_unless($user instanceof User && $user->can('billing.invoices.issue'), 403);
+        $validated = $request->validate([
+            'customer_id' => ['required', 'string', 'max:26'],
+            'description' => ['required', 'string', 'max:255'],
+            'amount' => ['required', 'integer', 'min:1'],
+            'currency' => ['required', 'string', 'size:3', 'regex:/^[A-Za-z]{3}$/'],
+            'due_at' => ['nullable', 'date_format:Y-m-d'],
+            'issue' => ['sometimes', 'boolean'],
+        ]);
+        $customer = Customer::query()->where('public_id', (string) $validated['customer_id'])->firstOrFail();
+        $dueAt = filled($validated['due_at'] ?? null)
+            ? CarbonImmutable::parse((string) $validated['due_at'])->endOfDay()
+            : null;
+        $issued = $request->boolean('issue');
+
+        try {
+            $invoice = $create->handle(
+                $customer,
+                (string) $validated['description'],
+                (int) $validated['amount'],
+                strtoupper((string) $validated['currency']),
+                $dueAt,
+            );
+            if ($issued) {
+                $invoice = $issue->handle($invoice, $user);
+            }
+        } catch (DomainException $exception) {
+            throw ValidationException::withMessages(['amount' => $exception->getMessage()]);
+        }
+
+        return redirect()
+            ->route('billing.invoices.show', $invoice->public_id)
+            ->with('success_title', $issued ? 'Invoice issued' : 'Invoice created')
+            ->with('success', $issued
+                ? "Invoice {$invoice->number} created and issued."
+                : "Invoice {$invoice->number} created.");
     }
 
     public function creditNotes(Request $request, ListCreditNotes $listCreditNotes): Response
