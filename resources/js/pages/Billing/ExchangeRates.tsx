@@ -239,7 +239,7 @@ export default function ExchangeRatesPage({
                             maxLength={80}
                             value={form.data.source}
                             onChange={(event) => form.setData('source', event.target.value)}
-                            placeholder="Treasury desk"
+                            placeholder={t('Treasury desk')}
                         />
                         {form.errors.source && <p className="field-error">{form.errors.source}</p>}
                     </label>
@@ -253,29 +253,29 @@ export default function ExchangeRatesPage({
 
             <form onSubmit={applyFilters} className="card mt-6 flex flex-col gap-4 p-5 sm:flex-row sm:items-end">
                 <label className="block sm:min-w-48">
-                    <span className="field-label">Base currency</span>
+                    <span className="field-label">{t('Base currency')}</span>
                     <CurrencyCombobox
                         id="filter_base_currency"
                         className="field"
                         value={baseCurrency}
                         currencies={currencies}
-                        emptyLabel="All currencies"
+                        emptyLabel={t('All currencies')}
                         onChange={setBaseCurrency}
                     />
                 </label>
                 <label className="block sm:min-w-48">
-                    <span className="field-label">Quote currency</span>
+                    <span className="field-label">{t('Quote currency')}</span>
                     <CurrencyCombobox
                         id="filter_quote_currency"
                         className="field"
                         value={quoteCurrency}
                         currencies={currencies}
-                        emptyLabel="All currencies"
+                        emptyLabel={t('All currencies')}
                         onChange={setQuoteCurrency}
                     />
                 </label>
                 <button type="submit" className="button-secondary">
-                    Apply filters
+                    {t('Apply filters')}
                 </button>
             </form>
 
