@@ -124,7 +124,7 @@ final class CredentialOperationsController extends Controller
             'contract_reference' => ['nullable', 'string', 'max:64'],
             'unit_cost_amount' => ['nullable', 'integer', 'min:0'],
             'total_cost_amount' => ['nullable', 'integer', 'min:0'],
-            'currency' => ['nullable', 'string', 'size:3', Rule::exists('currencies', 'code')->where('is_active', true)],
+            'currency' => ['nullable', 'string', 'size:3', Rule::exists('currencies', 'code')->where('tenant_id', $user->tenant->id)->where('is_active', true)],
             'expires_at' => ['nullable', 'date'],
             'file' => ['required', 'file', 'mimes:csv,txt', 'max:10240'],
         ]);

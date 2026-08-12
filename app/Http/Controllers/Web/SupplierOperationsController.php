@@ -72,7 +72,7 @@ final class SupplierOperationsController extends Controller
     public function storeContract(Request $request, Supplier $supplier, CreateSupplierContract $create): RedirectResponse
     {
         $this->ensureManager($request);
-        $validated = $request->validate($this->contractRules());
+        $validated = $request->validate($this->contractRules($request->user()->tenant_id));
         $create->handle($supplier, $validated);
 
         return redirect()->route('operations.suppliers')->with('success', 'Supplier contract recorded.');
@@ -86,7 +86,7 @@ final class SupplierOperationsController extends Controller
             'period_start' => ['required', 'date'],
             'period_end' => ['required', 'date', 'after_or_equal:period_start'],
             'amount' => ['required', 'integer', 'min:1'],
-            'currency' => ['required', 'string', 'size:3', Rule::exists('currencies', 'code')->where('is_active', true)],
+            'currency' => ['required', 'string', 'size:3', Rule::exists('currencies', 'code')->where('tenant_id', $request->user()->tenant_id)->where('is_active', true)],
             'notes' => ['nullable', 'string', 'max:2000'],
         ]);
         $create->handle($supplier, $validated);
@@ -109,11 +109,11 @@ final class SupplierOperationsController extends Controller
     }
 
     /** @return array<string, array<int, mixed>> */
-    private function contractRules(): array
+    private function contractRules(int $tenantId): array
     {
         return [
             'service_type' => ['required', 'string', 'max:64'],
-            'wholesale_currency' => ['required', 'string', 'size:3', Rule::exists('currencies', 'code')->where('is_active', true)],
+            'wholesale_currency' => ['required', 'string', 'size:3', Rule::exists('currencies', 'code')->where('tenant_id', $tenantId)->where('is_active', true)],
             'effective_from' => ['required', 'date'],
             'effective_to' => ['nullable', 'date', 'after_or_equal:effective_from'],
             'status' => ['required', Rule::in(['active', 'suspended', 'expired'])],
