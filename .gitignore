@@ -15,6 +15,7 @@
 /auth.json
 /node_modules
 /integrations/whatsapp-web/node_modules
+/integrations/whatsapp-web/.wwebjs_auth
 /public/build
 /public/fonts-manifest.dev.json
 /public/hot
