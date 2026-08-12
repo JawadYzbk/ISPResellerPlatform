@@ -75,8 +75,8 @@ All tables are `[T]` (tenant-scoped). Public IDs are UUIDv7/ULID (`02` conventio
 | `credential_batches` | `supplier_id, contract_id nullable, purchase_reference, quantity, unit_cost_amount, total_cost_amount, currency, imported_at, imported_by_id, mapper_version` |
 | `upstream_credentials` | `batch_id, public_label, username_encrypted, secret_encrypted, pin_encrypted nullable, username_hash (keyed, for exact lookup), quota_bytes nullable, expires_at nullable, profile nullable, state (imported\|available\|reserved\|assigned\|active\|expired\|revoked\|invalid), version` |
 | `credential_assignments` | `credential_id, service_id, reserved_at, assigned_at, released_at nullable, reason, actor_id`; **partial unique** `(credential_id) WHERE released_at IS NULL` (one active assignment) |
-| `supplier_bills` | `supplier_id, reference, period_start, period_end, amount, currency, status (open\|paid), journal source`; operational payables tracking, **not** a full AP ledger |
-| `supplier_payments` | `supplier_bill_id, amount, currency, paid_at, method, reference, actor_id` |
+| `supplier_bills` | `supplier_id, reference, period_start, period_end, amount, currency, status (open\|paid), journal source`; bill posting debits supplier cost and credits supplier payable |
+| `supplier_payments` | `supplier_bill_id, amount, currency, paid_at, method, reference, actor_id, journal source`; payment posting debits supplier payable and credits cash |
 
 ### 2.4 Secrets discipline (mandatory)
 
