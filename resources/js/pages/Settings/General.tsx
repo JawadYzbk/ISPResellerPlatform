@@ -1,9 +1,11 @@
 import CurrencyCombobox, { type CurrencyOption } from '@/components/ui/currency-combobox';
 import ResponsiveSelect from '@/components/ui/responsive-select';
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import { AlertCircle, ArrowLeft, CheckCircle2, ImagePlus, Save, Settings2 } from 'lucide-react';
 
 import AppLayout from '@/layouts/AppLayout';
+import { createTranslator } from '@/lib/i18n';
+import type { PageProps } from '@/types';
 
 type Tenant = { public_id: string; name: string; slug: string; logo_url: string | null };
 type Settings = {
@@ -61,6 +63,8 @@ function SetupSignal({ label, detail, ready, href }: { label: string; detail: st
 }
 
 export default function GeneralSettings({ tenant, settings, currencies, payments, setup }: Props) {
+    const { app } = usePage<PageProps>().props;
+    const t = createTranslator(app.locale);
     const form = useForm<FormSettings>({ ...settings, name: tenant.name, logo: null });
     const whatsappReady = setup.whatsapp.mode === 'web' ? setup.whatsapp.status === 'ready' : setup.whatsapp.configured;
     const whatsappDetail = whatsappReady
@@ -88,18 +92,20 @@ export default function GeneralSettings({ tenant, settings, currencies, payments
 
     return (
         <AppLayout>
-            <Head title="Workspace settings" />
+            <Head title={t('Workspace settings')} />
             <Link
                 href="/dashboard"
                 className="mb-6 inline-flex items-center gap-2 text-sm font-semibold text-muted hover:text-brand"
             >
-                <ArrowLeft size={16} /> Back to dashboard
+                <ArrowLeft size={16} /> {t('Back to dashboard')}
             </Link>
             <div className="max-w-4xl">
-                <p className="eyebrow">Administration · {tenant.slug}</p>
-                <h1 className="page-title">Workspace settings</h1>
+                <p className="eyebrow">
+                    {t('Administration')} · {tenant.slug}
+                </p>
+                <h1 className="page-title">{t('Workspace settings')}</h1>
                 <p className="page-subtitle">
-                    Control tenant identity, business time, currency, and automation defaults.
+                    {t('Control tenant identity, business time, currency, and automation defaults.')}
                 </p>
                 <div className="mt-5 flex gap-2">
                     <Link href="/settings/general" className="button-secondary">
@@ -118,23 +124,23 @@ export default function GeneralSettings({ tenant, settings, currencies, payments
                 <section id="payment-channels" className="card mt-6 p-5">
                     <div className="flex items-center justify-between gap-4">
                         <div>
-                            <h2 className="section-title">Payment channels</h2>
-                            <p className="mt-1 text-sm text-muted">What the workspace can offer today.</p>
+                            <h2 className="section-title">{t('Payment channels')}</h2>
+                            <p className="mt-1 text-sm text-muted">{t('What the workspace can offer today.')}</p>
                         </div>
                         <Link href="/billing/payments" className="button-quiet">
-                            Payment ledger
+                            {t('Payment ledger')}
                         </Link>
                     </div>
                     <div className="mt-5 grid gap-4 md:grid-cols-3">
                         <div className="rounded-xl border border-line bg-sand/50 p-4">
-                            <p className="text-sm font-semibold">Cash collection</p>
+                            <p className="text-sm font-semibold">{t('Cash collection')}</p>
                             <p className="mt-1 text-xs text-muted">{payments.cash.detail}</p>
                             <Link href="/billing/shifts" className="mt-3 inline-flex text-xs font-semibold text-brand">
-                                Open cash shifts →
+                                {t('Open cash shifts')} →
                             </Link>
                         </div>
                         <div className="rounded-xl border border-line bg-sand/50 p-4">
-                            <p className="text-sm font-semibold">Whish Pay QR</p>
+                            <p className="text-sm font-semibold">{t('Whish Pay QR')}</p>
                             <p
                                 className={`mt-1 text-xs ${payments.whish.ready ? 'text-emerald-700' : 'text-amber-700'}`}
                             >
@@ -144,11 +150,11 @@ export default function GeneralSettings({ tenant, settings, currencies, payments
                                 href={payments.whish.ready ? '/customers' : '/settings/readiness'}
                                 className="mt-3 inline-flex text-xs font-semibold text-brand"
                             >
-                                {payments.whish.ready ? 'Open customer collection' : 'Open readiness checklist'} →
+                                {payments.whish.ready ? t('Open customer collection') : t('Open readiness checklist')} →
                             </Link>
                         </div>
                         <div className="rounded-xl border border-line bg-sand/50 p-4">
-                            <p className="text-sm font-semibold">Stripe portal</p>
+                            <p className="text-sm font-semibold">{t('Stripe portal')}</p>
                             <p
                                 className={`mt-1 text-xs ${payments.stripe.ready ? 'text-emerald-700' : 'text-amber-700'}`}
                             >
@@ -158,7 +164,7 @@ export default function GeneralSettings({ tenant, settings, currencies, payments
                                 href={payments.stripe.ready ? '#payment-channels' : '/settings/readiness'}
                                 className="mt-3 inline-flex text-xs font-semibold text-brand"
                             >
-                                {payments.stripe.ready ? 'Review customer portal' : 'Open readiness checklist'} →
+                                {payments.stripe.ready ? t('Review customer portal') : t('Open readiness checklist')} →
                             </Link>
                         </div>
                     </div>
@@ -166,11 +172,13 @@ export default function GeneralSettings({ tenant, settings, currencies, payments
                 <section className="card mt-6 p-5">
                     <div className="flex items-center justify-between gap-4">
                         <div>
-                            <h2 className="section-title">Setup signals</h2>
-                            <p className="mt-1 text-sm text-muted">The remaining workspace checks are visible here.</p>
+                            <h2 className="section-title">{t('Setup signals')}</h2>
+                            <p className="mt-1 text-sm text-muted">
+                                {t('The remaining workspace checks are visible here.')}
+                            </p>
                         </div>
                         <Link href="/settings/whatsapp" className="button-quiet">
-                            Open messaging setup
+                            {t('Open messaging setup')}
                         </Link>
                     </div>
                     <div className="mt-5 grid gap-4 md:grid-cols-3">
@@ -202,11 +210,11 @@ export default function GeneralSettings({ tenant, settings, currencies, payments
                     <section id="workspace-identity">
                         <div className="flex items-center gap-2">
                             <Settings2 size={18} className="text-brand" />
-                            <h2 className="section-title">Workspace identity</h2>
+                            <h2 className="section-title">{t('Workspace identity')}</h2>
                         </div>
                         <div className="mt-5 grid gap-5 sm:grid-cols-2">
                             <label>
-                                <span className="field-label">Workspace name</span>
+                                <span className="field-label">{t('Workspace name')}</span>
                                 <input
                                     className="field"
                                     value={form.data.name}
@@ -215,7 +223,7 @@ export default function GeneralSettings({ tenant, settings, currencies, payments
                                 {form.errors.name && <p className="field-error">{form.errors.name}</p>}
                             </label>
                             <label className="sm:col-span-2">
-                                <span className="field-label">Tenant logo</span>
+                                <span className="field-label">{t('Tenant logo')}</span>
                                 <div className="mt-2 flex flex-wrap items-center gap-4">
                                     <div className="grid size-16 place-items-center overflow-hidden rounded-2xl bg-brand-soft text-brand">
                                         {tenant.logo_url ? (
@@ -244,12 +252,14 @@ export default function GeneralSettings({ tenant, settings, currencies, payments
                                 </div>
                             </label>
                             <label>
-                                <span className="field-label">Tenant slug</span>
+                                <span className="field-label">{t('Tenant slug')}</span>
                                 <input className="field bg-sand" value={tenant.slug} disabled />
-                                <p className="mt-1 text-xs text-muted">The public portal URL is not changed here.</p>
+                                <p className="mt-1 text-xs text-muted">
+                                    {t('The public portal URL is not changed here.')}
+                                </p>
                             </label>
                             <label>
-                                <span className="field-label">Locale</span>
+                                <span className="field-label">{t('Locale')}</span>
                                 <ResponsiveSelect
                                     className="field"
                                     value={form.data.locale}
@@ -257,13 +267,13 @@ export default function GeneralSettings({ tenant, settings, currencies, payments
                                         form.setData('locale', event.target.value as Settings['locale'])
                                     }
                                 >
-                                    <option value="en">English</option>
-                                    <option value="ar">Arabic</option>
-                                    <option value="fr">French</option>
+                                    <option value="en">{t('English')}</option>
+                                    <option value="ar">{t('Arabic')}</option>
+                                    <option value="fr">{t('French')}</option>
                                 </ResponsiveSelect>
                             </label>
                             <label>
-                                <span className="field-label">Timezone</span>
+                                <span className="field-label">{t('Timezone')}</span>
                                 <input
                                     className="field"
                                     value={form.data.timezone}
@@ -275,13 +285,13 @@ export default function GeneralSettings({ tenant, settings, currencies, payments
                         </div>
                     </section>
                     <section id="money-display" className="border-t border-line pt-7">
-                        <h2 className="section-title">Money and display</h2>
+                        <h2 className="section-title">{t('Money and display')}</h2>
                         <div className="mt-5 grid gap-5 sm:grid-cols-2">
                             <label>
-                                <span className="field-label">Base currency</span>
+                                <span className="field-label">{t('Base currency')}</span>
                                 <CurrencyCombobox
                                     id="base_currency"
-                                    aria-label="Base currency"
+                                    aria-label={t('Base currency')}
                                     currencies={currencies}
                                     value={form.data.base_currency}
                                     onChange={(value) => form.setData('base_currency', value)}
@@ -291,10 +301,10 @@ export default function GeneralSettings({ tenant, settings, currencies, payments
                                 )}
                             </label>
                             <label>
-                                <span className="field-label">Collection currency</span>
+                                <span className="field-label">{t('Collection currency')}</span>
                                 <CurrencyCombobox
                                     id="collection_currency"
-                                    aria-label="Collection currency"
+                                    aria-label={t('Collection currency')}
                                     currencies={currencies}
                                     value={form.data.collection_currency}
                                     onChange={(value) => form.setData('collection_currency', value)}
@@ -304,7 +314,7 @@ export default function GeneralSettings({ tenant, settings, currencies, payments
                                 )}
                             </label>
                             <label>
-                                <span className="field-label">Date format</span>
+                                <span className="field-label">{t('Date format')}</span>
                                 <input
                                     className="field"
                                     value={form.data.date_format}
@@ -312,7 +322,7 @@ export default function GeneralSettings({ tenant, settings, currencies, payments
                                 />
                             </label>
                             <label>
-                                <span className="field-label">Time format</span>
+                                <span className="field-label">{t('Time format')}</span>
                                 <input
                                     className="field"
                                     value={form.data.time_format}
@@ -326,14 +336,14 @@ export default function GeneralSettings({ tenant, settings, currencies, payments
                                 checked={form.data.rtl}
                                 onChange={(event) => form.setData('rtl', event.target.checked)}
                             />
-                            Prefer right-to-left layout for this workspace
+                            {t('Prefer right-to-left layout for this workspace')}
                         </label>
                     </section>
                     <section className="border-t border-line pt-7">
-                        <h2 className="section-title">Automation windows</h2>
+                        <h2 className="section-title">{t('Automation windows')}</h2>
                         <div className="mt-5 grid gap-5 sm:grid-cols-2">
                             <label>
-                                <span className="field-label">Notification quiet start</span>
+                                <span className="field-label">{t('Notification quiet start')}</span>
                                 <input
                                     className="field"
                                     type="time"
@@ -342,7 +352,7 @@ export default function GeneralSettings({ tenant, settings, currencies, payments
                                 />
                             </label>
                             <label>
-                                <span className="field-label">Notification quiet end</span>
+                                <span className="field-label">{t('Notification quiet end')}</span>
                                 <input
                                     className="field"
                                     type="time"
@@ -388,7 +398,7 @@ export default function GeneralSettings({ tenant, settings, currencies, payments
                     </section>
                     <div className="flex justify-end border-t border-line pt-5">
                         <button className="button-primary" disabled={form.processing}>
-                            <Save size={16} /> Save settings
+                            <Save size={16} /> {t('Save settings')}
                         </button>
                     </div>
                 </form>

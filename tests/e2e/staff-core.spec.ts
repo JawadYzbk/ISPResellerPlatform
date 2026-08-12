@@ -272,6 +272,33 @@ test.describe('staff core journeys', () => {
         }
     });
 
+    test('localizes workspace currency and WhatsApp setup in French', async ({ page }) => {
+        test.setTimeout(90_000);
+        await signIn(page);
+        await page.goto('/profile');
+        try {
+            await page.getByRole('combobox').click();
+            await page.getByRole('option', { name: /^(French|Français|الفرنسية)$/ }).click();
+            await Promise.all([
+                page.waitForResponse(
+                    (response) => response.url().endsWith('/profile') && response.request().method() === 'PATCH',
+                ),
+                page.getByRole('button', { name: /^(Save profile|Enregistrer le profil|حفظ الملف الشخصي)$/ }).click(),
+            ]);
+            await page.goto('/settings/general');
+            await expect(page.getByRole('heading', { name: 'Paramètres de l’espace de travail' })).toBeVisible();
+            await expect(page.getByText('Devise de base', { exact: true })).toBeVisible();
+            await page.goto('/settings/whatsapp');
+            await expect(page.getByRole('heading', { name: 'Livraison WhatsApp' })).toBeVisible();
+            await expect(
+                page.getByRole('heading', { name: 'Jumeler et affecter les comptes de livraison' }),
+            ).toBeVisible();
+            await expect(page.getByRole('button', { name: 'Ajouter un compte' })).toBeVisible();
+        } finally {
+            await restoreEnglishProfile(page);
+        }
+    });
+
     test('uses shadcn selects on desktop and the native fallback only on mobile', async ({ page }) => {
         await signIn(page);
         await page.goto('/settings/general');

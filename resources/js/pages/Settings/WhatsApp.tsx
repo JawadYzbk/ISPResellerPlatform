@@ -1,4 +1,4 @@
-import { Head, Link, router, useForm } from '@inertiajs/react';
+import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
 import {
     ArrowLeft,
     CheckCircle2,
@@ -27,6 +27,8 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import AppLayout from '@/layouts/AppLayout';
+import { createTranslator } from '@/lib/i18n';
+import type { PageProps } from '@/types';
 
 type Setup = {
     mode: 'cloud' | 'web';
@@ -122,6 +124,8 @@ const statusLabels: Record<string, string> = {
 };
 
 export default function WhatsAppSettings({ setup }: Props) {
+    const { app } = usePage<PageProps>().props;
+    const t = createTranslator(app.locale);
     const ready =
         setup.mode === 'web'
             ? setup.accounts.some((account) => account.status === 'ready')
@@ -202,46 +206,47 @@ export default function WhatsAppSettings({ setup }: Props) {
 
     return (
         <AppLayout>
-            <Head title="WhatsApp setup" />
+            <Head title={t('WhatsApp setup')} />
             <Link
                 href="/settings/general"
                 className="mb-6 inline-flex items-center gap-2 text-sm font-semibold text-muted hover:text-brand"
             >
-                <ArrowLeft size={16} /> Back to workspace settings
+                <ArrowLeft size={16} /> {t('Back to workspace settings')}
             </Link>
             <div className="max-w-4xl">
-                <p className="eyebrow">Messaging setup</p>
-                <h1 className="page-title">WhatsApp delivery</h1>
+                <p className="eyebrow">{t('Messaging setup')}</p>
+                <h1 className="page-title">{t('WhatsApp delivery')}</h1>
                 <p className="page-subtitle">
-                    Check the configured provider and pair the private WhatsApp Web.js bridge without exposing its token
-                    to the browser.
+                    {t(
+                        'Check the configured provider and pair the private WhatsApp Web.js bridge without exposing its token to the browser.',
+                    )}
                 </p>
 
                 <div className="mt-8 grid gap-5 sm:grid-cols-3">
                     <div className="card p-5">
-                        <p className="eyebrow">Provider</p>
+                        <p className="eyebrow">{t('Provider')}</p>
                         <p className="mt-3 text-lg font-semibold">
                             {setup.mode === 'web' ? 'WhatsApp Web.js' : 'Cloud API'}
                         </p>
-                        <p className="mt-1 text-sm text-muted">{setup.enabled ? 'Enabled' : 'Not enabled'}</p>
+                        <p className="mt-1 text-sm text-muted">{setup.enabled ? t('Enabled') : t('Not enabled')}</p>
                     </div>
                     <div className="card p-5">
-                        <p className="eyebrow">Bridge status</p>
+                        <p className="eyebrow">{t('Bridge status')}</p>
                         <p
                             className={`mt-3 text-lg font-semibold ${problem ? 'text-coral' : ready ? 'text-emerald-700' : 'text-amber-700'}`}
                         >
                             {statusLabels[setup.status] ?? setup.status}
                         </p>
-                        <p className="mt-1 text-sm text-muted">Status is read server-side.</p>
+                        <p className="mt-1 text-sm text-muted">{t('Status is read server-side.')}</p>
                     </div>
                     <div className="card p-5">
-                        <p className="eyebrow">Signed callback</p>
+                        <p className="eyebrow">{t('Signed callback')}</p>
                         <p
                             className={`mt-3 text-lg font-semibold ${setup.webhook_configured ? 'text-emerald-700' : 'text-amber-700'}`}
                         >
-                            {setup.webhook_configured ? 'Configured' : 'Missing'}
+                            {setup.webhook_configured ? t('Configured') : t('Missing')}
                         </p>
-                        <p className="mt-1 text-sm text-muted">Required for delivery receipts.</p>
+                        <p className="mt-1 text-sm text-muted">{t('Required for delivery receipts.')}</p>
                     </div>
                 </div>
 
@@ -249,7 +254,7 @@ export default function WhatsAppSettings({ setup }: Props) {
                     <div>
                         <div className="flex items-center gap-2 text-brand">
                             <MessageCircle size={18} />
-                            <h2 className="section-title">Pairing and delivery</h2>
+                            <h2 className="section-title">{t('Pairing and delivery')}</h2>
                         </div>
                         <p className="mt-3 text-sm text-muted">
                             {setup.mode === 'web'
@@ -265,10 +270,10 @@ export default function WhatsAppSettings({ setup }: Props) {
                         )}
                         <div className="mt-5 flex flex-wrap gap-2">
                             <Link href="/settings/whatsapp" className="button-secondary">
-                                <RefreshCw size={16} /> Refresh status
+                                <RefreshCw size={16} /> {t('Refresh status')}
                             </Link>
                             <Link href="/settings/general" className="button-secondary">
-                                Workspace settings
+                                {t('Workspace settings')}
                             </Link>
                         </div>
                     </div>
@@ -297,8 +302,8 @@ export default function WhatsAppSettings({ setup }: Props) {
                     <section className="card mt-6 p-6">
                         <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                             <div>
-                                <p className="eyebrow">Workspace accounts</p>
-                                <h2 className="section-title mt-2">Pair and assign delivery accounts</h2>
+                                <p className="eyebrow">{t('Workspace accounts')}</p>
+                                <h2 className="section-title mt-2">{t('Pair and assign delivery accounts')}</h2>
                                 <p className="mt-2 text-sm text-muted">
                                     Each account has its own private bridge session. Assign a job so billing, support,
                                     or operations messages use the intended phone number.
@@ -311,17 +316,17 @@ export default function WhatsAppSettings({ setup }: Props) {
                             className="mt-5 grid gap-3 rounded-xl border border-line bg-sand/50 p-4 sm:grid-cols-[minmax(0,1fr)_220px_auto] sm:items-end"
                         >
                             <label>
-                                <span className="field-label">Account label</span>
+                                <span className="field-label">{t('Account label')}</span>
                                 <input
                                     className="field"
-                                    placeholder="Billing phone"
+                                    placeholder={t('Billing phone')}
                                     value={createForm.data.label}
                                     onChange={(event) => createForm.setData('label', event.target.value)}
                                 />
                                 {createForm.errors.label && <p className="field-error">{createForm.errors.label}</p>}
                             </label>
                             <label>
-                                <span className="field-label">Assigned job</span>
+                                <span className="field-label">{t('Assigned job')}</span>
                                 <ResponsiveSelect
                                     name="job"
                                     options={jobOptions}
@@ -331,7 +336,7 @@ export default function WhatsAppSettings({ setup }: Props) {
                                 {createForm.errors.job && <p className="field-error">{createForm.errors.job}</p>}
                             </label>
                             <button className="button-primary" disabled={createForm.processing}>
-                                <Plus size={16} /> Add account
+                                <Plus size={16} /> {t('Add account')}
                             </button>
                         </form>
 
@@ -344,7 +349,7 @@ export default function WhatsAppSettings({ setup }: Props) {
                                             <p className="mt-1 text-sm text-muted">
                                                 {account.phone
                                                     ? `+${account.phone}`
-                                                    : 'Phone will appear after pairing'}
+                                                    : t('Phone will appear after pairing')}
                                                 {account.push_name ? ` · ${account.push_name}` : ''}
                                             </p>
                                         </div>
@@ -360,7 +365,7 @@ export default function WhatsAppSettings({ setup }: Props) {
                                         className="mt-4 grid gap-3 sm:grid-cols-[minmax(0,1fr)_190px_auto] sm:items-end"
                                     >
                                         <label>
-                                            <span className="field-label">Label</span>
+                                            <span className="field-label">{t('Label')}</span>
                                             <input
                                                 className="field"
                                                 name="label"
@@ -369,7 +374,7 @@ export default function WhatsAppSettings({ setup }: Props) {
                                             />
                                         </label>
                                         <label>
-                                            <span className="field-label">Job</span>
+                                            <span className="field-label">{t('Job')}</span>
                                             <ResponsiveSelect
                                                 name="job"
                                                 options={jobOptions}
@@ -380,7 +385,7 @@ export default function WhatsAppSettings({ setup }: Props) {
                                             />
                                         </label>
                                         <button className="button-secondary" type="submit">
-                                            <Save size={16} /> Save
+                                            <Save size={16} /> {t('Save')}
                                         </button>
                                     </form>
 
@@ -390,7 +395,7 @@ export default function WhatsAppSettings({ setup }: Props) {
                                             type="button"
                                             onClick={() => disconnectAccount(account)}
                                         >
-                                            <Link2Off size={16} /> Disconnect and pair again
+                                            <Link2Off size={16} /> {t('Disconnect and pair again')}
                                         </button>
                                         <button
                                             className="button-secondary text-coral"
@@ -403,7 +408,7 @@ export default function WhatsAppSettings({ setup }: Props) {
                                             }
                                             onClick={() => requestDeleteAccount(account)}
                                         >
-                                            <Trash2 size={16} /> Delete account
+                                            <Trash2 size={16} /> {t('Delete account')}
                                         </button>
                                         {account.last_ready_at && (
                                             <span className="text-xs text-muted">
@@ -446,7 +451,7 @@ export default function WhatsAppSettings({ setup }: Props) {
                 >
                     <AlertDialogContent>
                         <AlertDialogHeader>
-                            <AlertDialogTitle>Delete this WhatsApp account?</AlertDialogTitle>
+                            <AlertDialogTitle>{t('Delete this WhatsApp account?')}</AlertDialogTitle>
                             <AlertDialogDescription>
                                 {accountToDelete
                                     ? `This removes ${accountToDelete.label}, its bridge session, and its pairing data. Message history stays in the ledger.`
@@ -454,16 +459,16 @@ export default function WhatsAppSettings({ setup }: Props) {
                             </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
-                            <AlertDialogCancel>Keep account</AlertDialogCancel>
-                            <AlertDialogAction onClick={deleteAccount}>Delete account</AlertDialogAction>
+                            <AlertDialogCancel>{t('Keep account')}</AlertDialogCancel>
+                            <AlertDialogAction onClick={deleteAccount}>{t('Delete account')}</AlertDialogAction>
                         </AlertDialogFooter>
                     </AlertDialogContent>
                 </AlertDialog>
 
                 <section className="card mt-6 p-6">
                     <div>
-                        <p className="eyebrow">Controlled delivery check</p>
-                        <h2 className="section-title mt-2">Send one test message</h2>
+                        <p className="eyebrow">{t('Controlled delivery check')}</p>
+                        <h2 className="section-title mt-2">{t('Send one test message')}</h2>
                         <p className="mt-2 text-sm text-muted">
                             Verify delivery to a dedicated operator phone before enabling customer notifications. The
                             recipient is normalized server-side and the test is recorded in the message ledger.
@@ -474,7 +479,7 @@ export default function WhatsAppSettings({ setup }: Props) {
                         className="mt-5 grid gap-3 sm:grid-cols-[minmax(0,1fr)_220px_auto] sm:items-end"
                     >
                         <label className="min-w-0 flex-1">
-                            <span className="field-label">Recipient phone with country code</span>
+                            <span className="field-label">{t('Recipient phone with country code')}</span>
                             <input
                                 className="field"
                                 type="tel"
@@ -487,7 +492,7 @@ export default function WhatsAppSettings({ setup }: Props) {
                         </label>
                         {setup.accounts.length > 0 && (
                             <label>
-                                <span className="field-label">Send through</span>
+                                <span className="field-label">{t('Send through')}</span>
                                 <ResponsiveSelect
                                     name="account_id"
                                     options={setup.accounts.map((account) => ({
@@ -500,7 +505,7 @@ export default function WhatsAppSettings({ setup }: Props) {
                             </label>
                         )}
                         <button className="button-primary" disabled={testForm.processing || !ready}>
-                            Send test message
+                            {t('Send test message')}
                         </button>
                     </form>
                     {!ready && (
@@ -512,7 +517,7 @@ export default function WhatsAppSettings({ setup }: Props) {
 
                 <div className="mt-6 rounded-xl border border-line bg-white px-5 py-4 text-sm text-muted">
                     <div className="flex items-center gap-2 font-semibold text-ink">
-                        <QrCode size={16} className="text-brand" /> Operational boundary
+                        <QrCode size={16} className="text-brand" /> {t('Operational boundary')}
                     </div>
                     <p className="mt-2">
                         WhatsApp Web.js is an unofficial client. Pair a dedicated business account, keep the bridge
