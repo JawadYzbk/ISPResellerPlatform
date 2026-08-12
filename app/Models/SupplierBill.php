@@ -17,12 +17,13 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property int $amount
  * @property string $currency
  * @property string $status
+ * @property int|null $journal_entry_id
  */
 class SupplierBill extends Model
 {
     use Auditable, BelongsToTenant;
 
-    protected $fillable = ['tenant_id', 'supplier_id', 'reference', 'period_start', 'period_end', 'amount', 'currency', 'status', 'notes'];
+    protected $fillable = ['tenant_id', 'supplier_id', 'reference', 'period_start', 'period_end', 'amount', 'currency', 'status', 'notes', 'journal_entry_id'];
 
     protected function casts(): array
     {
@@ -39,5 +40,11 @@ class SupplierBill extends Model
     public function payments(): HasMany
     {
         return $this->hasMany(SupplierPayment::class);
+    }
+
+    /** @return BelongsTo<JournalEntry, $this> */
+    public function journalEntry(): BelongsTo
+    {
+        return $this->belongsTo(JournalEntry::class);
     }
 }

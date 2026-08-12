@@ -70,6 +70,8 @@ final class TenantProvisioner
                 ['code' => '1210', 'name' => 'Partner Wallets', 'category' => 'liability', 'normal_balance' => 'credit'],
                 ['code' => '2210', 'name' => 'Partner Commission Payable', 'category' => 'liability', 'normal_balance' => 'credit'],
                 ['code' => '5100', 'name' => 'Partner Commission Expense', 'category' => 'expense', 'normal_balance' => 'debit'],
+                ['code' => '2220', 'name' => 'Supplier Payable', 'category' => 'liability', 'normal_balance' => 'credit'],
+                ['code' => '5200', 'name' => 'Supplier Cost', 'category' => 'expense', 'normal_balance' => 'debit'],
             ] as $account) {
                 LedgerAccount::firstOrCreate(['code' => $account['code']], [...$account, 'is_system' => true]);
             }

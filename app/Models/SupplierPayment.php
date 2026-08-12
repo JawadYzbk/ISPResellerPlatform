@@ -8,12 +8,15 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-/** @property Carbon $paid_at */
+/**
+ * @property Carbon $paid_at
+ * @property int|null $journal_entry_id
+ */
 class SupplierPayment extends Model
 {
     use Auditable, BelongsToTenant;
 
-    protected $fillable = ['tenant_id', 'supplier_bill_id', 'amount', 'currency', 'paid_at', 'method', 'reference', 'actor_id'];
+    protected $fillable = ['tenant_id', 'supplier_bill_id', 'amount', 'currency', 'paid_at', 'method', 'reference', 'actor_id', 'journal_entry_id'];
 
     protected function casts(): array
     {
@@ -30,5 +33,11 @@ class SupplierPayment extends Model
     public function actor(): BelongsTo
     {
         return $this->belongsTo(User::class, 'actor_id');
+    }
+
+    /** @return BelongsTo<JournalEntry, $this> */
+    public function journalEntry(): BelongsTo
+    {
+        return $this->belongsTo(JournalEntry::class);
     }
 }
