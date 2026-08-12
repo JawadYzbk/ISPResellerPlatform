@@ -103,7 +103,7 @@ export function Toaster() {
                             size={20}
                             aria-hidden="true"
                         />
-                        <div className="min-w-0 space-y-1">
+                        <div className="min-w-0 flex-1 space-y-1">
                             <ToastTitle>{title}</ToastTitle>
                             <ToastDescription>{description}</ToastDescription>
                         </div>

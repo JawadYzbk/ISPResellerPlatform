@@ -30,7 +30,7 @@ const Toast = React.forwardRef<
     <ToastPrimitive.Root
         ref={ref}
         className={cn(
-            'group pointer-events-auto relative flex w-full items-start overflow-hidden rounded-2xl border bg-white p-4 pe-11 text-ink shadow-lg transition-all data-[state=closed]:animate-out data-[state=closed]:fade-out data-[state=closed]:slide-out-to-right-full data-[state=open]:animate-in data-[state=open]:fade-in data-[state=open]:slide-in-from-top-full sm:data-[state=open]:slide-in-from-bottom-full',
+            'group pointer-events-auto relative flex w-full items-start gap-3 overflow-hidden rounded-2xl border bg-white p-4 pe-11 text-ink shadow-lg transition-all data-[state=closed]:animate-out data-[state=closed]:fade-out data-[state=closed]:slide-out-to-right-full data-[state=open]:animate-in data-[state=open]:fade-in data-[state=open]:slide-in-from-top-full sm:data-[state=open]:slide-in-from-bottom-full',
             variant === 'destructive' ? 'border-coral/35 bg-[#fff8f7]' : 'border-line',
             className,
         )}
@@ -43,7 +43,7 @@ const ToastTitle = React.forwardRef<
     React.ElementRef<typeof ToastPrimitive.Title>,
     React.ComponentPropsWithoutRef<typeof ToastPrimitive.Title>
 >(({ className, ...props }, ref) => (
-    <ToastPrimitive.Title ref={ref} className={cn('text-sm font-bold leading-5', className)} {...props} />
+    <ToastPrimitive.Title ref={ref} className={cn('break-words text-sm font-bold leading-5', className)} {...props} />
 ));
 ToastTitle.displayName = ToastPrimitive.Title.displayName;
 
@@ -51,7 +51,11 @@ const ToastDescription = React.forwardRef<
     React.ElementRef<typeof ToastPrimitive.Description>,
     React.ComponentPropsWithoutRef<typeof ToastPrimitive.Description>
 >(({ className, ...props }, ref) => (
-    <ToastPrimitive.Description ref={ref} className={cn('text-sm leading-5 text-muted', className)} {...props} />
+    <ToastPrimitive.Description
+        ref={ref}
+        className={cn('break-words text-sm leading-5 text-muted', className)}
+        {...props}
+    />
 ));
 ToastDescription.displayName = ToastPrimitive.Description.displayName;
 
