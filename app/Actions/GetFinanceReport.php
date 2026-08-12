@@ -21,6 +21,8 @@ use Illuminate\Database\Eloquent\Collection;
 
 final readonly class GetFinanceReport implements Action
 {
+    public function __construct(private GetSupplierPayablesReport $supplierPayables) {}
+
     /** @return array<string, mixed> */
     public function handle(CarbonImmutable $from, CarbonImmutable $to): array
     {
@@ -101,6 +103,7 @@ final readonly class GetFinanceReport implements Action
             'arpu_by_currency' => $arpu,
             'top_usage' => $this->topUsage($from, $to),
             'collector_performance' => $this->collectorPerformance($payments),
+            'supplier_payables' => $this->supplierPayables->handle($from, $to),
         ];
     }
 

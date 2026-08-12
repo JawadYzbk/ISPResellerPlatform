@@ -120,6 +120,14 @@ export type FinanceReport = {
         payment_count: number;
         totals_by_currency: Record<string, number>;
     }[];
+    supplier_payables: {
+        bill_count: number;
+        payment_count: number;
+        billed_by_currency: Record<string, number>;
+        paid_by_currency: Record<string, number>;
+        outstanding_by_currency: Record<string, number>;
+        aging_by_currency: Record<string, Record<'current' | '1_30' | '31_60' | '61_90' | '90_plus', number>>;
+    };
 };
 
 export type OperationsReport = {

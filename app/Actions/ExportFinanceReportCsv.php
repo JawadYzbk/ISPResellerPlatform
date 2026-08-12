@@ -27,6 +27,18 @@ final readonly class ExportFinanceReportCsv implements Action
                 fputcsv($stream, [$metric, $currency, $amount]);
             }
         }
+        foreach (['billed_by_currency', 'paid_by_currency', 'outstanding_by_currency'] as $metric) {
+            foreach ($report['supplier_payables'][$metric] as $currency => $amount) {
+                fputcsv($stream, ['supplier_payables_'.$metric, $currency, $amount]);
+            }
+        }
+        foreach ($report['supplier_payables']['aging_by_currency'] as $currency => $buckets) {
+            foreach ($buckets as $bucket => $amount) {
+                fputcsv($stream, ['supplier_payables_aging_'.$bucket, $currency, $amount]);
+            }
+        }
+        fputcsv($stream, ['supplier_payables_bill_count', '', $report['supplier_payables']['bill_count']]);
+        fputcsv($stream, ['supplier_payables_payment_count', '', $report['supplier_payables']['payment_count']]);
         foreach ($report['collection_rate_by_currency'] as $currency => $rate) {
             fputcsv($stream, ['collection_rate_percent', $currency, $rate]);
         }

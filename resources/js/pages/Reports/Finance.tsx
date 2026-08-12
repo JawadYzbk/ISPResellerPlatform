@@ -173,6 +173,62 @@ export default function FinanceReportPage({ report }: Props) {
                     </table>
                 </div>
             </div>
+            <div className="mt-6 card p-6">
+                <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-start">
+                    <div>
+                        <h2 className="section-title">Supplier payables</h2>
+                        <p className="mt-1 text-sm text-muted">
+                            Open supplier bills and payments through {report.to}; aging uses each bill period end.
+                        </p>
+                    </div>
+                    <p className="text-sm text-muted">
+                        {report.supplier_payables.bill_count} bill(s) · {report.supplier_payables.payment_count} payment(s)
+                    </p>
+                </div>
+                <div className="mt-4 grid gap-4 md:grid-cols-3">
+                    <div className="rounded-lg bg-sand/50 p-4">
+                        <p className="text-xs font-semibold uppercase tracking-wider text-muted">Billed</p>
+                        <p className="mt-1 text-sm text-muted">{formatAmounts(report.supplier_payables.billed_by_currency)}</p>
+                    </div>
+                    <div className="rounded-lg bg-sand/50 p-4">
+                        <p className="text-xs font-semibold uppercase tracking-wider text-muted">Paid</p>
+                        <p className="mt-1 text-sm text-muted">{formatAmounts(report.supplier_payables.paid_by_currency)}</p>
+                    </div>
+                    <div className="rounded-lg bg-sand/50 p-4">
+                        <p className="text-xs font-semibold uppercase tracking-wider text-muted">Outstanding</p>
+                        <p className="mt-1 text-sm text-muted">{formatAmounts(report.supplier_payables.outstanding_by_currency)}</p>
+                    </div>
+                </div>
+                <div className="mt-5 overflow-x-auto">
+                    <table className="w-full min-w-[720px] text-left text-sm">
+                        <thead className="text-xs uppercase tracking-[0.14em] text-muted">
+                            <tr>
+                                <th className="pb-3">Currency</th>
+                                <th className="pb-3">Current</th>
+                                <th className="pb-3">1–30 days</th>
+                                <th className="pb-3">31–60 days</th>
+                                <th className="pb-3">61–90 days</th>
+                                <th className="pb-3">90+ days</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-line">
+                            {entriesOrEmpty(report.supplier_payables.aging_by_currency).map(([currency, buckets]) => (
+                                <tr key={currency}>
+                                    <td className="py-3 font-semibold">{currency}</td>
+                                    <td className="py-3">{formatMoney(buckets.current, currency)}</td>
+                                    <td className="py-3">{formatMoney(buckets['1_30'], currency)}</td>
+                                    <td className="py-3">{formatMoney(buckets['31_60'], currency)}</td>
+                                    <td className="py-3">{formatMoney(buckets['61_90'], currency)}</td>
+                                    <td className="py-3">{formatMoney(buckets['90_plus'], currency)}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                    {keysOrEmpty(report.supplier_payables.aging_by_currency).length === 0 && (
+                        <p className="py-3 text-sm text-muted">No supplier balances are outstanding.</p>
+                    )}
+                </div>
+            </div>
             <div className="mt-6 grid gap-6 lg:grid-cols-2">
                 <div className="card p-6">
                     <h2 className="section-title">{t('Revenue by plan')}</h2>

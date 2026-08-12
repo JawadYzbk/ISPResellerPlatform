@@ -12,6 +12,9 @@ use App\Models\Plan;
 use App\Models\Pop;
 use App\Models\Router;
 use App\Models\Service;
+use App\Models\Supplier;
+use App\Models\SupplierBill;
+use App\Models\SupplierPayment;
 use App\Models\Tenant;
 use App\Models\UpstreamLink;
 use App\Models\UsageDaily;
@@ -77,6 +80,46 @@ it('streams the finance report as CSV for an authorised operator', function (): 
         ->assertStreamed();
 
     expect(substr($xlsx->streamedContent(), 0, 2))->toBe('PK');
+});
+
+it('reports supplier payables, payments and aging by currency', function (): void {
+    $tenant = Tenant::create(['name' => 'Supplier Finance', 'slug' => 'supplier-finance', 'base_currency' => 'USD', 'collection_currency' => 'USD']);
+    app(Tenancy::class)->set($tenant);
+    $supplier = Supplier::create(['name' => 'Transit ISP', 'code' => 'TRANSIT']);
+    $bill = SupplierBill::create([
+        'supplier_id' => $supplier->id,
+        'reference' => 'BILL-001',
+        'period_start' => '2026-07-01',
+        'period_end' => '2026-07-31',
+        'amount' => 5000,
+        'currency' => 'USD',
+        'status' => 'open',
+    ]);
+    SupplierPayment::create([
+        'supplier_bill_id' => $bill->id,
+        'amount' => 2000,
+        'currency' => 'USD',
+        'paid_at' => '2026-08-05',
+        'method' => 'bank_transfer',
+    ]);
+
+    $report = app(GetFinanceReport::class)->handle(
+        CarbonImmutable::parse('2026-08-01'),
+        CarbonImmutable::parse('2026-08-31'),
+    );
+
+    expect($report['supplier_payables'])->toMatchArray([
+        'bill_count' => 0,
+        'payment_count' => 1,
+        'billed_by_currency' => [],
+        'paid_by_currency' => ['USD' => 2000],
+        'outstanding_by_currency' => ['USD' => 3000],
+        'aging_by_currency' => ['USD' => ['current' => 0, '1_30' => 0, '31_60' => 3000, '61_90' => 0, '90_plus' => 0]],
+    ]);
+    expect(app(ExportFinanceReportCsv::class)->handle(
+        CarbonImmutable::parse('2026-08-01'),
+        CarbonImmutable::parse('2026-08-31'),
+    ))->toContain('supplier_payables_paid_by_currency,USD,2000')->toContain('supplier_payables_aging_31_60,USD,3000');
 });
 
 it('reports POP margin and collector performance from posted records', function (): void {
