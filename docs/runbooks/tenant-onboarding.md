@@ -5,7 +5,7 @@ Use this checklist for a new ISP/reseller tenant. The tenant owner and the imple
 ## Provision the tenant boundary
 
 1. Obtain the approved tenant name, unique slug, base currency, collection currency, timezone, locale, billing policy, and primary owner details.
-2. Create the tenant through the authenticated internal provisioning integration. The repository does not expose a public tenant-creation route; do not create tenant-owned rows with ad-hoc SQL or a production copy of the demo seeder.
+2. In development or an approved internal environment, sign in as the platform operator and use **Admin → Tenants** (`/admin/tenants`) to create the workspace and its first owner. Production automation may use the same `CreateTenant` action through a reviewed integration. Do not create tenant-owned rows with ad-hoc SQL or a production copy of the demo seeder.
 3. Confirm tenant creation ran the built-in provisioner. It creates the default branch and zone, document sequences, currencies, and baseline ledger accounts inside the new tenant context.
 4. In the deployment environment, run reviewed migrations and seed the global capability catalog when required:
 

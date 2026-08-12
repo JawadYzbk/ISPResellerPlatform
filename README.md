@@ -84,6 +84,7 @@ The demo seeder also creates one account for each tenant staff role so the role-
 
 | Role | Account |
 | --- | --- |
+| Platform operator | `platform@example.com` |
 | Tenant owner | `admin@example.com` |
 | Operations manager | `operations.manager@example.com` |
 | Billing manager | `billing.manager@example.com` |
@@ -95,6 +96,8 @@ The demo seeder also creates one account for each tenant staff role so the role-
 | Reseller owner | `reseller.owner@example.com` |
 | Reseller staff | `reseller.staff@example.com` |
 | Auditor | `auditor@example.com` |
+
+The development-only platform operator signs in to **Admin → Tenants** at `/admin/tenants`. It can create and suspend tenant workspaces and their first owner account; it cannot browse tenant customer or financial records without an explicitly implemented break-glass workflow.
 
 The tenant owner can use **Settings → Pilot readiness** or `php artisan platform:tenant-readiness northline --json` before a pilot handoff. The readiness report treats missing provider credentials and branding as explicit warnings/failures, and flags collection rates older than `FX_RATE_MAX_AGE_HOURS` (72 hours by default).
 
