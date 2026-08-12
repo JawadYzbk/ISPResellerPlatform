@@ -282,6 +282,45 @@ test.describe('staff core journeys', () => {
         await expect(page.getByRole('heading', { name: 'Ticket responses' })).toBeVisible();
     });
 
+    test('creates and edits add-ons and inventory catalog records', async ({ page }) => {
+        await signIn(page);
+
+        await page.goto('/plans');
+        const addonSection = page.locator('section').filter({ hasText: 'Recurring or one-off extras' }).first();
+        const addonName = `Browser add-on ${Date.now()}`;
+        const updatedAddonName = `${addonName} updated`;
+
+        await addonSection.getByLabel('Name').fill(addonName);
+        await addonSection.getByLabel('Price').fill('7.50');
+        await addonSection.getByRole('button', { name: 'Add add-on' }).click();
+        await expect(page.getByText(addonName, { exact: true })).toBeVisible();
+
+        await addonSection.getByRole('button', { name: `Edit ${addonName}` }).click();
+        await addonSection.getByLabel('Name').fill(updatedAddonName);
+        await addonSection.getByRole('button', { name: 'Save add-on' }).click();
+        await expect(page.getByText(updatedAddonName, { exact: true })).toBeVisible();
+
+        await page.goto('/operations/inventory');
+        const setupSection = page.locator('section').filter({ hasText: 'Create the item and storage records first' }).first();
+        const itemSku = `E2E-${Date.now()}`;
+        const itemName = `Browser inventory ${itemSku}`;
+        const warehouseCode = `E2E${Date.now().toString().slice(-5)}`;
+        const warehouseName = `Browser warehouse ${warehouseCode}`;
+        const itemForm = setupSection.locator('form').filter({ hasText: 'New inventory item' });
+        const warehouseForm = setupSection.locator('form').filter({ hasText: 'New warehouse or van' });
+
+        await itemForm.getByLabel('SKU').fill(itemSku);
+        await itemForm.getByLabel('Name').fill(itemName);
+        await itemForm.getByLabel('Category').fill('test-equipment');
+        await itemForm.getByRole('button', { name: 'Create item' }).click();
+        await expect(page.getByText(itemName, { exact: true })).toBeVisible();
+
+        await warehouseForm.getByLabel('Name').fill(warehouseName);
+        await warehouseForm.getByLabel('Code').fill(warehouseCode);
+        await warehouseForm.getByRole('button', { name: 'Create storage' }).click();
+        await expect(page.getByText(warehouseName, { exact: true })).toBeVisible();
+    });
+
     test('exposes protected operator role controls to the tenant owner', async ({ page }) => {
         await signIn(page);
 
