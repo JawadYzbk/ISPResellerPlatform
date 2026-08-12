@@ -124,6 +124,8 @@ export type FinanceReport = {
 
 export type OperationsReport = {
     generated_at: string;
+    report_from: string;
+    report_to: string;
     service_counts_by_status: Record<string, number>;
     expiring_services: number;
     work_order_counts_by_status: Record<string, number>;
@@ -133,6 +135,23 @@ export type OperationsReport = {
     network_drift: number;
     failed_commands: number;
     low_stock_items: { sku: string; name: string; available_units: number | string; reorder_level: number }[];
+    supplier_credentials: {
+        from: string;
+        to: string;
+        expiring_days: number;
+        totals: { purchased: number; assigned: number; available: number; expiring: number; revoked_invalid: number };
+        by_supplier: {
+            name: string;
+            code: string | null;
+            purchased: number;
+            assigned: number;
+            available: number;
+            expiring: number;
+            revoked_invalid: number;
+            cost_by_currency: Record<string, number>;
+            contracts: { reference: string | null; purchased: number; cost_by_currency: Record<string, number> }[];
+        }[];
+    };
 };
 
 export type PublicTenant = { slug: string; name: string; logo_url: string | null };

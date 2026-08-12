@@ -11,15 +11,23 @@ use App\Models\Router;
 use App\Models\Service;
 use App\Models\WorkOrder;
 use App\Support\StockQuantity;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
 
 final readonly class GetOperationsReport implements Action
 {
+    public function __construct(private GetSupplierCredentialReconciliation $supplierCredentials) {}
+
     /** @return array<string, mixed> */
-    public function handle(): array
+    public function handle(?CarbonImmutable $from = null, ?CarbonImmutable $to = null): array
     {
+        $from ??= CarbonImmutable::now()->startOfMonth();
+        $to ??= CarbonImmutable::now();
+
         return [
             'generated_at' => now()->toIso8601String(),
+            'report_from' => $from->toDateString(),
+            'report_to' => $to->toDateString(),
             'service_counts_by_status' => $this->counts(Service::query()->selectRaw('status, COUNT(*) as total')->groupBy('status')->pluck('total', 'status')->all()),
             'expiring_services' => Service::query()->whereBetween('expires_at', [now(), now()->addDays(7)])->count(),
             'work_order_counts_by_status' => $this->counts(WorkOrder::query()->selectRaw('status, COUNT(*) as total')->groupBy('status')->pluck('total', 'status')->all()),
@@ -51,6 +59,7 @@ final readonly class GetOperationsReport implements Action
                 ->map(fn (array $item): array => ['sku' => $item['sku'], 'name' => $item['name'], 'available_units' => $item['available_units'], 'reorder_level' => $item['reorder_level']])
                 ->values()
                 ->all(),
+            'supplier_credentials' => $this->supplierCredentials->handle($from, $to),
         ];
     }
 

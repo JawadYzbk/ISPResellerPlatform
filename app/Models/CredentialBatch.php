@@ -30,6 +30,7 @@ class CredentialBatch extends Model
         return $this->belongsTo(Supplier::class);
     }
 
+    /** @return HasMany<UpstreamCredential, $this> */
     public function credentials(): HasMany
     {
         return $this->hasMany(UpstreamCredential::class);
