@@ -28,6 +28,11 @@ final class FieldController extends Controller
     ): Response {
         $user = $this->collector($request);
         $tenant = $this->tenant();
+        $storageEncryptionKey = $request->session()->get('field_storage_encryption_key');
+        if (! is_string($storageEncryptionKey) || $storageEncryptionKey === '') {
+            $storageEncryptionKey = base64_encode(random_bytes(SODIUM_CRYPTO_AEAD_AES256GCM_KEYBYTES));
+            $request->session()->put('field_storage_encryption_key', $storageEncryptionKey);
+        }
 
         return Inertia::render('Field/Index', [
             'snapshot' => $snapshot->handle($tenant, $user, null, null),
@@ -36,6 +41,7 @@ final class FieldController extends Controller
             'currencies' => $currencyCatalog->handle(),
             'defaultCurrency' => $tenant->collection_currency,
             'storageKey' => 'field:'.$tenant->public_id.':'.$user->id,
+            'storageEncryptionKey' => $storageEncryptionKey,
         ]);
     }
 
