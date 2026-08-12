@@ -62,6 +62,13 @@ export default function SupplierPayablesPage({ report, suppliers }: Props) {
     const [asOf, setAsOf] = useState(report.as_of);
     const [supplierId, setSupplierId] = useState(report.supplier_id ? String(report.supplier_id) : '');
     const [includeSettled, setIncludeSettled] = useState(report.include_settled);
+    const exportQuery = [
+        `as_of=${encodeURIComponent(report.as_of)}`,
+        report.supplier_id === null ? null : `supplier_id=${report.supplier_id}`,
+        report.include_settled ? 'include_settled=1' : null,
+    ]
+        .filter((value): value is string => value !== null)
+        .join('&');
 
     const applyFilters = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -97,10 +104,7 @@ export default function SupplierPayablesPage({ report, suppliers }: Props) {
                     <Link href="/operations/suppliers" className="button-primary">
                         <Wallet size={15} /> Manage settlements
                     </Link>
-                    <a
-                        href={`/reports/finance?format=csv&from=${report.as_of}&to=${report.as_of}`}
-                        className="button-quiet"
-                    >
+                    <a href={`/reports/supplier-payables?format=csv&${exportQuery}`} className="button-quiet">
                         <Download size={15} /> Export
                     </a>
                 </div>
