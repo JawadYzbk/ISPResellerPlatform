@@ -7,6 +7,7 @@ use App\Models\Tenant;
 use App\Models\User;
 use App\Support\MessageTemplateProvisioner;
 use App\Support\Tenancy;
+use App\Support\TicketCannedResponseProvisioner;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
@@ -75,6 +76,7 @@ class CapabilitySeeder extends Seeder
             });
 
             app(MessageTemplateProvisioner::class)->provision($tenant);
+            app(TicketCannedResponseProvisioner::class)->provision($tenant);
         });
     }
 }
