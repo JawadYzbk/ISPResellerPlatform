@@ -103,7 +103,9 @@ test.describe('staff core journeys', () => {
         expect(formBox).not.toBeNull();
         expect(brandBox?.height).toBeGreaterThanOrEqual((viewport?.height ?? 0) - 2);
         expect(formBox?.height).toBeGreaterThanOrEqual((viewport?.height ?? 0) - 2);
+        await expect(page.locator('.auth-root')).toHaveAttribute('dir', 'ltr');
         await expect(page.locator('.auth-ambient')).toBeVisible();
+        await expect(page.locator('.auth-orb-one')).toBeVisible();
     });
 
     test('redirects guests away from the partner commercial workspace', async ({ page }) => {

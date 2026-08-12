@@ -143,8 +143,21 @@
         min-height: 100vh;
         min-height: 100svh;
     }
+    .auth-root {
+        min-height: 100dvh;
+        overflow-x: hidden;
+    }
     .auth-shell {
         min-height: 100dvh;
+    }
+    @media (min-width: 1024px) {
+        .auth-shell {
+            grid-template-rows: minmax(100dvh, 1fr);
+        }
+        .auth-brand-panel,
+        .auth-form-panel {
+            height: 100%;
+        }
     }
     .auth-ambient {
         position: absolute;
@@ -194,6 +207,38 @@
         border-width: 2px;
         animation: auth-orbit-float 24s ease-in-out -8s infinite alternate-reverse;
     }
+    .auth-orb {
+        position: absolute;
+        border-radius: 9999px;
+        filter: blur(12px);
+        opacity: 0.7;
+        background: radial-gradient(circle at 35% 35%, rgb(143 235 211 / 42%), transparent 68%);
+        mix-blend-mode: screen;
+        animation: auth-orb-drift 18s ease-in-out infinite alternate;
+    }
+    .auth-orb-one {
+        top: -18rem;
+        right: -10rem;
+        width: 34rem;
+        height: 34rem;
+    }
+    .auth-orb-two {
+        bottom: -17rem;
+        left: 10%;
+        width: 28rem;
+        height: 28rem;
+        animation-delay: -5s;
+        animation-duration: 22s;
+    }
+    .auth-orb-three {
+        top: 32%;
+        left: 42%;
+        width: 18rem;
+        height: 18rem;
+        opacity: 0.38;
+        animation-delay: -9s;
+        animation-duration: 15s;
+    }
     .auth-signal {
         position: absolute;
         width: 0.65rem;
@@ -239,6 +284,14 @@
             transform: translate3d(1rem, 0.75rem, 0) rotate(8deg);
         }
     }
+    @keyframes auth-orb-drift {
+        from {
+            transform: translate3d(-1rem, 0, 0) scale(0.96);
+        }
+        to {
+            transform: translate3d(2rem, 1.5rem, 0) scale(1.08);
+        }
+    }
     @keyframes auth-signal-pulse {
         0%,
         100% {
@@ -252,6 +305,7 @@
         .auth-ambient::before,
         .auth-ambient::after,
         .auth-orbit,
+        .auth-orb,
         .auth-signal {
             animation: none;
         }

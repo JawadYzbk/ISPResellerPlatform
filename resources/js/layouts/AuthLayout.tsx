@@ -5,7 +5,7 @@ import { Toaster } from '@/components/ui/toaster';
 
 export default function AuthLayout({ children }: PropsWithChildren) {
     return (
-        <div className="auth-root relative bg-canvas">
+        <div className="auth-root relative bg-canvas" dir="ltr">
             <Toaster />
             <div data-testid="auth-shell" className="auth-shell grid lg:grid-cols-[1.1fr_0.9fr]">
                 <section
@@ -15,6 +15,9 @@ export default function AuthLayout({ children }: PropsWithChildren) {
                     <div className="auth-ambient" aria-hidden="true">
                         <span className="auth-orbit auth-orbit-one" />
                         <span className="auth-orbit auth-orbit-two" />
+                        <span className="auth-orb auth-orb-one" />
+                        <span className="auth-orb auth-orb-two" />
+                        <span className="auth-orb auth-orb-three" />
                         <span className="auth-signal auth-signal-one" />
                         <span className="auth-signal auth-signal-two" />
                     </div>
