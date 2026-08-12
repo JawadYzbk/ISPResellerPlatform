@@ -148,6 +148,31 @@ test.describe('staff core journeys', () => {
         await expect(page.getByText('Partner price updated.', { exact: true })).toBeVisible();
     });
 
+    test('funds a reseller wallet and completes a settlement from the commercial workspace', async ({ page }) => {
+        await signIn(page);
+        await page.goto('/partners/commercial');
+
+        await page.getByLabel('Name').first().fill('Browser Settlement Reseller');
+        await page.getByLabel('Code').first().fill('BROWSER-SETTLEMENT');
+        await page.locator('#partner_currency').click();
+        await page.getByRole('option', { name: /USD/ }).click();
+        await page.getByRole('button', { name: 'Create partner' }).click();
+
+        await expect(page.getByRole('heading', { name: 'Wallet operations' })).toBeVisible();
+        await page.getByLabel(/Amount \(USD\)/).fill('100.00');
+        await page.getByRole('button', { name: 'Fund wallet' }).click();
+        await expect(page.getByText('Partner wallet funded.', { exact: true })).toBeVisible();
+
+        await page.getByRole('button', { name: 'Create statement' }).click();
+        await expect(page.getByText('Settlement statement created.', { exact: true })).toBeVisible();
+        await page.getByRole('button', { name: 'Approve' }).click();
+        await page.getByRole('alertdialog').getByRole('button', { name: 'Approve statement' }).click();
+        await expect(page.getByText('Settlement approved.', { exact: true })).toBeVisible();
+        await page.getByRole('button', { name: 'Pay settlement' }).click();
+        await page.getByRole('alertdialog').getByRole('button', { name: 'Pay settlement' }).click();
+        await expect(page.getByText('Settlement paid.', { exact: true })).toBeVisible();
+    });
+
     test('keeps the customer queue and settings reachable for the owner', async ({ page }) => {
         await signIn(page);
 

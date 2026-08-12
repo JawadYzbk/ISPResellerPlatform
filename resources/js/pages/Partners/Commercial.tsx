@@ -1,11 +1,13 @@
 import CurrencyCombobox, { type CurrencyOption } from '@/components/ui/currency-combobox';
+import ConfirmDialog from '@/components/ui/confirm-dialog';
 import ResponsiveSelect from '@/components/ui/responsive-select';
 import { Head, Link, useForm } from '@inertiajs/react';
-import { ArrowLeft, BookOpen, Edit3, Plus, Save, WalletCards, X } from 'lucide-react';
-import { useState } from 'react';
+import { ArrowLeft, BookOpen, CalendarRange, Check, Edit3, Plus, Save, WalletCards, X } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 import AppLayout from '@/layouts/AppLayout';
-import { formatDate, formatMoney } from '@/lib/format';
+import { currencyFractionDigits, formatDate, formatMoney, parseMoneyToMinor } from '@/lib/format';
+import { createIdempotencyKey } from '@/lib/idempotency';
 import type { PageProps } from '@/types';
 
 type Partner = {
@@ -16,6 +18,11 @@ type Partner = {
     credit_limit?: number;
     low_balance_threshold?: number;
     status?: string;
+    wallet?: {
+        currency: string;
+        balance_amount: number;
+        available_amount: number;
+    } | null;
 };
 type CatalogItem = {
     id: string;
@@ -61,6 +68,8 @@ type Props = PageProps & {
     settlements: Settlement[];
     showCost: boolean;
     canManage: boolean;
+    canFund: boolean;
+    canApprove: boolean;
     currencies: CurrencyOption[];
     pricingPlans: PricingPlan[];
 };
@@ -181,6 +190,8 @@ export default function Commercial({
     settlements,
     showCost,
     canManage,
+    canFund,
+    canApprove,
     currencies,
     pricingPlans,
 }: Props) {
@@ -200,6 +211,20 @@ export default function Commercial({
         low_balance_threshold: selectedPartner?.low_balance_threshold ?? 0,
         status: selectedPartner?.status ?? 'active',
     });
+    const walletForm = useForm({
+        amount: '',
+        idempotency_key: createIdempotencyKey('partner-wallet'),
+    });
+    const settlementForm = useForm({
+        period_start: new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().slice(0, 10),
+        period_end: new Date().toISOString().slice(0, 10),
+        currency: selectedPartner?.currency ?? 'USD',
+    });
+    const settlementActionForm = useForm<{ settlement_id: string; status: string }>({ settlement_id: '', status: '' });
+
+    useEffect(() => {
+        settlementForm.setData('currency', selectedPartner?.currency ?? 'USD');
+    }, [selectedPartner?.currency, settlementForm]);
 
     const submit = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -231,6 +256,41 @@ export default function Commercial({
         editForm.patch(`/partners/${selectedPartner.id}`, {
             preserveScroll: true,
             onSuccess: () => setEditOpen(false),
+        });
+    };
+
+    const submitWalletFunding = (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        if (!selectedPartner) return;
+        const currency = selectedPartner.wallet?.currency ?? selectedPartner.currency ?? 'USD';
+        const amount = parseMoneyToMinor(walletForm.data.amount, currency);
+        if (amount === null) {
+            walletForm.setError('amount', 'Enter a valid positive amount.');
+            return;
+        }
+
+        walletForm.clearErrors('amount');
+        walletForm.transform((data) => ({ ...data, amount }));
+        walletForm.post(`/partners/${selectedPartner.id}/wallet/fund`, {
+            preserveScroll: true,
+            onSuccess: () => {
+                walletForm.reset('amount');
+                walletForm.setData('idempotency_key', createIdempotencyKey('partner-wallet'));
+            },
+        });
+    };
+
+    const submitSettlement = (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        if (!selectedPartner) return;
+        settlementForm.post(`/partners/${selectedPartner.id}/settlements`, { preserveScroll: true });
+    };
+
+    const actOnSettlement = (settlementId: string, action: 'approve' | 'pay') => {
+        settlementActionForm.setData('settlement_id', settlementId);
+        settlementActionForm.post(`/settlements/${settlementId}/${action}`, {
+            preserveScroll: true,
+            onFinish: () => settlementActionForm.reset('settlement_id'),
         });
     };
 
@@ -454,6 +514,93 @@ export default function Commercial({
                     )}
                 </section>
             )}
+            {selectedPartner && (
+                <section className="card mt-8 p-6">
+                    <div className="flex items-start gap-3">
+                        <div className="grid size-10 place-items-center rounded-xl bg-brand-soft text-brand">
+                            <WalletCards size={19} />
+                        </div>
+                        <div>
+                            <h2 className="section-title">Wallet operations</h2>
+                            <p className="mt-1 text-sm text-muted">
+                                Fund the reseller balance and close commission periods with an auditable settlement.
+                            </p>
+                        </div>
+                    </div>
+                    <div className="mt-5 grid gap-4 lg:grid-cols-[0.8fr_1.2fr_1.2fr]">
+                        <div className="rounded-xl border border-line bg-sand p-4">
+                            <p className="field-label">Current balance</p>
+                            <p className="mt-2 font-display text-2xl font-semibold">
+                                {formatMoney(selectedPartner.wallet?.balance_amount ?? 0, selectedPartner.wallet?.currency ?? selectedPartner.currency ?? 'USD')}
+                            </p>
+                            <p className="mt-1 text-xs text-muted">
+                                Available with credit: {formatMoney(selectedPartner.wallet?.available_amount ?? 0, selectedPartner.wallet?.currency ?? selectedPartner.currency ?? 'USD')}
+                            </p>
+                        </div>
+                        {canFund && (
+                            <form onSubmit={submitWalletFunding} className="rounded-xl border border-line p-4">
+                                <p className="font-semibold">Fund wallet</p>
+                                <p className="mt-1 text-xs text-muted">Cash funding is posted to the tenant ledger.</p>
+                                <label className="mt-4 block">
+                                    <span className="field-label">
+                                        Amount ({selectedPartner.wallet?.currency ?? selectedPartner.currency ?? 'USD'})
+                                    </span>
+                                    <input
+                                        className="field"
+                                        type="number"
+                                        inputMode="decimal"
+                                        min="0"
+                                        step={currencyFractionDigits(selectedPartner.wallet?.currency ?? selectedPartner.currency ?? 'USD') === 0 ? '1' : '0.01'}
+                                        value={walletForm.data.amount}
+                                        onChange={(event) => walletForm.setData('amount', event.target.value)}
+                                        required
+                                    />
+                                    {walletForm.errors.amount && <p className="field-error">{walletForm.errors.amount}</p>}
+                                </label>
+                                <button type="submit" className="button-primary mt-4" disabled={walletForm.processing}>
+                                    <Plus size={15} /> Fund wallet
+                                </button>
+                            </form>
+                        )}
+                        {canApprove && (
+                            <form onSubmit={submitSettlement} className="rounded-xl border border-line p-4">
+                                <p className="font-semibold">Create settlement</p>
+                                <p className="mt-1 text-xs text-muted">Capture wallet activity and accrued commission for a period.</p>
+                                <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                                    <label>
+                                        <span className="field-label">From</span>
+                                        <input
+                                            className="field"
+                                            type="date"
+                                            value={settlementForm.data.period_start}
+                                            onChange={(event) => settlementForm.setData('period_start', event.target.value)}
+                                            required
+                                        />
+                                    </label>
+                                    <label>
+                                        <span className="field-label">Through</span>
+                                        <input
+                                            className="field"
+                                            type="date"
+                                            value={settlementForm.data.period_end}
+                                            onChange={(event) => settlementForm.setData('period_end', event.target.value)}
+                                            required
+                                        />
+                                    </label>
+                                </div>
+                                {(settlementForm.errors.period_start || settlementForm.errors.period_end || settlementForm.errors.currency) && (
+                                    <p className="field-error">
+                                        {settlementForm.errors.period_start ?? settlementForm.errors.period_end ?? settlementForm.errors.currency}
+                                    </p>
+                                )}
+                                <button type="submit" className="button-primary mt-4" disabled={settlementForm.processing}>
+                                    <CalendarRange size={15} /> Create statement
+                                </button>
+                            </form>
+                        )}
+                    </div>
+                </section>
+            )}
             {selectedPartner && canManage && (
                 <section className="card mt-8 overflow-hidden">
                     <div className="flex items-start justify-between gap-4 px-6 py-5">
@@ -557,6 +704,37 @@ export default function Commercial({
                                             </p>
                                         </div>
                                     </div>
+                                    {canApprove && settlement.status !== 'paid' && (
+                                        <div className="mt-4 flex flex-wrap gap-2">
+                                            {settlement.status === 'draft' && (
+                                                <ConfirmDialog
+                                                    title="Approve settlement statement?"
+                                                    description="Approval freezes the commission amount for this period so it can be paid against the ledger."
+                                                    confirmLabel="Approve statement"
+                                                    onConfirm={() => actOnSettlement(settlement.id, 'approve')}
+                                                >
+                                                    <button type="button" className="button-quiet" disabled={settlementActionForm.processing}>
+                                                        <Check size={15} /> Approve
+                                                    </button>
+                                                </ConfirmDialog>
+                                            )}
+                                            {settlement.status === 'approved' && (
+                                                <ConfirmDialog
+                                                    title="Pay settlement statement?"
+                                                    description={`Post the approved commission settlement of ${formatMoney(settlement.due_amount, settlement.currency)} to the tenant ledger.`}
+                                                    confirmLabel="Pay settlement"
+                                                    onConfirm={() => actOnSettlement(settlement.id, 'pay')}
+                                                >
+                                                    <button type="button" className="button-primary" disabled={settlementActionForm.processing}>
+                                                        <Check size={15} /> Pay settlement
+                                                    </button>
+                                                </ConfirmDialog>
+                                            )}
+                                            {settlementActionForm.errors.status && (
+                                                <p className="field-error">{settlementActionForm.errors.status}</p>
+                                            )}
+                                        </div>
+                                    )}
                                 </div>
                             ))}
                             {settlements.length === 0 && (
