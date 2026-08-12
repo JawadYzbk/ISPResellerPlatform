@@ -11,6 +11,27 @@ const firstErrorMessage = (errors: Record<string, unknown>) =>
         .flatMap((value) => (Array.isArray(value) ? value : [value]))
         .find((value): value is string => typeof value === 'string' && value.trim().length > 0);
 
+const inferredSuccessTitle = (message: string): string => {
+    const normalized = message.toLocaleLowerCase();
+    const titleRules: Array<[RegExp, string]> = [
+        [/\b(deleted|removed|revoked)\b/, 'Deleted'],
+        [/\b(archived)\b/, 'Archived'],
+        [/\b(updated|changed)\b/, 'Updated'],
+        [/\b(created|added|registered)\b/, 'Created'],
+        [/\b(recorded|received|captured)\b/, 'Recorded'],
+        [/\b(imported)\b/, 'Imported'],
+        [/\b(reversed)\b/, 'Reversed'],
+        [/\b(scheduled)\b/, 'Scheduled'],
+        [/\b(assigned)\b/, 'Assigned'],
+        [/\b(disconnected)\b/, 'Disconnected'],
+        [/\b(queued)\b/, 'Queued'],
+        [/\b(completed|closed|reconciled)\b/, 'Completed'],
+        [/\b(saved)\b/, 'Saved'],
+    ];
+
+    return titleRules.find(([pattern]) => pattern.test(normalized))?.[1] ?? 'Completed';
+};
+
 if (typeof window !== 'undefined') {
     router.on('error', (event) => {
         const message = firstErrorMessage(event.detail.errors as Record<string, unknown>);
@@ -65,7 +86,7 @@ export function Toaster() {
 
         if (flash.success) {
             toast({
-                title: 'Saved',
+                title: flash.successTitle ?? inferredSuccessTitle(flash.success),
                 description: flash.success,
                 duration: 5000,
             });
@@ -79,7 +100,7 @@ export function Toaster() {
                 duration: 8000,
             });
         }
-    }, [flash?.error, flash?.id, flash?.success, toast]);
+    }, [flash?.error, flash?.id, flash?.success, flash?.successTitle, toast]);
 
     return (
         <ToastProvider swipeDirection="right">

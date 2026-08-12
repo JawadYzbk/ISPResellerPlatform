@@ -12,7 +12,9 @@ it('allows a tenant user to sign in and reach the dashboard', function (): void 
     User::create(['tenant_id' => $tenant->id, 'name' => 'Maya Haddad', 'email' => 'maya@example.test', 'password' => Hash::make('password'), 'role' => 'operator']);
 
     $this->post(route('login.store'), ['email' => 'maya@example.test', 'password' => 'password'])
-        ->assertRedirect(route('dashboard'));
+        ->assertRedirect(route('dashboard'))
+        ->assertSessionHas('success_title', 'Welcome back')
+        ->assertSessionHas('success', 'You are signed in and ready to work.');
 
     $this->get(route('dashboard'))
         ->assertOk()

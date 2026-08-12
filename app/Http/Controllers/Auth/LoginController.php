@@ -30,6 +30,8 @@ final class LoginController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect()->intended(route('dashboard'))->with('success', 'Welcome back.');
+        return redirect()->intended(route('dashboard'))
+            ->with('success_title', 'Welcome back')
+            ->with('success', 'You are signed in and ready to work.');
     }
 }

@@ -49,6 +49,7 @@ final class HandleInertiaRequests extends Middleware
             ],
             'flash' => [
                 'id' => $hasActionFlash ? (string) Str::uuid() : null,
+                'successTitle' => fn () => $request->session()->get('success_title'),
                 'success' => fn () => $request->session()->get('success'),
                 'error' => fn () => $request->session()->get('error'),
                 'importResult' => fn () => $request->session()->get('importResult'),

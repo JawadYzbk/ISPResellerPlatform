@@ -25,6 +25,7 @@ export type PageProps = {
     };
     flash: {
         id?: string | null;
+        successTitle?: string;
         success?: string;
         error?: string;
         importResult?: ImportBatchResult;
