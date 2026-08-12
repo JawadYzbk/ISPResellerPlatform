@@ -185,26 +185,32 @@ test.describe('staff core journeys', () => {
         );
 
         const label = `E2E temporary ${Date.now()}`;
-        await page.getByPlaceholder('Billing phone').fill(label);
-        await page.getByRole('button', { name: 'Add account', exact: true }).click();
         const accountCard = page.locator('div.rounded-2xl.border.border-line.bg-white.p-5').filter({ hasText: label });
-        await expect(accountCard.getByText(label, { exact: true })).toBeVisible({ timeout: 15_000 });
-        await expect(accountCard.getByRole('button', { name: 'Disconnect and pair again' })).toBeVisible();
 
-        await accountCard.getByRole('button', { name: 'Disconnect and pair again' }).click();
-        await expect(accountCard).toContainText(/Waiting for QR scan|Disconnected|Starting/);
+        try {
+            await page.getByPlaceholder('Billing phone').fill(label);
+            await page.getByRole('button', { name: 'Add account', exact: true }).click();
+            await expect(accountCard.getByText(label, { exact: true })).toBeVisible({ timeout: 15_000 });
+            await expect(accountCard.getByRole('button', { name: 'Disconnect and pair again' })).toBeVisible();
 
-        await accountCard.getByRole('button', { name: 'Delete account' }).click();
-        const deleteDialog = page.getByRole('alertdialog');
-        await expect(deleteDialog).toBeVisible();
-        const deleteResponse = page.waitForResponse(
-            (response) =>
-                response.url().includes('/settings/whatsapp/accounts/') && response.request().method() === 'DELETE',
-        );
-        await deleteDialog.getByRole('button', { name: 'Delete account', exact: true }).click();
-        expect((await deleteResponse).status()).toBeLessThan(400);
-        await page.reload();
-        await expect(page.getByText(label, { exact: true })).toHaveCount(0);
+            await accountCard.getByRole('button', { name: 'Disconnect and pair again' }).click();
+            await expect(accountCard).toContainText(/Waiting for QR scan|Disconnected|Starting/);
+        } finally {
+            if (await accountCard.getByText(label, { exact: true }).count()) {
+                await accountCard.getByRole('button', { name: 'Delete account' }).click();
+                const deleteDialog = page.getByRole('alertdialog');
+                await expect(deleteDialog).toBeVisible();
+                const deleteResponse = page.waitForResponse(
+                    (response) =>
+                        response.url().includes('/settings/whatsapp/accounts/') &&
+                        response.request().method() === 'DELETE',
+                );
+                await deleteDialog.getByRole('button', { name: 'Delete account', exact: true }).click();
+                expect((await deleteResponse).status()).toBeLessThan(400);
+                await page.reload();
+                await expect(page.getByText(label, { exact: true })).toHaveCount(0);
+            }
+        }
     });
 
     test('shows the customer payment grid by month', async ({ page }) => {
