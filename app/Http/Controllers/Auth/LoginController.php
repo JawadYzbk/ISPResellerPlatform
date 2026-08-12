@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Auth;
 
 use App\Actions\AuthenticateUser;
 use App\Http\Controllers\Controller;
-use App\Models\User;
 use App\Http\Requests\LoginRequest;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;

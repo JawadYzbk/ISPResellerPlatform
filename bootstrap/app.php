@@ -3,13 +3,13 @@
 use App\Http\Middleware\AuthenticatePortalSession;
 use App\Http\Middleware\CaptureRequestContext;
 use App\Http\Middleware\EnsureApiIdempotency;
+use App\Http\Middleware\EnsurePlatformOperator;
 use App\Http\Middleware\EnsureRecentAuthentication;
 use App\Http\Middleware\EnsureTwoFactorVerified;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\IdentifyPortalTenant;
 use App\Http\Middleware\IdentifyPortalTenantFromRequest;
 use App\Http\Middleware\IdentifyTenant;
-use App\Http\Middleware\EnsurePlatformOperator;
 use App\Http\Middleware\SecurityHeaders;
 use App\Http\Responses\ProblemDetails;
 use Illuminate\Auth\Access\AuthorizationException;
