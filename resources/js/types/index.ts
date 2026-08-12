@@ -130,6 +130,45 @@ export type FinanceReport = {
     };
 };
 
+export type SupplierPayablesReport = {
+    as_of: string;
+    supplier_id: number | null;
+    include_settled: boolean;
+    summary: {
+        bill_count: number;
+        open_bill_count: number;
+        billed_by_currency: Record<string, number>;
+        paid_by_currency: Record<string, number>;
+        outstanding_by_currency: Record<string, number>;
+        aging_by_currency: Record<string, Record<'current' | '1_30' | '31_60' | '61_90' | '90_plus', number>>;
+    };
+    by_supplier: {
+        supplier_id: number;
+        supplier_name: string;
+        supplier_code: string | null;
+        bill_count: number;
+        outstanding_by_currency: Record<string, number>;
+        aging_by_currency: Record<string, Record<'current' | '1_30' | '31_60' | '61_90' | '90_plus', number>>;
+    }[];
+    bills: {
+        id: number;
+        supplier_id: number;
+        supplier_name: string;
+        supplier_code: string | null;
+        reference: string;
+        period_start: string;
+        period_end: string;
+        currency: string;
+        amount: number;
+        paid_amount: number;
+        outstanding_amount: number;
+        age_days: number;
+        bucket: 'current' | '1_30' | '31_60' | '61_90' | '90_plus';
+        status: 'open' | 'partially_paid' | 'paid';
+        last_paid_at: string | null;
+    }[];
+};
+
 export type OperationsReport = {
     generated_at: string;
     report_from: string;

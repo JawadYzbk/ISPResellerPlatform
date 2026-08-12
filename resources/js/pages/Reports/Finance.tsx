@@ -69,6 +69,9 @@ export default function FinanceReportPage({ report }: Props) {
                     <Link href="/reports/operations" className="button-quiet">
                         {t('Operations report')}
                     </Link>
+                    <Link href="/reports/supplier-payables" className="button-quiet">
+                        Supplier payables
+                    </Link>
                     <a href={`/reports/finance?format=csv&${query}`} className="button-quiet">
                         <Download size={15} />
                         {t('Download CSV')}
@@ -182,21 +185,28 @@ export default function FinanceReportPage({ report }: Props) {
                         </p>
                     </div>
                     <p className="text-sm text-muted">
-                        {report.supplier_payables.bill_count} bill(s) · {report.supplier_payables.payment_count} payment(s)
+                        {report.supplier_payables.bill_count} bill(s) · {report.supplier_payables.payment_count}{' '}
+                        payment(s)
                     </p>
                 </div>
                 <div className="mt-4 grid gap-4 md:grid-cols-3">
                     <div className="rounded-lg bg-sand/50 p-4">
                         <p className="text-xs font-semibold uppercase tracking-wider text-muted">Billed</p>
-                        <p className="mt-1 text-sm text-muted">{formatAmounts(report.supplier_payables.billed_by_currency)}</p>
+                        <p className="mt-1 text-sm text-muted">
+                            {formatAmounts(report.supplier_payables.billed_by_currency)}
+                        </p>
                     </div>
                     <div className="rounded-lg bg-sand/50 p-4">
                         <p className="text-xs font-semibold uppercase tracking-wider text-muted">Paid</p>
-                        <p className="mt-1 text-sm text-muted">{formatAmounts(report.supplier_payables.paid_by_currency)}</p>
+                        <p className="mt-1 text-sm text-muted">
+                            {formatAmounts(report.supplier_payables.paid_by_currency)}
+                        </p>
                     </div>
                     <div className="rounded-lg bg-sand/50 p-4">
                         <p className="text-xs font-semibold uppercase tracking-wider text-muted">Outstanding</p>
-                        <p className="mt-1 text-sm text-muted">{formatAmounts(report.supplier_payables.outstanding_by_currency)}</p>
+                        <p className="mt-1 text-sm text-muted">
+                            {formatAmounts(report.supplier_payables.outstanding_by_currency)}
+                        </p>
                     </div>
                 </div>
                 <div className="mt-5 overflow-x-auto">
