@@ -13,6 +13,8 @@ Use this procedure for a production-shaped deployment. Keep the release artifact
 
 The repository includes `docker-compose.production.yml` for a self-hosted single-VPS deployment. It separates Nginx, PHP-FPM, queue workers, the scheduler, Reverb, PostgreSQL 17, Redis, and private MinIO object storage. Set deployment secrets and the public URL in the environment before starting it; the placeholder values are intentionally rejected by the production preflight.
 
+Podman users can run the same Compose file, but the production build files must remain explicit: `docker/php/Dockerfile.production` builds the PHP-FPM `app` target and `docker/nginx/Dockerfile` builds the web image. For a standalone PHP image, use `podman build -f docker/php/Dockerfile.production --target app -t isp-reseller:app .`; for the development image, use the root `Containerfile` instead. Do not leave the Podman Desktop build-file field empty.
+
 ```powershell
 docker compose -f docker-compose.production.yml build
 docker compose -f docker-compose.production.yml up -d postgres redis minio minio-init

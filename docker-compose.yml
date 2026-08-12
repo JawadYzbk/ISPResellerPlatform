@@ -63,7 +63,7 @@ services:
   app:
     build:
       context: .
-      dockerfile: docker/php/Dockerfile
+      dockerfile: Containerfile
     working_dir: /var/www/html
     command: sh docker/php/start-development.sh
     ports:
@@ -97,7 +97,7 @@ services:
   worker:
     build:
       context: .
-      dockerfile: docker/php/Dockerfile
+      dockerfile: Containerfile
     working_dir: /var/www/html
     command: sh -c "php artisan queue:work --sleep=1 --tries=3 --timeout=90"
     volumes:
@@ -118,7 +118,7 @@ services:
   scheduler:
     build:
       context: .
-      dockerfile: docker/php/Dockerfile
+      dockerfile: Containerfile
     working_dir: /var/www/html
     command: sh -c "php artisan schedule:work"
     volumes:

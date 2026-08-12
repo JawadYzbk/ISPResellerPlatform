@@ -104,6 +104,15 @@ The tenant owner can use **Settings → Pilot readiness** or `php artisan platfo
 docker compose up --build
 ```
 
+Podman can build the development image directly from the repository root because the root `Containerfile` is the canonical development image definition:
+
+```powershell
+podman build -f Containerfile -t isp-reseller:dev .
+podman compose up --build
+```
+
+When using Podman Desktop's **Build** action, choose `D:\Development\ISPResellerPlatform` as the context and `Containerfile` as the build file. An empty build-file field produces a multi-stage parser error before the application is even read. Production uses the explicit multi-stage files in `docker/php/Dockerfile.production` and `docker/nginx/Dockerfile`; do not use the development `Containerfile` for that release image.
+
 The app is at [http://localhost:8000](http://localhost:8000), Vite serves the development assets at `http://127.0.0.1:5173`, Mailpit is at [http://localhost:8025](http://localhost:8025), and the MinIO console is at [http://localhost:9001](http://localhost:9001). Keep the `frontend` service running while using the local app; it owns the Vite dev server and HMR endpoint.
 
 On a fresh Docker database, run the demo fixture once after the stack is healthy:
