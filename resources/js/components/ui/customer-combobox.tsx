@@ -2,6 +2,7 @@ import { Check, ChevronsUpDown } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
 import { useMediaQuery } from '@/hooks/useMediaQuery';
+import { formatMoney } from '@/lib/format';
 import { createTranslator } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 import { usePage } from '@inertiajs/react';
@@ -141,6 +142,10 @@ export default function CustomerCombobox({
                                         <span className="block truncate text-xs text-muted">
                                             {customer.code}
                                             {customer.phone ? ` · ${customer.phone}` : ''}
+                                        </span>
+                                        <span className="block truncate text-xs text-muted">
+                                            {t(customer.status)} ·{' '}
+                                            {formatMoney(customer.balance_amount, customer.balance_currency)}
                                         </span>
                                     </span>
                                 </CommandItem>
