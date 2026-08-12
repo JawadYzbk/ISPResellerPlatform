@@ -178,6 +178,26 @@ test.describe('staff core journeys', () => {
         await expect(page.getByRole('heading', { name: 'Send one test message' })).toBeVisible();
     });
 
+    test('opens payment creation without Web Crypto randomUUID', async ({ page }) => {
+        const pageErrors: Error[] = [];
+        page.on('pageerror', (error) => pageErrors.push(error));
+        await page.addInitScript(() => {
+            if (globalThis.crypto) {
+                Object.defineProperty(globalThis.crypto, 'randomUUID', { configurable: true, value: undefined });
+            }
+        });
+
+        await signIn(page);
+        await page.goto('/customers');
+        await Promise.all([
+            page.waitForURL('**/customers/**'),
+            page.getByRole('link', { name: 'Open', exact: true }).first().click(),
+        ]);
+        await page.getByRole('link', { name: 'Take payment', exact: true }).click();
+        await expect(page.getByRole('heading', { name: 'Record payment' })).toBeVisible();
+        expect(pageErrors.map((error) => error.message)).not.toContain('crypto.randomUUID is not a function');
+    });
+
     test('manages a temporary WhatsApp Web.js account from the browser', async ({ page }) => {
         test.setTimeout(120_000);
         await signIn(page);
