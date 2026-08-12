@@ -285,7 +285,7 @@ Unique on `(ip_pool_id, address)`.
 | pop_id | FK nullable | |
 | reseller_id | FK nullable | denormalised from customer for reporting |
 | service_type | string 16 | copied from plan at creation; a service keeps its type |
-| provisioning_mode | string 24 | `manual`, `upstream_credential`, `mikrotik`, `radius`, `external` — selects the driver (`01 §2a`, `03 §5`). The enum ships in v1; `upstream_credential` resolves to `ManualDriver` until the P1 credential inventory (`08`) lands |
+| provisioning_mode | string 24 | `manual`, `upstream_credential`, `mikrotik`, `radius`, `external` — selects the driver (`01 §2a`, `03 §5`). The repository-side `upstream_credential` mode resolves to `CredentialDriver`, which reserves and releases tenant-scoped upstream inventory; external supplier/device acceptance remains an environment gate |
 | username | string 64 | PPPoE/hotspot login, **unique per tenant** |
 | password | string, encrypted | |
 | mac_address | string 17 nullable | for DHCP/static binding |

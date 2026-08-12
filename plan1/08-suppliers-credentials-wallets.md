@@ -1,6 +1,6 @@
 # 08 — Suppliers, Upstream Credentials, Partner Wallets & Settlement
 
-> **⚠️ P1 — deferred to protect the v1 timeline.** This whole module ships *after* v1 (build tickets **ISP-P1-01** and **ISP-P1-02** in `06`). The only reseller capability in v1 is the *basic* partner wallet + `reseller_amount` pricing described in `06 ISP-090`; suppliers, the upstream-credential inventory, price books, versioned commissions, and settlement statements all wait. The v1 schema already reserves room for it (the `upstream_credential` provisioning mode and the supplier-cost/settlement journal accounts exist), so P1 is purely additive. Read this file when planning P1; do not build it in v1.
+> **Repository delivery note.** The current build includes the supplier and upstream-credential repository slice: tenant-scoped suppliers, contracts, operational bills/payments, encrypted credential inventory, linked batch imports, lifecycle-driven assignment, reconciliation and audited reveal. Advanced reseller settlement remains a separate slice, and external supplier/device acceptance is still required before production enablement.
 
 This module covers the commercial machinery that sits **behind** a subscriber: where the bandwidth/credentials come from (suppliers), the inventory of purchased upstream accounts/vouchers, the reseller hierarchy that resells them, and the money that flows between all of them (wallets, commissions, settlement).
 
