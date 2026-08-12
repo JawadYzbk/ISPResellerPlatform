@@ -59,6 +59,7 @@ type Props = {
     currencies: CurrencyOption[];
     defaultCurrency: string;
     storageKey: string;
+    storageEncryptionKey: string;
 };
 
 function newIdempotencyKey(): string {
@@ -69,7 +70,15 @@ function csrfToken(): string {
     return document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ?? '';
 }
 
-export default function FieldIndex({ snapshot, shift, summary, currencies, defaultCurrency, storageKey }: Props) {
+export default function FieldIndex({
+    snapshot,
+    shift,
+    summary,
+    currencies,
+    defaultCurrency,
+    storageKey,
+    storageEncryptionKey,
+}: Props) {
     const [customers, setCustomers] = useState(snapshot.data.customers);
     const [currencyOptions, setCurrencyOptions] = useState(currencies);
     const [selectedCustomerId, setSelectedCustomerId] = useState('');
@@ -108,20 +117,23 @@ export default function FieldIndex({ snapshot, shift, summary, currencies, defau
         ) => {
             setPending(nextPending);
             setSyncToken(nextSyncToken);
-            await writeFieldState({
-                key: storageKey,
-                pending: nextPending,
-                sync_token: nextSyncToken,
-                cached_snapshot: {
+            await writeFieldState(
+                {
+                    key: storageKey,
+                    pending: nextPending,
                     sync_token: nextSyncToken,
-                    generated_at: new Date().toISOString(),
-                    customers: nextCustomers,
-                    currencies: nextCurrencies,
-                    default_currency: defaultCurrency,
+                    cached_snapshot: {
+                        sync_token: nextSyncToken,
+                        generated_at: new Date().toISOString(),
+                        customers: nextCustomers,
+                        currencies: nextCurrencies,
+                        default_currency: defaultCurrency,
+                    },
                 },
-            });
+                storageEncryptionKey,
+            );
         },
-        [currencyOptions, customers, defaultCurrency, storageKey, syncToken],
+        [currencyOptions, customers, defaultCurrency, storageEncryptionKey, storageKey, syncToken],
     );
 
     const refreshSnapshot = useCallback(async () => {
@@ -207,7 +219,7 @@ export default function FieldIndex({ snapshot, shift, summary, currencies, defau
 
     useEffect(() => {
         let mounted = true;
-        void readFieldState(storageKey).then(async (stored) => {
+        void readFieldState(storageKey, storageEncryptionKey).then(async (stored) => {
             if (!mounted) return;
 
             const cached = stored?.cached_snapshot;
@@ -234,12 +246,15 @@ export default function FieldIndex({ snapshot, shift, summary, currencies, defau
                     currencies: nextCurrencies,
                     default_currency: defaultCurrency || cached?.default_currency || nextCurrencies[0]?.code || 'USD',
                 };
-                await writeFieldState({
-                    key: storageKey,
-                    pending: stored?.pending ?? [],
-                    sync_token: nextSyncToken || null,
-                    cached_snapshot: cachedSnapshot,
-                });
+                await writeFieldState(
+                    {
+                        key: storageKey,
+                        pending: stored?.pending ?? [],
+                        sync_token: nextSyncToken || null,
+                        cached_snapshot: cachedSnapshot,
+                    },
+                    storageEncryptionKey,
+                );
             }
 
             setHydrated(true);
@@ -255,7 +270,7 @@ export default function FieldIndex({ snapshot, shift, summary, currencies, defau
             window.removeEventListener('online', markOnline);
             window.removeEventListener('offline', markOffline);
         };
-    }, [currencies, defaultCurrency, snapshot, storageKey]);
+    }, [currencies, defaultCurrency, snapshot, storageEncryptionKey, storageKey]);
 
     const wasOnline = useRef(online);
     const initialSyncStarted = useRef(false);
@@ -437,6 +452,7 @@ export default function FieldIndex({ snapshot, shift, summary, currencies, defau
                                 <button
                                     key={customer.id}
                                     type="button"
+                                    data-testid="field-customer-row"
                                     className={`flex w-full items-center gap-3 px-5 py-4 text-start transition ${selected ? 'bg-brand-soft' : 'hover:bg-sand'}`}
                                     onClick={() => setSelectedCustomerId(customer.id)}
                                 >
@@ -480,6 +496,7 @@ export default function FieldIndex({ snapshot, shift, summary, currencies, defau
                             <span className="field-label">Amount ({currency})</span>
                             <input
                                 className="field"
+                                aria-label="Field payment amount"
                                 type="number"
                                 inputMode="decimal"
                                 min="0"
@@ -520,8 +537,8 @@ export default function FieldIndex({ snapshot, shift, summary, currencies, defau
                         <CheckCircle2 size={17} /> Save payment to device
                     </button>
                     <p className="text-xs text-muted">
-                        Payments use a unique idempotency key and remain on this device until the server accepts or
-                        rejects them.
+                        Payments use a unique idempotency key and are encrypted in this browser until the server accepts
+                        or rejects them.
                     </p>
                 </form>
 

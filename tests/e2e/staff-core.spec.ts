@@ -365,40 +365,46 @@ test.describe('staff core journeys', () => {
             .poll(() =>
                 page.evaluate(
                     () =>
-                        new Promise<number>((resolve) => {
-                            const fallbackCount = Object.keys(localStorage)
+                        new Promise<boolean>((resolve) => {
+                            const hasEncryptedFallback = Object.keys(localStorage)
                                 .filter((key) => key.startsWith('isp-manager-field:'))
-                                .reduce((count, key) => {
+                                .some((key) => {
                                     try {
-                                        return Math.max(
-                                            count,
-                                            JSON.parse(localStorage.getItem(key) ?? '{}').cached_snapshot?.customers
-                                                ?.length ?? 0,
+                                        const record = JSON.parse(localStorage.getItem(key) ?? '{}');
+                                        return (
+                                            record.version === 2 &&
+                                            typeof record.iv === 'string' &&
+                                            typeof record.ciphertext === 'string' &&
+                                            !('cached_snapshot' in record)
                                         );
                                     } catch {
-                                        return count;
+                                        return false;
                                     }
-                                }, 0);
+                                });
                             const request = indexedDB.open('isp-manager-field', 1);
-                            request.onerror = () => resolve(fallbackCount);
+                            request.onerror = () => resolve(hasEncryptedFallback);
                             request.onsuccess = () => {
                                 const read = request.result
                                     .transaction('state', 'readonly')
                                     .objectStore('state')
                                     .getAll();
-                                read.onerror = () => resolve(fallbackCount);
+                                read.onerror = () => resolve(hasEncryptedFallback);
                                 read.onsuccess = () =>
                                     resolve(
-                                        Math.max(
-                                            fallbackCount,
-                                            ...read.result.map((item) => item.cached_snapshot?.customers?.length ?? 0),
-                                        ),
+                                        hasEncryptedFallback ||
+                                            read.result.some(
+                                                (record) =>
+                                                    record.version === 2 &&
+                                                    typeof record.iv === 'string' &&
+                                                    typeof record.ciphertext === 'string' &&
+                                                    !('cached_snapshot' in record),
+                                            ),
                                     );
                             };
                         }),
                 ),
             )
-            .toBeGreaterThan(0);
+            .toBe(true);
 
         await page.getByRole('button', { name: 'Clear device data' }).click();
         await expect(page.getByRole('alertdialog')).toBeVisible();
@@ -412,63 +418,20 @@ test.describe('staff core journeys', () => {
 
     test('attempts a restored field payment queue when the desk reopens online', async ({ page }) => {
         await signIn(page);
+        await page.goto('/billing/shifts');
+        const openShift = page.getByRole('button', { name: 'Open cash shift' });
+        if (await openShift.count()) await openShift.click();
+        await expect(page.getByRole('heading', { name: /Opened/ })).toBeVisible();
+
         await page.goto('/field');
         await expect(page.getByRole('heading', { name: 'Collector desk' })).toBeVisible();
 
-        await page.waitForFunction(
-            () =>
-                new Promise<boolean>((resolve) => {
-                    const request = indexedDB.open('isp-manager-field', 1);
-                    request.onerror = () => resolve(false);
-                    request.onsuccess = () => {
-                        const read = request.result.transaction('state', 'readonly').objectStore('state').getAll();
-                        read.onerror = () => resolve(false);
-                        read.onsuccess = () => resolve(read.result.length > 0);
-                    };
-                }),
-        );
-
-        const fieldState = await page.evaluate(
-            () =>
-                new Promise<Record<string, unknown>>((resolve, reject) => {
-                    const request = indexedDB.open('isp-manager-field', 1);
-                    request.onerror = () => reject(request.error);
-                    request.onsuccess = () => {
-                        const read = request.result.transaction('state', 'readonly').objectStore('state').getAll();
-                        read.onerror = () => reject(read.error);
-                        read.onsuccess = () => resolve(read.result[0]);
-                    };
-                }),
-        );
-
-        await page.evaluate(
-            (state) =>
-                new Promise<void>((resolve, reject) => {
-                    const request = indexedDB.open('isp-manager-field', 1);
-                    request.onerror = () => reject(request.error);
-                    request.onsuccess = () => {
-                        const database = request.result;
-                        const transaction = database.transaction('state', 'readwrite');
-                        const store = transaction.objectStore('state');
-                        const put = store.put({
-                            ...state,
-                            pending: [
-                                {
-                                    customer_id: (state.cached_snapshot as { customers: { id: string }[] }).customers[0]
-                                        .id,
-                                    amount: 1,
-                                    currency: (state.cached_snapshot as { default_currency: string }).default_currency,
-                                    method: 'cash',
-                                    idempotency_key: `e2e-reopen-${Date.now()}`,
-                                },
-                            ],
-                        });
-                        put.onerror = () => reject(put.error);
-                        put.onsuccess = () => resolve();
-                    };
-                }),
-            fieldState,
-        );
+        await page.getByTestId('field-customer-row').first().click();
+        await page.getByLabel('Field payment amount').fill('1');
+        await page.context().setOffline(true);
+        await page.getByRole('button', { name: 'Save payment to device' }).click();
+        await expect(page.getByText('Payment saved on this device')).toBeVisible();
+        await page.context().setOffline(false);
 
         const pushRequest = page.waitForRequest(
             (request) => request.url().endsWith('/field/push') && request.method() === 'POST',

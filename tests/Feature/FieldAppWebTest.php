@@ -34,7 +34,8 @@ it('serves the collector field surface from the authenticated web session', func
             ->where('snapshot.data.customers.0.id', $customer->public_id)
             ->where('currencies.0.code', 'USD')
             ->where('currencies.1.code', 'EUR')
-            ->where('currencies.2.code', 'LBP'));
+            ->where('currencies.2.code', 'LBP')
+            ->where('storageEncryptionKey', fn ($key): bool => is_string($key) && strlen(base64_decode($key, true) ?: '') === 32));
 });
 
 it('refreshes the collector field snapshot through the web session', function (): void {
