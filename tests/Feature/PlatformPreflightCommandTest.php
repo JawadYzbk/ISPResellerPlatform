@@ -85,6 +85,24 @@ it('requires privileged staff to finish two-factor enrollment for production', f
         ->expectsOutputToContain('Privileged staff two-factor enrollment');
 });
 
+it('requires at least one privileged staff account for every production tenant', function (): void {
+    Tenant::factory()->create();
+    config()->set([
+        'app.key' => 'base64:'.base64_encode(str_repeat('a', 32)),
+        'app.env' => 'production',
+        'app.debug' => false,
+        'app.url' => 'https://portal.isp.internal',
+        'session.secure' => true,
+        'security.enforce_web_two_factor' => true,
+        'queue.default' => 'database',
+        'cache.default' => 'database',
+    ]);
+
+    $this->artisan('platform:preflight', ['--production' => true])
+        ->assertExitCode(Command::FAILURE)
+        ->expectsOutputToContain('Privileged staff two-factor enrollment');
+});
+
 it('passes the production preflight for a production-shaped configuration', function (): void {
     config()->set([
         'app.key' => 'base64:'.base64_encode(str_repeat('a', 32)),

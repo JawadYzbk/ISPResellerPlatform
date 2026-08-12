@@ -215,10 +215,12 @@ final class PlatformPreflightCommand extends Command
 
             foreach (Tenant::query()->get(['id']) as $tenant) {
                 $ready = $tenancy->run($tenant, function (): bool {
-                    return User::query()
+                    $privilegedUsers = User::query()
                         ->whereNotNull('role')
-                        ->get()
-                        ->every(fn (User $user): bool => ! $user->requiresTwoFactor() || $user->two_factor_confirmed_at !== null);
+                        ->get();
+
+                    return $privilegedUsers->isNotEmpty()
+                        && $privilegedUsers->every(fn (User $user): bool => ! $user->requiresTwoFactor() || $user->two_factor_confirmed_at !== null);
                 });
 
                 if ($ready !== true) {
