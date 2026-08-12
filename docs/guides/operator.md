@@ -62,6 +62,8 @@ To collect through Whish Pay from the staff web app, open the customer payment f
 
 Use **Operations -> Tickets** to search by ticket/customer, filter the SLA queue, assign an operator, change an allowed status, and post either a public reply or an internal note. Closed tickets are immutable from the reply form. A reply to a resolved ticket records the return to in-progress before adding the message. Internal notes are never returned through the customer portal.
 
+When a resolved or closed ticket is rated by the customer, the portal keeps the 1–5 satisfaction score on the ticket and records an audit event. Staff can see the score on the ticket detail screen; customers can update their score from the portal support-ticket list. Ratings are unavailable while a ticket is still open or in progress.
+
 Support agents should keep ticket status and customer-facing messages current. Customer portal tickets are tenant- and customer-scoped; never copy an internal note into a public reply.
 
 Router incidents can broadcast notices only to customers affected by the router, POP, zone, or service scope recorded on the incident. A recovery closes the matching outage notice. If a provider is unavailable, the notification manager records the attempted and fallback channels; investigate the provider outage instead of resending manually without an idempotency key.
