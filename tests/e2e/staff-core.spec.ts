@@ -294,6 +294,10 @@ test.describe('staff core journeys', () => {
                 page.getByRole('heading', { name: 'Jumeler et affecter les comptes de livraison' }),
             ).toBeVisible();
             await expect(page.getByRole('button', { name: 'Ajouter un compte' })).toBeVisible();
+            await expect(page.getByText('Prêt', { exact: true }).first()).toBeVisible();
+            await page.getByRole('combobox', { name: 'job' }).first().click();
+            await expect(page.getByRole('option', { name: 'Livraison générale' })).toBeVisible();
+            await page.keyboard.press('Escape');
         } finally {
             await restoreEnglishProfile(page);
         }

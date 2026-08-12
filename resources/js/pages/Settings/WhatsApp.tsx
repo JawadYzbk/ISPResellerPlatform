@@ -56,14 +56,15 @@ type WhatsAppAccount = {
 
 type Props = { setup: Setup };
 
-const jobOptions = [
-    { value: 'general', label: 'General delivery' },
-    { value: 'billing', label: 'Billing and receipts' },
-    { value: 'collections', label: 'Collections' },
-    { value: 'support', label: 'Support and incidents' },
-    { value: 'operations', label: 'Operations' },
-    { value: 'marketing', label: 'Marketing' },
-] as const;
+const jobOptions = (t: (key: string) => string) =>
+    [
+        { value: 'general', label: t('General delivery') },
+        { value: 'billing', label: t('Billing and receipts') },
+        { value: 'collections', label: t('Collections') },
+        { value: 'support', label: t('Support and incidents') },
+        { value: 'operations', label: t('Operations') },
+        { value: 'marketing', label: t('Marketing') },
+    ] as const;
 
 type SelectOption = { value: string; label: string };
 
@@ -126,6 +127,8 @@ const statusLabels: Record<string, string> = {
 export default function WhatsAppSettings({ setup }: Props) {
     const { app } = usePage<PageProps>().props;
     const t = createTranslator(app.locale);
+    const jobs = jobOptions(t);
+    const statusLabel = (status: string) => t(statusLabels[status] ?? status);
     const ready =
         setup.mode === 'web'
             ? setup.accounts.some((account) => account.status === 'ready')
@@ -235,7 +238,7 @@ export default function WhatsAppSettings({ setup }: Props) {
                         <p
                             className={`mt-3 text-lg font-semibold ${problem ? 'text-coral' : ready ? 'text-emerald-700' : 'text-amber-700'}`}
                         >
-                            {statusLabels[setup.status] ?? setup.status}
+                            {statusLabel(setup.status)}
                         </p>
                         <p className="mt-1 text-sm text-muted">{t('Status is read server-side.')}</p>
                     </div>
@@ -259,11 +262,17 @@ export default function WhatsAppSettings({ setup }: Props) {
                         <p className="mt-3 text-sm text-muted">
                             {setup.mode === 'web'
                                 ? setup.status === 'qr'
-                                    ? 'On the phone for this workspace, open WhatsApp → Linked devices → Link a device, then scan the QR code shown here.'
+                                    ? `${t('On this workspace phone, open WhatsApp')} → ${t('Linked devices')} → ${t('Link a device')}, ${t('then scan the QR code shown here.')}`
                                     : setup.status === 'ready'
-                                      ? 'This workspace is already paired. The QR code appears when the private bridge needs a new device link.'
-                                      : 'The bridge status refreshes automatically while it starts or waits for pairing. You can also refresh manually.'
-                                : 'Cloud API credentials are managed in the deployment environment. No private token is stored in tenant settings.'}
+                                      ? t(
+                                            'This workspace is already paired. The QR code appears when the private bridge needs a new device link.',
+                                        )
+                                      : t(
+                                            'The bridge status refreshes automatically while it starts or waits for pairing. You can also refresh manually.',
+                                        )
+                                : t(
+                                      'Cloud API credentials are managed in the deployment environment. No private token is stored in tenant settings.',
+                                  )}
                         </p>
                         {setup.detail && (
                             <p className="mt-4 rounded-xl bg-sand px-4 py-3 text-sm text-muted">{setup.detail}</p>
@@ -281,7 +290,7 @@ export default function WhatsAppSettings({ setup }: Props) {
                         <div className="mx-auto rounded-2xl border border-line bg-white p-3 shadow-sm">
                             <img src={setup.qr_code} alt="Scan to pair WhatsApp Web.js" className="block size-48" />
                             <p className="mt-2 text-center text-xs text-muted">
-                                QR expires when the bridge refreshes it.
+                                {t('QR expires when the bridge refreshes it.')}
                             </p>
                         </div>
                     ) : (
@@ -293,7 +302,7 @@ export default function WhatsAppSettings({ setup }: Props) {
                             ) : (
                                 <ShieldAlert size={28} className="text-amber-700" />
                             )}
-                            <span className="sr-only">{statusLabels[setup.status] ?? setup.status}</span>
+                            <span className="sr-only">{statusLabel(setup.status)}</span>
                         </div>
                     )}
                 </div>
@@ -329,7 +338,7 @@ export default function WhatsAppSettings({ setup }: Props) {
                                 <span className="field-label">{t('Assigned job')}</span>
                                 <ResponsiveSelect
                                     name="job"
-                                    options={jobOptions}
+                                    options={jobs}
                                     value={createForm.data.job}
                                     onValueChange={(value) => createForm.setData('job', value)}
                                 />
@@ -356,7 +365,7 @@ export default function WhatsAppSettings({ setup }: Props) {
                                         <span
                                             className={`shrink-0 text-xs font-semibold ${account.status === 'ready' ? 'text-emerald-700' : account.status === 'unreachable' || account.status === 'auth_failure' ? 'text-coral' : 'text-amber-700'}`}
                                         >
-                                            {statusLabels[account.status] ?? account.status}
+                                            {statusLabel(account.status)}
                                         </span>
                                     </div>
 
@@ -377,7 +386,7 @@ export default function WhatsAppSettings({ setup }: Props) {
                                             <span className="field-label">{t('Job')}</span>
                                             <ResponsiveSelect
                                                 name="job"
-                                                options={jobOptions}
+                                                options={jobs}
                                                 value={accountJobs[account.id] ?? account.job}
                                                 onValueChange={(value) =>
                                                     setAccountJobs((current) => ({ ...current, [account.id]: value }))
@@ -403,8 +412,8 @@ export default function WhatsAppSettings({ setup }: Props) {
                                             disabled={setup.accounts.length <= 1}
                                             title={
                                                 setup.accounts.length <= 1
-                                                    ? 'Keep one WhatsApp account configured for this workspace.'
-                                                    : 'Delete this WhatsApp account and its private bridge session.'
+                                                    ? t('Keep one WhatsApp account configured for this workspace.')
+                                                    : t('Delete this WhatsApp account and its private bridge session.')
                                             }
                                             onClick={() => requestDeleteAccount(account)}
                                         >
@@ -412,7 +421,7 @@ export default function WhatsAppSettings({ setup }: Props) {
                                         </button>
                                         {account.last_ready_at && (
                                             <span className="text-xs text-muted">
-                                                Last ready {new Date(account.last_ready_at).toLocaleString()}
+                                                {t('Last ready')} {new Date(account.last_ready_at).toLocaleString()}
                                             </span>
                                         )}
                                     </div>
@@ -425,8 +434,8 @@ export default function WhatsAppSettings({ setup }: Props) {
                                                 className="size-36 rounded-lg bg-white p-2"
                                             />
                                             <p className="text-xs text-muted">
-                                                On this account's phone, open WhatsApp → Linked devices → Link a device,
-                                                then scan this QR code.
+                                                {t('On this account phone, open WhatsApp')} → {t('Linked devices')} →{' '}
+                                                {t('Link a device')}, {t('then scan this QR code.')}
                                             </p>
                                         </div>
                                     )}
@@ -454,8 +463,8 @@ export default function WhatsAppSettings({ setup }: Props) {
                             <AlertDialogTitle>{t('Delete this WhatsApp account?')}</AlertDialogTitle>
                             <AlertDialogDescription>
                                 {accountToDelete
-                                    ? `This removes ${accountToDelete.label}, its bridge session, and its pairing data. Message history stays in the ledger.`
-                                    : 'This removes the selected WhatsApp account and its bridge session.'}
+                                    ? `${t('This removes the WhatsApp account')} ${accountToDelete.label}. ${t('Message history stays in the ledger.')}`
+                                    : t('This removes the selected WhatsApp account and its bridge session.')}
                             </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
@@ -470,8 +479,9 @@ export default function WhatsAppSettings({ setup }: Props) {
                         <p className="eyebrow">{t('Controlled delivery check')}</p>
                         <h2 className="section-title mt-2">{t('Send one test message')}</h2>
                         <p className="mt-2 text-sm text-muted">
-                            Verify delivery to a dedicated operator phone before enabling customer notifications. The
-                            recipient is normalized server-side and the test is recorded in the message ledger.
+                            {t(
+                                'Verify delivery to a dedicated operator phone before enabling customer notifications. The recipient is normalized server-side and the test is recorded in the message ledger.',
+                            )}
                         </p>
                     </div>
                     <form
@@ -510,7 +520,7 @@ export default function WhatsAppSettings({ setup }: Props) {
                     </form>
                     {!ready && (
                         <p className="mt-3 text-xs text-amber-700">
-                            Pair the bridge and wait for a ready status before sending a test message.
+                            {t('Pair the bridge and wait for a ready status before sending a test message.')}
                         </p>
                     )}
                 </section>
@@ -520,9 +530,9 @@ export default function WhatsAppSettings({ setup }: Props) {
                         <QrCode size={16} className="text-brand" /> {t('Operational boundary')}
                     </div>
                     <p className="mt-2">
-                        WhatsApp Web.js is an unofficial client. Pair a dedicated business account, keep the bridge
-                        session volume private, and verify a controlled test message before enabling customer
-                        notifications.
+                        {t(
+                            'WhatsApp Web.js is an unofficial client. Pair a dedicated business account, keep the bridge session volume private, and verify a controlled test message before enabling customer notifications.',
+                        )}
                     </p>
                 </div>
             </div>

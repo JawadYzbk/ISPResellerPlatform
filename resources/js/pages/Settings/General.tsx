@@ -41,7 +41,19 @@ type Props = {
     setup: SetupSignals;
 };
 
-function SetupSignal({ label, detail, ready, href }: { label: string; detail: string; ready: boolean; href: string }) {
+function SetupSignal({
+    label,
+    detail,
+    ready,
+    href,
+    t,
+}: {
+    label: string;
+    detail: string;
+    ready: boolean;
+    href: string;
+    t: (key: string) => string;
+}) {
     return (
         <div className="rounded-xl border border-line bg-sand/50 p-4">
             <div className="flex items-start gap-3">
@@ -56,7 +68,7 @@ function SetupSignal({ label, detail, ready, href }: { label: string; detail: st
                 </div>
             </div>
             <Link href={href} className="mt-3 inline-flex text-xs font-semibold text-brand">
-                {ready ? 'Review setup' : 'Complete setup'} →
+                {ready ? t('Review setup') : t('Complete setup')} →
             </Link>
         </div>
     );
@@ -69,17 +81,17 @@ export default function GeneralSettings({ tenant, settings, currencies, payments
     const whatsappReady = setup.whatsapp.mode === 'web' ? setup.whatsapp.status === 'ready' : setup.whatsapp.configured;
     const whatsappDetail = whatsappReady
         ? setup.whatsapp.mode === 'web'
-            ? 'The Web.js bridge is paired and ready for controlled delivery.'
-            : 'Cloud API credentials are present.'
+            ? t('The Web.js bridge is paired and ready for controlled delivery.')
+            : t('Cloud API credentials are present.')
         : setup.whatsapp.status === 'disabled'
-          ? 'WhatsApp Web.js is disabled.'
-          : 'Provider credentials or pairing are still required.';
+          ? t('WhatsApp Web.js is disabled.')
+          : t('Provider credentials or pairing are still required.');
     const currencyDetail =
         setup.currency.base === setup.currency.collection
-            ? `${setup.currency.base} is used for billing and collection.`
+            ? `${setup.currency.base} ${t('is used for billing and collection.')}`
             : setup.currency.rate_ready
-              ? `Effective ${setup.currency.base}/${setup.currency.collection} conversion is available.`
-              : `Add an effective ${setup.currency.base}/${setup.currency.collection} rate before collecting.`;
+              ? `${t('Effective')} ${setup.currency.base}/${setup.currency.collection} ${t('conversion is available.')}`
+              : `${t('Add an effective')} ${setup.currency.base}/${setup.currency.collection} ${t('rate before collecting.')}`;
 
     const submit = (event: React.FormEvent) => {
         event.preventDefault();
@@ -109,13 +121,13 @@ export default function GeneralSettings({ tenant, settings, currencies, payments
                 </p>
                 <div className="mt-5 flex gap-2">
                     <Link href="/settings/general" className="button-secondary">
-                        General
+                        {t('General')}
                     </Link>
                     <Link href="/settings/readiness" className="button-secondary">
-                        Pilot readiness
+                        {t('Pilot readiness')}
                     </Link>
                     <Link href="/settings/users" className="button-secondary">
-                        Users and invitations
+                        {t('Users and invitations')}
                     </Link>
                     <Link href="/settings/whatsapp" className="button-secondary">
                         WhatsApp setup
@@ -183,23 +195,26 @@ export default function GeneralSettings({ tenant, settings, currencies, payments
                     </div>
                     <div className="mt-5 grid gap-4 md:grid-cols-3">
                         <SetupSignal
-                            label="Tenant branding"
+                            t={t}
+                            label={t('Tenant branding')}
                             detail={
                                 setup.logo_ready
-                                    ? 'Logo uploaded for staff and customer surfaces.'
-                                    : 'Upload a tenant logo for staff and customer surfaces.'
+                                    ? t('Logo uploaded for staff and customer surfaces.')
+                                    : t('Upload a tenant logo for staff and customer surfaces.')
                             }
                             ready={setup.logo_ready}
                             href="#workspace-identity"
                         />
                         <SetupSignal
-                            label="Currencies and FX"
+                            t={t}
+                            label={t('Currencies and FX')}
                             detail={currencyDetail}
                             ready={setup.currency.rate_ready}
                             href={setup.currency.rate_ready ? '#money-display' : '/billing/exchange-rates'}
                         />
                         <SetupSignal
-                            label="WhatsApp delivery"
+                            t={t}
+                            label={t('WhatsApp delivery')}
                             detail={whatsappDetail}
                             ready={whatsappReady}
                             href="/settings/whatsapp"
