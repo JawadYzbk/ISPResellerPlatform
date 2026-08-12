@@ -50,7 +50,7 @@ it('verifies Whish status server-side and posts a successful payment once', func
     app(Tenancy::class)->clear();
 
     $first = $this->getJson('/api/v1/webhooks/payments/whish/success?externalId=123456789&currency=USD');
-    $second = $this->getJson('/api/v1/webhooks/payments/whish/failure?externalId=123456789&currency=USD');
+    $second = $this->getJson('/api/v1/webhooks/payments/whish/failure?externalId=123456789');
 
     $first->assertOk()->assertJsonPath('data.status', 'succeeded');
     $second->assertOk()->assertJsonPath('data.status', 'succeeded');

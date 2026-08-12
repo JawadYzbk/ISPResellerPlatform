@@ -25,8 +25,8 @@ final class WhishPaymentCallbackController extends Controller
     {
         $externalId = (string) ($request->query('externalId') ?? $request->query('external_id') ?? '');
         $currency = strtoupper((string) ($request->query('currency') ?? ''));
-        if (preg_match('/^[1-9][0-9]*$/', $externalId) !== 1 || ! in_array($currency, ['USD', 'LBP', 'AED'], true)) {
-            return response()->json(['message' => 'A valid Whish external ID and currency are required.'], 422);
+        if (preg_match('/^[1-9][0-9]*$/', $externalId) !== 1) {
+            return response()->json(['message' => 'A valid Whish external ID is required.'], 422);
         }
 
         $attempt = PaymentAttempt::withoutGlobalScopes()
@@ -36,7 +36,7 @@ final class WhishPaymentCallbackController extends Controller
         if (! $attempt instanceof PaymentAttempt) {
             return response()->json(['message' => 'Whish payment attempt not found.'], 404);
         }
-        if (strtoupper($attempt->currency) !== $currency) {
+        if ($currency !== '' && strtoupper($attempt->currency) !== $currency) {
             return response()->json(['message' => 'Whish callback currency does not match the payment attempt.'], 422);
         }
 
