@@ -225,6 +225,10 @@ Route::middleware(['auth', 'tenant', '2fa'])->group(function (): void {
     Route::post('/partners', [PartnerController::class, 'store'])->middleware('recent-auth')->name('partners.store');
     Route::patch('/partners/{partner:public_id}', [PartnerController::class, 'update'])->middleware('recent-auth')->name('partners.update');
     Route::post('/partners/{partner:public_id}/price-books/items', [PartnerController::class, 'savePriceBookItem'])->middleware('recent-auth')->name('partners.price-books.items.store');
+    Route::post('/partners/{partner:public_id}/wallet/fund', [PartnerController::class, 'fundWallet'])->middleware('recent-auth')->name('partners.wallet.fund');
+    Route::post('/partners/{partner:public_id}/settlements', [PartnerController::class, 'storeSettlement'])->middleware('recent-auth')->name('partners.settlements.store');
+    Route::post('/settlements/{settlement:public_id}/approve', [PartnerController::class, 'approveSettlement'])->middleware('recent-auth')->name('settlements.approve');
+    Route::post('/settlements/{settlement:public_id}/pay', [PartnerController::class, 'paySettlement'])->middleware('recent-auth')->name('settlements.pay');
     Route::get('/reports/finance', [ReportController::class, 'finance'])->name('reports.finance');
     Route::get('/reports/supplier-payables', [ReportController::class, 'supplierPayables'])->name('reports.supplier-payables');
     Route::get('/reports/operations', [ReportController::class, 'operations'])->name('reports.operations');

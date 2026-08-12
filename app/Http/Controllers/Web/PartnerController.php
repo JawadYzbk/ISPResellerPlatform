@@ -2,17 +2,23 @@
 
 namespace App\Http\Controllers\Web;
 
+use App\Actions\ApprovePartnerSettlement;
 use App\Actions\CreatePartner;
+use App\Actions\FundPartnerWallet;
+use App\Actions\GeneratePartnerSettlement;
 use App\Actions\GetCurrencyCatalog;
+use App\Actions\PayPartnerSettlement;
 use App\Actions\ResolvePartnerPrice;
 use App\Actions\SavePartnerPriceBookItem;
 use App\Actions\UpdatePartner;
 use App\Http\Controllers\Controller;
 use App\Models\Partner;
+use App\Models\PartnerWallet;
 use App\Models\Plan;
 use App\Models\PriceBookItem;
 use App\Models\Settlement;
 use App\Models\User;
+use Carbon\CarbonImmutable;
 use DomainException;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -46,9 +52,12 @@ final class PartnerController extends Controller
                 'settlements' => [],
                 'showCost' => false,
                 'canManage' => $user->can('partners.manage'),
+                'canFund' => $user->can('wallets.fund'),
+                'canApprove' => $user->can('settlements.approve'),
                 'currencies' => $currencyCatalog->handle(),
             ]);
         }
+        $wallet = $partner->wallet;
         $showCost = $user->partner_id === null && $user->can('settlements.approve');
         $now = now();
         $partnerItems = PriceBookItem::query()
@@ -132,12 +141,19 @@ final class PartnerController extends Controller
                 'credit_limit' => $partner->credit_limit,
                 'low_balance_threshold' => $partner->low_balance_threshold,
                 'status' => $partner->status,
+                'wallet' => $wallet instanceof PartnerWallet ? [
+                    'currency' => $wallet->currency,
+                    'balance_amount' => $wallet->balance_amount,
+                    'available_amount' => $wallet->balance_amount + $partner->credit_limit,
+                ] : null,
             ],
             'catalog' => $catalog,
             'pricingPlans' => $user->can('partners.manage') ? $pricingPlans : [],
             'settlements' => $settlements,
             'showCost' => $showCost,
             'canManage' => $user->can('partners.manage'),
+            'canFund' => $user->can('wallets.fund'),
+            'canApprove' => $user->can('settlements.approve'),
             'currencies' => $currencyCatalog->handle(),
         ]);
     }
@@ -237,6 +253,74 @@ final class PartnerController extends Controller
         return redirect()->route('partners.commercial', ['partner' => $partner->public_id])->with('success', 'Partner price updated.');
     }
 
+    public function fundWallet(Request $request, Partner $partner, FundPartnerWallet $fund): RedirectResponse
+    {
+        $user = $request->user();
+        abort_unless($user instanceof User && $user->can('wallets.fund'), 403);
+        $partner = $this->visible($user)->whereKey($partner->id)->firstOrFail();
+        $wallet = $partner->wallet;
+        abort_unless($wallet instanceof PartnerWallet, 422, 'The partner wallet is not available.');
+        $data = $request->validate([
+            'amount' => ['required', 'integer', 'min:1'],
+            'idempotency_key' => ['required', 'uuid'],
+        ]);
+
+        $fund->handle($wallet, (int) $data['amount'], (string) $data['idempotency_key'], $user);
+
+        return redirect()->route('partners.commercial', ['partner' => $partner->public_id])->with('success', 'Partner wallet funded.');
+    }
+
+    public function storeSettlement(Request $request, Partner $partner, GeneratePartnerSettlement $generate): RedirectResponse
+    {
+        $user = $request->user();
+        abort_unless($user instanceof User && $user->can('settlements.approve'), 403);
+        $partner = $this->visible($user)->whereKey($partner->id)->firstOrFail();
+        $data = $request->validate([
+            'period_start' => ['required', 'date'],
+            'period_end' => ['required', 'date', 'after_or_equal:period_start'],
+            'currency' => ['required', 'string', 'size:3', Rule::in([$partner->currency])],
+        ]);
+
+        $generate->handle(
+            $partner,
+            CarbonImmutable::parse((string) $data['period_start']),
+            CarbonImmutable::parse((string) $data['period_end']),
+            strtoupper((string) $data['currency']),
+        );
+
+        return redirect()->route('partners.commercial', ['partner' => $partner->public_id])->with('success', 'Settlement statement created.');
+    }
+
+    public function approveSettlement(Request $request, Settlement $settlement, ApprovePartnerSettlement $approve): RedirectResponse
+    {
+        $user = $request->user();
+        abort_unless($user instanceof User && $user->can('settlements.approve'), 403);
+        $settlement = $this->visibleSettlement($user, $settlement);
+
+        try {
+            $approve->handle($settlement, $user);
+        } catch (DomainException $exception) {
+            throw ValidationException::withMessages(['status' => $exception->getMessage()]);
+        }
+
+        return redirect()->route('partners.commercial', ['partner' => $settlement->partner()->value('public_id')])->with('success', 'Settlement approved.');
+    }
+
+    public function paySettlement(Request $request, Settlement $settlement, PayPartnerSettlement $pay): RedirectResponse
+    {
+        $user = $request->user();
+        abort_unless($user instanceof User && $user->can('settlements.approve'), 403);
+        $settlement = $this->visibleSettlement($user, $settlement);
+
+        try {
+            $pay->handle($settlement, $user);
+        } catch (DomainException $exception) {
+            throw ValidationException::withMessages(['status' => $exception->getMessage()]);
+        }
+
+        return redirect()->route('partners.commercial', ['partner' => $settlement->partner()->value('public_id')])->with('success', 'Settlement paid.');
+    }
+
     /** @return Builder<Partner> */
     private function visible(User $user): Builder
     {
@@ -247,5 +331,12 @@ final class PartnerController extends Controller
         }
 
         return $query;
+    }
+
+    private function visibleSettlement(User $user, Settlement $settlement): Settlement
+    {
+        abort_unless($this->visible($user)->whereKey($settlement->partner_id)->exists(), 404);
+
+        return $settlement;
     }
 }

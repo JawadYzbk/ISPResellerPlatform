@@ -5,6 +5,7 @@ use App\Models\Partner;
 use App\Models\Plan;
 use App\Models\PriceBook;
 use App\Models\PriceBookItem;
+use App\Models\Settlement;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Support\Tenancy;
@@ -164,4 +165,55 @@ it('manages versioned partner price book items from the commercial workspace', f
     expect(PriceBookItem::query()->count())->toBe(2)
         ->and($first->refresh()->effective_to?->toDateString())->toBe('2026-09-01')
         ->and($latest->sell_amount_minor)->toBe(3200);
+});
+
+it('funds a partner wallet and completes settlement actions from the commercial workspace', function (): void {
+    $tenant = Tenant::create(['name' => 'Northline', 'slug' => 'northline', 'base_currency' => 'USD', 'collection_currency' => 'USD']);
+    app(Tenancy::class)->set($tenant);
+    $partner = app(CreatePartner::class)->handle('Reseller', 'RESELLER', 'USD');
+    $user = User::create([
+        'tenant_id' => $tenant->id,
+        'name' => 'Owner',
+        'email' => 'commercial-settlement@example.test',
+        'password' => Hash::make('password'),
+        'role' => 'tenant_owner',
+    ]);
+    app(CapabilitySeeder::class)->run();
+    $user->assignRole('tenant_owner');
+    $user->givePermissionTo(['wallets.view', 'wallets.fund', 'settlements.approve']);
+    $user->forceFill(['last_authenticated_at' => now()])->save();
+
+    $this->actingAs($user)
+        ->post(route('partners.wallet.fund', $partner), [
+            'amount' => 1000,
+            'idempotency_key' => '0198d9a4-0e80-72bb-9ef8-44a7bf6c2200',
+        ])
+        ->assertRedirect(route('partners.commercial', ['partner' => $partner->public_id]))
+        ->assertSessionHas('success', 'Partner wallet funded.');
+
+    $this->actingAs($user)
+        ->post(route('partners.settlements.store', $partner), [
+            'period_start' => '2026-08-01',
+            'period_end' => '2026-08-31',
+            'currency' => 'USD',
+        ])
+        ->assertRedirect(route('partners.commercial', ['partner' => $partner->public_id]))
+        ->assertSessionHas('success', 'Settlement statement created.');
+
+    app(Tenancy::class)->set($tenant);
+    $settlement = Settlement::query()->where('partner_id', $partner->id)->firstOrFail();
+
+    $this->actingAs($user)
+        ->post(route('settlements.approve', $settlement))
+        ->assertRedirect(route('partners.commercial', ['partner' => $partner->public_id]))
+        ->assertSessionHas('success', 'Settlement approved.');
+
+    $this->actingAs($user)
+        ->post(route('settlements.pay', $settlement))
+        ->assertRedirect(route('partners.commercial', ['partner' => $partner->public_id]))
+        ->assertSessionHas('success', 'Settlement paid.');
+
+    app(Tenancy::class)->set($tenant);
+    expect($partner->wallet()->value('balance_amount'))->toBe(1000)
+        ->and($settlement->refresh()->status)->toBe('paid');
 });
