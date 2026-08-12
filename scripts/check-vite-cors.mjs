@@ -1,7 +1,13 @@
 import assert from 'node:assert/strict';
 import { createServer } from 'vite';
 
-const allowedOrigins = ['http://localhost:8000', 'http://127.0.0.1:8000', 'http://[::1]:8000'];
+const allowedOrigins = [
+    'http://localhost:8000',
+    'http://127.0.0.1:8000',
+    'http://[::1]:8000',
+    'http://ispresellerplatform.test',
+    'http://ispresellerplatform.test:8000',
+];
 const rejectedOrigins = ['http://127.0.0.1:5173', 'http://example.test:8000'];
 const server = await createServer({
     configFile: 'vite.config.js',
@@ -13,9 +19,16 @@ try {
     const address = server.httpServer?.address();
     assert.equal(typeof address, 'object');
     assert.ok(address && 'port' in address);
+    const host =
+        address.address === '0.0.0.0'
+            ? '127.0.0.1'
+            : address.family === 'IPv6'
+              ? `[${address.address}]`
+              : address.address;
+    const baseUrl = `http://${host}:${address.port}`;
 
     for (const origin of allowedOrigins) {
-        const response = await fetch(`http://127.0.0.1:${address.port}/@vite/client`, {
+        const response = await fetch(`${baseUrl}/@vite/client`, {
             headers: { Origin: origin },
         });
 
@@ -24,7 +37,7 @@ try {
     }
 
     for (const origin of rejectedOrigins) {
-        const response = await fetch(`http://127.0.0.1:${address.port}/@vite/client`, {
+        const response = await fetch(`${baseUrl}/@vite/client`, {
             headers: { Origin: origin },
         });
 

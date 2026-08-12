@@ -21,4 +21,4 @@ if [ ! -f "$build_stamp" ] || [ "$(cat "$build_stamp")" != "$source_hash" ] || [
     printf '%s\n' "$source_hash" > "$build_stamp"
 fi
 
-exec tail -f /dev/null
+exec npm run dev -- --host 0.0.0.0

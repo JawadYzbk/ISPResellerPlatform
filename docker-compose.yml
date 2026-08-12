@@ -140,6 +140,8 @@ services:
     image: node:22-alpine
     working_dir: /var/www/html
     command: sh docker/frontend/start-development.sh
+    ports:
+      - "5173:5173"
     volumes:
       - .:/var/www/html
       - frontend-node-modules:/var/www/html/node_modules
