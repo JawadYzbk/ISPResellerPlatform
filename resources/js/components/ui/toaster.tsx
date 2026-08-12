@@ -1,10 +1,56 @@
-import { usePage } from '@inertiajs/react';
+import { router, usePage } from '@inertiajs/react';
 import { CheckCircle2, CircleAlert } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 
 import { Toast, ToastDescription, ToastProvider, ToastTitle, ToastViewport } from '@/components/ui/toast';
-import { useToast } from '@/components/ui/use-toast';
+import { toast as notify, useToast } from '@/components/ui/use-toast';
 import type { PageProps } from '@/types';
+
+const firstErrorMessage = (errors: Record<string, unknown>) =>
+    Object.values(errors)
+        .flatMap((value) => (Array.isArray(value) ? value : [value]))
+        .find((value): value is string => typeof value === 'string' && value.trim().length > 0);
+
+if (typeof window !== 'undefined') {
+    router.on('error', (event) => {
+        const message = firstErrorMessage(event.detail.errors as Record<string, unknown>);
+
+        if (message) {
+            notify({
+                title: 'Please check the form',
+                description: message,
+                variant: 'destructive',
+                duration: 8000,
+            });
+        }
+    });
+
+    router.on('httpException', (event) => {
+        const status = event.detail.response.status;
+        const messages: Record<number, string> = {
+            401: 'Your session has expired. Sign in again to continue.',
+            403: 'You do not have permission to perform this action.',
+            404: 'The requested record could not be found.',
+            419: 'Your session expired. Refresh the page and try again.',
+        };
+
+        notify({
+            title: 'Request failed',
+            description: messages[status] ?? 'The server could not complete this action. Try again.',
+            variant: 'destructive',
+            duration: 8000,
+        });
+    });
+
+    router.on('networkError', (event) => {
+        notify({
+            title: 'Connection problem',
+            description: event.detail.error.message || 'Unable to reach the server. Try again.',
+            variant: 'destructive',
+            duration: 8000,
+        });
+    });
+}
 
 export function Toaster() {
     const { toasts, toast, dismiss } = useToast();

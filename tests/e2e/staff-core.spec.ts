@@ -456,6 +456,16 @@ test.describe('staff core journeys', () => {
         }
     });
 
+    test('shows validation feedback when an action is rejected', async ({ page }) => {
+        await signIn(page);
+        await page.goto('/profile');
+        await page.getByLabel('Name').fill('');
+        await page.getByRole('button', { name: 'Save profile' }).click();
+
+        await expect(page.getByTestId('flash-toast')).toContainText('The name field is required.');
+        await expect(page.locator('.field-error')).toContainText('The name field is required.');
+    });
+
     test('renders the shared shell in French after switching locale', async ({ page }) => {
         test.setTimeout(90_000);
         await signIn(page);
