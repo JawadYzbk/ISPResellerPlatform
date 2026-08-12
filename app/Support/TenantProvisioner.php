@@ -31,7 +31,7 @@ final class TenantProvisioner
                 ]);
             }
 
-            $currencyDefinitions = array_fill_keys(['USD', 'EUR', 'LBP'], [
+            $currencyDefinitions = array_fill_keys(['USD', 'EUR', 'LBP', 'AED'], [
                 'is_base' => false,
                 'is_collection' => false,
             ]);
@@ -90,6 +90,7 @@ final class TenantProvisioner
             'USD' => 'United States Dollar',
             'EUR' => 'Euro',
             'LBP' => 'Lebanese Pound',
+            'AED' => 'United Arab Emirates Dirham',
             default => strtoupper($currency),
         };
     }

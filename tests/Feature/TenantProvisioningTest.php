@@ -31,6 +31,7 @@ it('provisions the operational defaults for a new tenant', function (): void {
     expect(Branch::where('is_default', true)->count())->toBe(1)
         ->and(Zone::where('code', 'DEFAULT')->exists())->toBeTrue()
         ->and(Currency::where('code', 'USD')->exists())->toBeTrue()
+        ->and(Currency::where('code', 'AED')->where('is_active', true)->exists())->toBeTrue()
         ->and(Currency::where('code', 'LBP')->exists())->toBeTrue()
         ->and(DocumentSequence::count())->toBe(7)
         ->and(DocumentSequence::where('key', 'work_order')->exists())->toBeTrue();
