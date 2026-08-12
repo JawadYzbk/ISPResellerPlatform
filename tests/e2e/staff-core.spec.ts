@@ -310,18 +310,16 @@ test.describe('staff core journeys', () => {
 
     test('manages a temporary WhatsApp Web.js account from the browser', async ({ page }) => {
         test.setTimeout(120_000);
+        const bridgeHealthUrl = process.env.E2E_WHATSAPP_BRIDGE_HEALTH_URL ?? 'http://127.0.0.1:3001/health';
+        const bridgeHealth = await page.request.get(bridgeHealthUrl, { timeout: 1_500 }).catch(() => null);
+        test.skip(
+            bridgeHealth?.ok() !== true,
+            'The optional WhatsApp Web.js bridge is not healthy in this environment.',
+        );
+
         await signIn(page);
         await page.goto('/settings/whatsapp');
         await expect(page.getByRole('heading', { name: 'WhatsApp delivery' })).toBeVisible();
-
-        test.skip(
-            (await page.getByText('WhatsApp Web.js', { exact: true }).count()) === 0,
-            'Web.js is disabled in this environment.',
-        );
-        test.skip(
-            (await page.getByText('Bridge unreachable', { exact: true }).count()) > 0,
-            'The optional Web.js bridge is not running in this environment.',
-        );
 
         const label = `E2E temporary ${Date.now()}`;
         const accountCard = page.locator('div.rounded-2xl.border.border-line.bg-white.p-5').filter({ hasText: label });
