@@ -104,3 +104,37 @@ it('shows the page to viewers but forbids IP pool changes without provisioning c
         ])
         ->assertForbidden();
 });
+
+it('updates an IP pool without changing its CIDR identity', function (): void {
+    $tenant = Tenant::create(['name' => 'Northline', 'slug' => 'northline', 'base_currency' => 'USD', 'collection_currency' => 'USD']);
+    $user = ipPoolOperationsUser($tenant);
+    $user->forceFill(['last_authenticated_at' => now()])->save();
+    app(Tenancy::class)->set($tenant);
+    $pool = IpPool::create([
+        'name' => 'Subscriber IPv4',
+        'cidr' => '10.20.10.0/24',
+        'gateway' => '10.20.10.1',
+        'version' => 4,
+        'type' => 'dynamic',
+        'is_active' => true,
+    ]);
+
+    $this->actingAs($user)
+        ->patch(route('operations.ip-pools.update', $pool), [
+            'name' => 'Subscriber IPv4 - suspended',
+            'gateway' => '10.20.10.254',
+            'type' => 'static',
+            'is_active' => false,
+        ])
+        ->assertRedirect(route('operations.ip-pools', ['pool_id' => $pool->id]));
+
+    expect($pool->refresh()->only(['name', 'cidr', 'gateway', 'type', 'version', 'is_active']))
+        ->toMatchArray([
+            'name' => 'Subscriber IPv4 - suspended',
+            'cidr' => '10.20.10.0/24',
+            'gateway' => '10.20.10.254',
+            'type' => 'static',
+            'version' => 4,
+            'is_active' => false,
+        ]);
+});

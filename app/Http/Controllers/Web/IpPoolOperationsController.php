@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Web;
 use App\Actions\CreateIpAddress;
 use App\Actions\CreateIpPool;
 use App\Actions\ListIpPools;
+use App\Actions\UpdateIpPool;
 use App\Http\Controllers\Controller;
 use App\Models\IpAddress;
 use App\Models\IpPool;
@@ -105,5 +106,25 @@ final class IpPoolOperationsController extends Controller
         }
 
         return redirect()->route('operations.ip-pools', ['pool_id' => $pool->id])->with('success', "Address {$validated['address']} recorded.");
+    }
+
+    public function updatePool(Request $request, IpPool $pool, UpdateIpPool $update): RedirectResponse
+    {
+        $user = $request->user();
+        abort_unless($user instanceof User && $user->can('network.provision'), 403);
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255', Rule::unique('ip_pools', 'name')->where('tenant_id', $user->tenant_id)->ignore($pool->id)],
+            'gateway' => ['nullable', 'ip'],
+            'type' => ['required', Rule::in(['dynamic', 'static', 'blocked'])],
+            'router_id' => [Rule::excludeIf(fn (): bool => blank($request->input('router_id'))), Rule::exists('routers', 'id')->where('tenant_id', $user->tenant_id)],
+            'is_active' => ['required', 'boolean'],
+        ]);
+        try {
+            $update->handle($pool, $validated);
+        } catch (InvalidArgumentException $exception) {
+            throw ValidationException::withMessages(['gateway' => $exception->getMessage()]);
+        }
+
+        return redirect()->route('operations.ip-pools', ['pool_id' => $pool->id])->with('success', "IP pool {$pool->name} updated.");
     }
 }

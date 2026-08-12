@@ -153,6 +153,7 @@ Route::middleware(['auth', 'tenant', '2fa'])->group(function (): void {
     Route::post('/operations/pops/{pop}/upstream-links', [PopOperationsController::class, 'storeUpstreamLink'])->middleware('recent-auth')->name('operations.pops.upstream-links.store');
     Route::get('/operations/ip-pools', [IpPoolOperationsController::class, 'index'])->name('operations.ip-pools');
     Route::post('/operations/ip-pools', [IpPoolOperationsController::class, 'storePool'])->middleware('recent-auth')->name('operations.ip-pools.store');
+    Route::patch('/operations/ip-pools/{pool}', [IpPoolOperationsController::class, 'updatePool'])->middleware('recent-auth')->name('operations.ip-pools.update');
     Route::post('/operations/ip-pools/{pool}/addresses', [IpPoolOperationsController::class, 'storeAddress'])->middleware('recent-auth')->name('operations.ip-pools.addresses.store');
     Route::get('/billing/invoices', [BillingController::class, 'invoices'])->name('billing.invoices');
     Route::get('/billing/invoices/{invoice:public_id}', [BillingController::class, 'showInvoice'])->name('billing.invoices.show');
