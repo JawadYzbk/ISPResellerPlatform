@@ -27,10 +27,21 @@ export function currencyFractionDigits(currency: string, locale = 'en-US'): numb
 
 export function parseMoneyToMinor(value: string, currency: string): number | null {
     const normalized = value.trim();
-    if (!/^\d+(?:\.\d+)?$/.test(normalized)) return null;
+    const match = /^(\d+)(?:\.(\d+))?$/.exec(normalized);
+    if (!match) return null;
 
-    const amount = Number(normalized) * 10 ** currencyFractionDigits(currency);
-    return Number.isSafeInteger(Math.round(amount)) && amount > 0 ? Math.round(amount) : null;
+    const fractionDigits = currencyFractionDigits(currency);
+    const fractionalPart = match[2] ?? '';
+    const discardedDigits = fractionalPart.slice(fractionDigits);
+    if (discardedDigits !== '' && /[1-9]/.test(discardedDigits)) return null;
+
+    const scale = 10n ** BigInt(fractionDigits);
+    const major = BigInt(match[1]);
+    const minorFraction = BigInt(fractionalPart.slice(0, fractionDigits).padEnd(fractionDigits, '0') || '0');
+    const amount = major * scale + minorFraction;
+    const safeMaximum = BigInt(Number.MAX_SAFE_INTEGER);
+
+    return amount > 0n && amount <= safeMaximum ? Number(amount) : null;
 }
 
 export function formatDuration(startedAt: string | null, endedAt: string | null): string {
