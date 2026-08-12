@@ -220,6 +220,12 @@ final class PartnerController extends Controller
             'max_amount_minor' => ['nullable', 'integer', 'gte:min_amount_minor'],
             'effective_from' => ['required', 'date'],
         ]);
+        if (($data['min_amount_minor'] ?? null) !== null && (int) $data['sell_amount_minor'] < (int) $data['min_amount_minor']) {
+            throw ValidationException::withMessages(['sell_amount_minor' => 'The sell price cannot be below the configured floor.']);
+        }
+        if (($data['max_amount_minor'] ?? null) !== null && (int) $data['sell_amount_minor'] > (int) $data['max_amount_minor']) {
+            throw ValidationException::withMessages(['sell_amount_minor' => 'The sell price cannot exceed the configured ceiling.']);
+        }
         $plan = Plan::query()->where('public_id', $data['plan_id'])->firstOrFail();
 
         try {

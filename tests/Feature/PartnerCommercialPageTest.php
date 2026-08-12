@@ -139,6 +139,10 @@ it('manages versioned partner price book items from the commercial workspace', f
         ])
         ->assertRedirect(route('partners.commercial', ['partner' => $partner->public_id]));
 
+    $this->actingAs($user)
+        ->get(route('partners.commercial', ['partner' => $partner->public_id]))
+        ->assertInertia(fn ($page) => $page->where('pricingPlans.0.override.sell_amount_minor', 3000));
+
     app(Tenancy::class)->set($tenant);
     $first = PriceBookItem::query()->firstOrFail();
     expect($first->buy_amount_minor)->toBe(2000)
