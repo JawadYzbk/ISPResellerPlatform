@@ -146,7 +146,7 @@ export default function PlansIndex({ plans, filters, addons, promotions, availab
             amount: (addon.amount_minor / 10 ** currencyFractionDigits(addon.currency)).toString(),
             currency: addon.currency,
             billing_period_days: addon.billing_period_days?.toString() ?? '',
-            status: 'active',
+            status: addon.status,
         });
     };
 
@@ -160,7 +160,7 @@ export default function PlansIndex({ plans, filters, addons, promotions, availab
             starts_at: promotion.starts_at.slice(0, 10),
             ends_at: promotion.ends_at?.slice(0, 10) ?? '',
             max_redemptions: promotion.max_redemptions?.toString() ?? '',
-            is_active: true,
+            is_active: promotion.is_active,
         });
         setSelectedPromoPlans(promotion.applies_to);
     };
@@ -264,6 +264,18 @@ export default function PlansIndex({ plans, filters, addons, promotions, availab
                                 onChange={(event) => addonForm.setData('billing_period_days', event.target.value)}
                                 placeholder="One-off if blank"
                             />
+                        </label>
+                        <label>
+                            <span className="field-label">Status</span>
+                            <ResponsiveSelect
+                                className="field"
+                                value={addonForm.data.status}
+                                onChange={(event) => addonForm.setData('status', event.target.value)}
+                            >
+                                <option value="active">Active</option>
+                                <option value="inactive">Archived</option>
+                            </ResponsiveSelect>
+                            {addonForm.errors.status && <p className="field-error">{addonForm.errors.status}</p>}
                         </label>
                         <label className="sm:col-span-2">
                             <span className="field-label">Description</span>
@@ -412,6 +424,19 @@ export default function PlansIndex({ plans, filters, addons, promotions, availab
                                 onChange={(event) => promotionForm.setData('max_redemptions', event.target.value)}
                                 placeholder="Unlimited"
                             />
+                        </label>
+                        <label>
+                            <span className="field-label">Status</span>
+                            <ResponsiveSelect
+                                className="field"
+                                value={promotionForm.data.is_active ? 'active' : 'inactive'}
+                                onChange={(event) =>
+                                    promotionForm.setData('is_active', event.target.value === 'active')
+                                }
+                            >
+                                <option value="active">Active</option>
+                                <option value="inactive">Archived</option>
+                            </ResponsiveSelect>
                         </label>
                         <fieldset className="sm:col-span-2">
                             <legend className="field-label">Apply to plans (blank means all plans)</legend>
