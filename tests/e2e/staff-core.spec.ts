@@ -131,6 +131,23 @@ test.describe('staff core journeys', () => {
         await expect(page.getByRole('heading', { name: 'Prices and settlements' })).toBeVisible({ timeout: 15_000 });
     });
 
+    test('creates a reseller price book entry from the commercial workspace', async ({ page }) => {
+        await signIn(page);
+        await page.goto('/partners/commercial');
+
+        await page.getByLabel('Name').first().fill('Browser Reseller');
+        await page.getByLabel('Code').first().fill('BROWSER-RESELLER');
+        await page.locator('#partner_currency').click();
+        await page.getByRole('option', { name: /USD/ }).click();
+        await page.getByRole('button', { name: 'Create partner' }).click();
+
+        await expect(page.getByText('Reseller price book', { exact: true })).toBeVisible();
+        const pricingSection = page.locator('section').filter({ hasText: 'Reseller price book' });
+        await expect(pricingSection.getByRole('button', { name: 'Save price' }).first()).toBeVisible();
+        await pricingSection.getByRole('button', { name: 'Save price' }).first().click();
+        await expect(page.getByText('Partner price updated.', { exact: true })).toBeVisible();
+    });
+
     test('keeps the customer queue and settings reachable for the owner', async ({ page }) => {
         await signIn(page);
 
