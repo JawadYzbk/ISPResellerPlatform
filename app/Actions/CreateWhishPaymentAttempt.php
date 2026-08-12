@@ -11,6 +11,7 @@ use App\Models\Invoice;
 use App\Models\PaymentAttempt;
 use App\Models\User;
 use DomainException;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Str;
 use Throwable;
 
@@ -43,19 +44,31 @@ final readonly class CreateWhishPaymentAttempt implements Action
         }
 
         $externalId = $this->externalId();
-        $attempt = PaymentAttempt::create([
-            'gateway' => 'whish',
-            'external_id' => $externalId,
-            'customer_id' => $customer->id,
-            'invoice_id' => $invoice?->id,
-            'actor_id' => $actor->id,
-            'amount' => $amount,
-            'currency' => $currency,
-            'status' => PaymentAttemptStatus::Pending,
-            'idempotency_key' => $idempotencyKey,
-            'invoice_reference' => $invoice?->number ?: 'COL-'.$externalId,
-            'metadata' => ['source' => 'collector'],
-        ]);
+        try {
+            $attempt = PaymentAttempt::create([
+                'gateway' => 'whish',
+                'external_id' => $externalId,
+                'customer_id' => $customer->id,
+                'invoice_id' => $invoice?->id,
+                'actor_id' => $actor->id,
+                'amount' => $amount,
+                'currency' => $currency,
+                'status' => PaymentAttemptStatus::Pending,
+                'idempotency_key' => $idempotencyKey,
+                'invoice_reference' => $invoice?->number ?: 'COL-'.$externalId,
+                'metadata' => ['source' => 'collector'],
+            ]);
+        } catch (UniqueConstraintViolationException $exception) {
+            $existing = PaymentAttempt::query()
+                ->where('gateway', 'whish')
+                ->where('idempotency_key', $idempotencyKey)
+                ->first();
+            if ($existing instanceof PaymentAttempt) {
+                return $existing;
+            }
+
+            throw $exception;
+        }
 
         try {
             $response = $this->gateway->create($attempt);
