@@ -8,6 +8,7 @@ use App\Actions\CreateSupplierContract;
 use App\Actions\GetCurrencyCatalog;
 use App\Actions\RecordSupplierPayment;
 use App\Actions\UpdateSupplier;
+use App\Actions\UpdateSupplierContract;
 use App\Http\Controllers\Controller;
 use App\Models\Supplier;
 use App\Models\SupplierBill;
@@ -100,6 +101,15 @@ final class SupplierOperationsController extends Controller
         $create->handle($supplier, $validated);
 
         return redirect()->route('operations.suppliers')->with('success', 'Supplier contract recorded.');
+    }
+
+    public function updateContract(Request $request, SupplierContract $contract, UpdateSupplierContract $update): RedirectResponse
+    {
+        $this->ensureManager($request);
+        $validated = $request->validate($this->contractRules($request->user()->tenant_id));
+        $update->handle($contract, $validated);
+
+        return redirect()->route('operations.suppliers')->with('success', 'Supplier contract updated.');
     }
 
     public function storeBill(Request $request, Supplier $supplier, CreateSupplierBill $create): RedirectResponse

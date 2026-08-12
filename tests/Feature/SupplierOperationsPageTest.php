@@ -114,3 +114,35 @@ it('updates and deactivates a supplier without removing its history', function (
             'is_active' => false,
         ]);
 });
+
+it('updates a supplier contract without changing its tenant or linked credentials', function (): void {
+    $tenant = Tenant::create(['name' => 'Northline', 'slug' => 'northline', 'base_currency' => 'USD', 'collection_currency' => 'USD']);
+    $user = supplierOperator($tenant, 'supplier-contract-update@example.test');
+    app(Tenancy::class)->set($tenant);
+    $supplier = Supplier::create(['name' => 'Transit ISP', 'code' => 'TRANSIT']);
+    $contract = SupplierContract::create([
+        'supplier_id' => $supplier->id,
+        'service_type' => 'upstream_credential',
+        'wholesale_currency' => 'USD',
+        'effective_from' => '2026-08-01',
+        'status' => 'active',
+    ]);
+
+    $this->actingAs($user)
+        ->patch(route('operations.suppliers.contracts.update', $contract), [
+            'service_type' => 'managed_upstream',
+            'wholesale_currency' => 'USD',
+            'effective_from' => '2026-08-15',
+            'effective_to' => '2027-08-14',
+            'status' => 'suspended',
+        ])
+        ->assertRedirect(route('operations.suppliers'));
+
+    $updated = $contract->refresh();
+
+    expect($updated->supplier_id)->toBe($supplier->id)
+        ->and($updated->service_type)->toBe('managed_upstream')
+        ->and($updated->effective_from->toDateString())->toBe('2026-08-15')
+        ->and($updated->effective_to?->toDateString())->toBe('2027-08-14')
+        ->and($updated->status)->toBe('suspended');
+});
