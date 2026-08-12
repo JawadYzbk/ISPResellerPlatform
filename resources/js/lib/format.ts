@@ -70,6 +70,14 @@ export function formatExpiryCountdown(value: string | null): string {
     return `Expires in ${days} days`;
 }
 
+export function entriesOrEmpty<T>(value: Record<string, T> | null | undefined): [string, T][] {
+    return Object.entries(value ?? {});
+}
+
+export function keysOrEmpty(value: object | null | undefined): string[] {
+    return Object.keys(value ?? {});
+}
+
 export function formatDate(value: string | null, locale = browserLocale()): string {
     if (!value) return '—';
     return new Intl.DateTimeFormat(locale, { dateStyle: 'medium' }).format(new Date(value));

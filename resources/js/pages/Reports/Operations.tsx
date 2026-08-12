@@ -4,7 +4,7 @@ import { router } from '@inertiajs/react';
 import { useState } from 'react';
 
 import AppLayout from '@/layouts/AppLayout';
-import { formatMoney } from '@/lib/format';
+import { entriesOrEmpty, formatMoney, keysOrEmpty } from '@/lib/format';
 import { createTranslator } from '@/lib/i18n';
 import type { OperationsReport, PageProps } from '@/types';
 
@@ -15,13 +15,13 @@ const titleize = (value: string) => value.replaceAll('_', ' ').replace(/\b\w/g, 
 function StatusList({ values, t }: { values: Record<string, number>; t: (key: string) => string }) {
     return (
         <div className="mt-4 divide-y divide-line text-sm">
-            {Object.entries(values).map(([status, total]) => (
+            {entriesOrEmpty(values).map(([status, total]) => (
                 <div key={status} className="flex items-center justify-between py-3">
                     <span className="font-semibold">{t(titleize(status))}</span>
                     <span className="text-muted">{total}</span>
                 </div>
             ))}
-            {Object.keys(values).length === 0 && <p className="py-3 text-sm text-muted">{t('No records yet.')}</p>}
+            {keysOrEmpty(values).length === 0 && <p className="py-3 text-sm text-muted">{t('No records yet.')}</p>}
         </div>
     );
 }
@@ -29,6 +29,13 @@ function StatusList({ values, t }: { values: Record<string, number>; t: (key: st
 export default function OperationsReportPage({ report }: Props) {
     const { app } = usePage<PageProps>().props;
     const t = createTranslator(app.locale);
+    const supplierCredentials = report.supplier_credentials ?? {
+        from: report.report_from ?? '',
+        to: report.report_to ?? '',
+        expiring_days: 30,
+        totals: { purchased: 0, assigned: 0, available: 0, expiring: 0, revoked_invalid: 0 },
+        by_supplier: [],
+    };
     const [from, setFrom] = useState(report.report_from);
     const [to, setTo] = useState(report.report_to);
     const query = `from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`;
@@ -149,16 +156,14 @@ export default function OperationsReportPage({ report }: Props) {
                     <div>
                         <h2 className="section-title">Supplier credential reconciliation</h2>
                         <p className="mt-1 text-sm text-muted">
-                            Purchased batches imported from {report.supplier_credentials.from} through{' '}
-                            {report.supplier_credentials.to}; live state is current.
+                            Purchased batches imported from {supplierCredentials.from} through {supplierCredentials.to};
+                            live state is current.
                         </p>
                     </div>
-                    <span className="text-xs text-muted">
-                        Expiring within {report.supplier_credentials.expiring_days} days
-                    </span>
+                    <span className="text-xs text-muted">Expiring within {supplierCredentials.expiring_days} days</span>
                 </div>
                 <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-                    {Object.entries(report.supplier_credentials.totals).map(([metric, total]) => (
+                    {entriesOrEmpty(supplierCredentials.totals).map(([metric, total]) => (
                         <div key={metric} className="rounded-lg bg-sand/50 p-4">
                             <p className="text-xs font-semibold uppercase tracking-wider text-muted">
                                 {titleize(metric)}
@@ -181,7 +186,7 @@ export default function OperationsReportPage({ report }: Props) {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-line">
-                            {report.supplier_credentials.by_supplier.map((supplier) => (
+                            {supplierCredentials.by_supplier.map((supplier) => (
                                 <tr key={supplier.code ?? supplier.name}>
                                     <td className="py-3 font-semibold">
                                         {supplier.name}
@@ -193,26 +198,26 @@ export default function OperationsReportPage({ report }: Props) {
                                     <td className="py-3 text-end">{supplier.expiring}</td>
                                     <td className="py-3 text-end">{supplier.revoked_invalid}</td>
                                     <td className="py-3 text-end">
-                                        {Object.entries(supplier.cost_by_currency).map(([currency, amount]) => (
+                                        {entriesOrEmpty(supplier.cost_by_currency).map(([currency, amount]) => (
                                             <span key={currency} className="ms-2 first:ms-0">
                                                 {formatMoney(amount, currency)}
                                             </span>
                                         ))}
-                                        {Object.keys(supplier.cost_by_currency).length === 0 && '—'}
+                                        {keysOrEmpty(supplier.cost_by_currency).length === 0 && '—'}
                                     </td>
                                 </tr>
                             ))}
                         </tbody>
                     </table>
-                    {report.supplier_credentials.by_supplier.length === 0 && (
+                    {supplierCredentials.by_supplier.length === 0 && (
                         <p className="py-4 text-sm text-muted">No supplier credential batches have been recorded.</p>
                     )}
                 </div>
-                {report.supplier_credentials.by_supplier.some((supplier) => supplier.contracts.length > 0) && (
+                {supplierCredentials.by_supplier.some((supplier) => supplier.contracts.length > 0) && (
                     <div className="mt-6 border-t border-line pt-5">
                         <h3 className="text-sm font-semibold">Cost by supplier / contract</h3>
                         <div className="mt-3 divide-y divide-line text-sm">
-                            {report.supplier_credentials.by_supplier.flatMap((supplier) =>
+                            {supplierCredentials.by_supplier.flatMap((supplier) =>
                                 supplier.contracts.map((contract) => (
                                     <div
                                         key={`${supplier.code ?? supplier.name}-${contract.id ?? contract.reference ?? 'unspecified'}`}
@@ -226,7 +231,7 @@ export default function OperationsReportPage({ report }: Props) {
                                         </span>
                                         <span className="text-muted">
                                             {contract.purchased} purchased ·{' '}
-                                            {Object.entries(contract.cost_by_currency)
+                                            {entriesOrEmpty(contract.cost_by_currency)
                                                 .map(([currency, amount]) => formatMoney(amount, currency))
                                                 .join(' · ') || 'No cost recorded'}
                                         </span>

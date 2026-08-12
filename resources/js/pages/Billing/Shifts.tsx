@@ -4,7 +4,7 @@ import { useState } from 'react';
 
 import StatusBadge from '@/components/StatusBadge';
 import AppLayout from '@/layouts/AppLayout';
-import { formatDate, formatMoney, parseMoneyToMinor } from '@/lib/format';
+import { entriesOrEmpty, formatDate, formatMoney, parseMoneyToMinor } from '@/lib/format';
 import type { PageProps, Paginator } from '@/types';
 
 type Shift = {
@@ -227,7 +227,7 @@ export default function ShiftsPage({ shifts, currentShift, currencies, canViewRe
                                         <td className="px-5 py-4 text-sm font-semibold">{collector.name}</td>
                                         <td className="px-5 py-4 text-sm text-muted">{collector.payment_count}</td>
                                         <td className="px-5 py-4 text-sm text-muted">
-                                            {Object.entries(collector.totals).map(([currency, amount]) => (
+                                            {entriesOrEmpty(collector.totals).map(([currency, amount]) => (
                                                 <p key={currency}>{formatMoney(amount, currency)}</p>
                                             ))}
                                         </td>
@@ -279,12 +279,12 @@ export default function ShiftsPage({ shifts, currentShift, currencies, canViewRe
                                         <StatusBadge status={shift.status} />
                                     </td>
                                     <td className="px-5 py-4 text-sm text-muted">
-                                        {Object.entries(shift.system_totals).map(([currency, amount]) => (
+                                        {entriesOrEmpty(shift.system_totals).map(([currency, amount]) => (
                                             <p key={currency}>{formatMoney(amount, currency)}</p>
                                         ))}
                                     </td>
                                     <td className="px-5 py-4 text-sm text-muted">
-                                        {Object.entries(shift.declared_totals).map(([currency, amount]) => (
+                                        {entriesOrEmpty(shift.declared_totals).map(([currency, amount]) => (
                                             <p key={currency}>{formatMoney(amount, currency)}</p>
                                         ))}
                                     </td>

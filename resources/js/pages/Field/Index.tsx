@@ -14,7 +14,7 @@ import {
     type FieldCustomerCache,
     type QueuedFieldPayment,
 } from '@/lib/field-store';
-import { currencyFractionDigits, formatMoney, parseMoneyToMinor } from '@/lib/format';
+import { currencyFractionDigits, entriesOrEmpty, formatMoney, parseMoneyToMinor } from '@/lib/format';
 
 type FieldCustomer = FieldCustomerCache;
 
@@ -362,7 +362,7 @@ export default function FieldIndex({
                         <p className="eyebrow">Today</p>
                         <p className="mt-2 text-lg font-semibold">{summary.payment_count} payment(s)</p>
                         <p className="mt-1 text-xs text-muted">
-                            {Object.entries(summary.totals)
+                            {entriesOrEmpty(summary.totals)
                                 .map(([code, value]) => formatMoney(value, code))
                                 .join(' · ') || 'Nothing posted yet'}
                         </p>

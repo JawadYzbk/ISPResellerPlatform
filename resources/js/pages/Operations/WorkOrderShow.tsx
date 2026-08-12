@@ -15,7 +15,7 @@ import {
 import StatusBadge from '@/components/StatusBadge';
 import SignaturePad from '@/components/SignaturePad';
 import AppLayout from '@/layouts/AppLayout';
-import { formatDate } from '@/lib/format';
+import { entriesOrEmpty, formatDate, keysOrEmpty } from '@/lib/format';
 
 type WorkOrder = {
     public_id: string;
@@ -107,7 +107,7 @@ export default function WorkOrderShowPage({ workOrder, bulkMaterials, scheduledA
     const signatureForm = useForm<{ file: File | null; signer_name: string }>({ file: null, signer_name: '' });
     const readingsForm = useForm({
         readings: Object.fromEntries(
-            [...readingKeys(workOrder.type), ...Object.keys(workOrder.readings)].map((key) => [
+            [...readingKeys(workOrder.type), ...keysOrEmpty(workOrder.readings)].map((key) => [
                 key,
                 workOrder.readings[key] ?? '',
             ]),
@@ -273,7 +273,7 @@ export default function WorkOrderShowPage({ workOrder, bulkMaterials, scheduledA
                             <h2 className="section-title">Completion checklist</h2>
                         </div>
                         <div className="mt-5 grid gap-3 sm:grid-cols-2">
-                            {Object.entries(workOrder.checklist).map(([key, value]) => (
+                            {entriesOrEmpty(workOrder.checklist).map(([key, value]) => (
                                 <div
                                     key={key}
                                     className="flex items-center justify-between gap-4 rounded-lg border border-line px-4 py-3 text-sm"
@@ -290,7 +290,7 @@ export default function WorkOrderShowPage({ workOrder, bulkMaterials, scheduledA
                                     </span>
                                 </div>
                             ))}
-                            {Object.keys(workOrder.checklist).length === 0 && (
+                            {keysOrEmpty(workOrder.checklist).length === 0 && (
                                 <p className="text-sm text-muted">No checklist items were recorded.</p>
                             )}
                         </div>
@@ -411,7 +411,7 @@ export default function WorkOrderShowPage({ workOrder, bulkMaterials, scheduledA
                         </p>
                         <form onSubmit={submitReadings} className="mt-5 space-y-4">
                             <div className="grid gap-4 sm:grid-cols-2">
-                                {Object.keys(readingsForm.data.readings).map((key) => (
+                                {keysOrEmpty(readingsForm.data.readings).map((key) => (
                                     <label key={key}>
                                         <span className="field-label capitalize">{key.replaceAll('_', ' ')}</span>
                                         <input

@@ -3,14 +3,14 @@ import { ArrowLeft, BarChart3, Download, Receipt, TrendingUp, Wallet } from 'luc
 import { useState } from 'react';
 
 import AppLayout from '@/layouts/AppLayout';
-import { formatMoney } from '@/lib/format';
+import { entriesOrEmpty, formatMoney, keysOrEmpty } from '@/lib/format';
 import { createTranslator } from '@/lib/i18n';
 import type { FinanceReport, PageProps } from '@/types';
 
 type Props = PageProps & { report: FinanceReport };
 
 const formatAmounts = (amounts: Record<string, number | null>) => {
-    const entries = Object.entries(amounts);
+    const entries = entriesOrEmpty(amounts);
 
     return entries.length === 0
         ? '—'
@@ -20,7 +20,7 @@ const formatAmounts = (amounts: Record<string, number | null>) => {
 };
 
 const formatRates = (rates: Record<string, number | null>) => {
-    const entries = Object.entries(rates);
+    const entries = entriesOrEmpty(rates);
 
     return entries.length === 0
         ? '—'
@@ -130,7 +130,7 @@ export default function FinanceReportPage({ report }: Props) {
             <div className="mt-6 card p-6">
                 <h2 className="section-title">{t('Currency detail')}</h2>
                 <div className="mt-4 divide-y divide-line text-sm">
-                    {Object.keys({ ...report.invoiced_by_currency, ...report.collected_by_currency }).map(
+                    {keysOrEmpty({ ...report.invoiced_by_currency, ...report.collected_by_currency }).map(
                         (currency) => (
                             <div key={currency} className="flex items-center justify-between py-3">
                                 <span className="font-semibold">{currency}</span>
@@ -159,7 +159,7 @@ export default function FinanceReportPage({ report }: Props) {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-line">
-                            {Object.entries(report.aging_by_currency).map(([currency, buckets]) => (
+                            {entriesOrEmpty(report.aging_by_currency).map(([currency, buckets]) => (
                                 <tr key={currency}>
                                     <td className="py-3 font-semibold">{currency}</td>
                                     <td className="py-3">{formatMoney(buckets.current, currency)}</td>
@@ -177,11 +177,11 @@ export default function FinanceReportPage({ report }: Props) {
                 <div className="card p-6">
                     <h2 className="section-title">{t('Revenue by plan')}</h2>
                     <div className="mt-4 divide-y divide-line text-sm">
-                        {Object.entries(report.revenue_by_plan).map(([plan, amounts]) => (
+                        {entriesOrEmpty(report.revenue_by_plan).map(([plan, amounts]) => (
                             <div key={plan} className="flex items-center justify-between py-3">
                                 <span className="font-semibold">{plan}</span>
                                 <span className="text-muted">
-                                    {Object.entries(amounts)
+                                    {entriesOrEmpty(amounts)
                                         .map(([currency, amount]) => formatMoney(amount, currency))
                                         .join(' · ')}
                                 </span>
@@ -208,23 +208,23 @@ export default function FinanceReportPage({ report }: Props) {
                 <div className="card p-6">
                     <h2 className="section-title">{t('Margin by POP')}</h2>
                     <div className="mt-4 divide-y divide-line text-sm">
-                        {Object.entries(report.margin_by_pop).map(([pop, amounts]) => (
+                        {entriesOrEmpty(report.margin_by_pop).map(([pop, amounts]) => (
                             <div key={pop} className="py-3">
                                 <div className="flex items-center justify-between">
                                     <span className="font-semibold">{pop}</span>
                                     <span className="font-semibold">
-                                        {Object.entries(amounts.margin_by_currency)
+                                        {entriesOrEmpty(amounts.margin_by_currency)
                                             .map(([currency, amount]) => formatMoney(amount, currency))
                                             .join(' · ')}
                                     </span>
                                 </div>
                                 <p className="mt-1 text-xs text-muted">
                                     {t('Revenue')}{' '}
-                                    {Object.entries(amounts.revenue_by_currency)
+                                    {entriesOrEmpty(amounts.revenue_by_currency)
                                         .map(([currency, amount]) => formatMoney(amount, currency))
                                         .join(' · ')}{' '}
                                     · {t('Upstream cost')}{' '}
-                                    {Object.entries(amounts.upstream_cost_by_currency)
+                                    {entriesOrEmpty(amounts.upstream_cost_by_currency)
                                         .map(([currency, amount]) => formatMoney(amount, currency))
                                         .join(' · ') || '—'}
                                 </p>
@@ -244,7 +244,7 @@ export default function FinanceReportPage({ report }: Props) {
                                     </span>
                                 </span>
                                 <span className="text-muted">
-                                    {Object.entries(collector.totals_by_currency)
+                                    {entriesOrEmpty(collector.totals_by_currency)
                                         .map(([currency, amount]) => formatMoney(amount, currency))
                                         .join(' · ')}
                                 </span>

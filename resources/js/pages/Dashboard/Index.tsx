@@ -14,6 +14,7 @@ import {
 
 import StatusBadge from '@/components/StatusBadge';
 import AppLayout from '@/layouts/AppLayout';
+import { entriesOrEmpty } from '@/lib/format';
 import { formatMoney } from '@/lib/format';
 import { createTranslator } from '@/lib/i18n';
 import type { AttentionQueueItem, DashboardMetrics, PageProps } from '@/types';
@@ -120,10 +121,10 @@ export default function Dashboard({ metrics, attentionQueue }: Props) {
                                             {t('Collections')}
                                         </p>
                                         <div className="mt-3 space-y-1">
-                                            {Object.entries(collectionsTodayByCurrency).length === 0 ? (
+                                            {entriesOrEmpty(collectionsTodayByCurrency).length === 0 ? (
                                                 <p className="font-display text-2xl font-semibold">—</p>
                                             ) : (
-                                                Object.entries(collectionsTodayByCurrency).map(([currency, amount]) => (
+                                                entriesOrEmpty(collectionsTodayByCurrency).map(([currency, amount]) => (
                                                     <p key={currency} className="font-display text-2xl font-semibold">
                                                         {formatMoney(amount, currency)}
                                                     </p>
@@ -296,7 +297,7 @@ function OwnerFinancePanel({ owner }: { owner: NonNullable<DashboardMetrics['own
         { label: t('Margin'), value: formatMoney(owner.margin, owner.baseCurrency), icon: TrendingUp },
     ];
     const maxServices = Math.max(1, ...statusTrend.flatMap((month) => [month.active, month.suspended]));
-    const currencies = Object.entries(currencyMetrics);
+    const currencies = entriesOrEmpty(currencyMetrics);
 
     return (
         <section className="card mt-6 overflow-hidden" aria-label="Owner finance metrics">

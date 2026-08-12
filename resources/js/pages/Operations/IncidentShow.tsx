@@ -3,7 +3,7 @@ import { AlertTriangle, ArrowLeft, CalendarClock, Router, Server, UserRound } fr
 
 import StatusBadge, { type Status } from '@/components/StatusBadge';
 import AppLayout from '@/layouts/AppLayout';
-import { formatDate } from '@/lib/format';
+import { entriesOrEmpty, formatDate, keysOrEmpty } from '@/lib/format';
 import type { PageProps } from '@/types';
 
 type Incident = {
@@ -157,7 +157,7 @@ export default function IncidentShow({ incident }: Props) {
                     <section className="card p-6">
                         <h2 className="section-title">Detection metadata</h2>
                         <dl className="mt-5 space-y-3 text-sm">
-                            {Object.entries(incident.metadata).map(([key, value]) => (
+                            {entriesOrEmpty(incident.metadata).map(([key, value]) => (
                                 <div
                                     key={key}
                                     className="flex justify-between gap-4 border-b border-line pb-3 last:border-0 last:pb-0"
@@ -166,7 +166,7 @@ export default function IncidentShow({ incident }: Props) {
                                     <dd className="text-end font-semibold">{String(value)}</dd>
                                 </div>
                             ))}
-                            {Object.keys(incident.metadata).length === 0 && (
+                            {keysOrEmpty(incident.metadata).length === 0 && (
                                 <p className="text-sm text-muted">No additional metadata recorded.</p>
                             )}
                         </dl>
