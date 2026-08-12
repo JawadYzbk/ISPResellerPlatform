@@ -15,6 +15,7 @@ import {
     type QueuedFieldPayment,
 } from '@/lib/field-store';
 import { currencyFractionDigits, entriesOrEmpty, formatMoney, parseMoneyToMinor } from '@/lib/format';
+import { createIdempotencyKey } from '@/lib/idempotency';
 
 type FieldCustomer = FieldCustomerCache;
 
@@ -63,7 +64,7 @@ type Props = {
 };
 
 function newIdempotencyKey(): string {
-    return globalThis.crypto?.randomUUID?.() ?? `field-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    return createIdempotencyKey('field');
 }
 
 function csrfToken(): string {

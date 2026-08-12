@@ -6,6 +6,7 @@ import { useState } from 'react';
 import StatusBadge from '@/components/StatusBadge';
 import AppLayout from '@/layouts/AppLayout';
 import { formatDate } from '@/lib/format';
+import { createIdempotencyKey } from '@/lib/idempotency';
 import type { PageProps, Paginator } from '@/types';
 
 type WorkOrder = {
@@ -165,7 +166,7 @@ export default function WorkOrdersPage({ workOrders, filters }: Props) {
                                                 className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand"
                                                 onClick={() =>
                                                     router.post(`/operations/work-orders/${order.public_id}/complete`, {
-                                                        idempotency_key: crypto.randomUUID(),
+                                                        idempotency_key: createIdempotencyKey('work-order'),
                                                     })
                                                 }
                                             >

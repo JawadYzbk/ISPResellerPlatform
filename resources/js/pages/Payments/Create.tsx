@@ -6,6 +6,7 @@ import { ArrowLeft, CreditCard, QrCode, Receipt, Save } from 'lucide-react';
 import AppLayout from '@/layouts/AppLayout';
 import { currencyFractionDigits, formatMoney, parseMoneyToMinor } from '@/lib/format';
 import { createTranslator } from '@/lib/i18n';
+import { createIdempotencyKey } from '@/lib/idempotency';
 import type { PageProps } from '@/types';
 
 type CustomerSummary = {
@@ -58,7 +59,7 @@ export default function PaymentCreate({ customer, invoices, defaultCurrency, pay
         currency: defaultCurrency ?? customer.balance_currency,
         method: 'cash',
         invoice_id: '',
-        idempotency_key: crypto.randomUUID(),
+        idempotency_key: createIdempotencyKey('payment'),
         fx_override: false,
         fx_rate_numerator: '',
         fx_rate_denominator: '',
@@ -150,7 +151,7 @@ export default function PaymentCreate({ customer, invoices, defaultCurrency, pay
             amount: amountMinor,
             currency: form.data.currency,
             invoice_id: form.data.invoice_id || null,
-            idempotency_key: crypto.randomUUID(),
+            idempotency_key: createIdempotencyKey('whish-payment'),
         });
     };
 

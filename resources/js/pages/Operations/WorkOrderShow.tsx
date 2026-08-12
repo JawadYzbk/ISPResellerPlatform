@@ -16,6 +16,7 @@ import StatusBadge from '@/components/StatusBadge';
 import SignaturePad from '@/components/SignaturePad';
 import AppLayout from '@/layouts/AppLayout';
 import { entriesOrEmpty, formatDate, keysOrEmpty } from '@/lib/format';
+import { createIdempotencyKey } from '@/lib/idempotency';
 
 type WorkOrder = {
     public_id: string;
@@ -165,7 +166,7 @@ export default function WorkOrderShowPage({ workOrder, bulkMaterials, scheduledA
                         className="button-primary"
                         onClick={() =>
                             router.post(`/operations/work-orders/${workOrder.public_id}/complete`, {
-                                idempotency_key: crypto.randomUUID(),
+                                idempotency_key: createIdempotencyKey('work-order'),
                             })
                         }
                     >

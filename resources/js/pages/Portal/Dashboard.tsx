@@ -7,6 +7,7 @@ import { useEffect, useMemo, useState } from 'react';
 
 import { StatusBadge } from '@/components/StatusBadge';
 import { formatDate, formatMoney } from '@/lib/format';
+import { createIdempotencyKey } from '@/lib/idempotency';
 import type { Customer, PortalBalance, PortalBilling, PortalNotice, PortalTicket, PublicTenant } from '@/types';
 
 type Props = { tenant: PublicTenant };
@@ -110,7 +111,7 @@ export default function PortalDashboard({ tenant }: Props) {
             method: 'POST',
             headers: {
                 Authorization: `Bearer ${token}`,
-                'X-Idempotency-Key': `portal-restart-${crypto.randomUUID()}`,
+                'X-Idempotency-Key': createIdempotencyKey('portal-restart'),
             },
         });
         if (!response.ok) {
@@ -133,7 +134,7 @@ export default function PortalDashboard({ tenant }: Props) {
             headers: {
                 Authorization: `Bearer ${token}`,
                 'Content-Type': 'application/json',
-                'X-Idempotency-Key': `portal-payment-${crypto.randomUUID()}`,
+                'X-Idempotency-Key': createIdempotencyKey('portal-payment'),
             },
             body: JSON.stringify({ invoice_id: invoice.id, amount: invoice.outstanding_amount }),
         });
