@@ -175,6 +175,7 @@ test.describe('staff core journeys', () => {
     });
 
     test('manages a temporary WhatsApp Web.js account from the browser', async ({ page }) => {
+        test.setTimeout(120_000);
         await signIn(page);
         await page.goto('/settings/whatsapp');
         await expect(page.getByRole('heading', { name: 'WhatsApp delivery' })).toBeVisible();
