@@ -1,7 +1,7 @@
 import CurrencyCombobox, { type CurrencyOption } from '@/components/ui/currency-combobox';
 import ResponsiveSelect from '@/components/ui/responsive-select';
 import { Head, Link, useForm } from '@inertiajs/react';
-import { ChevronLeft, FileText, Plus, Receipt, Save, Store } from 'lucide-react';
+import { ChevronLeft, Edit3, FileText, Plus, Receipt, Save, Store, X } from 'lucide-react';
 import { useState } from 'react';
 
 import AppLayout from '@/layouts/AppLayout';
@@ -33,6 +33,7 @@ type Supplier = {
     name: string;
     code: string;
     contact_email: string | null;
+    is_active: boolean;
     contracts: Contract[];
     bills: Bill[];
 };
@@ -133,7 +134,14 @@ function SupplierCard({
 }) {
     const [contractOpen, setContractOpen] = useState(false);
     const [billOpen, setBillOpen] = useState(false);
+    const [editOpen, setEditOpen] = useState(false);
     const [paymentBillId, setPaymentBillId] = useState<number | null>(null);
+    const editForm = useForm({
+        name: supplier.name,
+        code: supplier.code,
+        contact_email: supplier.contact_email ?? '',
+        is_active: supplier.is_active,
+    });
     const contractForm = useForm({
         service_type: 'upstream_credential',
         wholesale_currency: currencies[0]?.code ?? 'USD',
@@ -170,6 +178,28 @@ function SupplierCard({
         });
     };
 
+    const startEdit = () => {
+        editForm.setData({
+            name: supplier.name,
+            code: supplier.code,
+            contact_email: supplier.contact_email ?? '',
+            is_active: supplier.is_active,
+        });
+        editForm.clearErrors();
+        setEditOpen(true);
+    };
+
+    const cancelEdit = () => {
+        setEditOpen(false);
+        editForm.reset();
+        editForm.clearErrors();
+    };
+
+    const submitEdit = (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        editForm.patch(`/operations/suppliers/${supplier.id}`, { onSuccess: () => setEditOpen(false) });
+    };
+
     return (
         <div className="card p-6">
             <div className="flex flex-col justify-between gap-3 border-b border-line pb-5 sm:flex-row sm:items-start">
@@ -186,6 +216,9 @@ function SupplierCard({
                 </div>
                 {canManage && (
                     <div className="flex gap-2">
+                        <button type="button" className="button-quiet" onClick={startEdit}>
+                            <Edit3 size={15} /> Edit
+                        </button>
                         <button type="button" className="button-quiet" onClick={() => setContractOpen((open) => !open)}>
                             <FileText size={15} /> Contract
                         </button>
@@ -195,6 +228,68 @@ function SupplierCard({
                     </div>
                 )}
             </div>
+
+            <div className="mt-3 flex items-center gap-2 text-xs font-semibold">
+                <span className={supplier.is_active ? 'text-brand' : 'text-muted'}>
+                    {supplier.is_active ? 'Active supplier' : 'Inactive supplier'}
+                </span>
+                {!supplier.is_active && <span className="text-muted">New receiving and billing should be reviewed.</span>}
+            </div>
+
+            {editOpen && (
+                <form onSubmit={submitEdit} className="mt-5 grid gap-4 rounded-lg bg-sand/50 p-4 md:grid-cols-2 xl:grid-cols-5">
+                    <label>
+                        <span className="field-label">Supplier name</span>
+                        <input
+                            className="field"
+                            value={editForm.data.name}
+                            onChange={(event) => editForm.setData('name', event.target.value)}
+                            required
+                        />
+                        {editForm.errors.name && <p className="field-error">{editForm.errors.name}</p>}
+                    </label>
+                    <label>
+                        <span className="field-label">Code</span>
+                        <input
+                            className="field uppercase"
+                            value={editForm.data.code}
+                            onChange={(event) => editForm.setData('code', event.target.value)}
+                            required
+                        />
+                        {editForm.errors.code && <p className="field-error">{editForm.errors.code}</p>}
+                    </label>
+                    <label>
+                        <span className="field-label">Contact email</span>
+                        <input
+                            className="field"
+                            type="email"
+                            value={editForm.data.contact_email}
+                            onChange={(event) => editForm.setData('contact_email', event.target.value)}
+                        />
+                        {editForm.errors.contact_email && <p className="field-error">{editForm.errors.contact_email}</p>}
+                    </label>
+                    <label>
+                        <span className="field-label">Status</span>
+                        <ResponsiveSelect
+                            className="field"
+                            value={editForm.data.is_active ? 'active' : 'inactive'}
+                            onChange={(event) => editForm.setData('is_active', event.target.value === 'active')}
+                        >
+                            <option value="active">Active</option>
+                            <option value="inactive">Inactive</option>
+                        </ResponsiveSelect>
+                        {editForm.errors.is_active && <p className="field-error">{editForm.errors.is_active}</p>}
+                    </label>
+                    <div className="flex items-end gap-2">
+                        <button type="submit" className="button-primary" disabled={editForm.processing}>
+                            <Save size={15} /> Save changes
+                        </button>
+                        <button type="button" className="button-quiet" disabled={editForm.processing} onClick={cancelEdit}>
+                            <X size={15} /> Cancel
+                        </button>
+                    </div>
+                </form>
+            )}
 
             {contractOpen && (
                 <form
