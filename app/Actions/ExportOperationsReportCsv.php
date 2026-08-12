@@ -43,7 +43,7 @@ final readonly class ExportOperationsReportCsv implements Action
             }
             foreach ($supplier['contracts'] as $contract) {
                 foreach ($contract['cost_by_currency'] as $currency => $amount) {
-                    fputcsv($stream, ['contract:'.$supplier['code'], $contract['reference'] ?? 'unspecified', $currency, $amount]);
+                    fputcsv($stream, ['contract:'.$supplier['code'], $contract['reference'] ?? $contract['id'] ?? 'unspecified', $currency, $amount]);
                 }
             }
         }

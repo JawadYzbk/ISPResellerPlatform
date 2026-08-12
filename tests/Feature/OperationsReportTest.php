@@ -11,6 +11,7 @@ use App\Models\InventoryUnit;
 use App\Models\Service;
 use App\Models\StockBalance;
 use App\Models\Supplier;
+use App\Models\SupplierContract;
 use App\Models\Tenant;
 use App\Models\UpstreamCredential;
 use App\Models\User;
@@ -60,8 +61,16 @@ it('reconciles supplier credentials by period, state and recorded cost', functio
     $tenant = Tenant::factory()->create(['name' => 'Westline', 'slug' => 'westline']);
     app(Tenancy::class)->set($tenant);
     $supplier = Supplier::create(['name' => 'Transit ISP', 'code' => 'TRANSIT']);
+    $contract = SupplierContract::create([
+        'supplier_id' => $supplier->id,
+        'service_type' => 'upstream_credential',
+        'wholesale_currency' => 'USD',
+        'effective_from' => '2026-08-01',
+        'status' => 'active',
+    ]);
     $batch = CredentialBatch::create([
         'supplier_id' => $supplier->id,
+        'supplier_contract_id' => $contract->id,
         'reference' => 'TRANSIT-AUG',
         'contract_reference' => 'CONTRACT-01',
         'unit_cost_amount' => 125,
@@ -107,6 +116,10 @@ it('reconciles supplier credentials by period, state and recorded cost', functio
         'expiring' => 1,
         'revoked_invalid' => 2,
         'cost_by_currency' => ['USD' => 500],
+    ]);
+    expect($report['supplier_credentials']['by_supplier'][0]['contracts'][0])->toMatchArray([
+        'id' => $contract->id,
+        'service_type' => 'upstream_credential',
     ]);
 
     expect(app(ExportOperationsReportCsv::class)->handle(

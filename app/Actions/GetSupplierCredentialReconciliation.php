@@ -16,7 +16,7 @@ final readonly class GetSupplierCredentialReconciliation implements Action
         $asOf = $to->endOfDay();
         $expiryEnd = $asOf->addDays($expiringDays);
         $batches = CredentialBatch::query()
-            ->with(['supplier', 'credentials:id,credential_batch_id,status,expires_at'])
+            ->with(['supplier', 'supplierContract', 'credentials:id,credential_batch_id,status,expires_at'])
             ->get();
         $totals = $this->emptyCounts();
         $suppliers = [];
@@ -33,9 +33,12 @@ final readonly class GetSupplierCredentialReconciliation implements Action
             if ($purchased) {
                 $supplierRow['purchased'] += $batchPurchased;
                 $this->addCost($supplierRow['cost_by_currency'], $batch->currency, $this->batchCost($batch, $batchPurchased));
-                $contractKey = (string) ($batch->contract_reference ?: 'unspecified');
+                $contract = $batch->supplierContract;
+                $contractKey = (string) ($contract === null ? ($batch->contract_reference ?: 'unspecified') : $contract->id);
                 $supplierRow['contracts'][$contractKey] ??= [
+                    'id' => $contract === null ? null : $contract->id,
                     'reference' => $batch->contract_reference,
+                    'service_type' => $contract?->service_type,
                     'purchased' => 0,
                     'cost_by_currency' => [],
                 ];

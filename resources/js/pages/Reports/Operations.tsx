@@ -215,13 +215,13 @@ export default function OperationsReportPage({ report }: Props) {
                             {report.supplier_credentials.by_supplier.flatMap((supplier) =>
                                 supplier.contracts.map((contract) => (
                                     <div
-                                        key={`${supplier.code ?? supplier.name}-${contract.reference ?? 'unspecified'}`}
+                                        key={`${supplier.code ?? supplier.name}-${contract.id ?? contract.reference ?? 'unspecified'}`}
                                         className="flex flex-col justify-between gap-2 py-3 sm:flex-row sm:items-center"
                                     >
                                         <span>
                                             <b>{supplier.name}</b>
                                             <span className="ms-2 text-muted">
-                                                {contract.reference ?? 'Unspecified contract'}
+                                                {contract.reference ?? contract.service_type ?? 'Unspecified contract'}
                                             </span>
                                         </span>
                                         <span className="text-muted">

@@ -17,7 +17,7 @@ type Credential = {
     expires_at: string | null;
     supplier: { name: string; code: string } | null;
     batch_reference: string | null;
-    supplier_contract: { id: number; service_type: string; status: string } | null;
+    supplier_contract: { id: number; service_type: string; wholesale_currency: string; status: string } | null;
     assigned_service: {
         public_id: string;
         username: string;
@@ -341,7 +341,8 @@ export default function CredentialsPage({
                                             {credential.batch_reference ?? 'No batch reference'}
                                             {credential.supplier_contract && (
                                                 <span className="ms-2">
-                                                    · {credential.supplier_contract.service_type}
+                                                    · {credential.supplier_contract.service_type} ·{' '}
+                                                    {credential.supplier_contract.wholesale_currency}
                                                 </span>
                                             )}
                                         </p>

@@ -149,7 +149,13 @@ export type OperationsReport = {
             expiring: number;
             revoked_invalid: number;
             cost_by_currency: Record<string, number>;
-            contracts: { reference: string | null; purchased: number; cost_by_currency: Record<string, number> }[];
+            contracts: {
+                id: number | null;
+                reference: string | null;
+                service_type: string | null;
+                purchased: number;
+                cost_by_currency: Record<string, number>;
+            }[];
         }[];
     };
 };

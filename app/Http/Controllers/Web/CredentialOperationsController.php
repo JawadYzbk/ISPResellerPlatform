@@ -53,6 +53,7 @@ final class CredentialOperationsController extends Controller
                 'supplier_contract' => $credential->batch?->supplierContract === null ? null : [
                     'id' => $credential->batch->supplierContract->id,
                     'service_type' => $credential->batch->supplierContract->service_type,
+                    'wholesale_currency' => $credential->batch->supplierContract->wholesale_currency,
                     'status' => $credential->batch->supplierContract->status,
                 ],
                 'assigned_service' => $credential->assignedService === null ? null : [

@@ -13,7 +13,7 @@ final readonly class ListUpstreamCredentials implements Action
     public function handle(?string $status, ?string $search, int $perPage = 25): LengthAwarePaginator
     {
         return UpstreamCredential::query()
-            ->with(['batch.supplier', 'assignedService.customer'])
+            ->with(['batch.supplier', 'batch.supplierContract', 'assignedService.customer'])
             ->when($status, fn (Builder $query) => $query->where('status', $status))
             ->when($search, function (Builder $query) use ($search): void {
                 $term = trim($search);
