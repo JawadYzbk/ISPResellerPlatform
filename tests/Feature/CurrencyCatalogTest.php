@@ -31,3 +31,21 @@ it('loads the Frankfurter currency catalog with Lebanon currencies first', funct
 
     Http::assertSent(fn ($request): bool => $request->url() === 'https://api.frankfurter.dev/v2/currencies');
 });
+
+it('serves the refreshed catalog when the cache cannot store its currency names', function (): void {
+    $tenant = Tenant::factory()->create();
+    app(Tenancy::class)->set($tenant);
+    config()->set('services.frankfurter.currency_catalog_enabled', true);
+    Http::fake([
+        'https://api.frankfurter.dev/v2/currencies' => Http::response([
+            ['iso_code' => 'PLN', 'name' => 'Polish Złoty'],
+        ]),
+    ]);
+
+    Cache::shouldReceive('get')->once()->andThrow(new RuntimeException('cache encoding failure'));
+    Cache::shouldReceive('put')->once()->andThrow(new RuntimeException('cache encoding failure'));
+
+    $catalog = app(GetCurrencyCatalog::class)->handle();
+
+    expect(collect($catalog)->firstWhere('code', 'PLN')['name'] ?? null)->toBe('Polish Złoty');
+});

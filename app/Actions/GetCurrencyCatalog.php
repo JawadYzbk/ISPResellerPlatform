@@ -5,6 +5,7 @@ namespace App\Actions;
 use App\Models\Currency;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 final class GetCurrencyCatalog
 {
@@ -15,11 +16,7 @@ final class GetCurrencyCatalog
     public function handle(): array
     {
         $catalog = (bool) config('services.frankfurter.currency_catalog_enabled', true)
-            ? Cache::remember(
-                $this->cacheKey(),
-                now()->addDay(),
-                fn (): array => $this->fetchCatalog(),
-            )
+            ? $this->cachedCatalog()
             : $this->fallbackCatalog();
 
         foreach (Currency::query()->where('is_active', true)->get(['code', 'name', 'decimal_digits']) as $currency) {
@@ -48,6 +45,33 @@ final class GetCurrencyCatalog
         });
 
         return array_values($catalog);
+    }
+
+    /** @return array<string, array{code: string, name: string, decimal_digits: int}> */
+    private function cachedCatalog(): array
+    {
+        try {
+            $cached = Cache::get($this->cacheKey());
+            if (is_array($cached)) {
+                return $cached;
+            }
+        } catch (\Throwable $exception) {
+            Log::warning('Currency catalog cache read failed; refreshing the catalog.', [
+                'exception' => $exception::class,
+            ]);
+        }
+
+        $catalog = $this->fetchCatalog();
+
+        try {
+            Cache::put($this->cacheKey(), $catalog, now()->addDay());
+        } catch (\Throwable $exception) {
+            Log::warning('Currency catalog cache write failed; serving the refreshed catalog.', [
+                'exception' => $exception::class,
+            ]);
+        }
+
+        return $catalog;
     }
 
     /** @return array<string, array{code: string, name: string, decimal_digits: int}> */
