@@ -3,14 +3,18 @@
 use App\Actions\CreateInvoice;
 use App\Actions\CreatePartner;
 use App\Actions\GetDashboardAttentionQueue;
+use App\Actions\ImportCredentials;
 use App\Actions\IssueInvoice;
 use App\Enums\NetworkState;
 use App\Enums\PaymentStatus;
 use App\Enums\ServiceStatus;
+use App\Models\CredentialBatch;
 use App\Models\CurrentSession;
 use App\Models\Payment;
 use App\Models\Service;
+use App\Models\Supplier;
 use App\Models\Tenant;
+use App\Models\UpstreamCredential;
 use App\Support\Tenancy;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -33,12 +37,17 @@ it('returns actionable manager attention rows for the current tenant', function 
     $stale = Service::factory()->create();
     CurrentSession::create(['service_id' => $stale->id, 'username' => $stale->username, 'acct_session_id' => 'acct-attention-001', 'nasname' => 'router-01', 'last_seen_at' => now()->subMinutes(20)]);
     app(CreatePartner::class)->handle('Lowline', 'LOW-001', 'USD', lowBalanceThreshold: 1000);
+    $supplier = Supplier::create(['name' => 'Transit upstream', 'code' => 'TRANSIT']);
+    $batch = CredentialBatch::create(['supplier_id' => $supplier->id, 'reference' => 'TRANSIT-001', 'imported_at' => now(), 'expires_at' => now()->addDays(3)]);
+    app(ImportCredentials::class)->handle($batch, [['identifier' => 'upstream-attention-001', 'secret' => 'private-secret']]);
 
     $rows = app(GetDashboardAttentionQueue::class)->handle();
     $types = collect($rows)->pluck('type');
 
-    expect($types)->toContain('expired_service', 'paid_provisioning_failed', 'unallocated_payment', 'stale_session', 'low_reseller_balance')
+    expect($types)->toContain('expired_service', 'paid_provisioning_failed', 'unallocated_payment', 'stale_session', 'low_reseller_balance', 'expiring_supplier_credential')
         ->and(collect($rows)->firstWhere('type', 'expired_service')['href'])->toContain('/services?search='.urlencode($expired->username))
         ->and(collect($rows)->firstWhere('type', 'unallocated_payment')['href'])->toContain('/customers/'.$unallocated->customer->public_id)
-        ->and(collect($rows)->firstWhere('type', 'low_reseller_balance')['href'])->toContain('/partners/commercial?partner=');
+        ->and(collect($rows)->firstWhere('type', 'low_reseller_balance')['href'])->toContain('/partners/commercial?partner=')
+        ->and(collect($rows)->firstWhere('type', 'expiring_supplier_credential')['href'])->toContain('/operations/credentials?search=upstream-attention-001')
+        ->and(UpstreamCredential::firstOrFail()->toArray())->not->toHaveKey('secret');
 });

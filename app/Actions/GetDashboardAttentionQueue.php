@@ -3,6 +3,7 @@
 namespace App\Actions;
 
 use App\Contracts\Action;
+use App\Enums\CredentialStatus;
 use App\Enums\NetworkState;
 use App\Enums\PaymentStatus;
 use App\Enums\ServiceStatus;
@@ -12,6 +13,7 @@ use App\Models\PartnerWallet;
 use App\Models\Payment;
 use App\Models\Service;
 use App\Models\Tenant;
+use App\Models\UpstreamCredential;
 use App\Models\User;
 use App\Support\Tenancy;
 use Illuminate\Database\Eloquent\Builder;
@@ -86,6 +88,19 @@ final readonly class GetDashboardAttentionQueue implements Action
                 $this->add($rows, 'low_reseller_balance', 'Low reseller balance', $partner->name.' · '.$wallet->balance_amount.' '.$wallet->currency, '/partners/commercial?partner='.urlencode($partner->public_id), 'warning');
             });
 
+        UpstreamCredential::query()
+            ->with('batch.supplier')
+            ->whereNotIn('status', [CredentialStatus::Expired, CredentialStatus::Revoked])
+            ->whereBetween('expires_at', [now(), now()->addDays(7)])
+            ->orderBy('expires_at')
+            ->limit($limit)
+            ->get()
+            ->each(function (UpstreamCredential $credential) use (&$rows): void {
+                $supplier = $credential->batch?->supplier?->name;
+                $detail = $credential->identifier.($supplier === null ? '' : ' · '.$supplier);
+                $this->add($rows, 'expiring_supplier_credential', 'Expiring supplier credential', $detail, '/operations/credentials?search='.urlencode($credential->identifier), 'warning');
+            });
+
         if ($user === null) {
             return $rows;
         }
@@ -96,6 +111,7 @@ final readonly class GetDashboardAttentionQueue implements Action
                 'expired_service', 'paid_provisioning_failed', 'stale_session' => $user->can('services.view'),
                 'unallocated_payment' => $user->can('payments.collect') || $user->can('billing.invoices.view'),
                 'low_reseller_balance' => $user->can('wallets.view'),
+                'expiring_supplier_credential' => $user->can('suppliers.view'),
                 default => false,
             },
         ));

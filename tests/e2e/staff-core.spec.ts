@@ -105,6 +105,9 @@ test.describe('staff core journeys', () => {
         await signIn(page);
 
         await expect(page.getByRole('heading', { name: 'Your operations at a glance.' })).toBeVisible();
+        await expect(page.getByRole('heading', { name: 'Owner finance' })).toBeVisible();
+        await expect(page.getByText('Collection rate', { exact: true })).toBeVisible();
+        await expect(page.getByRole('heading', { name: 'Manager attention queue' })).toBeVisible();
         await page.goto('/partners/commercial');
         await expect(page).toHaveURL(/\/partners\/commercial/);
         await expect(page.getByRole('heading', { name: 'Prices and settlements' })).toBeVisible({ timeout: 15_000 });

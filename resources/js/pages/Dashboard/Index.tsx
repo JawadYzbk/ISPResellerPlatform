@@ -1,5 +1,16 @@
 import { Deferred, Head, Link, usePage } from '@inertiajs/react';
-import { ArrowUpRight, CircleAlert, Clock3, CreditCard, Percent, Plus, TrendingUp, Users, WalletCards, Wifi } from 'lucide-react';
+import {
+    ArrowUpRight,
+    CircleAlert,
+    Clock3,
+    CreditCard,
+    Percent,
+    Plus,
+    TrendingUp,
+    Users,
+    WalletCards,
+    Wifi,
+} from 'lucide-react';
 
 import StatusBadge from '@/components/StatusBadge';
 import AppLayout from '@/layouts/AppLayout';
@@ -273,9 +284,7 @@ function OwnerFinancePanel({ owner }: { owner: NonNullable<DashboardMetrics['own
             <div className="flex flex-col justify-between gap-3 border-b border-line px-6 py-5 sm:flex-row sm:items-center">
                 <div>
                     <h2 className="section-title">Owner finance</h2>
-                    <p className="mt-1 text-sm text-muted">
-                        Month to date · base currency {owner.baseCurrency}
-                    </p>
+                    <p className="mt-1 text-sm text-muted">Month to date · base currency {owner.baseCurrency}</p>
                 </div>
                 <Link href="/reports/finance" className="button-quiet">
                     Open finance report
@@ -336,7 +345,10 @@ function OwnerFinancePanel({ owner }: { owner: NonNullable<DashboardMetrics['own
                             <p className="px-4 py-4 text-sm text-muted">No finance activity this month.</p>
                         ) : (
                             currencies.map(([currency, values]) => (
-                                <div key={currency} className="grid grid-cols-[auto_1fr_1fr_1fr] items-center gap-3 px-4 py-3 text-sm">
+                                <div
+                                    key={currency}
+                                    className="grid grid-cols-[auto_1fr_1fr_1fr] items-center gap-3 px-4 py-3 text-sm"
+                                >
                                     <span className="font-semibold">{currency}</span>
                                     <span className="text-muted">{formatMoney(values.revenue, currency)}</span>
                                     <span className="text-muted">{formatMoney(values.collected, currency)}</span>
