@@ -24,7 +24,7 @@ The current foundation is live:
 - Staff ticket conversation/status workflow, customer support history, work-order calendar/completion surface with readings, signatures and bulk materials, serialized inventory trace/assignment, and plan/add-on/promotion catalog workflow
 - Supplier credential inventory view with secret redaction, tenant-safe assignment and audited reveal boundary
 - Capability catalog, invitations, tenant isolation, audit events and API tokens
-- Legacy `admin` accounts are reconciled to a full tenant role by the capability seeder; local web 2FA remains opt-in through `SECURITY_ENFORCE_TWO_FACTOR`
+- Legacy `admin` accounts are reconciled to a full tenant role by the capability seeder; local web 2FA remains opt-in through `SECURITY_ENFORCE_TWO_FACTOR`, while production preflight requires it to be enabled
 - Historical FX conversion, double-entry ledger, invoices, payments, cash-shift reconciliation and billing runs
 - Configurable Stripe customer-portal checkout with signed, idempotent payment settlement through the existing ledger path
 - Standalone PHP Whish Pay collector flow with persisted attempts, provider-verified callbacks, and QR collection links for USD/LBP/AED

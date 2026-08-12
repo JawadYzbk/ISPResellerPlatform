@@ -28,7 +28,7 @@ Do not share staff accounts. API tokens should be device-specific and issued wit
 
 ## Two-factor status
 
-The two-factor setup and challenge routes remain available, but web enforcement is currently off by default to keep local development and the current rollout unblocked. Set `SECURITY_ENFORCE_TWO_FACTOR=true` and restart all PHP/queue/scheduler processes to require verified 2FA for the web application. API token issuance still requires a valid OTP when the user’s policy requires it.
+The two-factor setup and challenge routes remain available, but web enforcement is off by default for local development. Set `SECURITY_ENFORCE_TWO_FACTOR=true` and restart all PHP/queue/scheduler processes to require verified 2FA for the web application. Production preflight rejects a release unless this flag is enabled. API token issuance still requires a valid OTP when the user’s policy requires it.
 
 ## Safe administrative changes
 

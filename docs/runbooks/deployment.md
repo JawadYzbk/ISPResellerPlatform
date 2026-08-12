@@ -55,7 +55,7 @@ php artisan route:cache
 php artisan platform:preflight --production
 ```
 
-`platform:preflight --production` must pass before traffic is admitted. It checks the application key, database connectivity, migration state, production environment, debug mode, public HTTPS URL, secure session cookies, asynchronous queue, persistent cache, tenant capability assignments, Sentry privacy configuration, encrypted off-site backups, private object storage, monitoring alert routing, Reverb credentials when realtime is enabled, and the Web.js bridge configuration when that provider is selected. It does not replace the scheduler, queue-worker, backup-restore, or external alert checks below.
+`platform:preflight --production` must pass before traffic is admitted. It checks the application key, database connectivity, migration state, production environment, debug mode, public HTTPS URL, secure session cookies, web two-factor enforcement, asynchronous queue, persistent cache, tenant capability assignments, Sentry privacy configuration, encrypted off-site backups, private object storage, monitoring alert routing, Reverb credentials when realtime is enabled, and the Web.js bridge configuration when that provider is selected. It does not replace the scheduler, queue-worker, backup-restore, or external alert checks below. Local development may keep `SECURITY_ENFORCE_TWO_FACTOR=false`; production must set it to `true` and verify owner/finance enrollment before traffic is admitted.
 
 Start or restart the long-running processes from the deployment supervisor:
 

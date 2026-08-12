@@ -30,6 +30,7 @@ final class PlatformPreflightCommand extends Command
                 'Debug mode disabled' => config('app.debug') === false,
                 'Public HTTPS application URL' => $this->hasPublicHttpsUrl(),
                 'Secure session cookies' => config('session.secure') === true,
+                'Web two-factor enforcement' => config('security.enforce_web_two_factor') === true,
                 'Database credentials' => $this->databaseCredentialsAreConfigured(),
                 'Redis credentials' => $this->redisCredentialsAreConfigured(),
                 'Asynchronous queue connection' => $this->usesAsynchronousQueue(),
