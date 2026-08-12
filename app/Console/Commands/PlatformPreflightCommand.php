@@ -12,6 +12,28 @@ use Illuminate\Support\Facades\DB;
 
 final class PlatformPreflightCommand extends Command
 {
+    /** @var array<string, string> */
+    private const PRODUCTION_GUIDANCE = [
+        'Production environment' => 'Set APP_ENV=production for the release environment.',
+        'Debug mode disabled' => 'Set APP_DEBUG=false and clear the application config cache.',
+        'Public HTTPS application URL' => 'Set APP_URL to the public HTTPS portal URL.',
+        'Secure session cookies' => 'Set SESSION_SECURE_COOKIE=true behind the HTTPS proxy.',
+        'Web two-factor enforcement' => 'Set ENFORCE_WEB_TWO_FACTOR=true for production.',
+        'Privileged staff two-factor enrollment' => 'Finish 2FA enrollment for every privileged tenant operator.',
+        'Database credentials' => 'Set a non-placeholder production database URL or password.',
+        'Redis credentials' => 'Set non-placeholder Redis credentials when Redis is used for cache, queue, or sessions.',
+        'Asynchronous queue connection' => 'Use the database or Redis queue and run a supervised worker.',
+        'Persistent cache store' => 'Use a persistent database or Redis cache store.',
+        'Sentry configuration' => 'Set SENTRY_LARAVEL_DSN and keep SENTRY_SEND_DEFAULT_PII=false.',
+        'Encrypted off-site backups' => 'Configure an encrypted non-local backup disk, password, and operations recipient.',
+        'Private object storage' => 'Configure the private S3-compatible media disk and credentials.',
+        'Monitoring alert routing' => 'Enable monitoring and configure its signed HTTP alert webhook.',
+        'Reverb configuration' => 'Configure the Reverb key, secret, host, and allowed origins.',
+        'WhatsApp configuration' => 'Configure the selected WhatsApp Cloud or Web.js provider and callback secret.',
+        'Payment gateway configuration' => 'Configure all Stripe credentials when Stripe is selected.',
+        'Whish Pay configuration' => 'Configure Whish merchant credentials and public callback URLs when enabled.',
+    ];
+
     protected $signature = 'platform:preflight {--production : Apply production safety checks}';
 
     protected $description = 'Verify release configuration and database migration readiness.';
@@ -60,6 +82,11 @@ final class PlatformPreflightCommand extends Command
         if ($failures !== []) {
             if (in_array('Capability assignments', $failures, true)) {
                 $this->warn('Run php artisan db:seed --class=CapabilitySeeder --force to reconcile tenant roles and permissions.');
+            }
+            foreach ($failures as $failure) {
+                if (isset(self::PRODUCTION_GUIDANCE[$failure])) {
+                    $this->line(sprintf(' - %s: %s', $failure, self::PRODUCTION_GUIDANCE[$failure]));
+                }
             }
             $this->error('Preflight failed: '.implode(', ', $failures).'.');
 

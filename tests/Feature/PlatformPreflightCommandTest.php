@@ -29,6 +29,7 @@ it('fails the production preflight for unsafe public configuration', function ()
 
     $this->artisan('platform:preflight', ['--production' => true])
         ->assertExitCode(Command::FAILURE)
+        ->expectsOutputToContain('Set APP_ENV=production for the release environment.')
         ->expectsOutputToContain('Preflight failed:');
 });
 
@@ -94,7 +95,6 @@ it('passes the production preflight for a production-shaped configuration', func
         'security.enforce_web_two_factor' => true,
         'queue.default' => 'database',
         'cache.default' => 'database',
-        'database.default' => 'sqlite',
         'sentry.dsn' => 'https://public@sentry.io/123',
         'sentry.send_default_pii' => false,
         'backup.backup.destination.disks' => ['s3'],
