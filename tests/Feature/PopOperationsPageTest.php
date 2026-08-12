@@ -86,6 +86,29 @@ it('allows network operators to create and update POPs and record upstream links
     expect($pop->refresh()->name)->toBe('Central Core')
         ->and($pop->status)->toBe('maintenance')
         ->and($pop->upstreamLinks()->firstOrFail()->currency)->toBe('USD');
+
+    $link = $pop->upstreamLinks()->firstOrFail();
+    $this->actingAs($user)
+        ->patch(route('operations.pops.upstream-links.update', $link), [
+            'provider_name' => 'Updated Transit',
+            'capacity_mbps' => 2000,
+            'monthly_cost_amount' => 175000,
+            'currency' => 'USD',
+            'contract_start' => '2026-02-01',
+            'contract_end' => '2027-01-31',
+            'notes' => 'Secondary capacity added',
+        ])
+        ->assertRedirect(route('operations.pops.show', $pop));
+
+    app(Tenancy::class)->set($tenant);
+    $updatedLink = $link->refresh();
+
+    expect($updatedLink->provider_name)->toBe('Updated Transit')
+        ->and($updatedLink->capacity_mbps)->toBe(2000)
+        ->and($updatedLink->monthly_cost_amount)->toBe(175000)
+        ->and($updatedLink->contract_start->toDateString())->toBe('2026-02-01')
+        ->and($updatedLink->contract_end?->toDateString())->toBe('2027-01-31')
+        ->and($updatedLink->notes)->toBe('Secondary capacity added');
 });
 
 it('forbids POP writes without network provisioning capability', function (): void {

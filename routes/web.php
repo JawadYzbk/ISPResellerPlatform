@@ -151,6 +151,7 @@ Route::middleware(['auth', 'tenant', '2fa'])->group(function (): void {
     Route::get('/operations/pops/{pop}', [PopOperationsController::class, 'show'])->name('operations.pops.show');
     Route::put('/operations/pops/{pop}', [PopOperationsController::class, 'update'])->middleware('recent-auth')->name('operations.pops.update');
     Route::post('/operations/pops/{pop}/upstream-links', [PopOperationsController::class, 'storeUpstreamLink'])->middleware('recent-auth')->name('operations.pops.upstream-links.store');
+    Route::patch('/operations/upstream-links/{link}', [PopOperationsController::class, 'updateUpstreamLink'])->middleware('recent-auth')->name('operations.pops.upstream-links.update');
     Route::get('/operations/ip-pools', [IpPoolOperationsController::class, 'index'])->name('operations.ip-pools');
     Route::post('/operations/ip-pools', [IpPoolOperationsController::class, 'storePool'])->middleware('recent-auth')->name('operations.ip-pools.store');
     Route::patch('/operations/ip-pools/{pool}', [IpPoolOperationsController::class, 'updatePool'])->middleware('recent-auth')->name('operations.ip-pools.update');

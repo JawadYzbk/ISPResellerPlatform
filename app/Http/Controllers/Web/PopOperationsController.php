@@ -7,6 +7,7 @@ use App\Actions\GetCurrencyCatalog;
 use App\Actions\GetPopDetails;
 use App\Actions\ListPops;
 use App\Actions\SavePop;
+use App\Actions\UpdateUpstreamLink;
 use App\Http\Controllers\Controller;
 use App\Models\Pop;
 use App\Models\Router;
@@ -106,6 +107,24 @@ final class PopOperationsController extends Controller
         $create->handle($pop, $validated);
 
         return redirect()->route('operations.pops.show', $pop)->with('success', "Upstream link for {$pop->name} recorded.");
+    }
+
+    public function updateUpstreamLink(Request $request, UpstreamLink $link, UpdateUpstreamLink $update): RedirectResponse
+    {
+        $user = $request->user();
+        abort_unless($user instanceof User && $user->can('network.provision'), 403);
+        $validated = $request->validate([
+            'provider_name' => ['required', 'string', 'max:255'],
+            'capacity_mbps' => ['nullable', 'integer', 'min:0'],
+            'monthly_cost_amount' => ['required', 'integer', 'min:0'],
+            'currency' => ['required', 'string', 'size:3', 'alpha'],
+            'contract_start' => ['required', 'date'],
+            'contract_end' => ['nullable', 'date', 'after_or_equal:contract_start'],
+            'notes' => ['nullable', 'string', 'max:2000'],
+        ]);
+        $update->handle($link, $validated);
+
+        return redirect()->route('operations.pops.show', $link->pop_id)->with('success', 'Upstream link updated.');
     }
 
     /** @return array<string, array<int, mixed>> */
