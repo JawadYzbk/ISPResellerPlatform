@@ -159,7 +159,10 @@ final class PlanOperationsController extends Controller
     public function edit(Request $request, Plan $plan, GetCurrencyCatalog $currencyCatalog): Response
     {
         abort_unless($request->user()?->can('plans.manage') === true, 403);
-        $price = $plan->priceAt() ?? $plan->prices()->latest('effective_from')->first();
+        $price = $plan->priceAt();
+        if ($price === null) {
+            $price = $plan->prices()->latest('effective_from')->first();
+        }
 
         return Inertia::render('Plans/Edit', [
             'plan' => [
@@ -169,9 +172,9 @@ final class PlanOperationsController extends Controller
                 'download_kbps' => $plan->download_kbps,
                 'upload_kbps' => $plan->upload_kbps,
                 'duration_days' => $plan->duration_days,
-                'amount_minor' => $price?->amount_minor ?? $plan->amount_minor,
-                'currency' => $price?->currency ?? $plan->currency,
-                'effective_from' => ($price?->effective_from ?? now())->toDateString(),
+                'amount_minor' => $price === null ? $plan->amount_minor : $price->amount_minor,
+                'currency' => $price === null ? $plan->currency : $price->currency,
+                'effective_from' => ($price === null ? now() : $price->effective_from)->toDateString(),
                 'status' => $plan->status,
             ],
             'currencies' => $currencyCatalog->handle(),
