@@ -1,5 +1,5 @@
 import ResponsiveSelect from '@/components/ui/responsive-select';
-import { Head, Link, router, useForm } from '@inertiajs/react';
+import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
 import {
     ArrowLeft,
     CalendarDays,
@@ -29,6 +29,7 @@ import MapView from '@/components/MapView';
 import AppLayout from '@/layouts/AppLayout';
 import ConfirmDialog from '@/components/ui/confirm-dialog';
 import { formatBytes, formatDate, formatDuration, formatExpiryCountdown, formatMoney } from '@/lib/format';
+import { createTranslator } from '@/lib/i18n';
 import type { Customer, PageProps } from '@/types';
 
 type Props = PageProps & {
@@ -81,6 +82,8 @@ export default function CustomerShow({
     canForceResumeServices = false,
     canManageEquipment = false,
 }: Props) {
+    const { app } = usePage<PageProps>().props;
+    const t = createTranslator(app.locale);
     const fullName = `${customer.first_name} ${customer.last_name ?? ''}`.trim();
     const nextExpiry =
         customer.services
@@ -100,7 +103,7 @@ export default function CustomerShow({
         });
     };
     const paymentMonthLabel = (month: number) =>
-        new Intl.DateTimeFormat(undefined, { month: 'short' }).format(new Date(paymentGrid.year, month - 1, 1));
+        new Intl.DateTimeFormat(app.locale, { month: 'short' }).format(new Date(paymentGrid.year, month - 1, 1));
     const changePaymentYear = (event: React.ChangeEvent<HTMLSelectElement>) => {
         router.get(window.location.pathname, { year: event.target.value }, { preserveScroll: true, replace: true });
     };
@@ -113,7 +116,7 @@ export default function CustomerShow({
                 className="mb-6 inline-flex items-center gap-2 text-sm font-semibold text-muted hover:text-brand"
             >
                 <ArrowLeft size={16} />
-                Back to customers
+                {t('Back to customers')}
             </Link>
             <div className="flex flex-col justify-between gap-5 md:flex-row md:items-end">
                 <div className="flex items-center gap-4">
@@ -127,48 +130,48 @@ export default function CustomerShow({
                             <StatusBadge status={customer.status} />
                         </div>
                         <p className="mt-1 text-sm text-muted">
-                            {customer.code} · {customer.zone?.name ?? 'Zone unassigned'}
+                            {customer.code} · {customer.zone?.name ?? t('Zone unassigned')}
                         </p>
                     </div>
                 </div>
                 <div className="flex flex-wrap gap-2">
                     <a href={`tel:${customer.phone}`} className="button-secondary">
                         <Phone size={16} />
-                        Call
+                        {t('Call')}
                     </a>
                     <a href={`https://wa.me/${customer.phone.replace(/\D/g, '')}`} className="button-secondary">
                         <MessageCircle size={16} />
-                        WhatsApp
+                        {t('WhatsApp')}
                     </a>
                     {canCollectPayment && (
                         <Link href={`/customers/${customer.public_id}/payments/create`} className="button-primary">
                             <CreditCard size={16} />
-                            Take payment
+                            {t('Take payment')}
                         </Link>
                     )}
                     {canCollectPayment && customer.services.some((service) => service.status !== 'terminated') && (
                         <Link href={`/customers/${customer.public_id}/renew`} className="button-secondary">
                             <RefreshCw size={16} />
-                            Renew
+                            {t('Renew')}
                         </Link>
                     )}
                     {canCreateTicket && (
                         <Link href={`/customers/${customer.public_id}/tickets/create`} className="button-secondary">
                             <MessageSquare size={16} />
-                            Open ticket
+                            {t('Open ticket')}
                         </Link>
                     )}
                     {canAnonymize && !customer.anonymized_at && (
                         <ConfirmDialog
-                            title="Anonymize this customer record?"
-                            description="Personal data cannot be recovered after anonymization."
-                            confirmLabel="Anonymize customer"
+                            title={t('Anonymize this customer record?')}
+                            description={t('Personal data cannot be recovered after anonymization.')}
+                            confirmLabel={t('Anonymize customer')}
                             destructive
                             onConfirm={() => router.post(`/customers/${customer.public_id}/anonymize`)}
                         >
                             <button type="button" className="button-secondary text-coral">
                                 <ShieldOff size={16} />
-                                Anonymize
+                                {t('Anonymize')}
                             </button>
                         </ConfirmDialog>
                     )}
@@ -178,34 +181,36 @@ export default function CustomerShow({
                 <div className="space-y-6">
                     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                         <div className="card p-5">
-                            <p className="text-xs font-semibold uppercase tracking-wider text-muted">Balance</p>
+                            <p className="text-xs font-semibold uppercase tracking-wider text-muted">{t('Balance')}</p>
                             <p
                                 className={`mt-3 font-display text-2xl font-semibold ${customer.balance_amount > 0 ? 'text-coral' : ''}`}
                             >
                                 {formatMoney(customer.balance_amount, customer.balance_currency)}
                             </p>
                             <p className="mt-1 text-xs text-muted">
-                                {customer.balance_amount > 0 ? 'Amount owing' : 'Account balance'}
+                                {customer.balance_amount > 0 ? t('Amount owing') : t('Account balance')}
                             </p>
                         </div>
                         <div className="card p-5">
-                            <p className="text-xs font-semibold uppercase tracking-wider text-muted">Services</p>
+                            <p className="text-xs font-semibold uppercase tracking-wider text-muted">{t('Services')}</p>
                             <p className="mt-3 font-display text-2xl font-semibold">{customer.services.length}</p>
-                            <p className="mt-1 text-xs text-muted">Across this customer</p>
+                            <p className="mt-1 text-xs text-muted">{t('Across this customer')}</p>
                         </div>
                         <div className="card p-5">
-                            <p className="text-xs font-semibold uppercase tracking-wider text-muted">Contact</p>
+                            <p className="text-xs font-semibold uppercase tracking-wider text-muted">{t('Contact')}</p>
                             <p className="mt-3 truncate text-sm font-semibold">{customer.phone}</p>
-                            <p className="mt-1 truncate text-xs text-muted">{customer.email ?? 'No email on file'}</p>
+                            <p className="mt-1 truncate text-xs text-muted">
+                                {customer.email ?? t('No email on file')}
+                            </p>
                         </div>
                         <div className="card p-5">
-                            <p className="text-xs font-semibold uppercase tracking-wider text-muted">Expiry</p>
+                            <p className="text-xs font-semibold uppercase tracking-wider text-muted">{t('Expiry')}</p>
                             <p
                                 className={`mt-3 text-sm font-semibold ${nextExpiry !== null && new Date(nextExpiry) < new Date() ? 'text-coral' : ''}`}
                             >
                                 {formatExpiryCountdown(nextExpiry)}
                             </p>
-                            <p className="mt-1 text-xs text-muted">Earliest service expiry</p>
+                            <p className="mt-1 text-xs text-muted">{t('Earliest service expiry')}</p>
                         </div>
                     </div>
                     <div className="card overflow-hidden" data-testid="customer-payment-grid">
@@ -213,16 +218,16 @@ export default function CustomerShow({
                             <div>
                                 <div className="flex items-center gap-2">
                                     <ReceiptText size={18} className="text-brand" />
-                                    <h2 className="section-title">Monthly payment grid</h2>
+                                    <h2 className="section-title">{t('Monthly payment grid')}</h2>
                                 </div>
                                 <p className="mt-1 text-sm text-muted">
-                                    See which billing months are paid, partial, or still due.
+                                    {t('See which billing months are paid, partial, or still due.')}
                                 </p>
                             </div>
                             <label className="block w-full sm:w-32">
-                                <span className="sr-only">Payment year</span>
+                                <span className="sr-only">{t('Payment year')}</span>
                                 <ResponsiveSelect
-                                    aria-label="Payment year"
+                                    aria-label={t('Payment year')}
                                     className="field"
                                     value={paymentGrid.year}
                                     onChange={changePaymentYear}
@@ -238,10 +243,10 @@ export default function CustomerShow({
                         <div className="grid gap-3 p-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                             {paymentGrid.months.map((month) => {
                                 const statusLabel = {
-                                    paid: 'Paid',
-                                    partial: 'Partial',
-                                    due: 'Due',
-                                    no_invoice: 'No invoice',
+                                    paid: t('Paid'),
+                                    partial: t('Partial'),
+                                    due: t('Due'),
+                                    no_invoice: t('No invoice'),
                                 }[month.status];
                                 const statusClass = {
                                     paid: 'border-emerald-200 bg-emerald-50 text-emerald-800',
@@ -274,24 +279,26 @@ export default function CustomerShow({
                                                 {month.totals.map((total) => (
                                                     <div key={total.currency}>
                                                         <p className="font-semibold">
-                                                            {formatMoney(total.paid_amount, total.currency)} paid
+                                                            {formatMoney(total.paid_amount, total.currency)} {t('paid')}
                                                         </p>
                                                         {total.outstanding_amount > 0 && (
                                                             <p className="mt-0.5 opacity-80">
                                                                 {formatMoney(total.outstanding_amount, total.currency)}{' '}
-                                                                due
+                                                                {t('due')}
                                                             </p>
                                                         )}
                                                     </div>
                                                 ))}
                                             </div>
                                         ) : (
-                                            <p className="mt-3 text-xs opacity-80">Nothing billed</p>
+                                            <p className="mt-3 text-xs opacity-80">{t('Nothing billed')}</p>
                                         )}
                                         {month.invoice_count > 0 && (
                                             <p className="mt-3 text-[11px] opacity-70">
-                                                {month.invoice_count} invoice{month.invoice_count === 1 ? '' : 's'} ·{' '}
-                                                {month.payment_count} payment{month.payment_count === 1 ? '' : 's'}
+                                                {month.invoice_count}{' '}
+                                                {month.invoice_count === 1 ? t('invoice') : t('invoices')} ·{' '}
+                                                {month.payment_count}{' '}
+                                                {month.payment_count === 1 ? t('payment') : t('payments')}
                                             </p>
                                         )}
                                     </div>
@@ -302,8 +309,10 @@ export default function CustomerShow({
                     <div className="card overflow-hidden">
                         <div className="flex items-center justify-between border-b border-line px-6 py-5">
                             <div>
-                                <h2 className="section-title">Services</h2>
-                                <p className="mt-1 text-sm text-muted">Every connection belonging to this customer.</p>
+                                <h2 className="section-title">{t('Services')}</h2>
+                                <p className="mt-1 text-sm text-muted">
+                                    {t('Every connection belonging to this customer.')}
+                                </p>
                             </div>
                             {canCreateService && (
                                 <Link
@@ -311,7 +320,7 @@ export default function CustomerShow({
                                     className="button-secondary"
                                 >
                                     <Plus size={16} />
-                                    Add service
+                                    {t('Add service')}
                                 </Link>
                             )}
                         </div>
@@ -363,16 +372,16 @@ export default function CustomerShow({
                                                 <span
                                                     className={`size-2 rounded-full ${service.session ? 'bg-emerald-500' : 'bg-slate-300'}`}
                                                 />
-                                                {service.session ? 'Online' : 'Offline'}
+                                                {service.session ? t('Online') : t('Offline')}
                                             </p>
                                             <p className="mt-1 text-xs text-muted">
                                                 {service.session?.framed_ip ??
                                                     service.session?.nasname ??
-                                                    'No active session'}
+                                                    t('No active session')}
                                             </p>
                                             {service.session && (
                                                 <p className="mt-1 text-xs text-muted">
-                                                    Uptime{' '}
+                                                    {t('Uptime')}{' '}
                                                     {formatDuration(
                                                         service.session.started_at,
                                                         service.session.last_seen_at,
@@ -381,7 +390,7 @@ export default function CustomerShow({
                                             )}
                                         </div>
                                         <div>
-                                            <p className="text-xs text-muted">Quota</p>
+                                            <p className="text-xs text-muted">{t('Quota')}</p>
                                             {service.usage.quota_bytes > 0 ? (
                                                 <>
                                                     <div className="mt-2 h-2 overflow-hidden rounded-full bg-sand">
@@ -393,16 +402,16 @@ export default function CustomerShow({
                                                         />
                                                     </div>
                                                     <p className="mt-1 text-xs text-muted">
-                                                        {formatBytes(service.usage.used_bytes)} of{' '}
+                                                        {formatBytes(service.usage.used_bytes)} {t('of')}{' '}
                                                         {formatBytes(service.usage.quota_bytes)}
                                                     </p>
                                                 </>
                                             ) : (
-                                                <p className="mt-1 text-sm text-muted">No quota set</p>
+                                                <p className="mt-1 text-sm text-muted">{t('No quota set')}</p>
                                             )}
                                         </div>
                                         <div className="lg:col-span-4">
-                                            <p className="text-xs text-muted">Equipment</p>
+                                            <p className="text-xs text-muted">{t('Equipment')}</p>
                                             {service.equipment.length > 0 ? (
                                                 <div className="mt-2 flex flex-wrap gap-2">
                                                     {service.equipment.map((unit) => (
@@ -410,10 +419,10 @@ export default function CustomerShow({
                                                             key={unit.serial_number}
                                                             className="inline-flex items-center gap-2 rounded-full bg-sand px-3 py-1.5 text-xs font-semibold"
                                                         >
-                                                            {unit.item?.name ?? 'Serialized equipment'} ·{' '}
+                                                            {unit.item?.name ?? t('Serialized equipment')} ·{' '}
                                                             {unit.serial_number}
                                                             <span className="font-normal text-muted">
-                                                                · Assigned {formatDate(unit.assigned_at)}
+                                                                · {t('Assigned')} {formatDate(unit.assigned_at)}
                                                             </span>
                                                             {canManageEquipment && (
                                                                 <ConfirmDialog
@@ -431,7 +440,7 @@ export default function CustomerShow({
                                                                         type="button"
                                                                         className="font-semibold text-coral hover:underline"
                                                                     >
-                                                                        Return
+                                                                        {t('Return')}
                                                                     </button>
                                                                 </ConfirmDialog>
                                                             )}
@@ -439,7 +448,7 @@ export default function CustomerShow({
                                                     ))}
                                                 </div>
                                             ) : (
-                                                <p className="mt-1 text-sm text-muted">No equipment assigned.</p>
+                                                <p className="mt-1 text-sm text-muted">{t('No equipment assigned.')}</p>
                                             )}
                                         </div>
                                         <div className="flex flex-wrap items-center gap-3 sm:justify-end">
@@ -574,7 +583,7 @@ export default function CustomerShow({
                             {customer.services.length === 0 && (
                                 <div className="p-12 text-center">
                                     <Wifi className="mx-auto text-muted" size={28} />
-                                    <p className="mt-3 font-semibold">No services yet</p>
+                                    <p className="mt-3 font-semibold">{t('No services yet')}</p>
                                 </div>
                             )}
                         </div>
@@ -583,35 +592,35 @@ export default function CustomerShow({
                 <aside className="space-y-6">
                     <div className="card p-6">
                         <div className="flex items-center justify-between">
-                            <h2 className="section-title">Customer details</h2>
+                            <h2 className="section-title">{t('Customer details')}</h2>
                             {canEdit && (
                                 <Link
                                     href={`/customers/${customer.public_id}/edit`}
                                     className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand"
                                 >
-                                    <Edit3 size={14} /> Edit
+                                    <Edit3 size={14} /> {t('Edit')}
                                 </Link>
                             )}
                         </div>
                         <dl className="mt-5 space-y-4">
                             <div>
-                                <dt className="text-xs text-muted">Phone</dt>
+                                <dt className="text-xs text-muted">{t('Phone')}</dt>
                                 <dd className="mt-1 text-sm font-medium">{customer.phone}</dd>
                             </div>
                             <div>
-                                <dt className="text-xs text-muted">Email</dt>
+                                <dt className="text-xs text-muted">{t('Email')}</dt>
                                 <dd className="mt-1 text-sm font-medium">{customer.email ?? '—'}</dd>
                             </div>
                             <div>
-                                <dt className="text-xs text-muted">Address</dt>
+                                <dt className="text-xs text-muted">{t('Address')}</dt>
                                 <dd className="mt-1 flex items-start gap-1.5 text-sm font-medium">
                                     <MapPin size={15} className="mt-0.5 shrink-0 text-muted" />
-                                    {customer.address ?? 'No address on file'}
+                                    {customer.address ?? t('No address on file')}
                                 </dd>
                             </div>
                             {customer.latitude !== null && customer.longitude !== null && (
                                 <div>
-                                    <dt className="text-xs text-muted">Coordinates</dt>
+                                    <dt className="text-xs text-muted">{t('Coordinates')}</dt>
                                     <dd className="mt-1 flex items-center justify-between gap-3 text-sm font-medium">
                                         <span>
                                             {customer.latitude.toFixed(7)}, {customer.longitude.toFixed(7)}
@@ -627,7 +636,7 @@ export default function CustomerShow({
                                             rel="noreferrer"
                                             className="text-brand hover:underline"
                                         >
-                                            Open map
+                                            {t('Open map')}
                                         </a>
                                     </dd>
                                     <div className="mt-3">
@@ -641,14 +650,16 @@ export default function CustomerShow({
                         <div className="flex items-center gap-2 border-b border-line px-6 py-5">
                             <FileText size={18} className="text-brand" />
                             <div>
-                                <h2 className="section-title">Documents</h2>
-                                <p className="mt-1 text-sm text-muted">Private files attached to this customer.</p>
+                                <h2 className="section-title">{t('Documents')}</h2>
+                                <p className="mt-1 text-sm text-muted">
+                                    {t('Private files attached to this customer.')}
+                                </p>
                             </div>
                         </div>
                         {canEdit && (
                             <form onSubmit={submitDocument} className="space-y-3 border-b border-line px-6 py-5">
                                 <label>
-                                    <span className="field-label">Add PDF or image</span>
+                                    <span className="field-label">{t('Add PDF or image')}</span>
                                     <input
                                         type="file"
                                         accept="application/pdf,image/jpeg,image/png,image/webp"
@@ -662,23 +673,23 @@ export default function CustomerShow({
                                     )}
                                 </label>
                                 <label>
-                                    <span className="field-label">Document type</span>
+                                    <span className="field-label">{t('Document type')}</span>
                                     <ResponsiveSelect
                                         className="field"
                                         value={documentForm.data.document_type}
                                         onChange={(event) => documentForm.setData('document_type', event.target.value)}
                                     >
-                                        <option value="contract">Contract</option>
-                                        <option value="identity">Identity</option>
-                                        <option value="proof_of_address">Proof of address</option>
-                                        <option value="other">Other</option>
+                                        <option value="contract">{t('Contract')}</option>
+                                        <option value="identity">{t('Identity')}</option>
+                                        <option value="proof_of_address">{t('Proof of address')}</option>
+                                        <option value="other">{t('Other')}</option>
                                     </ResponsiveSelect>
                                     {documentForm.errors.document_type && (
                                         <p className="field-error">{documentForm.errors.document_type}</p>
                                     )}
                                 </label>
                                 <label>
-                                    <span className="field-label">Retain until (optional)</span>
+                                    <span className="field-label">{t('Retain until (optional)')}</span>
                                     <input
                                         type="date"
                                         className="field"
@@ -696,7 +707,7 @@ export default function CustomerShow({
                                     className="button-secondary"
                                     disabled={documentForm.processing || !documentForm.data.file}
                                 >
-                                    <Upload size={15} /> Upload document
+                                    <Upload size={15} /> {t('Upload document')}
                                 </button>
                             </form>
                         )}
@@ -712,18 +723,18 @@ export default function CustomerShow({
                                         </p>
                                         {document.retention_until && (
                                             <p className="mt-1 text-xs text-muted">
-                                                Retained until {formatDate(document.retention_until)}
+                                                {t('Retained until')} {formatDate(document.retention_until)}
                                             </p>
                                         )}
                                     </div>
                                     <a href={document.download_url} className="button-secondary shrink-0" download>
-                                        <Download size={15} /> Download
+                                        <Download size={15} /> {t('Download')}
                                     </a>
                                 </div>
                             ))}
                             {customer.documents.length === 0 && (
                                 <p className="px-6 py-8 text-sm text-muted">
-                                    No customer documents have been uploaded.
+                                    {t('No customer documents have been uploaded.')}
                                 </p>
                             )}
                         </div>
@@ -733,15 +744,15 @@ export default function CustomerShow({
                             <div className="flex items-center gap-2">
                                 <MessageSquare size={18} className="text-brand" />
                                 <div>
-                                    <h2 className="section-title">Support tickets</h2>
-                                    <p className="mt-1 text-sm text-muted">Recent customer conversations.</p>
+                                    <h2 className="section-title">{t('Support tickets')}</h2>
+                                    <p className="mt-1 text-sm text-muted">{t('Recent customer conversations.')}</p>
                                 </div>
                             </div>
                             <Link
                                 href={`/operations/tickets?search=${encodeURIComponent(customer.code)}`}
                                 className="text-sm font-semibold text-brand"
                             >
-                                View queue
+                                {t('View queue')}
                             </Link>
                         </div>
                         <div className="divide-y divide-line">
@@ -755,23 +766,27 @@ export default function CustomerShow({
                                         <div className="min-w-0">
                                             <p className="text-sm font-semibold">{ticket.subject}</p>
                                             <p className="mt-1 text-xs text-muted">
-                                                {ticket.number} · {ticket.priority} priority
+                                                {ticket.number} · {ticket.priority} {t('priority')}
                                             </p>
                                         </div>
                                         <StatusBadge status={ticket.status} />
                                     </div>
-                                    <p className="mt-2 text-xs text-muted">Updated {formatDate(ticket.updated_at)}</p>
+                                    <p className="mt-2 text-xs text-muted">
+                                        {t('Updated')} {formatDate(ticket.updated_at)}
+                                    </p>
                                 </Link>
                             ))}
                             {customer.tickets.length === 0 && (
-                                <p className="px-6 py-8 text-sm text-muted">No support tickets for this customer.</p>
+                                <p className="px-6 py-8 text-sm text-muted">
+                                    {t('No support tickets for this customer.')}
+                                </p>
                             )}
                         </div>
                     </div>
                     <div className="card p-6">
                         <div className="flex items-center gap-2">
                             <CalendarDays size={18} className="text-brand" />
-                            <h2 className="section-title">Timeline</h2>
+                            <h2 className="section-title">{t('Timeline')}</h2>
                         </div>
                         <div className="mt-5 border-s border-line ps-4">
                             {customer.timeline.map((item, index) => (
@@ -793,7 +808,7 @@ export default function CustomerShow({
                                 </div>
                             ))}
                             {customer.timeline.length === 0 && (
-                                <p className="text-sm text-muted">No activity recorded yet.</p>
+                                <p className="text-sm text-muted">{t('No activity recorded yet.')}</p>
                             )}
                         </div>
                     </div>

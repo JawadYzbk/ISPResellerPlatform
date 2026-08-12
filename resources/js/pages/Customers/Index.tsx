@@ -1,5 +1,5 @@
 import ResponsiveSelect from '@/components/ui/responsive-select';
-import { Head, Link, router, useForm } from '@inertiajs/react';
+import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
 import {
     CalendarClock,
     CheckSquare,
@@ -16,6 +16,7 @@ import { useState } from 'react';
 import { StatusBadge } from '@/components/StatusBadge';
 import AppLayout from '@/layouts/AppLayout';
 import { formatDate, formatMoney } from '@/lib/format';
+import { createTranslator } from '@/lib/i18n';
 import type { Customer, PageProps, Paginator } from '@/types';
 
 type Zone = { id: number; name: string; code: string };
@@ -52,6 +53,8 @@ function getNextExpiry(customer: Customer): string | null {
 }
 
 export default function CustomersIndex({ customers, filters, zones, savedViews, canExport = false }: Props) {
+    const { app } = usePage<PageProps>().props;
+    const t = createTranslator(app.locale);
     const [search, setSearch] = useState(filters.search ?? '');
     const [status, setStatus] = useState(filters.status ?? '');
     const [zoneId, setZoneId] = useState(filters.zone_id?.toString() ?? '');
@@ -63,6 +66,7 @@ export default function CustomersIndex({ customers, filters, zones, savedViews, 
     const [selectedViewId, setSelectedViewId] = useState('');
     const [selectedCustomerIds, setSelectedCustomerIds] = useState<string[]>([]);
     const saveViewForm = useForm({ name: '' });
+    const translatedColumnOptions = columnOptions.map((option) => ({ ...option, label: t(option.label) }));
 
     const applyFilters = () => {
         router.get(
@@ -145,28 +149,28 @@ export default function CustomersIndex({ customers, filters, zones, savedViews, 
 
     return (
         <AppLayout>
-            <Head title="Customers" />
+            <Head title={t('Customers')} />
             <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
                 <div>
-                    <p className="eyebrow">Subscriber CRM</p>
-                    <h1 className="page-title">Customers</h1>
-                    <p className="page-subtitle">A clear view of everyone you keep connected.</p>
+                    <p className="eyebrow">{t('Subscriber CRM')}</p>
+                    <h1 className="page-title">{t('Customers')}</h1>
+                    <p className="page-subtitle">{t('A clear view of everyone you keep connected.')}</p>
                 </div>
                 <Link href="/customers/create" className="button-primary">
                     <Users size={17} />
-                    Add customer
+                    {t('Add customer')}
                 </Link>
             </div>
             <div className="card mt-6 flex flex-col gap-4 p-5 lg:flex-row lg:items-end lg:justify-between">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
                     <label className="block min-w-56">
-                        <span className="field-label">Saved view</span>
+                        <span className="field-label">{t('Saved view')}</span>
                         <ResponsiveSelect
                             className="field"
                             value={selectedViewId}
                             onChange={(event) => setSelectedViewId(event.target.value)}
                         >
-                            <option value="">Choose a saved view</option>
+                            <option value="">{t('Choose a saved view')}</option>
                             {savedViews.map((view) => (
                                 <option key={view.id} value={view.id}>
                                     {view.name}
@@ -180,7 +184,7 @@ export default function CustomersIndex({ customers, filters, zones, savedViews, 
                         onClick={applySavedView}
                         disabled={!selectedViewId}
                     >
-                        Apply view
+                        {t('Apply view')}
                     </button>
                     <button
                         type="button"
@@ -193,22 +197,22 @@ export default function CustomersIndex({ customers, filters, zones, savedViews, 
                         }}
                         disabled={!selectedViewId}
                     >
-                        Delete
+                        {t('Delete')}
                     </button>
                 </div>
                 <form onSubmit={submitSavedView} className="flex flex-col gap-3 sm:flex-row sm:items-end">
                     <label className="block sm:min-w-56">
-                        <span className="field-label">Save current filters and columns</span>
+                        <span className="field-label">{t('Save current filters and columns')}</span>
                         <input
                             className="field"
                             value={saveViewForm.data.name}
                             onChange={(event) => saveViewForm.setData('name', event.target.value)}
-                            placeholder="Renewal queue"
+                            placeholder={t('Renewal queue')}
                         />
                         {saveViewForm.errors.name && <p className="field-error">{saveViewForm.errors.name}</p>}
                     </label>
                     <button type="submit" className="button-secondary" disabled={saveViewForm.processing}>
-                        Save view
+                        {t('Save view')}
                     </button>
                 </form>
             </div>
@@ -219,7 +223,7 @@ export default function CustomersIndex({ customers, filters, zones, savedViews, 
                         <input
                             value={search}
                             onChange={(event) => setSearch(event.target.value)}
-                            placeholder="Search name, phone or customer code"
+                            placeholder={t('Search name, phone or customer code')}
                             className="field ps-10"
                         />
                     </form>
@@ -231,7 +235,7 @@ export default function CustomersIndex({ customers, filters, zones, savedViews, 
                             aria-expanded={showFilters}
                         >
                             <Filter size={16} />
-                            Filters
+                            {t('Filters')}
                         </button>
                         <button
                             type="button"
@@ -240,7 +244,7 @@ export default function CustomersIndex({ customers, filters, zones, savedViews, 
                             aria-expanded={showColumns}
                         >
                             <SlidersHorizontal size={16} />
-                            Columns
+                            {t('Columns')}
                         </button>
                     </div>
                 </div>
@@ -248,11 +252,11 @@ export default function CustomersIndex({ customers, filters, zones, savedViews, 
                     <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line bg-sand/20 px-5 py-3">
                         <p className="text-sm text-muted">
                             {selectedCustomerIds.length
-                                ? `${selectedCustomerIds.length} customer(s) selected across pages`
-                                : 'Export all customers matching the current filters'}
+                                ? `${selectedCustomerIds.length} ${t('customer(s) selected across pages')}`
+                                : t('Export all customers matching the current filters')}
                         </p>
                         <button type="button" className="button-secondary" onClick={exportCustomers}>
-                            <Download size={16} /> Export CSV
+                            <Download size={16} /> {t('Export CSV')}
                         </button>
                     </div>
                 )}
@@ -261,26 +265,26 @@ export default function CustomersIndex({ customers, filters, zones, savedViews, 
                         {showFilters && (
                             <div className="flex flex-wrap items-end gap-3">
                                 <label className="block min-w-44">
-                                    <span className="field-label">Customer status</span>
+                                    <span className="field-label">{t('Customer status')}</span>
                                     <ResponsiveSelect
                                         className="field"
                                         value={status}
                                         onChange={(event) => setStatus(event.target.value)}
                                     >
-                                        <option value="">All statuses</option>
-                                        <option value="active">Active</option>
-                                        <option value="inactive">Inactive</option>
-                                        <option value="archived">Archived</option>
+                                        <option value="">{t('All statuses')}</option>
+                                        <option value="active">{t('Active')}</option>
+                                        <option value="inactive">{t('Inactive')}</option>
+                                        <option value="archived">{t('Archived')}</option>
                                     </ResponsiveSelect>
                                 </label>
                                 <label className="block min-w-48">
-                                    <span className="field-label">Zone</span>
+                                    <span className="field-label">{t('Zone')}</span>
                                     <ResponsiveSelect
                                         className="field"
                                         value={zoneId}
                                         onChange={(event) => setZoneId(event.target.value)}
                                     >
-                                        <option value="">All zones</option>
+                                        <option value="">{t('All zones')}</option>
                                         {zones.map((zone) => (
                                             <option key={zone.id} value={zone.id}>
                                                 {zone.name}
@@ -289,7 +293,7 @@ export default function CustomersIndex({ customers, filters, zones, savedViews, 
                                     </ResponsiveSelect>
                                 </label>
                                 <label className="block min-w-40">
-                                    <span className="field-label">Expiry from</span>
+                                    <span className="field-label">{t('Expiry from')}</span>
                                     <input
                                         className="field"
                                         type="date"
@@ -298,7 +302,7 @@ export default function CustomersIndex({ customers, filters, zones, savedViews, 
                                     />
                                 </label>
                                 <label className="block min-w-40">
-                                    <span className="field-label">Expiry to</span>
+                                    <span className="field-label">{t('Expiry to')}</span>
                                     <input
                                         className="field"
                                         type="date"
@@ -307,14 +311,14 @@ export default function CustomersIndex({ customers, filters, zones, savedViews, 
                                     />
                                 </label>
                                 <button type="button" className="button-primary" onClick={applyFilters}>
-                                    Apply
+                                    {t('Apply')}
                                 </button>
                             </div>
                         )}
                         {showColumns && (
                             <fieldset className="flex flex-wrap gap-x-4 gap-y-2">
-                                <legend className="field-label w-full">Visible columns</legend>
-                                {columnOptions.map(({ key, label }) => (
+                                <legend className="field-label w-full">{t('Visible columns')}</legend>
+                                {translatedColumnOptions.map(({ key, label }) => (
                                     <label key={key} className="inline-flex items-center gap-2 text-sm text-muted">
                                         <input
                                             type="checkbox"
@@ -337,7 +341,9 @@ export default function CustomersIndex({ customers, filters, zones, savedViews, 
                                         type="button"
                                         onClick={togglePage}
                                         aria-label={
-                                            allPageSelected ? 'Clear current page selection' : 'Select current page'
+                                            allPageSelected
+                                                ? t('Clear current page selection')
+                                                : t('Select current page')
                                         }
                                     >
                                         <CheckSquare
@@ -346,19 +352,21 @@ export default function CustomersIndex({ customers, filters, zones, savedViews, 
                                         />
                                     </button>
                                 </th>
-                                <th className="px-5 py-3.5 text-start">Customer</th>
-                                {visibleColumns.includes('zone') && <th className="px-5 py-3.5 text-start">Zone</th>}
+                                <th className="px-5 py-3.5 text-start">{t('Customer')}</th>
+                                {visibleColumns.includes('zone') && (
+                                    <th className="px-5 py-3.5 text-start">{t('Zone')}</th>
+                                )}
                                 {visibleColumns.includes('services') && (
-                                    <th className="px-5 py-3.5 text-start">Services</th>
+                                    <th className="px-5 py-3.5 text-start">{t('Services')}</th>
                                 )}
                                 {visibleColumns.includes('balance') && (
-                                    <th className="px-5 py-3.5 text-start">Balance</th>
+                                    <th className="px-5 py-3.5 text-start">{t('Balance')}</th>
                                 )}
                                 {visibleColumns.includes('expiry') && (
-                                    <th className="px-5 py-3.5 text-start">Next expiry</th>
+                                    <th className="px-5 py-3.5 text-start">{t('Next expiry')}</th>
                                 )}
                                 {visibleColumns.includes('status') && (
-                                    <th className="px-5 py-3.5 text-start">Status</th>
+                                    <th className="px-5 py-3.5 text-start">{t('Status')}</th>
                                 )}
                                 <th className="px-5 py-3.5" />
                             </tr>
@@ -398,13 +406,13 @@ export default function CustomersIndex({ customers, filters, zones, savedViews, 
                                         </td>
                                         {visibleColumns.includes('zone') && (
                                             <td className="px-5 py-4 text-sm text-muted">
-                                                {customer.zone?.name ?? 'Unassigned'}
+                                                {customer.zone?.name ?? t('Unassigned')}
                                             </td>
                                         )}
                                         {visibleColumns.includes('services') && (
                                             <td className="px-5 py-4 text-sm text-muted">
                                                 {customer.services.length}{' '}
-                                                {customer.services.length === 1 ? 'service' : 'services'}
+                                                {customer.services.length === 1 ? t('service') : t('services')}
                                             </td>
                                         )}
                                         {visibleColumns.includes('balance') && (
@@ -429,7 +437,7 @@ export default function CustomersIndex({ customers, filters, zones, savedViews, 
                                                 href={`/customers/${customer.public_id}`}
                                                 className="text-sm font-semibold text-brand opacity-0 transition group-hover:opacity-100"
                                             >
-                                                Open
+                                                {t('Open')}
                                             </Link>
                                         </td>
                                     </tr>
@@ -439,9 +447,9 @@ export default function CustomersIndex({ customers, filters, zones, savedViews, 
                                 <tr>
                                     <td colSpan={visibleColumns.length + 3} className="px-5 py-16 text-center">
                                         <Users className="mx-auto text-muted" size={28} />
-                                        <p className="mt-3 font-semibold">No customers found</p>
+                                        <p className="mt-3 font-semibold">{t('No customers found')}</p>
                                         <p className="mt-1 text-sm text-muted">
-                                            Try a different search or add your first customer.
+                                            {t('Try a different search or add your first customer.')}
                                         </p>
                                     </td>
                                 </tr>
@@ -451,8 +459,10 @@ export default function CustomersIndex({ customers, filters, zones, savedViews, 
                 </div>
                 <div className="flex items-center justify-between border-t border-line px-5 py-4">
                     <p className="text-xs text-muted">
-                        Showing {customers.data.length ? (customers.current_page - 1) * customers.per_page + 1 : 0}–
-                        {Math.min(customers.current_page * customers.per_page, customers.total)} of {customers.total}
+                        {t('Showing')}{' '}
+                        {customers.data.length ? (customers.current_page - 1) * customers.per_page + 1 : 0}–
+                        {Math.min(customers.current_page * customers.per_page, customers.total)} {t('of')}{' '}
+                        {customers.total}
                     </p>
                     <div className="flex items-center gap-1">
                         {customers.links.map((link, index) => {
