@@ -1,7 +1,8 @@
 import CurrencyCombobox, { type CurrencyOption } from '@/components/ui/currency-combobox';
 import ResponsiveSelect from '@/components/ui/responsive-select';
 import { Head, Link, useForm } from '@inertiajs/react';
-import { ArrowLeft, ExternalLink, Network, Plus, Router as RouterIcon } from 'lucide-react';
+import { ArrowLeft, Edit3, ExternalLink, Network, Plus, Router as RouterIcon, Save, X } from 'lucide-react';
+import { useState } from 'react';
 
 import type { Status } from '@/components/StatusBadge';
 import StatusBadge from '@/components/StatusBadge';
@@ -36,11 +37,21 @@ type Props = {
 
 export default function PopShowPage({ pop, canManage, statuses, currencies }: Props) {
     const popForm = useForm({ name: pop.name, code: pop.code, address: pop.address ?? '', status: pop.status });
+    const [editingLinkId, setEditingLinkId] = useState<number | null>(null);
     const linkForm = useForm({
         provider_name: '',
         capacity_mbps: '',
         monthly_cost_amount: '',
         currency: 'USD',
+        contract_start: '',
+        contract_end: '',
+        notes: '',
+    });
+    const linkEditForm = useForm({
+        provider_name: '',
+        capacity_mbps: '',
+        monthly_cost_amount: '',
+        currency: currencies[0]?.code ?? 'USD',
         contract_start: '',
         contract_end: '',
         notes: '',
@@ -54,6 +65,33 @@ export default function PopShowPage({ pop, canManage, statuses, currencies }: Pr
     const submitLink = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         linkForm.post('/operations/pops/' + pop.id + '/upstream-links', { onSuccess: () => linkForm.reset() });
+    };
+
+    const startLinkEdit = (link: Pop['upstream_links'][number]) => {
+        setEditingLinkId(link.id);
+        linkEditForm.setData({
+            provider_name: link.provider_name,
+            capacity_mbps: link.capacity_mbps === null ? '' : String(link.capacity_mbps),
+            monthly_cost_amount: String(link.monthly_cost_amount),
+            currency: link.currency,
+            contract_start: link.contract_start,
+            contract_end: link.contract_end ?? '',
+            notes: link.notes ?? '',
+        });
+        linkEditForm.clearErrors();
+    };
+
+    const cancelLinkEdit = () => {
+        setEditingLinkId(null);
+        linkEditForm.reset();
+        linkEditForm.clearErrors();
+    };
+
+    const saveLink = (link: Pop['upstream_links'][number]) => {
+        linkEditForm.patch('/operations/upstream-links/' + link.id, {
+            preserveScroll: true,
+            onSuccess: cancelLinkEdit,
+        });
     };
 
     return (
@@ -271,27 +309,152 @@ export default function PopShowPage({ pop, canManage, statuses, currencies }: Pr
                     <div className="divide-y divide-line">
                         {pop.upstream_links.map((link) => (
                             <div key={link.id} className="px-5 py-4">
-                                <div className="flex items-start justify-between gap-4">
-                                    <div>
-                                        <p className="text-sm font-semibold">{link.provider_name}</p>
-                                        <p className="mt-1 text-xs text-muted">
-                                            {link.capacity_mbps
-                                                ? link.capacity_mbps.toLocaleString() + ' Mbps'
-                                                : 'Capacity not recorded'}{' '}
-                                            · {formatDate(link.contract_start)}
-                                        </p>
+                                {editingLinkId === link.id ? (
+                                    <div className="grid gap-3 rounded-lg bg-sand/50 p-4 md:grid-cols-2">
+                                        <label>
+                                            <span className="field-label">Provider</span>
+                                            <input
+                                                className="field"
+                                                value={linkEditForm.data.provider_name}
+                                                onChange={(event) => linkEditForm.setData('provider_name', event.target.value)}
+                                                required
+                                            />
+                                            {linkEditForm.errors.provider_name && (
+                                                <p className="field-error">{linkEditForm.errors.provider_name}</p>
+                                            )}
+                                        </label>
+                                        <label>
+                                            <span className="field-label">Capacity (Mbps)</span>
+                                            <input
+                                                type="number"
+                                                min="0"
+                                                className="field"
+                                                value={linkEditForm.data.capacity_mbps}
+                                                onChange={(event) => linkEditForm.setData('capacity_mbps', event.target.value)}
+                                            />
+                                            {linkEditForm.errors.capacity_mbps && (
+                                                <p className="field-error">{linkEditForm.errors.capacity_mbps}</p>
+                                            )}
+                                        </label>
+                                        <label>
+                                            <span className="field-label">Monthly cost (minor units)</span>
+                                            <input
+                                                type="number"
+                                                min="0"
+                                                className="field"
+                                                value={linkEditForm.data.monthly_cost_amount}
+                                                onChange={(event) =>
+                                                    linkEditForm.setData('monthly_cost_amount', event.target.value)
+                                                }
+                                                required
+                                            />
+                                            {linkEditForm.errors.monthly_cost_amount && (
+                                                <p className="field-error">{linkEditForm.errors.monthly_cost_amount}</p>
+                                            )}
+                                        </label>
+                                        <label>
+                                            <span className="field-label">Currency</span>
+                                            <CurrencyCombobox
+                                                className="field uppercase"
+                                                value={linkEditForm.data.currency}
+                                                currencies={currencies}
+                                                onChange={(value) => linkEditForm.setData('currency', value)}
+                                            />
+                                            {linkEditForm.errors.currency && (
+                                                <p className="field-error">{linkEditForm.errors.currency}</p>
+                                            )}
+                                        </label>
+                                        <label>
+                                            <span className="field-label">Contract starts</span>
+                                            <input
+                                                type="date"
+                                                className="field"
+                                                value={linkEditForm.data.contract_start}
+                                                onChange={(event) => linkEditForm.setData('contract_start', event.target.value)}
+                                                required
+                                            />
+                                            {linkEditForm.errors.contract_start && (
+                                                <p className="field-error">{linkEditForm.errors.contract_start}</p>
+                                            )}
+                                        </label>
+                                        <label>
+                                            <span className="field-label">Contract ends</span>
+                                            <input
+                                                type="date"
+                                                className="field"
+                                                value={linkEditForm.data.contract_end}
+                                                onChange={(event) => linkEditForm.setData('contract_end', event.target.value)}
+                                            />
+                                            {linkEditForm.errors.contract_end && (
+                                                <p className="field-error">{linkEditForm.errors.contract_end}</p>
+                                            )}
+                                        </label>
+                                        <label className="md:col-span-2">
+                                            <span className="field-label">Notes</span>
+                                            <textarea
+                                                className="field min-h-20"
+                                                value={linkEditForm.data.notes}
+                                                onChange={(event) => linkEditForm.setData('notes', event.target.value)}
+                                            />
+                                            {linkEditForm.errors.notes && (
+                                                <p className="field-error">{linkEditForm.errors.notes}</p>
+                                            )}
+                                        </label>
+                                        <div className="flex gap-2 md:col-span-2">
+                                            <button
+                                                type="button"
+                                                className="button-primary"
+                                                disabled={linkEditForm.processing}
+                                                onClick={() => saveLink(link)}
+                                            >
+                                                <Save size={15} /> Save changes
+                                            </button>
+                                            <button
+                                                type="button"
+                                                className="button-quiet"
+                                                disabled={linkEditForm.processing}
+                                                onClick={cancelLinkEdit}
+                                            >
+                                                <X size={15} /> Cancel
+                                            </button>
+                                        </div>
                                     </div>
-                                    <p className="text-sm font-semibold">
-                                        {formatMoney(link.monthly_cost_amount, link.currency)}
-                                        <span className="block text-end text-xs font-normal text-muted">monthly</span>
-                                    </p>
-                                </div>
-                                {link.contract_end && (
-                                    <p className="mt-2 text-xs text-muted">
-                                        Contract ends {formatDate(link.contract_end)}
-                                    </p>
+                                ) : (
+                                    <>
+                                        <div className="flex items-start justify-between gap-4">
+                                            <div>
+                                                <p className="text-sm font-semibold">{link.provider_name}</p>
+                                                <p className="mt-1 text-xs text-muted">
+                                                    {link.capacity_mbps
+                                                        ? link.capacity_mbps.toLocaleString() + ' Mbps'
+                                                        : 'Capacity not recorded'}{' '}
+                                                    · {formatDate(link.contract_start)}
+                                                </p>
+                                            </div>
+                                            <div className="text-end">
+                                                <p className="text-sm font-semibold">
+                                                    {formatMoney(link.monthly_cost_amount, link.currency)}
+                                                </p>
+                                                <span className="block text-xs font-normal text-muted">monthly</span>
+                                                {canManage && (
+                                                    <button
+                                                        type="button"
+                                                        className="mt-1 text-xs font-semibold text-brand hover:underline"
+                                                        onClick={() => startLinkEdit(link)}
+                                                    >
+                                                        <Edit3 size={12} className="me-1 inline" /> Edit
+                                                    </button>
+                                                )}
+                                            </div>
+                                        </div>
+                                        {link.contract_end && (
+                                            <p className="mt-2 text-xs text-muted">
+                                                Contract ends {formatDate(link.contract_end)}
+                                            </p>
+                                        )}
+                                        {link.notes && <p className="mt-2 text-sm text-muted">{link.notes}</p>}
+                                    </>
                                 )}
-                                {link.notes && <p className="mt-2 text-sm text-muted">{link.notes}</p>}
                             </div>
                         ))}
                         {pop.upstream_links.length === 0 && (
