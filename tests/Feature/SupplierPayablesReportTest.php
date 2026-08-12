@@ -1,6 +1,7 @@
 <?php
 
 use App\Actions\GetSupplierPayablesAging;
+use App\Actions\ExportSupplierPayablesCsv;
 use App\Models\Supplier;
 use App\Models\SupplierBill;
 use App\Models\SupplierPayment;
@@ -85,4 +86,24 @@ it('can include settled bills and filter the payable queue by supplier', functio
         ->and($report['summary']['bill_count'])->toBe(1)
         ->and($report['summary']['open_bill_count'])->toBe(0)
         ->and($report['bills'][0]['status'])->toBe('paid');
+});
+
+it('exports the exact filtered supplier payable queue', function (): void {
+    $tenant = Tenant::create(['name' => 'Northline', 'slug' => 'northline-payables-export', 'base_currency' => 'USD', 'collection_currency' => 'USD']);
+    app(Tenancy::class)->set($tenant);
+    $supplier = Supplier::create(['name' => 'Transit ISP', 'code' => 'TRANSIT']);
+    SupplierBill::create([
+        'supplier_id' => $supplier->id,
+        'reference' => 'BILL-EXPORT',
+        'period_start' => '2026-08-01',
+        'period_end' => '2026-08-31',
+        'amount' => 1000,
+        'currency' => 'USD',
+        'status' => 'open',
+    ]);
+
+    $csv = app(ExportSupplierPayablesCsv::class)->handle(CarbonImmutable::parse('2026-08-31'), $supplier->id);
+
+    expect($csv)->toContain('as_of,supplier,supplier_code,reference')
+        ->toContain('2026-08-31,"Transit ISP",TRANSIT,BILL-EXPORT,2026-08-01,2026-08-31,USD,1000,0,1000,0,current,open');
 });

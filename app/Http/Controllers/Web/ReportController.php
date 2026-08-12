@@ -6,6 +6,7 @@ use App\Actions\ExportFinanceReportCsv;
 use App\Actions\ExportFinanceReportXlsx;
 use App\Actions\ExportOperationsReportCsv;
 use App\Actions\ExportOperationsReportXlsx;
+use App\Actions\ExportSupplierPayablesCsv;
 use App\Actions\GetFinanceReport;
 use App\Actions\GetOperationsReport;
 use App\Actions\GetSupplierPayablesAging;
@@ -63,7 +64,7 @@ final class ReportController extends Controller
         return Inertia::render('Reports/Operations', ['report' => $report->handle($from, $to)]);
     }
 
-    public function supplierPayables(Request $request, GetSupplierPayablesAging $report): Response
+    public function supplierPayables(Request $request, GetSupplierPayablesAging $report, ExportSupplierPayablesCsv $export): Response|StreamedResponse
     {
         $user = $request->user();
         abort_unless($user instanceof User && $user->can('reports.finance'), 403);
@@ -78,9 +79,16 @@ final class ReportController extends Controller
         ]);
         $asOf = CarbonImmutable::parse($validated['as_of'] ?? now()->toDateString());
         $supplierId = isset($validated['supplier_id']) ? (int) $validated['supplier_id'] : null;
+        $includeSettled = $request->boolean('include_settled');
+
+        if ($request->string('format')->lower()->toString() === 'csv') {
+            return response()->streamDownload(function () use ($export, $asOf, $supplierId, $includeSettled): void {
+                echo $export->handle($asOf, $supplierId, $includeSettled);
+            }, 'supplier-payables-'.$asOf->toDateString().'.csv', ['Content-Type' => 'text/csv']);
+        }
 
         return Inertia::render('Reports/SupplierPayables', [
-            'report' => $report->handle($asOf, $supplierId, $request->boolean('include_settled')),
+            'report' => $report->handle($asOf, $supplierId, $includeSettled),
             'suppliers' => Supplier::query()->orderBy('name')->get(['id', 'name', 'code'])->map(fn (Supplier $supplier): array => [
                 'id' => $supplier->id,
                 'name' => $supplier->name,
