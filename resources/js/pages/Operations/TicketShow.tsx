@@ -1,6 +1,6 @@
 import ResponsiveSelect from '@/components/ui/responsive-select';
 import { Head, Link, router, useForm } from '@inertiajs/react';
-import { ArrowLeft, MessageSquare, Send } from 'lucide-react';
+import { ArrowLeft, ClipboardPaste, MessageSquare, Send } from 'lucide-react';
 import { useState } from 'react';
 
 import StatusBadge from '@/components/StatusBadge';
@@ -35,6 +35,7 @@ type Ticket = {
 type Props = PageProps & {
     ticket: Ticket;
     assignees: { id: number; name: string; role: string }[];
+    cannedResponses?: { public_id: string; title: string; body: string; category: string }[];
     canAssign?: boolean;
     canMutate?: boolean;
     canClose?: boolean;
@@ -51,6 +52,7 @@ const transitions: Record<Ticket['status'], Ticket['status'][]> = {
 export default function TicketShow({
     ticket,
     assignees,
+    cannedResponses = [],
     canAssign = false,
     canMutate = false,
     canClose = false,
@@ -58,6 +60,7 @@ export default function TicketShow({
     const [status, setStatus] = useState(ticket.status);
     const [assigneeId, setAssigneeId] = useState(ticket.assignee?.id.toString() ?? '');
     const [visibility, setVisibility] = useState<'public' | 'internal'>('public');
+    const [cannedResponseId, setCannedResponseId] = useState('');
     const form = useForm<{ body: string; visibility: 'public' | 'internal' }>({ body: '', visibility: 'public' });
 
     const updateStatus = (event: React.FormEvent) => {
@@ -79,6 +82,13 @@ export default function TicketShow({
             { assignee_id: assigneeId || null },
             { preserveScroll: true },
         );
+    };
+
+    const insertCannedResponse = () => {
+        const response = cannedResponses.find((candidate) => candidate.public_id === cannedResponseId);
+        if (response) {
+            form.setData('body', response.body);
+        }
     };
 
     return (
@@ -230,6 +240,36 @@ export default function TicketShow({
                                     Internal note
                                 </button>
                             </div>
+                            {cannedResponses.length > 0 && (
+                                <div className="mb-4 rounded-xl border border-line bg-white p-4">
+                                    <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+                                        <label className="min-w-0 flex-1">
+                                            <span className="field-label">Saved response</span>
+                                            <ResponsiveSelect
+                                                className="field"
+                                                value={cannedResponseId}
+                                                onChange={(event) => setCannedResponseId(event.target.value)}
+                                            >
+                                                <option value="">Choose a saved response</option>
+                                                {cannedResponses.map((response) => (
+                                                    <option key={response.public_id} value={response.public_id}>
+                                                        {response.title} · {response.category}
+                                                    </option>
+                                                ))}
+                                            </ResponsiveSelect>
+                                        </label>
+                                        <button
+                                            type="button"
+                                            className="button-secondary shrink-0"
+                                            onClick={insertCannedResponse}
+                                            disabled={!cannedResponseId}
+                                        >
+                                            <ClipboardPaste size={15} /> Insert response
+                                        </button>
+                                    </div>
+                                    <p className="mt-2 text-xs text-muted">Inserting replaces the current draft.</p>
+                                </div>
+                            )}
                             <label className="field-label" htmlFor="body">
                                 {visibility === 'internal' ? 'Internal note' : 'Public reply'}
                             </label>

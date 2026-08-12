@@ -132,6 +132,9 @@ export default function GeneralSettings({ tenant, settings, currencies, payments
                     <Link href="/settings/whatsapp" className="button-secondary">
                         WhatsApp setup
                     </Link>
+                    <Link href="/settings/ticket-responses" className="button-secondary">
+                        Ticket responses
+                    </Link>
                 </div>
                 <section id="payment-channels" className="card mt-6 p-5">
                     <div className="flex items-center justify-between gap-4">
