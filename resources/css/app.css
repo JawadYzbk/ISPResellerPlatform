@@ -136,6 +136,16 @@
     .button-quiet {
         color: var(--color-brand);
     }
+    .auth-root,
+    .auth-shell,
+    .auth-brand-panel,
+    .auth-form-panel {
+        min-height: 100vh;
+        min-height: 100svh;
+    }
+    .auth-shell {
+        min-height: 100dvh;
+    }
     .auth-ambient {
         position: absolute;
         inset: 0;
