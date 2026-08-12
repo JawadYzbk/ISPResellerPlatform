@@ -221,6 +221,7 @@ Route::middleware(['auth', 'tenant', '2fa'])->group(function (): void {
     Route::post('/customers/{customer:public_id}/services', [ServiceController::class, 'store'])->name('services.store');
     Route::get('/partners/commercial', [PartnerController::class, 'commercial'])->name('partners.commercial');
     Route::post('/partners', [PartnerController::class, 'store'])->middleware('recent-auth')->name('partners.store');
+    Route::patch('/partners/{partner:public_id}', [PartnerController::class, 'update'])->middleware('recent-auth')->name('partners.update');
     Route::get('/reports/finance', [ReportController::class, 'finance'])->name('reports.finance');
     Route::get('/reports/supplier-payables', [ReportController::class, 'supplierPayables'])->name('reports.supplier-payables');
     Route::get('/reports/operations', [ReportController::class, 'operations'])->name('reports.operations');

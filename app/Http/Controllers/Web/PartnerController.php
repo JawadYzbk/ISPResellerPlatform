@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Web;
 use App\Actions\CreatePartner;
 use App\Actions\GetCurrencyCatalog;
 use App\Actions\ResolvePartnerPrice;
+use App\Actions\UpdatePartner;
 use App\Http\Controllers\Controller;
 use App\Models\Partner;
 use App\Models\Plan;
@@ -14,6 +15,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -78,7 +80,15 @@ final class PartnerController extends Controller
 
         return Inertia::render('Partners/Commercial', [
             'partners' => $partners->map(fn (Partner $item): array => ['id' => $item->public_id, 'name' => $item->name, 'code' => $item->code])->values(),
-            'selectedPartner' => ['id' => $partner->public_id, 'name' => $partner->name, 'code' => $partner->code, 'currency' => $partner->currency],
+            'selectedPartner' => [
+                'id' => $partner->public_id,
+                'name' => $partner->name,
+                'code' => $partner->code,
+                'currency' => $partner->currency,
+                'credit_limit' => $partner->credit_limit,
+                'low_balance_threshold' => $partner->low_balance_threshold,
+                'status' => $partner->status,
+            ],
             'catalog' => $catalog,
             'settlements' => $settlements,
             'showCost' => $showCost,
@@ -120,6 +130,35 @@ final class PartnerController extends Controller
         );
 
         return redirect()->route('partners.commercial', ['partner' => $partner->public_id])->with('success', "Partner {$partner->name} created.");
+    }
+
+    public function update(Request $request, Partner $partner, UpdatePartner $update): RedirectResponse
+    {
+        $user = $request->user();
+        abort_unless($user instanceof User && $user->can('partners.manage'), 403);
+        abort_unless($this->visible($user)->whereKey($partner->id)->exists(), 404);
+
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'code' => [
+                'required',
+                'string',
+                'max:32',
+                'regex:/^[A-Za-z0-9_-]+$/',
+                'not_regex:/^$/',
+            ],
+            'credit_limit' => ['required', 'integer', 'min:0'],
+            'low_balance_threshold' => ['required', 'integer', 'min:0'],
+            'status' => ['required', 'string', Rule::in(['active', 'suspended'])],
+        ]);
+        $data['code'] = strtoupper(trim((string) $data['code']));
+        if (Partner::query()->whereRaw('UPPER(code) = ?', [$data['code']])->whereKeyNot($partner->id)->exists()) {
+            throw ValidationException::withMessages(['code' => 'A partner with this code already exists.']);
+        }
+
+        $update->handle($partner, $data);
+
+        return redirect()->route('partners.commercial', ['partner' => $partner->public_id])->with('success', "Partner {$partner->name} updated.");
     }
 
     /** @return Builder<Partner> */

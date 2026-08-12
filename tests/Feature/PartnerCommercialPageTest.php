@@ -71,3 +71,42 @@ it('creates a descendant partner from the commercial workspace', function (): vo
         ->and($child->credit_limit)->toBe(5000)
         ->and($child->wallet)->not->toBeNull();
 });
+
+it('updates reseller limits and status without changing wallet currency or hierarchy', function (): void {
+    $tenant = Tenant::create(['name' => 'Northline', 'slug' => 'northline', 'base_currency' => 'USD', 'collection_currency' => 'USD']);
+    app(Tenancy::class)->set($tenant);
+    $parent = app(CreatePartner::class)->handle('Parent', 'PARENT', 'USD');
+    $child = app(CreatePartner::class)->handle('Child', 'CHILD', 'USD', $parent);
+    $user = User::create([
+        'tenant_id' => $tenant->id,
+        'partner_id' => $parent->id,
+        'name' => 'Owner',
+        'email' => 'commercial-update@example.test',
+        'password' => Hash::make('password'),
+        'role' => 'reseller_owner',
+    ]);
+    app(CapabilitySeeder::class)->run();
+    $user->assignRole('reseller_owner');
+    $user->forceFill(['last_authenticated_at' => now()])->save();
+
+    $this->actingAs($user)
+        ->patch(route('partners.update', $child), [
+            'name' => 'Child Networks',
+            'code' => 'CHILD-NETWORKS',
+            'credit_limit' => 8000,
+            'low_balance_threshold' => 1200,
+            'status' => 'suspended',
+        ])
+        ->assertRedirect(route('partners.commercial', ['partner' => $child->public_id]));
+
+    expect($child->refresh()->only(['name', 'code', 'parent_id', 'currency', 'credit_limit', 'low_balance_threshold', 'status']))
+        ->toMatchArray([
+            'name' => 'Child Networks',
+            'code' => 'CHILD-NETWORKS',
+            'parent_id' => $parent->id,
+            'currency' => 'USD',
+            'credit_limit' => 8000,
+            'low_balance_threshold' => 1200,
+            'status' => 'suspended',
+        ]);
+});
