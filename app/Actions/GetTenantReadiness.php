@@ -217,7 +217,12 @@ final readonly class GetTenantReadiness implements Action
                 'ready' => $this->check('PASS', 'The private Web.js bridge is paired and ready.'),
                 'qr', 'authenticated', 'starting' => $this->check('WARN', 'The private Web.js bridge is configured but is waiting for account pairing to finish.'),
                 'disabled' => $this->check('WARN', 'WhatsApp Web.js is disabled; enable it after pairing a dedicated business account.'),
-                'not_configured' => $this->check('FAIL', 'Complete Web.js bridge, token, callback URL and callback secret configuration.'),
+                'not_configured' => $this->check(
+                    'FAIL',
+                    $setup['configured']
+                        ? 'Add and pair at least one WhatsApp delivery account before enabling customer notifications.'
+                        : 'Complete Web.js bridge, token, callback URL and callback secret configuration.',
+                ),
                 default => $this->check('FAIL', 'The private Web.js bridge is configured but is not ready for delivery.'),
             };
         }

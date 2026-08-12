@@ -163,6 +163,23 @@ it('does not pass WhatsApp Web.js readiness while the bridge is waiting for pair
         ->expectsOutputToContain('The private Web.js bridge is configured but is waiting for account pairing to finish.');
 });
 
+it('reports the account setup step when the Web.js bridge has no delivery accounts', function (): void {
+    Config::set([
+        'services.whatsapp.mode' => 'web',
+        'services.whatsapp.web.enabled' => true,
+        'services.whatsapp.web.endpoint' => 'http://whatsapp-web:3001',
+        'services.whatsapp.web.token' => 'bridge-token',
+        'services.whatsapp.web.webhook_url' => 'http://app/api/v1/webhooks/gateways/whatsapp_web',
+        'services.webhooks.secrets.whatsapp_web' => 'webhook-secret',
+    ]);
+
+    $tenant = Tenant::factory()->create(['slug' => 'empty-whatsapp-tenant']);
+
+    $this->artisan('platform:tenant-readiness', ['tenant' => $tenant->slug, '--json' => true])
+        ->assertExitCode(Command::FAILURE)
+        ->expectsOutputToContain('Add and pair at least one WhatsApp delivery account before enabling customer notifications.');
+});
+
 it('warns when the collection rate is older than the configured freshness window', function (): void {
     Config::set('services.fx.rate_max_age_hours', 24);
     $tenant = Tenant::factory()->create([
