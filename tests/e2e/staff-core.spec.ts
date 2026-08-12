@@ -227,6 +227,20 @@ test.describe('staff core journeys', () => {
         await page.getByRole('button', { name: 'Cancel', exact: true }).click();
     });
 
+    test('keeps a dragged work order on the calendar after rescheduling', async ({ page }) => {
+        await signIn(page);
+
+        await page.goto('/operations/work-orders/calendar');
+        await expect(page.getByRole('heading', { name: 'Work-order calendar' })).toBeVisible();
+        const draggableOrder = page.locator('[draggable="true"]').first();
+        await expect(draggableOrder).toBeVisible();
+        await draggableOrder.dragTo(page.locator('.min-h-24').nth(10));
+
+        await expect(page).toHaveURL(/\/operations\/work-orders\/calendar/);
+        await expect(page.getByRole('heading', { name: 'Work-order calendar' })).toBeVisible();
+        await expect(page.locator('[draggable="true"]').first()).toBeVisible();
+    });
+
     test('manages a temporary WhatsApp Web.js account from the browser', async ({ page }) => {
         test.setTimeout(120_000);
         await signIn(page);
