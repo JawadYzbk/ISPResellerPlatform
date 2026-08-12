@@ -113,6 +113,8 @@ podman compose up --build
 
 When using Podman Desktop's **Build** action, choose `D:\Development\ISPResellerPlatform` as the context and `Containerfile` as the build file. An empty build-file field produces a multi-stage parser error before the application is even read. Production uses the explicit multi-stage files in `docker/php/Dockerfile.production` and `docker/nginx/Dockerfile`; do not use the development `Containerfile` for that release image.
 
+The development image has been verified with Podman 6.0.2. Production builds also run the locked Node dependency install inside the Podman machine; if that step stalls, check the machine's available memory and registry access before retrying. The build context excludes local storage, archives, test artifacts and documentation so runtime data is not sent to the builder.
+
 The app is at [http://localhost:8000](http://localhost:8000), Vite serves the development assets at `http://127.0.0.1:5173`, Mailpit is at [http://localhost:8025](http://localhost:8025), and the MinIO console is at [http://localhost:9001](http://localhost:9001). Keep the `frontend` service running while using the local app; it owns the Vite dev server and HMR endpoint.
 
 On a fresh Docker database, run the demo fixture once after the stack is healthy:
