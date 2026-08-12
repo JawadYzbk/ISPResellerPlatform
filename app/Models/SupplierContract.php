@@ -10,8 +10,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
+ * @property int $id
+ * @property string $service_type
+ * @property string $wholesale_currency
  * @property Carbon $effective_from
  * @property Carbon|null $effective_to
+ * @property string $status
  */
 class SupplierContract extends Model
 {
