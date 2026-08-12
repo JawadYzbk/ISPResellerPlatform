@@ -41,7 +41,7 @@ const provisioningModes = [
     {
         value: 'upstream_credential',
         label: 'Upstream credential',
-        description: 'Keep the service in the supervised manual credential workflow.',
+        description: 'Allocate an available upstream account automatically during activation.',
     },
 ] as const;
 

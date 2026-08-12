@@ -1,5 +1,6 @@
 <?php
 
+use App\Domain\Network\CredentialDriver;
 use App\Domain\Network\DriverManager;
 use App\Domain\Network\ExternalDriver;
 use App\Domain\Network\FakeDriver;
@@ -31,4 +32,12 @@ it('resolves external services through the configured external driver', function
     $service = new Service(['provisioning_mode' => ProvisioningMode::External]);
 
     expect($manager->for($service))->toBe($external);
+});
+
+it('resolves upstream credential services through the credential driver when configured', function (): void {
+    $credential = new CredentialDriver;
+    $manager = new DriverManager(new ManualDriver, new NullDriver, null, null, null, null, $credential);
+    $service = new Service(['provisioning_mode' => ProvisioningMode::UpstreamCredential]);
+
+    expect($manager->for($service))->toBe($credential);
 });
