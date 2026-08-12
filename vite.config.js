@@ -24,7 +24,14 @@ export default defineConfig({
             host: '127.0.0.1',
         },
         watch: {
-            ignored: ['**/storage/framework/views/**'],
+            ignored: [
+                '**/storage/**',
+                '**/test-results/**',
+                '**/coverage/**',
+                '**/public/build/**',
+                '**/public/hot',
+                '**/integrations/whatsapp-web/**',
+            ],
         },
     },
 });
