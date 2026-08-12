@@ -156,14 +156,13 @@ final class SettingsController extends Controller
         $tenant = Tenant::query()->find($user->tenant_id);
         abort_unless($tenant instanceof Tenant, 403);
 
-        if (! $delete->handle($whatsappAccount)) {
-            return redirect()->route('settings.whatsapp')->with(
-                'error',
-                'The WhatsApp bridge is unavailable. The account was kept so its private session can be removed safely when the bridge is healthy.',
-            );
+        $result = $delete->handle($whatsappAccount);
+        $message = 'WhatsApp account deleted.';
+        if ($result['cleanup_queued']) {
+            $message .= ' Bridge cleanup queued until the bridge is healthy.';
         }
 
-        return redirect()->route('settings.whatsapp')->with('success', 'WhatsApp account deleted.');
+        return redirect()->route('settings.whatsapp')->with('success', $message);
     }
 
     public function sendWhatsAppTest(Request $request, GetWhatsAppSetupStatus $status, QueueWhatsAppTestMessage $send): RedirectResponse

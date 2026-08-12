@@ -30,7 +30,13 @@ final class WhatsAppBridgeClient
     /** @return array<string, mixed> */
     public function remove(WhatsAppAccount $account): array
     {
-        return $this->request('delete', '/accounts/'.rawurlencode($account->bridge_id));
+        return $this->removeByBridgeId($account->bridge_id);
+    }
+
+    /** @return array<string, mixed> */
+    public function removeByBridgeId(string $bridgeId): array
+    {
+        return $this->request('delete', '/accounts/'.rawurlencode($bridgeId), allowNotFound: true);
     }
 
     /** @return array<string, mixed> */
@@ -52,8 +58,13 @@ final class WhatsAppBridgeClient
     }
 
     /** @param array<string, mixed>|null $payload @return array<string, mixed> */
-    private function request(string $method, string $path, ?array $payload = null, int $timeout = 15): array
-    {
+    private function request(
+        string $method,
+        string $path,
+        ?array $payload = null,
+        int $timeout = 15,
+        bool $allowNotFound = false,
+    ): array {
         if (! $this->configured()) {
             throw new RuntimeException('WhatsApp Web.js is not configured.');
         }
@@ -71,9 +82,13 @@ final class WhatsAppBridgeClient
             throw new RuntimeException('The private WhatsApp bridge is unreachable.', previous: $exception);
         }
 
-        if ($response->failed()) {
+        if ($response->failed() && ! ($allowNotFound && $response->status() === 404)) {
             $message = $response->json('error');
             throw new RuntimeException(is_string($message) ? $message : 'The private WhatsApp bridge rejected the request.');
+        }
+
+        if ($allowNotFound && $response->status() === 404) {
+            return ['status' => 'deleted'];
         }
 
         $data = $response->json();

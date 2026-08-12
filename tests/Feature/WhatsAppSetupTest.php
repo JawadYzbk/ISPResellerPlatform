@@ -2,6 +2,7 @@
 
 use App\Actions\DeleteWhatsAppAccount;
 use App\Actions\GetWhatsAppSetupStatus;
+use App\Jobs\DeleteWhatsAppBridgeAccount;
 use App\Jobs\DeliverMessage;
 use App\Models\Message;
 use App\Models\Tenant;
@@ -229,7 +230,8 @@ it('creates, reassigns, disconnects, and returns a WhatsApp account to QR pairin
         ->and($setup['accounts'])->toBe([]);
 });
 
-it('keeps a WhatsApp account when the bridge cannot confirm deletion', function (): void {
+it('deletes the local account and queues bridge cleanup when the bridge is unavailable', function (): void {
+    Queue::fake();
     Http::fake(['http://whatsapp-web:3001/*' => Http::response(['error' => 'bridge_unavailable'], 503)]);
     config()->set([
         'services.whatsapp.mode' => 'web',
@@ -248,7 +250,10 @@ it('keeps a WhatsApp account when the bridge cannot confirm deletion', function 
         'is_active' => true,
     ]);
 
-    expect(app(DeleteWhatsAppAccount::class)->handle($account))->toBeFalse()
-        ->and($account->refresh()->status)->toBe('unreachable')
-        ->and(WhatsAppAccount::query()->whereKey($account->id)->exists())->toBeTrue();
+    expect(app(DeleteWhatsAppAccount::class)->handle($account))->toBe([
+        'deleted' => true,
+        'cleanup_queued' => true,
+    ])
+        ->and(WhatsAppAccount::query()->whereKey($account->id)->exists())->toBeFalse();
+    Queue::assertPushed(DeleteWhatsAppBridgeAccount::class, fn (DeleteWhatsAppBridgeAccount $job): bool => $job->bridgeId === 'wa-unavailable');
 });
