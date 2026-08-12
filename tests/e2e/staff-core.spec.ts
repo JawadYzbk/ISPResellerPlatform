@@ -248,6 +248,9 @@ test.describe('staff core journeys', () => {
         await expect(page.getByRole('heading', { name: 'Create invoice' })).toBeVisible();
         await expect(page.getByRole('combobox', { name: 'Customer' })).toBeVisible();
         await expect(page.getByRole('combobox', { name: 'Currency' })).toBeVisible();
+        await page.getByRole('combobox', { name: 'Customer' }).click();
+        await page.getByRole('combobox', { name: 'Search customers' }).fill('Demo Customer 1');
+        await expect(page.locator('[cmdk-item]').filter({ hasText: 'Demo Customer 1' }).first()).toBeVisible();
         await page.getByLabel('Description').fill('One-off installation');
         await page.getByLabel('Amount (USD)').fill('25');
         await expect(page.getByLabel('Issue invoice immediately')).toBeChecked();
