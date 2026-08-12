@@ -31,6 +31,7 @@ final class PlatformPreflightCommand extends Command
                 'Public HTTPS application URL' => $this->hasPublicHttpsUrl(),
                 'Secure session cookies' => config('session.secure') === true,
                 'Web two-factor enforcement' => config('security.enforce_web_two_factor') === true,
+                'Privileged staff two-factor enrollment' => $this->privilegedStaffTwoFactorIsReady(),
                 'Database credentials' => $this->databaseCredentialsAreConfigured(),
                 'Redis credentials' => $this->redisCredentialsAreConfigured(),
                 'Asynchronous queue connection' => $this->usesAsynchronousQueue(),
@@ -167,6 +168,30 @@ final class PlatformPreflightCommand extends Command
                     }
 
                     return true;
+                });
+
+                if ($ready !== true) {
+                    return false;
+                }
+            }
+
+            return true;
+        } catch (\Throwable) {
+            return false;
+        }
+    }
+
+    private function privilegedStaffTwoFactorIsReady(): bool
+    {
+        try {
+            $tenancy = app(Tenancy::class);
+
+            foreach (Tenant::query()->get(['id']) as $tenant) {
+                $ready = $tenancy->run($tenant, function (): bool {
+                    return User::query()
+                        ->whereNotNull('role')
+                        ->get()
+                        ->every(fn (User $user): bool => ! $user->requiresTwoFactor() || $user->two_factor_confirmed_at !== null);
                 });
 
                 if ($ready !== true) {

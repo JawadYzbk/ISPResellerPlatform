@@ -65,6 +65,25 @@ it('requires web two-factor enforcement for production', function (): void {
         ->expectsOutputToContain('Web two-factor enforcement');
 });
 
+it('requires privileged staff to finish two-factor enrollment for production', function (): void {
+    $tenant = Tenant::factory()->create();
+    User::factory()->create(['tenant_id' => $tenant->id, 'role' => 'tenant_owner']);
+    config()->set([
+        'app.key' => 'base64:'.base64_encode(str_repeat('a', 32)),
+        'app.env' => 'production',
+        'app.debug' => false,
+        'app.url' => 'https://portal.isp.internal',
+        'session.secure' => true,
+        'security.enforce_web_two_factor' => true,
+        'queue.default' => 'database',
+        'cache.default' => 'database',
+    ]);
+
+    $this->artisan('platform:preflight', ['--production' => true])
+        ->assertExitCode(Command::FAILURE)
+        ->expectsOutputToContain('Privileged staff two-factor enrollment');
+});
+
 it('passes the production preflight for a production-shaped configuration', function (): void {
     config()->set([
         'app.key' => 'base64:'.base64_encode(str_repeat('a', 32)),
