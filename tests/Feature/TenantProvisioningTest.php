@@ -120,3 +120,22 @@ it('reconciles currency roles when tenant currency settings change', function ()
         ->and($usd->is_collection)->toBeTrue()
         ->and($lbp->is_collection)->toBeFalse();
 });
+
+it('provisions a newly selected Frankfurter currency for the tenant', function (): void {
+    $tenant = Tenant::create([
+        'name' => 'Expanded Currency ISP',
+        'slug' => 'expanded-currency-isp',
+        'base_currency' => 'USD',
+        'collection_currency' => 'LBP',
+    ]);
+
+    $tenant->update(['base_currency' => 'JOD']);
+    app(Tenancy::class)->set($tenant);
+
+    $jod = Currency::where('code', 'JOD')->firstOrFail();
+
+    expect($jod->is_active)->toBeTrue()
+        ->and($jod->is_base)->toBeTrue()
+        ->and($jod->is_collection)->toBeFalse()
+        ->and(Currency::where('code', 'LBP')->where('is_collection', true)->exists())->toBeTrue();
+});
