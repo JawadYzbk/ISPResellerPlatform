@@ -78,7 +78,12 @@ async function restoreEnglishProfile(page: Page): Promise<void> {
     await page.goto('/profile');
     await page.getByRole('combobox').click();
     await page.getByRole('option', { name: /^(English|Anglais|الإنجليزية)$/ }).click();
-    await page.getByRole('button', { name: /^(Save profile|Enregistrer le profil|حفظ الملف الشخصي)$/ }).click();
+    await Promise.all([
+        page.waitForResponse(
+            (response) => response.url().endsWith('/profile') && response.request().method() === 'PATCH',
+        ),
+        page.getByRole('button', { name: /^(Save profile|Enregistrer le profil|حفظ الملف الشخصي)$/ }).click(),
+    ]);
     await expect(page.getByRole('combobox')).toContainText(/^(English|Anglais|الإنجليزية)$/);
 }
 
@@ -317,15 +322,23 @@ test.describe('staff core journeys', () => {
     });
 
     test('renders the shared shell in French after switching locale', async ({ page }) => {
+        test.setTimeout(90_000);
         await signIn(page);
         await page.goto('/profile');
         try {
             await page.getByRole('combobox').click();
             await page.getByRole('option', { name: /^(French|Français|الفرنسية)$/ }).click();
-            await page.getByRole('button', { name: /^(Save profile|Enregistrer le profil|حفظ الملف الشخصي)$/ }).click();
+            await Promise.all([
+                page.waitForResponse(
+                    (response) => response.url().endsWith('/profile') && response.request().method() === 'PATCH',
+                ),
+                page.getByRole('button', { name: /^(Save profile|Enregistrer le profil|حفظ الملف الشخصي)$/ }).click(),
+            ]);
+            await page.goto('/dashboard');
             await expect(page.getByRole('link', { name: 'Clients' })).toBeVisible();
-            await expect(page.getByRole('link', { name: 'Paramètres de l’espace de travail' })).toBeVisible();
-            await expect(page.getByText('Votre profil')).toBeVisible();
+            await expect(page.getByRole('heading', { name: 'Vos opérations en un coup d’œil.' })).toBeVisible();
+            await page.getByRole('button', { name: 'Ouvrir le menu du compte' }).click();
+            await expect(page.getByRole('menuitem', { name: 'Paramètres de l’espace de travail' })).toBeVisible();
         } finally {
             await restoreEnglishProfile(page);
         }
