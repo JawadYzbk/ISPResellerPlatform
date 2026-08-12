@@ -72,6 +72,8 @@ async function signInAs(page: Page, email: string): Promise<void> {
     await page.getByLabel('Email address').fill(email);
     await page.getByLabel('Password').fill(adminPassword);
     await Promise.all([page.waitForURL('**/dashboard'), page.getByRole('button', { name: 'Enter workspace' }).click()]);
+    await restoreEnglishProfile(page);
+    await page.goto('/dashboard');
 }
 
 async function restoreEnglishProfile(page: Page): Promise<void> {
