@@ -239,6 +239,19 @@ test.describe('staff core journeys', () => {
         await expect(page.getByLabel('Payment currency')).toBeVisible();
         await expect(page.getByLabel('Conversion rounding')).toBeVisible();
 
+        await page.goto('/billing/invoices');
+        await expect(page.getByRole('link', { name: 'Create invoice', exact: true })).toBeVisible();
+        await Promise.all([
+            page.waitForURL('**/billing/invoices/create'),
+            page.getByRole('link', { name: 'Create invoice', exact: true }).click(),
+        ]);
+        await expect(page.getByRole('heading', { name: 'Create invoice' })).toBeVisible();
+        await expect(page.getByRole('combobox', { name: 'Customer' })).toBeVisible();
+        await expect(page.getByRole('combobox', { name: 'Currency' })).toBeVisible();
+        await page.getByLabel('Description').fill('One-off installation');
+        await page.getByLabel('Amount (USD)').fill('25');
+        await expect(page.getByLabel('Issue invoice immediately')).toBeChecked();
+
         await page.goto('/billing/exchange-rates');
         await expect(page.getByRole('heading', { name: 'Exchange rates' })).toBeVisible();
         await expect(page.getByText('Frankfurter market rates', { exact: true })).toBeVisible();
