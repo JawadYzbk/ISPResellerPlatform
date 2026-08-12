@@ -12,8 +12,9 @@ type Props = {
 
 export default function HttpError({ status, title, message }: Props) {
     const { auth } = usePage<PageProps>().props;
-    const destination = auth.user === null ? '/login' : '/dashboard';
-    const destinationLabel = auth.user === null ? 'Go to sign in' : 'Back to dashboard';
+    const destination = auth.user === null ? '/login' : auth.isPlatformOperator ? '/admin/tenants' : '/dashboard';
+    const destinationLabel =
+        auth.user === null ? 'Go to sign in' : auth.isPlatformOperator ? 'Back to tenants' : 'Back to dashboard';
 
     return (
         <AuthLayout>

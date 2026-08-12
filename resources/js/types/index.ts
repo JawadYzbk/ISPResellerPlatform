@@ -21,6 +21,7 @@ export type PageProps = {
     auth: {
         user: User | null;
         tenant: Tenant | null;
+        isPlatformOperator: boolean;
         permissions: string[];
     };
     flash: {

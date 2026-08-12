@@ -3,6 +3,7 @@ import {
     Activity,
     BarChart3,
     Bell,
+    Building2,
     CalendarDays,
     CircleAlert,
     ChevronDown,
@@ -54,6 +55,7 @@ export default function AppLayout({ children }: PropsWithChildren) {
     const { auth, app } = page.props;
     const { url } = page;
     const t = createTranslator(app.locale);
+    const isPlatformOperator = auth.isPlatformOperator;
     const [searchOpen, setSearchOpen] = useState(false);
     const [search, setSearch] = useState('');
     const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
@@ -103,7 +105,7 @@ export default function AppLayout({ children }: PropsWithChildren) {
 
     useEffect(() => {
         const value = search.trim();
-        if (!searchOpen || value.length < 2) {
+        if (isPlatformOperator || !searchOpen || value.length < 2) {
             return;
         }
 
@@ -128,9 +130,9 @@ export default function AppLayout({ children }: PropsWithChildren) {
             window.clearTimeout(timeout);
             controller.abort();
         };
-    }, [search, searchOpen]);
+    }, [isPlatformOperator, search, searchOpen]);
 
-    const nav: NavigationItem[] = [
+    const workspaceNav: NavigationItem[] = [
         { label: 'Overview', href: '/dashboard', icon: LayoutDashboard },
         { label: 'Customers', href: '/customers', icon: Users, permission: 'customers.view' },
         { label: 'Plans', href: '/plans', icon: Tags, permission: 'plans.manage' },
@@ -178,7 +180,10 @@ export default function AppLayout({ children }: PropsWithChildren) {
         { label: 'POPs', href: '/operations/pops', icon: Network, permission: 'network.view' },
         { label: 'IP pools', href: '/operations/ip-pools', icon: Network, permission: 'network.view' },
         { label: 'Settings', href: '/settings', icon: Wrench, permission: 'settings.manage' },
-    ].filter((item) => item.permission === undefined || can(item.permission));
+    ];
+    const nav: NavigationItem[] = isPlatformOperator
+        ? [{ label: 'Tenants', href: '/admin/tenants', icon: Building2 }]
+        : workspaceNav.filter((item) => item.permission === undefined || can(item.permission));
 
     const fieldNav: NavigationItem[] = [
         { label: 'Home', href: '/dashboard', icon: LayoutDashboard },
@@ -217,7 +222,9 @@ export default function AppLayout({ children }: PropsWithChildren) {
                         <p className="text-[11px] font-semibold uppercase tracking-wider text-muted">
                             {t('Workspace')}
                         </p>
-                        <p className="mt-1 truncate text-sm font-semibold">{auth.tenant?.name ?? 'Platform'}</p>
+                        <p className="mt-1 truncate text-sm font-semibold">
+                            {auth.tenant?.name ?? (isPlatformOperator ? 'Platform administration' : 'Platform')}
+                        </p>
                     </div>
                     <nav className="space-y-1">
                         {nav.map(({ label, href, icon: Icon }) => {
@@ -243,36 +250,42 @@ export default function AppLayout({ children }: PropsWithChildren) {
             <div className="lg:ps-64">
                 <header className="sticky top-0 z-10 flex h-20 items-center justify-between border-b border-line bg-canvas/90 px-5 backdrop-blur lg:px-8">
                     <div className="flex items-center gap-3">
-                        <button
-                            type="button"
-                            onClick={() => setSearchOpen(true)}
-                            className="hidden rounded-lg border border-line bg-white p-2 text-muted hover:text-brand lg:block"
-                            title={t('Search customers')}
-                            aria-label={t('Search customers')}
-                        >
-                            <Command size={17} />
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => setSearchOpen(true)}
-                            className="hidden items-center gap-2 text-sm text-muted hover:text-ink sm:flex"
-                        >
-                            <Search size={16} />
-                            <span>{t('Search customers, services…')}</span>
-                            <kbd className="ms-2 rounded border border-line bg-white px-1.5 py-0.5 text-[10px]">
-                                ⌘ K
-                            </kbd>
-                        </button>
+                        {!isPlatformOperator && (
+                            <>
+                                <button
+                                    type="button"
+                                    onClick={() => setSearchOpen(true)}
+                                    className="hidden rounded-lg border border-line bg-white p-2 text-muted hover:text-brand lg:block"
+                                    title={t('Search customers')}
+                                    aria-label={t('Search customers')}
+                                >
+                                    <Command size={17} />
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setSearchOpen(true)}
+                                    className="hidden items-center gap-2 text-sm text-muted hover:text-ink sm:flex"
+                                >
+                                    <Search size={16} />
+                                    <span>{t('Search customers, services…')}</span>
+                                    <kbd className="ms-2 rounded border border-line bg-white px-1.5 py-0.5 text-[10px]">
+                                        ⌘ K
+                                    </kbd>
+                                </button>
+                            </>
+                        )}
                     </div>
                     <div className="flex items-center gap-3">
-                        <Link
-                            href="/notifications"
-                            className="relative rounded-lg p-2.5 text-muted hover:bg-white"
-                            title={t('Open notifications center')}
-                            aria-label={t('Open notifications center')}
-                        >
-                            <Bell size={19} strokeWidth={1.8} />
-                        </Link>
+                        {!isPlatformOperator && (
+                            <Link
+                                href="/notifications"
+                                className="relative rounded-lg p-2.5 text-muted hover:bg-white"
+                                title={t('Open notifications center')}
+                                aria-label={t('Open notifications center')}
+                            >
+                                <Bell size={19} strokeWidth={1.8} />
+                            </Link>
+                        )}
                         <div ref={accountMenu} className="relative border-s border-line ps-3">
                             <button
                                 type="button"
@@ -301,28 +314,33 @@ export default function AppLayout({ children }: PropsWithChildren) {
                                     aria-label={t('Account menu')}
                                     className="absolute end-0 top-full z-30 mt-2 w-56 overflow-hidden rounded-xl border border-line bg-white p-1 shadow-xl"
                                 >
-                                    <Link
-                                        href="/profile"
-                                        role="menuitem"
-                                        className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold hover:bg-sand"
-                                    >
-                                        <UserRound size={16} className="text-brand" /> {t('Profile')}
-                                    </Link>
-                                    <Link
-                                        href="/security/sessions"
-                                        role="menuitem"
-                                        className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold hover:bg-sand"
-                                    >
-                                        <KeyRound size={16} className="text-brand" /> {t('Active sessions')}
-                                    </Link>
-                                    {can('settings.manage') && (
-                                        <Link
-                                            href="/settings/general"
-                                            role="menuitem"
-                                            className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold hover:bg-sand"
-                                        >
-                                            <Wrench size={16} className="text-brand" /> {t('Workspace settings')}
-                                        </Link>
+                                    {!isPlatformOperator && (
+                                        <>
+                                            <Link
+                                                href="/profile"
+                                                role="menuitem"
+                                                className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold hover:bg-sand"
+                                            >
+                                                <UserRound size={16} className="text-brand" /> {t('Profile')}
+                                            </Link>
+                                            <Link
+                                                href="/security/sessions"
+                                                role="menuitem"
+                                                className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold hover:bg-sand"
+                                            >
+                                                <KeyRound size={16} className="text-brand" /> {t('Active sessions')}
+                                            </Link>
+                                            {can('settings.manage') && (
+                                                <Link
+                                                    href="/settings/general"
+                                                    role="menuitem"
+                                                    className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold hover:bg-sand"
+                                                >
+                                                    <Wrench size={16} className="text-brand" />{' '}
+                                                    {t('Workspace settings')}
+                                                </Link>
+                                            )}
+                                        </>
                                     )}
                                     <Form action="/logout" method="post" className="mt-1 border-t border-line pt-1">
                                         <button
