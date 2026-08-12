@@ -92,3 +92,26 @@ it('does not post a payment when the Whish callback status amount is tampered wi
     expect(Payment::withoutGlobalScopes()->count())->toBe(0)
         ->and($attempt->withoutGlobalScopes()->findOrFail($attempt->id)->status->value)->toBe('failed');
 });
+
+it('rejects an ambiguous external ID instead of settling another tenant payment', function (): void {
+    $firstTenant = Tenant::create(['name' => 'Firstline', 'slug' => 'firstline', 'base_currency' => 'USD', 'collection_currency' => 'USD']);
+    $secondTenant = Tenant::create(['name' => 'Secondline', 'slug' => 'secondline', 'base_currency' => 'USD', 'collection_currency' => 'USD']);
+
+    foreach ([$firstTenant, $secondTenant] as $tenant) {
+        app(Tenancy::class)->set($tenant);
+        $customer = Customer::factory()->create();
+        PaymentAttempt::create([
+            'gateway' => 'whish',
+            'external_id' => '111222333',
+            'customer_id' => $customer->id,
+            'amount' => 1250,
+            'currency' => 'USD',
+            'idempotency_key' => 'whish:'.$tenant->id,
+            'invoice_reference' => 'COL-'.$tenant->id,
+        ]);
+    }
+    app(Tenancy::class)->clear();
+
+    $this->getJson('/api/v1/webhooks/payments/whish/success?externalId=111222333&currency=USD')
+        ->assertStatus(409);
+});

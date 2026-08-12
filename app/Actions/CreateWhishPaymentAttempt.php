@@ -75,7 +75,7 @@ final readonly class CreateWhishPaymentAttempt implements Action
     {
         do {
             $externalId = (string) random_int(100_000_000, 999_999_999);
-        } while (PaymentAttempt::query()->where('gateway', 'whish')->where('external_id', $externalId)->exists());
+        } while (PaymentAttempt::withoutGlobalScopes()->where('gateway', 'whish')->where('external_id', $externalId)->exists());
 
         return $externalId;
     }

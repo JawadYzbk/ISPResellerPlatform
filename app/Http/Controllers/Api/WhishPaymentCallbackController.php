@@ -29,13 +29,17 @@ final class WhishPaymentCallbackController extends Controller
             return response()->json(['message' => 'A valid Whish external ID is required.'], 422);
         }
 
-        $attempt = PaymentAttempt::withoutGlobalScopes()
+        $attempts = PaymentAttempt::withoutGlobalScopes()
             ->where('gateway', 'whish')
             ->where('external_id', $externalId)
-            ->first();
-        if (! $attempt instanceof PaymentAttempt) {
+            ->get();
+        if ($attempts->isEmpty()) {
             return response()->json(['message' => 'Whish payment attempt not found.'], 404);
         }
+        if ($attempts->count() > 1) {
+            return response()->json(['message' => 'Whish payment attempt identifier is ambiguous.'], 409);
+        }
+        $attempt = $attempts->first();
         if ($currency !== '' && strtoupper($attempt->currency) !== $currency) {
             return response()->json(['message' => 'Whish callback currency does not match the payment attempt.'], 422);
         }
