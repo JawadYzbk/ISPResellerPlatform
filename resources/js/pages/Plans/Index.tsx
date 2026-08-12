@@ -1,12 +1,13 @@
 import CurrencyCombobox, { type CurrencyOption } from '@/components/ui/currency-combobox';
 import ResponsiveSelect from '@/components/ui/responsive-select';
 import { Head, Link, router, useForm } from '@inertiajs/react';
-import { Archive, ChevronLeft, ChevronRight, Plus, Search, Tags } from 'lucide-react';
+import { Archive, ChevronLeft, ChevronRight, Edit3, Plus, Search, Tags } from 'lucide-react';
 import { useState } from 'react';
 
 import StatusBadge from '@/components/StatusBadge';
 import AppLayout from '@/layouts/AppLayout';
-import { formatDate, formatMoney, parseMoneyToMinor } from '@/lib/format';
+import ConfirmDialog from '@/components/ui/confirm-dialog';
+import { currencyFractionDigits, formatDate, formatMoney, parseMoneyToMinor } from '@/lib/format';
 import type { PageProps, Paginator } from '@/types';
 
 type Plan = {
@@ -58,6 +59,8 @@ export default function PlansIndex({ plans, filters, addons, promotions, availab
     const [search, setSearch] = useState(filters.search ?? '');
     const [status, setStatus] = useState(filters.status ?? '');
     const [selectedPromoPlans, setSelectedPromoPlans] = useState<string[]>([]);
+    const [editingAddonId, setEditingAddonId] = useState<string | null>(null);
+    const [editingPromotionId, setEditingPromotionId] = useState<string | null>(null);
     const addonForm = useForm({
         name: '',
         slug: '',
@@ -95,7 +98,17 @@ export default function PlansIndex({ plans, filters, addons, promotions, availab
             return;
         }
         addonForm.transform((data) => ({ ...data, amount_minor: amountMinor }));
-        addonForm.post('/plans/addons', { onSuccess: () => addonForm.reset() });
+        const options = {
+            onSuccess: () => {
+                addonForm.reset();
+                setEditingAddonId(null);
+            },
+        };
+        if (editingAddonId) {
+            addonForm.put(`/plans/addons/${editingAddonId}`, options);
+        } else {
+            addonForm.post('/plans/addons', options);
+        }
     };
 
     const submitPromotion = (event: React.FormEvent<HTMLFormElement>) => {
@@ -110,12 +123,46 @@ export default function PlansIndex({ plans, filters, addons, promotions, availab
             value: data.type === 'percent' ? Math.round(rawValue * 100) : Math.round(rawValue),
             applies_to: selectedPromoPlans,
         }));
-        promotionForm.post('/plans/promotions', {
+        const options = {
             onSuccess: () => {
                 promotionForm.reset();
                 setSelectedPromoPlans([]);
+                setEditingPromotionId(null);
             },
+        };
+        if (editingPromotionId) {
+            promotionForm.put(`/plans/promotions/${editingPromotionId}`, options);
+        } else {
+            promotionForm.post('/plans/promotions', options);
+        }
+    };
+
+    const editAddon = (addon: Addon) => {
+        setEditingAddonId(addon.public_id);
+        addonForm.setData({
+            name: addon.name,
+            slug: addon.slug,
+            description: addon.description ?? '',
+            amount: (addon.amount_minor / 10 ** currencyFractionDigits(addon.currency)).toString(),
+            currency: addon.currency,
+            billing_period_days: addon.billing_period_days?.toString() ?? '',
+            status: 'active',
         });
+    };
+
+    const editPromotion = (promotion: Promotion) => {
+        setEditingPromotionId(promotion.public_id);
+        promotionForm.setData({
+            name: promotion.name,
+            code: promotion.code,
+            type: promotion.type,
+            value: promotion.type === 'percent' ? (promotion.value / 100).toString() : promotion.value.toString(),
+            starts_at: promotion.starts_at.slice(0, 10),
+            ends_at: promotion.ends_at?.slice(0, 10) ?? '',
+            max_redemptions: promotion.max_redemptions?.toString() ?? '',
+            is_active: true,
+        });
+        setSelectedPromoPlans(promotion.applies_to);
     };
 
     return (
@@ -168,7 +215,7 @@ export default function PlansIndex({ plans, filters, addons, promotions, availab
                 <section className="card p-6">
                     <div className="flex items-center justify-between">
                         <div>
-                            <h2 className="section-title">Add-ons</h2>
+                            <h2 className="section-title">{editingAddonId ? 'Edit add-on' : 'Add-ons'}</h2>
                             <p className="mt-1 text-sm text-muted">
                                 Recurring or one-off extras such as static IPs and equipment rental.
                             </p>
@@ -231,7 +278,7 @@ export default function PlansIndex({ plans, filters, addons, promotions, availab
                             className="button-secondary sm:col-span-2"
                             disabled={addonForm.processing}
                         >
-                            <Plus size={15} /> Add add-on
+                            <Plus size={15} /> {editingAddonId ? 'Save add-on' : 'Add add-on'}
                         </button>
                     </form>
                     <div className="mt-5 space-y-2 border-t border-line pt-5">
@@ -250,16 +297,33 @@ export default function PlansIndex({ plans, filters, addons, promotions, availab
                                         · {addon.status}
                                     </p>
                                 </div>
-                                {addon.status === 'active' && (
+                                <div className="flex items-center gap-3">
                                     <button
                                         type="button"
-                                        className="text-muted hover:text-coral"
-                                        onClick={() => router.delete(`/plans/addons/${addon.public_id}`)}
-                                        aria-label={`Archive ${addon.name}`}
+                                        className="text-muted hover:text-brand"
+                                        onClick={() => editAddon(addon)}
+                                        aria-label={`Edit ${addon.name}`}
                                     >
-                                        <Archive size={15} />
+                                        <Edit3 size={15} />
                                     </button>
-                                )}
+                                    {addon.status === 'active' && (
+                                        <ConfirmDialog
+                                            title={`Archive ${addon.name}?`}
+                                            description="It will no longer be available for new service changes. Existing records keep their snapshot."
+                                            confirmLabel="Archive add-on"
+                                            destructive
+                                            onConfirm={() => router.delete(`/plans/addons/${addon.public_id}`)}
+                                        >
+                                            <button
+                                                type="button"
+                                                className="text-muted hover:text-coral"
+                                                aria-label={`Archive ${addon.name}`}
+                                            >
+                                                <Archive size={15} />
+                                            </button>
+                                        </ConfirmDialog>
+                                    )}
+                                </div>
                             </div>
                         ))}
                         {addons.length === 0 && <p className="text-sm text-muted">No add-ons yet.</p>}
@@ -268,7 +332,7 @@ export default function PlansIndex({ plans, filters, addons, promotions, availab
                 <section className="card p-6">
                     <div className="flex items-center justify-between">
                         <div>
-                            <h2 className="section-title">Promotions</h2>
+                            <h2 className="section-title">{editingPromotionId ? 'Edit promotion' : 'Promotions'}</h2>
                             <p className="mt-1 text-sm text-muted">
                                 Use basis points for percentage discounts: 1000 equals 10%.
                             </p>
@@ -378,7 +442,7 @@ export default function PlansIndex({ plans, filters, addons, promotions, availab
                             className="button-secondary sm:col-span-2"
                             disabled={promotionForm.processing}
                         >
-                            <Plus size={15} /> Add promotion
+                            <Plus size={15} /> {editingPromotionId ? 'Save promotion' : 'Add promotion'}
                         </button>
                     </form>
                     <div className="mt-5 space-y-2 border-t border-line pt-5">
@@ -398,16 +462,33 @@ export default function PlansIndex({ plans, filters, addons, promotions, availab
                                         {promotion.is_active ? 'active' : 'archived'}
                                     </p>
                                 </div>
-                                {promotion.is_active && (
+                                <div className="flex items-center gap-3">
                                     <button
                                         type="button"
-                                        className="text-muted hover:text-coral"
-                                        onClick={() => router.delete(`/plans/promotions/${promotion.public_id}`)}
-                                        aria-label={`Archive ${promotion.code}`}
+                                        className="text-muted hover:text-brand"
+                                        onClick={() => editPromotion(promotion)}
+                                        aria-label={`Edit ${promotion.code}`}
                                     >
-                                        <Archive size={15} />
+                                        <Edit3 size={15} />
                                     </button>
-                                )}
+                                    {promotion.is_active && (
+                                        <ConfirmDialog
+                                            title={`Archive ${promotion.code}?`}
+                                            description="The promotion will no longer be available for new renewals. Existing redemptions remain recorded."
+                                            confirmLabel="Archive promotion"
+                                            destructive
+                                            onConfirm={() => router.delete(`/plans/promotions/${promotion.public_id}`)}
+                                        >
+                                            <button
+                                                type="button"
+                                                className="text-muted hover:text-coral"
+                                                aria-label={`Archive ${promotion.code}`}
+                                            >
+                                                <Archive size={15} />
+                                            </button>
+                                        </ConfirmDialog>
+                                    )}
+                                </div>
                             </div>
                         ))}
                         {promotions.length === 0 && <p className="text-sm text-muted">No promotions yet.</p>}
@@ -433,6 +514,7 @@ export default function PlansIndex({ plans, filters, addons, promotions, availab
                                 <th className="px-5 py-3.5 text-start">Term</th>
                                 <th className="px-5 py-3.5 text-start">Services</th>
                                 <th className="px-5 py-3.5 text-start">Status</th>
+                                <th className="px-5 py-3.5 text-end">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-line">
@@ -455,11 +537,16 @@ export default function PlansIndex({ plans, filters, addons, promotions, availab
                                     <td className="px-5 py-4">
                                         <StatusBadge status={plan.status} />
                                     </td>
+                                    <td className="px-5 py-4 text-end">
+                                        <Link href={`/plans/${plan.public_id}/edit`} className="button-quiet">
+                                            <Edit3 size={15} /> Edit
+                                        </Link>
+                                    </td>
                                 </tr>
                             ))}
                             {plans.data.length === 0 && (
                                 <tr>
-                                    <td colSpan={6} className="px-5 py-16 text-center">
+                                    <td colSpan={7} className="px-5 py-16 text-center">
                                         <Tags className="mx-auto text-muted" size={28} />
                                         <p className="mt-3 font-semibold">No plans match these filters</p>
                                     </td>

@@ -60,6 +60,7 @@ type Props = PageProps & {
     assignableServices?: AssignableService[];
     bulkBalances: BulkBalance[];
     bulkItems: BulkItem[];
+    serializedItems: BulkItem[];
     bulkWarehouses: BulkWarehouse[];
     transferWarehouses: BulkWarehouse[];
     movements: InventoryMovement[];
@@ -74,6 +75,7 @@ export default function InventoryPage({
     assignableServices = [],
     bulkBalances,
     bulkItems,
+    serializedItems,
     bulkWarehouses,
     transferWarehouses,
     movements,
@@ -83,7 +85,10 @@ export default function InventoryPage({
     const [movementType, setMovementType] = useState(filters.movement_type ?? '');
     const [selectedServices, setSelectedServices] = useState<Record<number, string>>({});
     const [selectedWarehouses, setSelectedWarehouses] = useState<Record<number, string>>({});
+    const itemForm = useForm({ sku: '', name: '', category: '', is_serialized: false, reorder_level: '0' });
+    const warehouseForm = useForm({ name: '', code: '', type: 'warehouse' });
     const receiveForm = useForm({ inventory_item_id: '', warehouse_id: '', quantity: '', note: '' });
+    const unitForm = useForm({ inventory_item_id: '', warehouse_id: '', serial_number: '' });
 
     const applyFilters = (event: React.FormEvent) => {
         event.preventDefault();
@@ -106,6 +111,21 @@ export default function InventoryPage({
     const submitReceive = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         receiveForm.post('/operations/inventory/bulk-receive', { onSuccess: () => receiveForm.reset() });
+    };
+
+    const submitItem = (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        itemForm.post('/operations/inventory/items', { onSuccess: () => itemForm.reset() });
+    };
+
+    const submitWarehouse = (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        warehouseForm.post('/operations/inventory/warehouses', { onSuccess: () => warehouseForm.reset() });
+    };
+
+    const submitUnit = (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        unitForm.post('/operations/inventory/serialized-receive', { onSuccess: () => unitForm.reset() });
     };
 
     const transferUnit = (unit: InventoryUnit) => {
@@ -153,6 +173,195 @@ export default function InventoryPage({
                     Apply filters
                 </button>
             </form>
+
+            {canReceive && (
+                <section className="card mt-6 p-5">
+                    <div className="flex items-center justify-between gap-4">
+                        <div>
+                            <p className="section-title">Set up inventory</p>
+                            <p className="mt-1 text-sm text-muted">
+                                Create the item and storage records first, then receive bulk quantities or serialized
+                                units.
+                            </p>
+                        </div>
+                        <Package size={18} className="text-brand" />
+                    </div>
+                    <div className="mt-5 grid gap-6 xl:grid-cols-2">
+                        <form
+                            onSubmit={submitItem}
+                            className="grid gap-3 rounded-xl border border-line bg-sand/30 p-4 sm:grid-cols-2"
+                        >
+                            <p className="text-sm font-semibold sm:col-span-2">New inventory item</p>
+                            <label>
+                                <span className="field-label">SKU</span>
+                                <input
+                                    className="field"
+                                    value={itemForm.data.sku}
+                                    onChange={(event) => itemForm.setData('sku', event.target.value)}
+                                    placeholder="CABLE-UTP"
+                                />
+                                {itemForm.errors.sku && <p className="field-error">{itemForm.errors.sku}</p>}
+                            </label>
+                            <label>
+                                <span className="field-label">Name</span>
+                                <input
+                                    className="field"
+                                    value={itemForm.data.name}
+                                    onChange={(event) => itemForm.setData('name', event.target.value)}
+                                    placeholder="Outdoor UTP cable"
+                                />
+                                {itemForm.errors.name && <p className="field-error">{itemForm.errors.name}</p>}
+                            </label>
+                            <label>
+                                <span className="field-label">Category</span>
+                                <input
+                                    className="field"
+                                    value={itemForm.data.category}
+                                    onChange={(event) => itemForm.setData('category', event.target.value)}
+                                    placeholder="cable"
+                                />
+                                {itemForm.errors.category && <p className="field-error">{itemForm.errors.category}</p>}
+                            </label>
+                            <label>
+                                <span className="field-label">Inventory type</span>
+                                <ResponsiveSelect
+                                    className="field"
+                                    value={itemForm.data.is_serialized ? 'serialized' : 'bulk'}
+                                    onChange={(event) =>
+                                        itemForm.setData('is_serialized', event.target.value === 'serialized')
+                                    }
+                                >
+                                    <option value="bulk">Bulk quantity</option>
+                                    <option value="serialized">Serialized units</option>
+                                </ResponsiveSelect>
+                            </label>
+                            <label>
+                                <span className="field-label">Reorder level</span>
+                                <input
+                                    className="field"
+                                    type="number"
+                                    min="0"
+                                    value={itemForm.data.reorder_level}
+                                    onChange={(event) => itemForm.setData('reorder_level', event.target.value)}
+                                />
+                                {itemForm.errors.reorder_level && (
+                                    <p className="field-error">{itemForm.errors.reorder_level}</p>
+                                )}
+                            </label>
+                            <button className="button-secondary sm:col-span-2" disabled={itemForm.processing}>
+                                <Package size={15} /> Create item
+                            </button>
+                        </form>
+                        <form
+                            onSubmit={submitWarehouse}
+                            className="grid gap-3 rounded-xl border border-line bg-sand/30 p-4 sm:grid-cols-2"
+                        >
+                            <p className="text-sm font-semibold sm:col-span-2">New warehouse or van</p>
+                            <label>
+                                <span className="field-label">Name</span>
+                                <input
+                                    className="field"
+                                    value={warehouseForm.data.name}
+                                    onChange={(event) => warehouseForm.setData('name', event.target.value)}
+                                    placeholder="Main warehouse"
+                                />
+                                {warehouseForm.errors.name && (
+                                    <p className="field-error">{warehouseForm.errors.name}</p>
+                                )}
+                            </label>
+                            <label>
+                                <span className="field-label">Code</span>
+                                <input
+                                    className="field uppercase"
+                                    value={warehouseForm.data.code}
+                                    onChange={(event) => warehouseForm.setData('code', event.target.value)}
+                                    placeholder="MAIN"
+                                />
+                                {warehouseForm.errors.code && (
+                                    <p className="field-error">{warehouseForm.errors.code}</p>
+                                )}
+                            </label>
+                            <label>
+                                <span className="field-label">Storage type</span>
+                                <ResponsiveSelect
+                                    className="field"
+                                    value={warehouseForm.data.type}
+                                    onChange={(event) => warehouseForm.setData('type', event.target.value)}
+                                >
+                                    <option value="warehouse">Warehouse</option>
+                                    <option value="van">Technician van</option>
+                                </ResponsiveSelect>
+                                {warehouseForm.errors.type && (
+                                    <p className="field-error">{warehouseForm.errors.type}</p>
+                                )}
+                            </label>
+                            <div className="flex items-end">
+                                <button className="button-secondary w-full" disabled={warehouseForm.processing}>
+                                    <Package size={15} /> Create storage
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                    {serializedItems.length > 0 && bulkWarehouses.length > 0 && (
+                        <form
+                            onSubmit={submitUnit}
+                            className="mt-6 grid gap-3 border-t border-line pt-5 sm:grid-cols-3 sm:items-end"
+                        >
+                            <label>
+                                <span className="field-label">Serialized item</span>
+                                <ResponsiveSelect
+                                    className="field"
+                                    value={unitForm.data.inventory_item_id}
+                                    onChange={(event) => unitForm.setData('inventory_item_id', event.target.value)}
+                                >
+                                    <option value="">Select equipment</option>
+                                    {serializedItems.map((item) => (
+                                        <option key={item.id} value={item.id}>
+                                            {item.sku} · {item.name}
+                                        </option>
+                                    ))}
+                                </ResponsiveSelect>
+                                {unitForm.errors.inventory_item_id && (
+                                    <p className="field-error">{unitForm.errors.inventory_item_id}</p>
+                                )}
+                            </label>
+                            <label>
+                                <span className="field-label">Warehouse</span>
+                                <ResponsiveSelect
+                                    className="field"
+                                    value={unitForm.data.warehouse_id}
+                                    onChange={(event) => unitForm.setData('warehouse_id', event.target.value)}
+                                >
+                                    <option value="">Select storage</option>
+                                    {bulkWarehouses.map((warehouse) => (
+                                        <option key={warehouse.id} value={warehouse.id}>
+                                            {warehouse.code} · {warehouse.name}
+                                        </option>
+                                    ))}
+                                </ResponsiveSelect>
+                                {unitForm.errors.warehouse_id && (
+                                    <p className="field-error">{unitForm.errors.warehouse_id}</p>
+                                )}
+                            </label>
+                            <label>
+                                <span className="field-label">Serial number</span>
+                                <input
+                                    className="field"
+                                    value={unitForm.data.serial_number}
+                                    onChange={(event) => unitForm.setData('serial_number', event.target.value)}
+                                    placeholder="CPE-ONU-0001"
+                                />
+                                {unitForm.errors.serial_number && (
+                                    <p className="field-error">{unitForm.errors.serial_number}</p>
+                                )}
+                            </label>
+                            <button className="button-secondary sm:col-span-3" disabled={unitForm.processing}>
+                                <Package size={15} /> Receive serialized unit
+                            </button>
+                        </form>
+                    )}
+                </section>
+            )}
 
             <section className="card mt-6 p-5">
                 <div className="flex items-center justify-between gap-4">
