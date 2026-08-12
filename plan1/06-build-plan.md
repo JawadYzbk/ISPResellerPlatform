@@ -263,9 +263,9 @@ Expiry reminders (configurable day offsets, tenant-local send hour), payment rec
 
 ---
 
-## Post-v1 backlog (P1) — deferred to protect the v1 timeline
+## Advanced commercial and supplier slices (P1 scope)
 
-These are fully specified in `08-suppliers-credentials-wallets.md`. The current build includes the repository-side ISP-P1-01 supplier, contract, bill/payment, inventory, lifecycle, commercial batch capture and reconciliation slice; external supplier acceptance and full journal/AP settlement remain. ISP-P1-02 is implemented in the current build and is retained here as the original specification and acceptance record.
+These are fully specified in `08-suppliers-credentials-wallets.md`. The current build includes the repository-side ISP-P1-01 supplier, contract, bill/payment, inventory, lifecycle, commercial batch capture, reconciliation and journal-linked supplier posting slice. ISP-P1-02 is implemented in the current build and is retained here as the original specification and acceptance record. External supplier/device acceptance and deeper AP operations remain launch gates or follow-on work.
 
 **Prerequisite already in v1:** the `services.provisioning_mode` enum already includes `upstream_credential`, and the double-entry journal already supports supplier-cost and settlement accounts — so P1 is additive, no core migration churn.
 
@@ -295,7 +295,7 @@ These are fully specified in `08-suppliers-credentials-wallets.md`. The current 
 | 9 | Partners (basic wallets), reporting, dashboards, imports | 6d |
 | 10 | Hardening and launch | 5d |
 | | **Total (v1)** | **~65 working days** |
-| P1 | Suppliers/credentials + advanced reseller settlement (ISP-P1-01/02) | +4d, post-v1 |
+| P1 | Suppliers/credentials + advanced reseller settlement (ISP-P1-01/02) | repository delivery complete; external acceptance remains |
 
 **Minimum shippable pilot = Phases 0–4 plus ISP-050/052.** That is roughly 30 working days and delivers the core loop: register → activate → auto-suspend → collect payment → auto-reactivate → notify. Everything after that is expansion. Resist the urge to ship a beautiful ticketing module before the money loop is airtight.
 

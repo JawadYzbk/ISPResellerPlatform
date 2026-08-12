@@ -202,7 +202,7 @@ A service's `provisioning_mode` (`02 §7`) selects which `NetworkDriver` execute
 | Mode | Driver | Notes |
 |---|---|---|
 | `manual` | `ManualDriver` | Records the intended action as a `network_command` in `pending`; an authorized human confirms it. No device call. |
-| `upstream_credential` | `CredentialDriver` *(P1)* | Reserves/assigns a credential from inventory (`08`); "activation" = assignment, "suspension" = release/flag. **Deferred to P1** — in v1 the manager resolves this mode to `ManualDriver`. |
+| `upstream_credential` | `CredentialDriver` | Reserves/assigns a credential from tenant inventory (`08`); "activation" = assignment, "suspension" = release/flag. Repository delivery is complete; external supplier provisioning and RouterOS/CoA acceptance remain environment gates. |
 | `mikrotik` | `MikrotikApiDriver` (`§5.2`) | RouterOS v7 REST. |
 | `radius` | `RadiusDriver` (`§5.3`) | Writes RADIUS tables + CoA/Disconnect. |
 | `external` | `ExternalDriver` | Calls a third-party OSS/UISP/ACS webhook/API; local service stays the commercial truth. |

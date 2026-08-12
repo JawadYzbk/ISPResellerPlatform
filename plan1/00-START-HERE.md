@@ -22,7 +22,7 @@ Read in this order. Do not skip.
 | `05-frontend-spec.md` | Inertia/React setup, page inventory, component library, UX rules. | Phase 1 onward. |
 | `06-build-plan.md` | Phased ticket list with acceptance criteria. **This is your task queue.** | Every working session. |
 | `07-conventions-and-testing.md` | Code standards, testing strategy, Definition of Done, CI, deployment. | Every working session. |
-| `08-suppliers-credentials-wallets.md` | Suppliers, upstream-credential inventory, price books, commissions, settlement. **P1 — post-v1** (tickets ISP-P1-01/02). v1 ships only basic partner wallets (`06 ISP-090`). | When planning P1; skim early so the v1 journal/enum leave room. |
+| `08-suppliers-credentials-wallets.md` | Suppliers, upstream-credential inventory, price books, commissions, settlement. The repository includes the supplier/credential and advanced partner-commercial slices; external provider/device acceptance remains. | Read when changing supplier, credential, partner, commission or settlement behavior. |
 | `09-security-and-operations.md` | Threat model, OWASP mapping, SSRF/router security, network connectivity modes, deployment, observability, DR, runbooks. | Before Phase 4 (network) and Phase 10 (hardening). |
 
 **Rule:** the specs are the source of truth. If you need to deviate (a schema change, a different package, a renamed endpoint), **edit the relevant spec file in the same commit** and note it in the Decision Log in Section 5 below. Never let code and spec drift silently.

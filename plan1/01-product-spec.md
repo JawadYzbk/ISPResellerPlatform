@@ -103,7 +103,7 @@ A **service** (one internet connection) runs in exactly one provisioning mode. T
 | Mode | Meaning | MVP behavior |
 |---|---|---|
 | `manual` | Staff tracks the service; the network is handled outside the app | Create a queued checklist/action; allow authorized manual confirmation of activate/suspend/restore |
-| `upstream_credential` | A purchased upstream account/voucher is assigned to the customer | **v1:** handled by `ManualDriver` — staff record the assigned account and confirm activation by hand. **P1:** real reserve/assign from credential inventory (`08`), with expiry/quota warnings |
+| `upstream_credential` | A purchased upstream account/voucher is assigned to the customer | The repository-side `CredentialDriver` reserves and assigns from credential inventory (`08`), with expiry/quota warnings. External supplier provisioning and RouterOS/CoA acceptance remain launch gates. |
 | `mikrotik` | The app provisions a RouterOS PPP/Hotspot/etc. identity | MikroTik adapter creates/updates/enables/disables; command results recorded (`03 §5.2`) |
 | `radius` | Central AAA (FreeRADIUS) authorizes and accounts sessions | App manages authorization rows; RADIUS sends accounting (`03 §5.3`) |
 | `external` | A third-party OSS/UISP/ACS is the system of execution | Webhook/API adapter; the local service stays the commercial source of truth |
