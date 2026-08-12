@@ -10,6 +10,7 @@ use App\Actions\CreatePromotion;
 use App\Actions\GetCurrencyCatalog;
 use App\Actions\ListPlans;
 use App\Actions\UpdateAddon;
+use App\Actions\UpdatePlan;
 use App\Actions\UpdatePromotion;
 use App\Http\Controllers\Controller;
 use App\Models\Addon;
@@ -153,6 +154,53 @@ final class PlanOperationsController extends Controller
         abort_unless($request->user()?->can('plans.manage') === true, 403);
 
         return Inertia::render('Plans/Create', ['currencies' => $currencyCatalog->handle()]);
+    }
+
+    public function edit(Request $request, Plan $plan, GetCurrencyCatalog $currencyCatalog): Response
+    {
+        abort_unless($request->user()?->can('plans.manage') === true, 403);
+        $price = $plan->priceAt() ?? $plan->prices()->latest('effective_from')->first();
+
+        return Inertia::render('Plans/Edit', [
+            'plan' => [
+                'public_id' => $plan->public_id,
+                'name' => $plan->name,
+                'slug' => $plan->slug,
+                'download_kbps' => $plan->download_kbps,
+                'upload_kbps' => $plan->upload_kbps,
+                'duration_days' => $plan->duration_days,
+                'amount_minor' => $price?->amount_minor ?? $plan->amount_minor,
+                'currency' => $price?->currency ?? $plan->currency,
+                'effective_from' => ($price?->effective_from ?? now())->toDateString(),
+                'status' => $plan->status,
+            ],
+            'currencies' => $currencyCatalog->handle(),
+        ]);
+    }
+
+    public function update(Request $request, Plan $plan, UpdatePlan $updatePlan): RedirectResponse
+    {
+        $user = $request->user();
+        abort_unless($user instanceof User && $user->can('plans.manage'), 403);
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'slug' => ['nullable', 'string', 'max:255'],
+            'download_kbps' => ['required', 'integer', 'min:0'],
+            'upload_kbps' => ['required', 'integer', 'min:0'],
+            'duration_days' => ['required', 'integer', 'min:1'],
+            'amount_minor' => ['required', 'integer', 'min:0'],
+            'currency' => ['required', 'string', 'size:3'],
+            'effective_from' => ['required', 'date'],
+            'status' => ['required', Rule::in(['active', 'inactive'])],
+        ]);
+        $validated['slug'] = Str::slug((string) ($validated['slug'] ?: $validated['name']));
+        $validated['currency'] = strtoupper($validated['currency']);
+        if (Plan::query()->where('slug', $validated['slug'])->where('id', '!=', $plan->id)->exists()) {
+            throw ValidationException::withMessages(['slug' => 'A plan with this slug already exists.']);
+        }
+        $updated = $updatePlan->handle($plan, $validated);
+
+        return redirect()->route('plans.index')->with('success', "Plan {$updated->name} updated.");
     }
 
     public function store(Request $request, CreatePlan $createPlan): RedirectResponse

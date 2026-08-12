@@ -49,6 +49,32 @@ it('renders plans and creates a plan with its first effective price', function (
     $created = Plan::query()->where('slug', 'home-100')->firstOrFail();
     expect($created->currency)->toBe('USD')
         ->and($created->prices()->firstOrFail()->amount_minor)->toBe(5000);
+
+    app(Tenancy::class)->set($tenant);
+    $this->actingAs($user)
+        ->get(route('plans.edit', $created->public_id))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page->component('Plans/Edit')->where('plan.name', 'Home 100'));
+
+    $this->actingAs($user)
+        ->put(route('plans.update', $created->public_id), [
+            'name' => 'Home 120',
+            'slug' => 'home-120',
+            'download_kbps' => 120000,
+            'upload_kbps' => 25000,
+            'duration_days' => 31,
+            'amount_minor' => 5500,
+            'currency' => 'USD',
+            'effective_from' => now()->toDateString(),
+            'status' => 'active',
+        ])
+        ->assertRedirect(route('plans.index'))
+        ->assertSessionHas('success', 'Plan Home 120 updated.');
+
+    app(Tenancy::class)->set($tenant);
+    expect($created->refresh()->name)->toBe('Home 120')
+        ->and($created->download_kbps)->toBe(120000)
+        ->and($created->prices()->where('amount_minor', 5500)->exists())->toBeTrue();
 });
 
 it('does not expose plans from another tenant', function (): void {

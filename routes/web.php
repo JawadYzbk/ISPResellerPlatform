@@ -183,6 +183,9 @@ Route::middleware(['auth', 'tenant', '2fa'])->group(function (): void {
     Route::post('/operations/work-orders/{workOrder:public_id}/readings', [WorkOrderOperationsController::class, 'readings'])->middleware('recent-auth')->name('operations.work-orders.readings.store');
     Route::post('/operations/work-orders/{workOrder:public_id}/materials', [WorkOrderOperationsController::class, 'material'])->middleware('recent-auth')->name('operations.work-orders.materials.store');
     Route::get('/operations/inventory', [InventoryOperationsController::class, 'index'])->name('operations.inventory');
+    Route::post('/operations/inventory/items', [InventoryOperationsController::class, 'storeItem'])->middleware('recent-auth')->name('operations.inventory.items.store');
+    Route::post('/operations/inventory/warehouses', [InventoryOperationsController::class, 'storeWarehouse'])->middleware('recent-auth')->name('operations.inventory.warehouses.store');
+    Route::post('/operations/inventory/serialized-receive', [InventoryOperationsController::class, 'receiveUnit'])->middleware('recent-auth')->name('operations.inventory.serialized-receive');
     Route::post('/operations/inventory/bulk-receive', [InventoryOperationsController::class, 'receiveBulk'])->middleware('recent-auth')->name('operations.inventory.bulk-receive');
     Route::post('/operations/inventory/{unit}/assign', [InventoryOperationsController::class, 'assign'])->middleware('recent-auth')->name('operations.inventory.assign');
     Route::post('/operations/inventory/{unit}/transfer', [InventoryOperationsController::class, 'transfer'])->middleware('recent-auth')->name('operations.inventory.transfer');
@@ -201,6 +204,8 @@ Route::middleware(['auth', 'tenant', '2fa'])->group(function (): void {
     Route::get('/plans', [PlanOperationsController::class, 'index'])->name('plans.index');
     Route::get('/plans/create', [PlanOperationsController::class, 'create'])->name('plans.create');
     Route::post('/plans', [PlanOperationsController::class, 'store'])->name('plans.store');
+    Route::get('/plans/{plan:public_id}/edit', [PlanOperationsController::class, 'edit'])->name('plans.edit');
+    Route::put('/plans/{plan:public_id}', [PlanOperationsController::class, 'update'])->name('plans.update');
     Route::post('/plans/addons', [PlanOperationsController::class, 'storeAddon'])->middleware('recent-auth')->name('plans.addons.store');
     Route::put('/plans/addons/{addon:public_id}', [PlanOperationsController::class, 'updateAddon'])->middleware('recent-auth')->name('plans.addons.update');
     Route::delete('/plans/addons/{addon:public_id}', [PlanOperationsController::class, 'archiveAddon'])->middleware('recent-auth')->name('plans.addons.archive');
