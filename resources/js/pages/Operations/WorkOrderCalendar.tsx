@@ -72,8 +72,11 @@ export default function WorkOrderCalendarPage({ weekStart, timezone, workOrders 
         if (!publicId) return;
         router.post(
             '/operations/work-orders/' + publicId + '/schedule',
-            { scheduled_at: day + 'T' + String(hour).padStart(2, '0') + ':00' },
-            { preserveScroll: true },
+            {
+                scheduled_at: day + 'T' + String(hour).padStart(2, '0') + ':00',
+                context: 'calendar',
+            },
+            { preserveScroll: true, preserveState: true },
         );
     };
 
@@ -125,7 +128,10 @@ export default function WorkOrderCalendarPage({ weekStart, timezone, workOrders 
                                                     key={order.public_id}
                                                     draggable={!['completed', 'cancelled'].includes(order.status)}
                                                     onDragStart={(event) =>
-                                                        event.dataTransfer.setData('text/plain', order.public_id)
+                                                        (() => {
+                                                            event.dataTransfer.effectAllowed = 'move';
+                                                            event.dataTransfer.setData('text/plain', order.public_id);
+                                                        })()
                                                     }
                                                     className="rounded-lg border border-brand/20 bg-brand-soft px-2 py-2 text-xs"
                                                 >

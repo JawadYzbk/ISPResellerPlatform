@@ -144,3 +144,21 @@ it('renders the work-order calendar in the tenant timezone', function (): void {
             ->where('workOrders.0.scheduled_at_local', '2026-08-12T15:30')
         );
 });
+
+it('keeps a calendar drag reschedule on the calendar page', function (): void {
+    $tenant = Tenant::create(['name' => 'Northline', 'slug' => 'northline', 'base_currency' => 'USD', 'collection_currency' => 'USD', 'timezone' => 'Asia/Beirut']);
+    $user = User::create(['tenant_id' => $tenant->id, 'name' => 'Operations manager', 'email' => 'operations-calendar-drop@example.test', 'password' => Hash::make('password'), 'role' => 'operations_manager']);
+    app(CapabilitySeeder::class)->run();
+    app(Tenancy::class)->set($tenant);
+    $user->assignRole('operations_manager');
+    $user->forceFill(['last_authenticated_at' => now()])->save();
+    $order = WorkOrder::create(['number' => 'WO-CALENDAR-DROP-001', 'type' => 'repair', 'status' => WorkOrderStatus::Assigned, 'scheduled_at' => '2026-08-12 12:30:00']);
+
+    $this->actingAs($user)
+        ->post(route('operations.work-orders.schedule', $order->public_id), [
+            'scheduled_at' => '2026-08-13T17:00',
+            'context' => 'calendar',
+        ])
+        ->assertRedirect(route('operations.work-orders.calendar', ['week' => '2026-08-10']))
+        ->assertSessionHas('success', 'Work order WO-CALENDAR-DROP-001 scheduled.');
+});

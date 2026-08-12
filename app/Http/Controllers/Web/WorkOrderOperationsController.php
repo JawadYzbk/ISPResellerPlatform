@@ -118,12 +118,23 @@ final class WorkOrderOperationsController extends Controller
     {
         $user = $request->user();
         abort_unless($user instanceof User && $user->can('workorders.complete'), 403);
-        $validated = $request->validate(['scheduled_at' => ['required', 'date']]);
+        $validated = $request->validate([
+            'scheduled_at' => ['required', 'date'],
+            'context' => ['nullable', 'string', 'in:calendar'],
+        ]);
         $timezone = $this->tenantTimezone($user);
         try {
             $schedule->handle($workOrder, $user, CarbonImmutable::parse((string) $validated['scheduled_at'], $timezone)->utc());
         } catch (DomainException $exception) {
             throw ValidationException::withMessages(['scheduled_at' => $exception->getMessage()]);
+        }
+
+        if (($validated['context'] ?? null) === 'calendar') {
+            return redirect()
+                ->route('operations.work-orders.calendar', [
+                    'week' => CarbonImmutable::parse((string) $validated['scheduled_at'], $timezone)->startOfWeek()->toDateString(),
+                ])
+                ->with('success', "Work order {$workOrder->number} scheduled.");
         }
 
         return redirect()->route('operations.work-orders.show', $workOrder->public_id)->with('success', "Work order {$workOrder->number} scheduled.");
