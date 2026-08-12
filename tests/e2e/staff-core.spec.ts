@@ -219,6 +219,7 @@ test.describe('staff core journeys', () => {
         try {
             await page.getByPlaceholder('Billing phone').fill(label);
             await page.getByRole('button', { name: 'Add account', exact: true }).click();
+            await expect(page.getByTestId('flash-toast')).toContainText('WhatsApp account added.');
             await expect(accountCard.getByText(label, { exact: true })).toBeVisible({ timeout: 15_000 });
             await expect(accountCard.getByRole('button', { name: 'Disconnect and pair again' })).toBeVisible();
 
@@ -236,6 +237,7 @@ test.describe('staff core journeys', () => {
                 );
                 await deleteDialog.getByRole('button', { name: 'Delete account', exact: true }).click();
                 expect((await deleteResponse).status()).toBeLessThan(400);
+                await expect(page.getByTestId('flash-toast')).toContainText('WhatsApp account deleted.');
                 await page.reload();
                 await expect(accountCard).toHaveCount(0);
             }
@@ -447,6 +449,7 @@ test.describe('staff core journeys', () => {
             await page.getByRole('combobox').click();
             await page.getByRole('option', { name: /^(French|Français|الفرنسية)$/ }).click();
             await page.getByRole('button', { name: /^(Save profile|Enregistrer le profil|حفظ الملف الشخصي)$/ }).click();
+            await expect(page.getByTestId('flash-toast')).toContainText('Profile updated.');
             await expect(page.getByRole('combobox')).toContainText(/^(French|Français|الفرنسية)$/);
         } finally {
             await restoreEnglishProfile(page);
