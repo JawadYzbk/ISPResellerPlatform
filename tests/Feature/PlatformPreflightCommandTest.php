@@ -259,3 +259,25 @@ it('requires Whish credentials and public URLs when selected for production', fu
         ->assertExitCode(Command::FAILURE)
         ->expectsOutputToContain('Whish Pay configuration');
 });
+
+it('rejects an invalid production Whish endpoint', function (): void {
+    config()->set([
+        'app.key' => 'base64:'.base64_encode(str_repeat('a', 32)),
+        'app.env' => 'production',
+        'app.debug' => false,
+        'app.url' => 'https://portal.isp.test',
+        'session.secure' => true,
+        'queue.default' => 'database',
+        'cache.default' => 'database',
+        'services.whish.enabled' => true,
+        'services.whish.environment' => 'production',
+        'services.whish.channel' => 'channel',
+        'services.whish.secret' => 'secret',
+        'services.whish.website_url' => 'https://portal.isp.test',
+        'services.whish.endpoint' => 'http://whish.internal.test/api',
+    ]);
+
+    $this->artisan('platform:preflight', ['--production' => true])
+        ->assertExitCode(Command::FAILURE)
+        ->expectsOutputToContain('Whish Pay configuration');
+});

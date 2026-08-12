@@ -197,11 +197,12 @@ final readonly class GetTenantReadiness implements Action
         }
 
         $configured = collect(['channel', 'secret', 'website_url'])
-            ->every(fn (string $key): bool => $this->hasConfiguredValue(config('services.whish.'.$key)));
+            ->every(fn (string $key): bool => $this->hasConfiguredValue(config('services.whish.'.$key)))
+            && $this->validWhishEndpoint();
 
         return $this->check(
             $configured ? 'PASS' : 'FAIL',
-            $configured ? 'Whish Pay credentials and website configuration are present.' : 'Complete Whish Pay merchant credentials and callback configuration.',
+            $configured ? 'Whish Pay credentials, website and endpoint configuration are present.' : 'Complete Whish Pay merchant credentials, website and endpoint configuration.',
         );
     }
 
@@ -265,5 +266,19 @@ final readonly class GetTenantReadiness implements Action
     private function hasConfiguredValue(mixed $value): bool
     {
         return is_string($value) && trim($value) !== '' && trim($value) !== 'change-me';
+    }
+
+    private function validWhishEndpoint(): bool
+    {
+        $endpoint = config('services.whish.endpoint');
+        if (! $this->hasConfiguredValue($endpoint)) {
+            return true;
+        }
+
+        $parsed = parse_url((string) $endpoint);
+
+        return is_array($parsed)
+            && filter_var((string) $endpoint, FILTER_VALIDATE_URL) !== false
+            && (app()->environment('local', 'testing') || strtolower((string) ($parsed['scheme'] ?? '')) === 'https');
     }
 }

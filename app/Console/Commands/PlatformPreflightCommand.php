@@ -304,6 +304,17 @@ final class PlatformPreflightCommand extends Command
             ->every(fn (string $key): bool => $this->hasConfiguredValue(config('services.whish.'.$key)))) {
             return false;
         }
+        $endpoint = config('services.whish.endpoint');
+        if ($this->hasConfiguredValue($endpoint)) {
+            $parsedEndpoint = parse_url((string) $endpoint);
+            if (! is_array($parsedEndpoint) || filter_var((string) $endpoint, FILTER_VALIDATE_URL) === false) {
+                return false;
+            }
+            if ((string) config('services.whish.environment', 'sandbox') === 'production'
+                && strtolower((string) ($parsedEndpoint['scheme'] ?? '')) !== 'https') {
+                return false;
+            }
+        }
         if (filter_var((string) config('services.whish.website_url'), FILTER_VALIDATE_URL) === false) {
             return false;
         }

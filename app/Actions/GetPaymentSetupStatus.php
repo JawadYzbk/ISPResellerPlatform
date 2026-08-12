@@ -13,8 +13,10 @@ final readonly class GetPaymentSetupStatus implements Action
         $stripeReady = $stripeSelected && collect(['secret', 'publishable_key', 'endpoint', 'webhook_secret'])
             ->every(fn (string $key): bool => $this->configured(config('services.stripe.'.$key)));
         $whishEnabled = (bool) config('services.whish.enabled', false);
-        $whishReady = $whishEnabled && collect(['channel', 'secret', 'website_url'])
-            ->every(fn (string $key): bool => $this->configured(config('services.whish.'.$key)));
+        $whishReady = $whishEnabled
+            && collect(['channel', 'secret', 'website_url'])
+                ->every(fn (string $key): bool => $this->configured(config('services.whish.'.$key)))
+            && $this->validWhishEndpoint();
 
         return [
             'cash' => [
@@ -41,11 +43,13 @@ final readonly class GetPaymentSetupStatus implements Action
                 'detail' => $whishReady
                     ? 'Whish Pay QR and provider-verified callbacks are configured.'
                     : ($whishEnabled
-                        ? 'Missing deployment values: '.$this->missingConfiguration([
-                            'WHISH_CHANNEL' => config('services.whish.channel'),
-                            'WHISH_SECRET' => config('services.whish.secret'),
-                            'WHISH_WEBSITE_URL' => config('services.whish.website_url'),
-                        ]).'.'
+                        ? ($this->validWhishEndpoint()
+                            ? 'Missing deployment values: '.$this->missingConfiguration([
+                                'WHISH_CHANNEL' => config('services.whish.channel'),
+                                'WHISH_SECRET' => config('services.whish.secret'),
+                                'WHISH_WEBSITE_URL' => config('services.whish.website_url'),
+                            ]).'.'
+                            : 'WHISH_ENDPOINT must be a valid HTTPS URL in production.')
                         : 'Whish Pay is disabled; enable it after merchant acceptance.'),
             ],
         ];
@@ -63,5 +67,19 @@ final readonly class GetPaymentSetupStatus implements Action
     private function configured(mixed $value): bool
     {
         return is_string($value) && trim($value) !== '';
+    }
+
+    private function validWhishEndpoint(): bool
+    {
+        $endpoint = config('services.whish.endpoint');
+        if (! $this->configured($endpoint)) {
+            return true;
+        }
+
+        $parsed = parse_url((string) $endpoint);
+
+        return is_array($parsed)
+            && filter_var((string) $endpoint, FILTER_VALIDATE_URL) !== false
+            && (app()->environment('local', 'testing') || strtolower((string) ($parsed['scheme'] ?? '')) === 'https');
     }
 }
