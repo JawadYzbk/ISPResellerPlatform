@@ -154,6 +154,33 @@ test.describe('staff core journeys', () => {
         await expect(page.getByRole('heading', { name: 'Send one test message' })).toBeVisible();
     });
 
+    test('manages a temporary WhatsApp Web.js account from the browser', async ({ page }) => {
+        await signIn(page);
+        await page.goto('/settings/whatsapp');
+        await expect(page.getByRole('heading', { name: 'WhatsApp delivery' })).toBeVisible();
+
+        test.skip(
+            (await page.getByText('WhatsApp Web.js', { exact: true }).count()) === 0,
+            'Web.js is disabled in this environment.',
+        );
+
+        const label = `E2E temporary ${Date.now()}`;
+        await page.getByPlaceholder('Billing phone').fill(label);
+        await page.getByRole('button', { name: 'Add account', exact: true }).click();
+        const accountCard = page.locator('div.rounded-2xl.border.border-line.bg-white.p-5').filter({ hasText: label });
+        await expect(accountCard.getByText(label, { exact: true })).toBeVisible({ timeout: 15_000 });
+        await expect(accountCard.getByRole('button', { name: 'Disconnect and pair again' })).toBeVisible();
+
+        await accountCard.getByRole('button', { name: 'Disconnect and pair again' }).click();
+        await expect(accountCard).toContainText(/Waiting for QR scan|Disconnected|Starting/);
+
+        await accountCard.getByRole('button', { name: 'Delete account' }).click();
+        const deleteDialog = page.getByRole('alertdialog');
+        await expect(deleteDialog).toBeVisible();
+        await deleteDialog.getByRole('button', { name: 'Delete account', exact: true }).click();
+        await expect(accountCard).toHaveCount(0);
+    });
+
     test('shows the customer payment grid by month', async ({ page }) => {
         await signIn(page);
         await page.goto('/customers');
