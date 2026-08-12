@@ -125,8 +125,8 @@ Implemented as a standalone PHP package under `packages/whish-pay-php` (PSR-4, n
 **AC:** a serialisation test proves credentials never appear in any Inertia prop or API response; "test connection" returns RouterOS version/identity or a precise, categorised error.
 
 ### ISP-041 · Driver interface + fakes + mode resolution
-`NetworkDriver` contract, DTOs, `DriverManager` resolving by `service.provisioning_mode` (`03 §5.0`), `NullDriver`, `ManualDriver` (records intent for human confirmation), `FakeDriver` (programmable failures, timeouts, drift). **`CredentialDriver` is deferred to P1 (ISP-P1-01)** — in v1 the manager maps `upstream_credential` mode to `ManualDriver`.
-**AC:** the manager resolves the correct driver for each mode (with `upstream_credential` → `ManualDriver` in v1); `FakeDriver` can simulate every failure mode listed in `03 §5.5`; a `manual` service's activate produces a pending command awaiting confirmation, not a device call; all subsequent network tests use `FakeDriver`.
+`NetworkDriver` contract, DTOs, `DriverManager` resolving by `service.provisioning_mode` (`03 §5.0`), `NullDriver`, `ManualDriver` (records intent for human confirmation), `FakeDriver` (programmable failures, timeouts, drift), and the repository-side `CredentialDriver` for upstream inventory reservation/activation/release.
+**AC:** the manager resolves the correct driver for each mode; `upstream_credential` activation allocates an available tenant-scoped credential atomically and suspension/termination releases it according to lifecycle policy; `FakeDriver` can simulate every failure mode listed in `03 §5.5`; a `manual` service's activate produces a pending command awaiting confirmation, not a device call; all subsequent network tests use `FakeDriver`.
 
 ### ISP-042 · `MikrotikApiDriver`
 Full implementation per `03 §5.2` against RouterOS v7 REST. Comment-tagging with `svc:<uuid>`, string-typed response casting, timeouts, categorised exceptions, per-plan PPP profile sync, static/DHCP handling via address-list + simple queue.
@@ -265,17 +265,17 @@ Expiry reminders (configurable day offsets, tenant-local send hour), payment rec
 
 ## Post-v1 backlog (P1) — deferred to protect the v1 timeline
 
-These are fully specified in `08-suppliers-credentials-wallets.md`. ISP-P1-01 remains a post-v1 supplier extension; ISP-P1-02 is implemented in the current build and is retained here as the original specification and acceptance record.
+These are fully specified in `08-suppliers-credentials-wallets.md`. The current build includes the repository-side ISP-P1-01 inventory, lifecycle, commercial batch capture and reconciliation slice; supplier contract/bill workflows and external supplier acceptance remain. ISP-P1-02 is implemented in the current build and is retained here as the original specification and acceptance record.
 
 **Prerequisite already in v1:** the `services.provisioning_mode` enum already includes `upstream_credential`, and the double-entry journal already supports supplier-cost and settlement accounts — so P1 is additive, no core migration churn.
 
-### ISP-P1-01 · Suppliers & upstream-credential inventory — per `08 §2`: `suppliers`, `supplier_contracts`, `credential_batches`, `upstream_credentials` (state machine, encrypted secrets, lookup hashes), `credential_assignments`, `supplier_bills`. CSV/voucher import, reserve/assign to a service (activating the `upstream_credential` mode via a real `CredentialDriver`), permissioned + re-auth + audited reveal, expiry/quota warnings, supplier reconciliation report, and the expiring-credentials attention-queue row.
-**AC:** batch import never logs plaintext; one available credential is reserved/assigned exactly once under concurrency (partial unique index); reveal requires capability + re-auth and writes an audit event; a credential nearing expiry/quota surfaces in the attention queue.
+### ISP-P1-01 · Suppliers & upstream-credential inventory — per `08 §2`: `suppliers`, `credential_batches`, `upstream_credentials` (state machine, encrypted secrets, lookup hashes), and `credential_assignments` are implemented in the current repository slice. CSV/voucher import, reserve/assign to a service through the real `CredentialDriver`, commercial batch capture, period reconciliation, permissioned + re-auth + audited reveal, expiry warnings, and the expiring-credentials attention-queue row are covered. Supplier contracts and supplier bills remain a follow-on slice.
+**AC:** batch import never logs plaintext; one available credential is reserved/assigned exactly once under concurrency (partial unique index); reveal requires capability + re-auth and writes an audit event; a credential nearing expiry/quota surfaces in the attention queue; reconciliation exports purchased, assigned, available, expiring and revoked/invalid counts plus recorded cost by supplier/contract/currency.
 
 ### ISP-P1-02 · Price books, versioned commissions, settlement — per `08 §3`: `price_books` + `price_book_items` (plan entitlement, buy/sell/min/max, effective dates), `commission_rules` (versioned) + `commission_entries` (no recompute of posted history), `settlements` (per partner/period/currency, opening/activity/closing/due), funding/payout/settlement postings. Supersedes the basic `reseller_amount` pricing from ISP-090.
 **AC:** a renewal uses the snapshotted buy/sell terms; changing a commission rule does not recompute already-posted commissions; a reseller statement and the tenant ledger reconcile for the same period.
 
-> **v1 behavior for `upstream_credential` services:** until ISP-P1-01 ships, a service set to `upstream_credential` mode is handled by the `ManualDriver` — staff record the assigned upstream account against the service as a note/checklist and confirm activation manually. No inventory, reservation, or reveal flow exists yet. The commercial lifecycle (billing/renewal/suspension) is unaffected.
+> **Current behavior for `upstream_credential` services:** the repository-side `CredentialDriver` reserves and activates an available tenant credential through the network command pipeline, then releases it on suspension or service termination according to its expiry/reuse policy. External supplier provisioning and RouterOS/CoA acceptance remain environment gates; supplier contracts/bills are not yet part of this slice.
 
 ---
 
