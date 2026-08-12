@@ -217,7 +217,7 @@ test.describe('staff core journeys', () => {
                 await deleteDialog.getByRole('button', { name: 'Delete account', exact: true }).click();
                 expect((await deleteResponse).status()).toBeLessThan(400);
                 await page.reload();
-                await expect(page.getByText(label, { exact: true })).toHaveCount(0);
+                await expect(accountCard).toHaveCount(0);
             }
         }
     });
@@ -316,7 +316,7 @@ test.describe('staff core journeys', () => {
                     )
                     .first(),
             ).toBeVisible();
-            await page.getByRole('combobox', { name: /^(Job|Tâche)$/ }).click();
+            await page.getByRole('combobox', { name: /^(Job|Tâche)$/ }).first().click();
             await expect(page.getByRole('option', { name: 'Livraison générale' })).toBeVisible();
             await page.keyboard.press('Escape');
         } finally {
