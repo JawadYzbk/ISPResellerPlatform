@@ -198,6 +198,23 @@ test.describe('staff core journeys', () => {
         expect(pageErrors.map((error) => error.message)).not.toContain('crypto.randomUUID is not a function');
     });
 
+    test('exposes catalog editing and inventory setup controls', async ({ page }) => {
+        await signIn(page);
+
+        await page.goto('/plans');
+        await expect(page.getByRole('heading', { name: 'Plans' })).toBeVisible();
+        await page.getByRole('link', { name: 'Edit', exact: true }).first().click();
+        await expect(page.getByRole('heading', { name: 'Edit plan' })).toBeVisible();
+
+        await page.goto('/operations/inventory');
+        await expect(page.getByText('Set up inventory')).toBeVisible();
+        await expect(page.getByText('New inventory item')).toBeVisible();
+        await expect(page.getByText('New warehouse or van')).toBeVisible();
+
+        await page.goto('/settings/ticket-responses');
+        await expect(page.getByRole('heading', { name: 'Ticket responses' })).toBeVisible();
+    });
+
     test('manages a temporary WhatsApp Web.js account from the browser', async ({ page }) => {
         test.setTimeout(120_000);
         await signIn(page);
