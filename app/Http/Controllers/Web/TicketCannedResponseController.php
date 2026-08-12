@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Web;
 
+use App\Actions\CreateTicketCannedResponse;
 use App\Http\Controllers\Controller;
 use App\Models\TicketCannedResponse;
 use App\Models\User;
@@ -27,11 +28,11 @@ final class TicketCannedResponseController extends Controller
         ]);
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request, CreateTicketCannedResponse $create): RedirectResponse
     {
         $this->authorizeSettings($request);
         $validated = $this->validated($request);
-        TicketCannedResponse::create($validated + ['is_active' => true]);
+        $create->handle($validated);
 
         return redirect()->route('settings.ticket-responses')->with('success', 'Ticket response created.');
     }
