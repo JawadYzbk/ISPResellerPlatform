@@ -216,6 +216,10 @@ export class WhatsAppBridge {
       );
     });
     await this.beforeStart();
+    if (this.stopRequested) {
+      await this.disconnect();
+      return;
+    }
     await this.client.initialize();
     if (this.stopRequested) {
       await this.disconnect();
@@ -278,15 +282,27 @@ export class WhatsAppBridge {
     const browser = this.client.pupBrowser;
     const browserProcess = browser?.process?.();
 
-    if (!browserProcess || browserProcess.killed) {
+    if (!browserProcess) {
       return;
     }
 
     try {
-      browserProcess.kill();
+      let processTreeTerminated = false;
       if (process.platform === 'win32' && browserProcess.pid) {
-        await execFileAsync('taskkill', ['/pid', String(browserProcess.pid), '/t', '/f']);
+        try {
+          await execFileAsync('taskkill', ['/pid', String(browserProcess.pid), '/t', '/f']);
+          processTreeTerminated = true;
+        } catch (error) {
+          if (error.code !== 128) {
+            this.logger.warn(`WhatsApp browser process tree termination failed: ${error.message}`);
+          }
+        }
       }
+
+      if (!processTreeTerminated) {
+        browserProcess.kill();
+      }
+
       await Promise.race([
         new Promise((resolve) => browserProcess.once('exit', resolve)),
         sleep(1000),

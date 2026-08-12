@@ -190,6 +190,45 @@ test('removes an account while its client is still initializing', async () => {
   }
 });
 
+test('does not initialize after disconnect is requested during preparation', async () => {
+  const directory = await mkdtemp(join(tmpdir(), 'isp-whatsapp-'));
+  let releasePreparation;
+  let preparationStarted;
+  const preparation = new Promise((resolve) => {
+    releasePreparation = resolve;
+  });
+  const preparationStartedPromise = new Promise((resolve) => {
+    preparationStarted = resolve;
+  });
+
+  try {
+    const client = new FakeClient();
+    let initializeCalls = 0;
+    client.initialize = async () => {
+      initializeCalls++;
+    };
+    const bridge = new WhatsAppBridge({
+      client,
+      store: new JsonIdempotencyStore(directory),
+      beforeStart: async () => {
+        preparationStarted();
+        await preparation;
+      },
+    });
+
+    const startup = bridge.start();
+    await preparationStartedPromise;
+    await bridge.disconnect();
+    releasePreparation();
+    await startup;
+
+    assert.equal(initializeCalls, 0);
+    assert.equal(client.destroyed, true);
+  } finally {
+    await rm(directory, { recursive: true, force: true });
+  }
+});
+
 test('retries session cleanup while Chromium releases profile locks', async () => {
   const directory = await mkdtemp(join(tmpdir(), 'isp-whatsapp-'));
   const profile = join(directory, 'session-locked-account');
