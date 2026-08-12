@@ -10,11 +10,11 @@ class CredentialAssignment extends Model
 {
     use BelongsToTenant;
 
-    protected $fillable = ['tenant_id', 'upstream_credential_id', 'service_id', 'assigned_by', 'assigned_at', 'metadata'];
+    protected $fillable = ['tenant_id', 'upstream_credential_id', 'service_id', 'assigned_by', 'assigned_at', 'released_at', 'release_reason', 'metadata'];
 
     protected function casts(): array
     {
-        return ['assigned_at' => 'datetime', 'metadata' => 'array'];
+        return ['assigned_at' => 'datetime', 'released_at' => 'datetime', 'metadata' => 'array'];
     }
 
     public function tenant(): BelongsTo

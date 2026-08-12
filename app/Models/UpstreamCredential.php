@@ -8,6 +8,7 @@ use App\Models\Concerns\BelongsToTenant;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
 /**
@@ -46,6 +47,12 @@ class UpstreamCredential extends Model
 
     public function assignment(): HasOne
     {
-        return $this->hasOne(CredentialAssignment::class);
+        return $this->hasOne(CredentialAssignment::class)->whereNull('released_at');
+    }
+
+    /** @return HasMany<CredentialAssignment, $this> */
+    public function assignments(): HasMany
+    {
+        return $this->hasMany(CredentialAssignment::class);
     }
 }
