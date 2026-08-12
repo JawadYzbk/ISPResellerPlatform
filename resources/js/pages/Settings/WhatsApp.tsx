@@ -24,8 +24,7 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useMediaQuery } from '@/hooks/useMediaQuery';
+import ResponsiveSelect from '@/components/ui/responsive-select';
 import AppLayout from '@/layouts/AppLayout';
 import { createTranslator } from '@/lib/i18n';
 import type { PageProps } from '@/types';
@@ -65,49 +64,6 @@ const jobOptions = (t: (key: string) => string) =>
         { value: 'operations', label: t('Operations') },
         { value: 'marketing', label: t('Marketing') },
     ] as const;
-
-type SelectOption = { value: string; label: string };
-
-type ResponsiveSelectProps = {
-    name?: string;
-    options: readonly SelectOption[];
-    value: string;
-    onValueChange: (value: string) => void;
-};
-
-function ResponsiveSelect({ name, options, value, onValueChange }: ResponsiveSelectProps) {
-    const isMobile = useMediaQuery('(max-width: 767px)');
-
-    if (isMobile) {
-        return (
-            <select className="field" name={name} value={value} onChange={(event) => onValueChange(event.target.value)}>
-                {options.map((option) => (
-                    <option key={option.value} value={option.value}>
-                        {option.label}
-                    </option>
-                ))}
-            </select>
-        );
-    }
-
-    return (
-        <>
-            <Select value={value} onValueChange={onValueChange}>
-                <SelectTrigger aria-label={name}>
-                    <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                    {options.map((option) => (
-                        <SelectItem key={option.value} value={option.value}>
-                            {option.label}
-                        </SelectItem>
-                    ))}
-                </SelectContent>
-            </Select>
-            {name && <input type="hidden" name={name} value={value} />}
-        </>
-    );
-}
 
 const statusLabels: Record<string, string> = {
     configured: 'Configured',
@@ -338,10 +294,15 @@ export default function WhatsAppSettings({ setup }: Props) {
                                 <span className="field-label">{t('Assigned job')}</span>
                                 <ResponsiveSelect
                                     name="job"
-                                    options={jobs}
                                     value={createForm.data.job}
-                                    onValueChange={(value) => createForm.setData('job', value)}
-                                />
+                                    onChange={(event) => createForm.setData('job', event.target.value)}
+                                >
+                                    {jobs.map((option) => (
+                                        <option key={option.value} value={option.value}>
+                                            {option.label}
+                                        </option>
+                                    ))}
+                                </ResponsiveSelect>
                                 {createForm.errors.job && <p className="field-error">{createForm.errors.job}</p>}
                             </label>
                             <button className="button-primary" disabled={createForm.processing}>
@@ -386,12 +347,20 @@ export default function WhatsAppSettings({ setup }: Props) {
                                             <span className="field-label">{t('Job')}</span>
                                             <ResponsiveSelect
                                                 name="job"
-                                                options={jobs}
                                                 value={accountJobs[account.id] ?? account.job}
-                                                onValueChange={(value) =>
-                                                    setAccountJobs((current) => ({ ...current, [account.id]: value }))
+                                                onChange={(event) =>
+                                                    setAccountJobs((current) => ({
+                                                        ...current,
+                                                        [account.id]: event.target.value,
+                                                    }))
                                                 }
-                                            />
+                                            >
+                                                {jobs.map((option) => (
+                                                    <option key={option.value} value={option.value}>
+                                                        {option.label}
+                                                    </option>
+                                                ))}
+                                            </ResponsiveSelect>
                                         </label>
                                         <button className="button-secondary" type="submit">
                                             <Save size={16} /> {t('Save')}
@@ -505,13 +474,15 @@ export default function WhatsAppSettings({ setup }: Props) {
                                 <span className="field-label">{t('Send through')}</span>
                                 <ResponsiveSelect
                                     name="account_id"
-                                    options={setup.accounts.map((account) => ({
-                                        value: account.id,
-                                        label: account.label,
-                                    }))}
                                     value={testForm.data.account_id}
-                                    onValueChange={(value) => testForm.setData('account_id', value)}
-                                />
+                                    onChange={(event) => testForm.setData('account_id', event.target.value)}
+                                >
+                                    {setup.accounts.map((account) => (
+                                        <option key={account.id} value={account.id}>
+                                            {account.label}
+                                        </option>
+                                    ))}
+                                </ResponsiveSelect>
                             </label>
                         )}
                         <button className="button-primary" disabled={testForm.processing || !ready}>

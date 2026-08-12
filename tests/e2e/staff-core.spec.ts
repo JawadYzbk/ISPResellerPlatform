@@ -320,6 +320,11 @@ test.describe('staff core journeys', () => {
         await expect(page.getByRole('option', { name: 'Arabic' })).toBeVisible();
         await page.getByRole('option', { name: 'English' }).click();
 
+        await page.goto('/settings/whatsapp');
+        await expect(page.getByRole('heading', { name: 'WhatsApp delivery' })).toBeVisible();
+        await expect(page.locator('select:not([aria-hidden="true"])')).toHaveCount(0);
+
+        await page.goto('/settings/general');
         await page.setViewportSize({ width: 390, height: 844 });
         await expect(page.locator('select:not([aria-hidden="true"])')).toHaveCount(3);
         await expect(page.getByLabel('Locale')).toHaveValue('en');
