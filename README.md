@@ -22,7 +22,7 @@ The current foundation is live:
 - Dedicated service diagnostics, live RADIUS session operations and incident workspaces with tenant-safe deep links and disconnect controls
 - Tenant-safe invoice detail and payment receipt views with posted allocation trails and browser print layouts
 - Staff ticket conversation/status workflow, customer support history, work-order calendar/completion surface with readings, signatures and bulk materials, serialized inventory trace/assignment, and plan/add-on/promotion catalog workflow
-- Supplier workspace with tenant-safe supplier contracts, operational bills/payments, credential batch costs, linked contract imports, reconciliation reports, secret redaction, assignment and audited reveal boundary
+- Supplier workspace with tenant-safe supplier contracts, operational bills/payments, supplier payable aging/settlement queue, credential batch costs, linked contract imports, reconciliation reports, secret redaction, assignment and audited reveal boundary
 - Capability catalog, invitations, tenant isolation, audit events and API tokens
 - Legacy `admin` accounts are reconciled to a full tenant role by the capability seeder; local web 2FA remains opt-in through `SECURITY_ENFORCE_TWO_FACTOR`, while production preflight requires it to be enabled
 - Historical FX conversion, double-entry ledger, invoices, payments, cash-shift reconciliation and billing runs
@@ -53,7 +53,7 @@ The current foundation is live:
 - Staff import workspace with CSV/XLSX preview, row-level reports, tenant-scoped history and controlled rollback
 - Basic reseller hierarchy and journal-linked wallet funding/debiting with credit limits
 - Operations report with service/network/work-order/incident status, low-stock signals and CSV export
-- Finance report with collection rate, allocation-based aging, plan/zone/POP revenue, upstream cost and margin, collector performance, retention, ARPU and top-usage breakdowns
+- Finance report with collection rate, allocation-based aging, plan/zone/POP revenue, supplier payable aging, upstream cost and margin, collector performance, retention, ARPU and top-usage breakdowns
 - Server-generated A4 invoice and receipt PDFs with tenant-scoped billing authorization
 - Owner dashboard finance metrics, six-month service-status trend, deferred loading fallbacks, and manager attention panels with actionable deep links
 - Capability-aware global command palette for customers, services, billing records, tickets, equipment and incidents

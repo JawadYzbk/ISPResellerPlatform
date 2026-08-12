@@ -92,6 +92,8 @@ Use **Operations -> Work orders** to open the detail history, review the checkli
 
 Use **Operations -> Credentials** to review upstream identifiers, supplier batches, status, expiry, and service assignments. The encrypted secret is intentionally absent; use the separately authorized, recent-authenticated reveal action only when operationally necessary and never copy the result into notes or tickets.
 
+Use **Finance -> Supplier payables** to review supplier balances as of a cutoff date. Filter by supplier, inspect current and overdue aging by currency, and enable **Include settled** when reconciling the full bill history. Choose **Manage settlements** to open the supplier workspace and record a full or partial payment; the payment is journal-linked and cannot exceed the remaining bill balance. A report cutoff is historical: payments posted after it are not included in that snapshot.
+
 On a customer service card, **Re-sync service** queues an `activate` or `suspend` command from the current commercial state. It confirms that work was queued, not that a real device accepted it; inspect the resulting command and network state after the worker runs. Terminated services are not re-synced.
 
 ## End of shift

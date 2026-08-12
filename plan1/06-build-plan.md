@@ -275,7 +275,7 @@ These are fully specified in `08-suppliers-credentials-wallets.md`. The current 
 ### ISP-P1-02 · Price books, versioned commissions, settlement — per `08 §3`: `price_books` + `price_book_items` (plan entitlement, buy/sell/min/max, effective dates), `commission_rules` (versioned) + `commission_entries` (no recompute of posted history), `settlements` (per partner/period/currency, opening/activity/closing/due), funding/payout/settlement postings. Supersedes the basic `reseller_amount` pricing from ISP-090.
 **AC:** a renewal uses the snapshotted buy/sell terms; changing a commission rule does not recompute already-posted commissions; a reseller statement and the tenant ledger reconcile for the same period.
 
-> **Current behavior for `upstream_credential` services:** the repository-side `CredentialDriver` reserves and activates an available tenant credential through the network command pipeline, then releases it on suspension or service termination according to its expiry/reuse policy. External supplier provisioning and RouterOS/CoA acceptance remain environment gates; supplier contracts, bills, payments and their journal links are repository-delivered, while full AP aging/settlement remains a follow-on slice.
+> **Current behavior for `upstream_credential` services:** the repository-side `CredentialDriver` reserves and activates an available tenant credential through the network command pipeline, then releases it on suspension or service termination according to its expiry/reuse policy. External supplier provisioning and RouterOS/CoA acceptance remain environment gates; supplier contracts, bills, payments, their journal links, and the as-of AP aging/settlement workspace are repository-delivered.
 
 ---
 
