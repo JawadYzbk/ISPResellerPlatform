@@ -11,6 +11,8 @@ use App\Actions\ListInventoryUnits;
 use App\Actions\ReceiveBulkStock;
 use App\Actions\ReceiveInventoryUnit;
 use App\Actions\TransferInventoryUnit;
+use App\Actions\UpdateInventoryItem;
+use App\Actions\UpdateWarehouse;
 use App\Http\Controllers\Controller;
 use App\Models\InventoryItem;
 use App\Models\InventoryUnit;
@@ -22,6 +24,7 @@ use DomainException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -113,8 +116,14 @@ final class InventoryOperationsController extends Controller
             'serializedItems' => $canReceive
                 ? InventoryItem::query()->where('is_serialized', true)->where('is_active', true)->orderBy('name')->get(['id', 'sku', 'name'])->values()
                 : [],
+            'catalogItems' => $canReceive
+                ? InventoryItem::query()->orderByDesc('is_active')->orderBy('name')->get(['id', 'sku', 'name', 'category', 'is_serialized', 'reorder_level', 'is_active'])->values()
+                : [],
             'bulkWarehouses' => $canReceive
                 ? Warehouse::query()->where('is_active', true)->orderBy('code')->get(['id', 'code', 'name'])->values()
+                : [],
+            'catalogWarehouses' => $canReceive
+                ? Warehouse::query()->orderByDesc('is_active')->orderBy('code')->get(['id', 'code', 'name', 'type', 'is_active'])->values()
                 : [],
             'transferWarehouses' => $canTransfer
                 ? Warehouse::query()->where('is_active', true)->orderBy('code')->get(['id', 'code', 'name'])->values()
@@ -158,6 +167,47 @@ final class InventoryOperationsController extends Controller
         $warehouse = $create->handle($validated);
 
         return redirect()->route('operations.inventory')->with('success', "Warehouse {$warehouse->code} created.");
+    }
+
+    public function updateItem(Request $request, InventoryItem $item, UpdateInventoryItem $update): RedirectResponse
+    {
+        $user = $request->user();
+        abort_unless($user instanceof User && $user->can('inventory.receive'), 403);
+        $request->merge([
+            'sku' => strtoupper(trim($request->string('sku')->toString())),
+            'category' => strtolower(trim($request->string('category')->toString())),
+        ]);
+        $validated = $request->validate([
+            'sku' => ['required', 'string', 'max:64', Rule::unique('inventory_items', 'sku')->ignore($item->id)->where('tenant_id', $user->tenant_id)],
+            'name' => ['required', 'string', 'max:255'],
+            'category' => ['required', 'string', 'max:32'],
+            'is_serialized' => ['required', 'boolean'],
+            'reorder_level' => ['required', 'integer', 'min:0'],
+            'is_active' => ['required', 'boolean'],
+        ]);
+        try {
+            $updated = $update->handle($item, $validated);
+        } catch (DomainException $exception) {
+            throw ValidationException::withMessages(['is_serialized' => $exception->getMessage()]);
+        }
+
+        return redirect()->route('operations.inventory')->with('success', "Inventory item {$updated->sku} updated.");
+    }
+
+    public function updateWarehouse(Request $request, Warehouse $warehouse, UpdateWarehouse $update): RedirectResponse
+    {
+        $user = $request->user();
+        abort_unless($user instanceof User && $user->can('inventory.receive'), 403);
+        $request->merge(['code' => strtoupper(trim($request->string('code')->toString()))]);
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'code' => ['required', 'string', 'max:32', Rule::unique('warehouses', 'code')->ignore($warehouse->id)->where('tenant_id', $user->tenant_id)],
+            'type' => ['required', 'string', 'max:16', 'in:warehouse,van'],
+            'is_active' => ['required', 'boolean'],
+        ]);
+        $updated = $update->handle($warehouse, $validated);
+
+        return redirect()->route('operations.inventory')->with('success', "Warehouse {$updated->code} updated.");
     }
 
     public function receiveUnit(Request $request, ReceiveInventoryUnit $receive): RedirectResponse

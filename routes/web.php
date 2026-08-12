@@ -185,7 +185,9 @@ Route::middleware(['auth', 'tenant', '2fa'])->group(function (): void {
     Route::post('/operations/work-orders/{workOrder:public_id}/materials', [WorkOrderOperationsController::class, 'material'])->middleware('recent-auth')->name('operations.work-orders.materials.store');
     Route::get('/operations/inventory', [InventoryOperationsController::class, 'index'])->name('operations.inventory');
     Route::post('/operations/inventory/items', [InventoryOperationsController::class, 'storeItem'])->middleware('recent-auth')->name('operations.inventory.items.store');
+    Route::patch('/operations/inventory/items/{item}', [InventoryOperationsController::class, 'updateItem'])->middleware('recent-auth')->name('operations.inventory.items.update');
     Route::post('/operations/inventory/warehouses', [InventoryOperationsController::class, 'storeWarehouse'])->middleware('recent-auth')->name('operations.inventory.warehouses.store');
+    Route::patch('/operations/inventory/warehouses/{warehouse}', [InventoryOperationsController::class, 'updateWarehouse'])->middleware('recent-auth')->name('operations.inventory.warehouses.update');
     Route::post('/operations/inventory/serialized-receive', [InventoryOperationsController::class, 'receiveUnit'])->middleware('recent-auth')->name('operations.inventory.serialized-receive');
     Route::post('/operations/inventory/bulk-receive', [InventoryOperationsController::class, 'receiveBulk'])->middleware('recent-auth')->name('operations.inventory.bulk-receive');
     Route::post('/operations/inventory/{unit}/assign', [InventoryOperationsController::class, 'assign'])->middleware('recent-auth')->name('operations.inventory.assign');

@@ -135,7 +135,31 @@ it('lets an inventory manager create stock masters and receive serialized equipm
         ->assertRedirect(route('operations.inventory'))
         ->assertSessionHas('success', 'Serialized unit ONU-0001 received.');
 
+    $this->actingAs($user)
+        ->patch(route('operations.inventory.items.update', $item), [
+            'sku' => 'CPE-ONU-V2',
+            'name' => 'Fiber ONU v2',
+            'category' => 'onu',
+            'is_serialized' => true,
+            'reorder_level' => 3,
+            'is_active' => true,
+        ])
+        ->assertRedirect(route('operations.inventory'))
+        ->assertSessionHas('success', 'Inventory item CPE-ONU-V2 updated.');
+
+    $this->actingAs($user)
+        ->patch(route('operations.inventory.warehouses.update', $warehouse), [
+            'name' => 'Central warehouse',
+            'code' => 'CENTRAL',
+            'type' => 'warehouse',
+            'is_active' => true,
+        ])
+        ->assertRedirect(route('operations.inventory'))
+        ->assertSessionHas('success', 'Warehouse CENTRAL updated.');
+
     app(Tenancy::class)->set($tenant);
-    expect(InventoryUnit::query()->where('serial_number', 'ONU-0001')->value('warehouse_id'))->toBe($warehouse->id)
+    expect($item->refresh()->sku)->toBe('CPE-ONU-V2')
+        ->and($warehouse->refresh()->code)->toBe('CENTRAL')
+        ->and(InventoryUnit::query()->where('serial_number', 'ONU-0001')->value('warehouse_id'))->toBe($warehouse->id)
         ->and(InventoryMovement::query()->where('movement_type', 'receive')->where('inventory_unit_id', InventoryUnit::query()->where('serial_number', 'ONU-0001')->value('id'))->exists())->toBeTrue();
 });

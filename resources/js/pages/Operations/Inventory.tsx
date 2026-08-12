@@ -1,6 +1,6 @@
 import ResponsiveSelect from '@/components/ui/responsive-select';
 import { Head, Link, router, useForm } from '@inertiajs/react';
-import { ChevronLeft, ChevronRight, Package, Search } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Edit3, Package, Save, Search, X } from 'lucide-react';
 import { useState } from 'react';
 
 import StatusBadge from '@/components/StatusBadge';
@@ -36,6 +36,16 @@ type BulkBalance = {
 
 type BulkItem = { id: number; sku: string; name: string };
 type BulkWarehouse = { id: number; code: string; name: string };
+type CatalogItem = {
+    id: number;
+    sku: string;
+    name: string;
+    category: string;
+    is_serialized: boolean;
+    reorder_level: number;
+    is_active: boolean;
+};
+type CatalogWarehouse = { id: number; code: string; name: string; type: 'warehouse' | 'van'; is_active: boolean };
 type InventoryMovement = {
     id: string;
     movement_type: string;
@@ -61,7 +71,9 @@ type Props = PageProps & {
     bulkBalances: BulkBalance[];
     bulkItems: BulkItem[];
     serializedItems: BulkItem[];
+    catalogItems: CatalogItem[];
     bulkWarehouses: BulkWarehouse[];
+    catalogWarehouses: CatalogWarehouse[];
     transferWarehouses: BulkWarehouse[];
     movements: InventoryMovement[];
 };
@@ -76,7 +88,9 @@ export default function InventoryPage({
     bulkBalances,
     bulkItems,
     serializedItems,
+    catalogItems,
     bulkWarehouses,
+    catalogWarehouses,
     transferWarehouses,
     movements,
 }: Props) {
@@ -87,6 +101,17 @@ export default function InventoryPage({
     const [selectedWarehouses, setSelectedWarehouses] = useState<Record<number, string>>({});
     const itemForm = useForm({ sku: '', name: '', category: '', is_serialized: false, reorder_level: '0' });
     const warehouseForm = useForm({ name: '', code: '', type: 'warehouse' });
+    const [editingItemId, setEditingItemId] = useState<number | null>(null);
+    const [editingWarehouseId, setEditingWarehouseId] = useState<number | null>(null);
+    const itemEditForm = useForm({
+        sku: '',
+        name: '',
+        category: '',
+        is_serialized: false,
+        reorder_level: '0',
+        is_active: true,
+    });
+    const warehouseEditForm = useForm({ name: '', code: '', type: 'warehouse', is_active: true });
     const receiveForm = useForm({ inventory_item_id: '', warehouse_id: '', quantity: '', note: '' });
     const unitForm = useForm({ inventory_item_id: '', warehouse_id: '', serial_number: '' });
 
@@ -126,6 +151,52 @@ export default function InventoryPage({
     const submitUnit = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         unitForm.post('/operations/inventory/serialized-receive', { onSuccess: () => unitForm.reset() });
+    };
+
+    const startItemEdit = (item: CatalogItem) => {
+        setEditingItemId(item.id);
+        itemEditForm.setData({
+            sku: item.sku,
+            name: item.name,
+            category: item.category,
+            is_serialized: item.is_serialized,
+            reorder_level: String(item.reorder_level),
+            is_active: item.is_active,
+        });
+        itemEditForm.clearErrors();
+    };
+
+    const cancelItemEdit = () => {
+        setEditingItemId(null);
+        itemEditForm.reset();
+        itemEditForm.clearErrors();
+    };
+
+    const saveItem = (item: CatalogItem) => {
+        itemEditForm.patch(`/operations/inventory/items/${item.id}`, { onSuccess: cancelItemEdit });
+    };
+
+    const startWarehouseEdit = (warehouse: CatalogWarehouse) => {
+        setEditingWarehouseId(warehouse.id);
+        warehouseEditForm.setData({
+            name: warehouse.name,
+            code: warehouse.code,
+            type: warehouse.type,
+            is_active: warehouse.is_active,
+        });
+        warehouseEditForm.clearErrors();
+    };
+
+    const cancelWarehouseEdit = () => {
+        setEditingWarehouseId(null);
+        warehouseEditForm.reset();
+        warehouseEditForm.clearErrors();
+    };
+
+    const saveWarehouse = (warehouse: CatalogWarehouse) => {
+        warehouseEditForm.patch(`/operations/inventory/warehouses/${warehouse.id}`, {
+            onSuccess: cancelWarehouseEdit,
+        });
     };
 
     const transferUnit = (unit: InventoryUnit) => {
@@ -360,6 +431,287 @@ export default function InventoryPage({
                             </button>
                         </form>
                     )}
+                </section>
+            )}
+
+            {canReceive && (
+                <section className="card mt-6 p-5">
+                    <div>
+                        <p className="section-title">Inventory catalog</p>
+                        <p className="mt-1 text-sm text-muted">
+                            Update item definitions and storage locations without deleting movement history. Deactivated
+                            records stay visible for audit but cannot receive new stock.
+                        </p>
+                    </div>
+                    <div className="mt-5 grid gap-6 xl:grid-cols-2">
+                        <div className="rounded-xl border border-line">
+                            <div className="border-b border-line px-4 py-3">
+                                <p className="text-sm font-semibold">Items</p>
+                            </div>
+                            <div className="divide-y divide-line">
+                                {catalogItems.map((item) => (
+                                    <div key={item.id} className="px-4 py-4">
+                                        {editingItemId === item.id ? (
+                                            <div className="grid gap-3 sm:grid-cols-2">
+                                                <label>
+                                                    <span className="field-label">SKU</span>
+                                                    <input
+                                                        className="field"
+                                                        value={itemEditForm.data.sku}
+                                                        onChange={(event) =>
+                                                            itemEditForm.setData('sku', event.target.value)
+                                                        }
+                                                    />
+                                                    {itemEditForm.errors.sku && (
+                                                        <p className="field-error">{itemEditForm.errors.sku}</p>
+                                                    )}
+                                                </label>
+                                                <label>
+                                                    <span className="field-label">Name</span>
+                                                    <input
+                                                        className="field"
+                                                        value={itemEditForm.data.name}
+                                                        onChange={(event) =>
+                                                            itemEditForm.setData('name', event.target.value)
+                                                        }
+                                                    />
+                                                    {itemEditForm.errors.name && (
+                                                        <p className="field-error">{itemEditForm.errors.name}</p>
+                                                    )}
+                                                </label>
+                                                <label>
+                                                    <span className="field-label">Category</span>
+                                                    <input
+                                                        className="field"
+                                                        value={itemEditForm.data.category}
+                                                        onChange={(event) =>
+                                                            itemEditForm.setData('category', event.target.value)
+                                                        }
+                                                    />
+                                                    {itemEditForm.errors.category && (
+                                                        <p className="field-error">{itemEditForm.errors.category}</p>
+                                                    )}
+                                                </label>
+                                                <label>
+                                                    <span className="field-label">Type</span>
+                                                    <ResponsiveSelect
+                                                        className="field"
+                                                        value={itemEditForm.data.is_serialized ? 'serialized' : 'bulk'}
+                                                        onChange={(event) =>
+                                                            itemEditForm.setData(
+                                                                'is_serialized',
+                                                                event.target.value === 'serialized',
+                                                            )
+                                                        }
+                                                    >
+                                                        <option value="bulk">Bulk quantity</option>
+                                                        <option value="serialized">Serialized units</option>
+                                                    </ResponsiveSelect>
+                                                    {itemEditForm.errors.is_serialized && (
+                                                        <p className="field-error">
+                                                            {itemEditForm.errors.is_serialized}
+                                                        </p>
+                                                    )}
+                                                </label>
+                                                <label>
+                                                    <span className="field-label">Reorder level</span>
+                                                    <input
+                                                        className="field"
+                                                        type="number"
+                                                        min="0"
+                                                        value={itemEditForm.data.reorder_level}
+                                                        onChange={(event) =>
+                                                            itemEditForm.setData('reorder_level', event.target.value)
+                                                        }
+                                                    />
+                                                </label>
+                                                <label>
+                                                    <span className="field-label">Status</span>
+                                                    <ResponsiveSelect
+                                                        className="field"
+                                                        value={itemEditForm.data.is_active ? 'active' : 'inactive'}
+                                                        onChange={(event) =>
+                                                            itemEditForm.setData(
+                                                                'is_active',
+                                                                event.target.value === 'active',
+                                                            )
+                                                        }
+                                                    >
+                                                        <option value="active">Active</option>
+                                                        <option value="inactive">Inactive</option>
+                                                    </ResponsiveSelect>
+                                                </label>
+                                                <div className="flex gap-2 sm:col-span-2">
+                                                    <button
+                                                        type="button"
+                                                        className="button-secondary"
+                                                        disabled={itemEditForm.processing}
+                                                        onClick={() => saveItem(item)}
+                                                    >
+                                                        <Save size={14} /> Save item
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        className="button-quiet"
+                                                        disabled={itemEditForm.processing}
+                                                        onClick={cancelItemEdit}
+                                                    >
+                                                        <X size={14} /> Cancel
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <div className="flex items-start justify-between gap-3">
+                                                <div className="min-w-0">
+                                                    <p className="truncate text-sm font-semibold">{item.name}</p>
+                                                    <p className="mt-1 text-xs text-muted">
+                                                        {item.sku} · {item.category} ·{' '}
+                                                        {item.is_serialized ? 'Serialized' : 'Bulk'}
+                                                    </p>
+                                                    <p className="mt-1 text-xs text-muted">
+                                                        Reorder at {item.reorder_level}
+                                                    </p>
+                                                </div>
+                                                <div className="flex shrink-0 items-center gap-2">
+                                                    <span
+                                                        className={`text-xs font-semibold ${item.is_active ? 'text-brand' : 'text-muted'}`}
+                                                    >
+                                                        {item.is_active ? 'Active' : 'Inactive'}
+                                                    </span>
+                                                    <button
+                                                        type="button"
+                                                        className="button-quiet px-2 py-2 text-xs"
+                                                        onClick={() => startItemEdit(item)}
+                                                    >
+                                                        <Edit3 size={14} /> Edit
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                ))}
+                                {catalogItems.length === 0 && (
+                                    <p className="px-4 py-8 text-sm text-muted">No item records yet.</p>
+                                )}
+                            </div>
+                        </div>
+
+                        <div className="rounded-xl border border-line">
+                            <div className="border-b border-line px-4 py-3">
+                                <p className="text-sm font-semibold">Storage locations</p>
+                            </div>
+                            <div className="divide-y divide-line">
+                                {catalogWarehouses.map((warehouse) => (
+                                    <div key={warehouse.id} className="px-4 py-4">
+                                        {editingWarehouseId === warehouse.id ? (
+                                            <div className="grid gap-3 sm:grid-cols-2">
+                                                <label>
+                                                    <span className="field-label">Name</span>
+                                                    <input
+                                                        className="field"
+                                                        value={warehouseEditForm.data.name}
+                                                        onChange={(event) =>
+                                                            warehouseEditForm.setData('name', event.target.value)
+                                                        }
+                                                    />
+                                                    {warehouseEditForm.errors.name && (
+                                                        <p className="field-error">{warehouseEditForm.errors.name}</p>
+                                                    )}
+                                                </label>
+                                                <label>
+                                                    <span className="field-label">Code</span>
+                                                    <input
+                                                        className="field uppercase"
+                                                        value={warehouseEditForm.data.code}
+                                                        onChange={(event) =>
+                                                            warehouseEditForm.setData('code', event.target.value)
+                                                        }
+                                                    />
+                                                    {warehouseEditForm.errors.code && (
+                                                        <p className="field-error">{warehouseEditForm.errors.code}</p>
+                                                    )}
+                                                </label>
+                                                <label>
+                                                    <span className="field-label">Type</span>
+                                                    <ResponsiveSelect
+                                                        className="field"
+                                                        value={warehouseEditForm.data.type}
+                                                        onChange={(event) =>
+                                                            warehouseEditForm.setData('type', event.target.value)
+                                                        }
+                                                    >
+                                                        <option value="warehouse">Warehouse</option>
+                                                        <option value="van">Technician van</option>
+                                                    </ResponsiveSelect>
+                                                </label>
+                                                <label>
+                                                    <span className="field-label">Status</span>
+                                                    <ResponsiveSelect
+                                                        className="field"
+                                                        value={warehouseEditForm.data.is_active ? 'active' : 'inactive'}
+                                                        onChange={(event) =>
+                                                            warehouseEditForm.setData(
+                                                                'is_active',
+                                                                event.target.value === 'active',
+                                                            )
+                                                        }
+                                                    >
+                                                        <option value="active">Active</option>
+                                                        <option value="inactive">Inactive</option>
+                                                    </ResponsiveSelect>
+                                                </label>
+                                                <div className="flex gap-2 sm:col-span-2">
+                                                    <button
+                                                        type="button"
+                                                        className="button-secondary"
+                                                        disabled={warehouseEditForm.processing}
+                                                        onClick={() => saveWarehouse(warehouse)}
+                                                    >
+                                                        <Save size={14} /> Save location
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        className="button-quiet"
+                                                        disabled={warehouseEditForm.processing}
+                                                        onClick={cancelWarehouseEdit}
+                                                    >
+                                                        <X size={14} /> Cancel
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <div className="flex items-start justify-between gap-3">
+                                                <div className="min-w-0">
+                                                    <p className="truncate text-sm font-semibold">{warehouse.name}</p>
+                                                    <p className="mt-1 text-xs text-muted">
+                                                        {warehouse.code} ·{' '}
+                                                        {warehouse.type === 'van' ? 'Technician van' : 'Warehouse'}
+                                                    </p>
+                                                </div>
+                                                <div className="flex shrink-0 items-center gap-2">
+                                                    <span
+                                                        className={`text-xs font-semibold ${warehouse.is_active ? 'text-brand' : 'text-muted'}`}
+                                                    >
+                                                        {warehouse.is_active ? 'Active' : 'Inactive'}
+                                                    </span>
+                                                    <button
+                                                        type="button"
+                                                        className="button-quiet px-2 py-2 text-xs"
+                                                        onClick={() => startWarehouseEdit(warehouse)}
+                                                    >
+                                                        <Edit3 size={14} /> Edit
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                ))}
+                                {catalogWarehouses.length === 0 && (
+                                    <p className="px-4 py-8 text-sm text-muted">No storage locations yet.</p>
+                                )}
+                            </div>
+                        </div>
+                    </div>
                 </section>
             )}
 
