@@ -22,6 +22,8 @@ export default function PortalDashboard({ tenant }: Props) {
     const [ticketForm, setTicketForm] = useState({ category: 'other', subject: '', description: '' });
     const [profileForm, setProfileForm] = useState({ email: '', address: '' });
     const [ticketBusy, setTicketBusy] = useState(false);
+    const [ratingBusy, setRatingBusy] = useState<string | null>(null);
+    const [supportMessage, setSupportMessage] = useState<string | null>(null);
     const [profileBusy, setProfileBusy] = useState(false);
     const [profileSaved, setProfileSaved] = useState(false);
     const [restartBusy, setRestartBusy] = useState<string | null>(null);
@@ -172,6 +174,7 @@ export default function PortalDashboard({ tenant }: Props) {
         if (!token || !ticketForm.subject.trim() || !ticketForm.description.trim()) return;
         setTicketBusy(true);
         setError(null);
+        setSupportMessage(null);
         const response = await fetch(`/api/v1/portal/${tenant.slug}/me/tickets`, {
             method: 'POST',
             headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
@@ -188,6 +191,33 @@ export default function PortalDashboard({ tenant }: Props) {
             setError(payload.detail ?? 'We could not open your ticket.');
         }
         setTicketBusy(false);
+    };
+
+    const rateTicket = async (ticketId: string, rating: number) => {
+        const token = sessionStorage.getItem(tokenKey);
+        if (!token || rating < 1 || rating > 5) return;
+        setRatingBusy(ticketId);
+        setError(null);
+        setSupportMessage(null);
+        const response = await fetch(`/api/v1/portal/${tenant.slug}/me/tickets/${ticketId}/rating`, {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ rating }),
+        });
+        const payload = await response.json();
+        if (response.ok) {
+            setTickets((current) =>
+                current.map((ticket) =>
+                    ticket.uuid === ticketId
+                        ? { ...ticket, satisfaction_rating: payload.data.satisfaction_rating }
+                        : ticket,
+                ),
+            );
+            setSupportMessage('Thanks for rating the support you received.');
+        } else {
+            setError(payload.detail ?? payload.message ?? 'We could not save your rating.');
+        }
+        setRatingBusy(null);
     };
 
     return (
@@ -514,23 +544,45 @@ export default function PortalDashboard({ tenant }: Props) {
                                 </h2>
                                 <div className="mt-4 divide-y divide-line">
                                     {tickets.map((ticket) => (
-                                        <div
-                                            key={ticket.uuid}
-                                            className="flex items-center justify-between gap-4 py-3 text-sm"
-                                        >
-                                            <span>
-                                                <b>{ticket.subject}</b>
-                                                <small className="mt-1 block text-muted">
-                                                    {ticket.number} · {ticket.status}
-                                                </small>
-                                            </span>
-                                            <span className="text-xs text-muted">{ticket.message_count} messages</span>
+                                        <div key={ticket.uuid} className="space-y-3 py-3 text-sm">
+                                            <div className="flex items-center justify-between gap-4">
+                                                <span>
+                                                    <b>{ticket.subject}</b>
+                                                    <small className="mt-1 block text-muted">
+                                                        {ticket.number} · {ticket.status}
+                                                    </small>
+                                                </span>
+                                                <span className="text-xs text-muted">
+                                                    {ticket.message_count} messages
+                                                </span>
+                                            </div>
+                                            {(ticket.status === 'resolved' || ticket.status === 'closed') && (
+                                                <label className="block max-w-xs">
+                                                    <span className="field-label">Rate this support</span>
+                                                    <ResponsiveSelect
+                                                        className="field"
+                                                        value={ticket.satisfaction_rating?.toString() ?? ''}
+                                                        disabled={ratingBusy === ticket.uuid}
+                                                        onChange={(event) =>
+                                                            rateTicket(ticket.uuid, Number(event.target.value))
+                                                        }
+                                                    >
+                                                        <option value="">Choose a rating</option>
+                                                        {[1, 2, 3, 4, 5].map((rating) => (
+                                                            <option key={rating} value={rating}>
+                                                                {rating}/5
+                                                            </option>
+                                                        ))}
+                                                    </ResponsiveSelect>
+                                                </label>
+                                            )}
                                         </div>
                                     ))}
                                     {tickets.length === 0 && (
                                         <p className="py-3 text-sm text-muted">No support tickets yet.</p>
                                     )}
                                 </div>
+                                {supportMessage && <p className="mt-3 text-sm text-brand">{supportMessage}</p>}
                             </div>
                             <form onSubmit={submitTicket} className="card space-y-4 p-6">
                                 <h2 className="section-title">Open a ticket</h2>

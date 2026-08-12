@@ -30,6 +30,7 @@ it('renders staff tickets and applies status and public reply workflows', functi
         'description' => 'The connection drops every evening.',
         'priority' => 'high',
         'status' => 'open',
+        'satisfaction_rating' => 5,
     ]);
     TicketMessage::create(['ticket_id' => $ticket->id, 'author_type' => 'customer', 'author_id' => $customer->id, 'body' => 'It started yesterday.', 'visibility' => 'public']);
 
@@ -52,6 +53,7 @@ it('renders staff tickets and applies status and public reply workflows', functi
         ->assertInertia(fn ($page) => $page
             ->component('Operations/TicketShow')
             ->where('ticket.number', 'TCK-00001')
+            ->where('ticket.satisfaction_rating', 5)
             ->where('ticket.messages.0.body', 'It started yesterday.')
         );
 

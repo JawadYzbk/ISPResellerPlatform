@@ -23,6 +23,7 @@ type Ticket = {
     description: string;
     priority: string;
     status: 'open' | 'in_progress' | 'pending' | 'resolved' | 'closed';
+    satisfaction_rating: number | null;
     due_at: string | null;
     message_count: number;
     customer: { public_id: string; code: string; name: string } | null;
@@ -126,6 +127,15 @@ export default function TicketShow({
                                 <dt className="text-xs text-muted">Assigned to</dt>
                                 <dd className="mt-1 font-semibold">{ticket.assignee?.name ?? 'Unassigned'}</dd>
                             </div>
+                            {ticket.satisfaction_rating !== null && (
+                                <div>
+                                    <dt className="text-xs text-muted">Customer rating</dt>
+                                    <dd className="mt-1 font-semibold text-amber-700" aria-label="Customer rating">
+                                        {'★'.repeat(ticket.satisfaction_rating)}
+                                        <span className="ms-2 text-ink">{ticket.satisfaction_rating}/5</span>
+                                    </dd>
+                                </div>
+                            )}
                         </dl>
                     </div>
                     {canAssign && (

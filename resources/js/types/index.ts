@@ -254,6 +254,7 @@ export type PortalTicket = {
     category: string;
     priority: string;
     status: string;
+    satisfaction_rating: number | null;
     due_at: string | null;
     updated_at: string | null;
     message_count: number;
