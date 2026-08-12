@@ -161,7 +161,12 @@ final class SettingsController extends Controller
             'Keep one WhatsApp account configured for this workspace; disconnect it if you only need to re-pair.',
         );
 
-        $delete->handle($whatsappAccount);
+        if (! $delete->handle($whatsappAccount)) {
+            return redirect()->route('settings.whatsapp')->with(
+                'error',
+                'The WhatsApp bridge is unavailable. The account was kept so its private session can be removed safely when the bridge is healthy.',
+            );
+        }
 
         return redirect()->route('settings.whatsapp')->with('success', 'WhatsApp account deleted.');
     }

@@ -1,5 +1,6 @@
 <?php
 
+use App\Actions\DeleteWhatsAppAccount;
 use App\Actions\GetWhatsAppSetupStatus;
 use App\Jobs\DeliverMessage;
 use App\Models\Message;
@@ -199,4 +200,28 @@ it('creates, reassigns, disconnects, and returns a WhatsApp account to QR pairin
 
     expect(WhatsAppAccount::query()->whereKey($deletable->id)->exists())->toBeFalse();
     Http::assertSent(fn ($request): bool => $request->method() === 'DELETE');
+});
+
+it('keeps a WhatsApp account when the bridge cannot confirm deletion', function (): void {
+    Http::fake(['http://whatsapp-web:3001/*' => Http::response(['error' => 'bridge_unavailable'], 503)]);
+    config()->set([
+        'services.whatsapp.mode' => 'web',
+        'services.whatsapp.web.enabled' => true,
+        'services.whatsapp.web.endpoint' => 'http://whatsapp-web:3001',
+        'services.whatsapp.web.token' => 'bridge-token',
+    ]);
+
+    $tenant = Tenant::create(['name' => 'Northline', 'slug' => 'northline', 'base_currency' => 'USD', 'collection_currency' => 'LBP']);
+    app(Tenancy::class)->set($tenant);
+    $account = WhatsAppAccount::create([
+        'label' => 'Unavailable bridge account',
+        'job' => 'billing',
+        'bridge_id' => 'wa-unavailable',
+        'status' => 'ready',
+        'is_active' => true,
+    ]);
+
+    expect(app(DeleteWhatsAppAccount::class)->handle($account))->toBeFalse()
+        ->and($account->refresh()->status)->toBe('unreachable')
+        ->and(WhatsAppAccount::query()->whereKey($account->id)->exists())->toBeTrue();
 });
