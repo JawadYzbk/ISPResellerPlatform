@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Actions\IssueInvoice;
 use App\Actions\RecordPayment;
+use App\Authorization\PermissionCatalog;
 use App\Domain\Ledger\JournalLineInput;
 use App\Domain\Ledger\PostJournalEntry;
 use App\Enums\CustomerStatus;
@@ -37,6 +38,8 @@ use App\Support\Tenancy;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use Spatie\Permission\Models\Role;
+use Spatie\Permission\PermissionRegistrar;
 
 class DatabaseSeeder extends Seeder
 {
@@ -70,6 +73,7 @@ SVG;
         $this->seedDemoLogo($tenant);
 
         $this->call(CapabilitySeeder::class);
+        $this->seedPlatformOperator();
 
         $staff = [];
         foreach (self::DEMO_STAFF_ACCOUNTS as $account) {
@@ -259,6 +263,27 @@ SVG;
                 );
             }
         });
+    }
+
+    private function seedPlatformOperator(): void
+    {
+        $platform = User::updateOrCreate(
+            ['email' => 'platform@example.com'],
+            [
+                'tenant_id' => null,
+                'name' => 'Platform Operator',
+                'password' => Hash::make('password'),
+                'role' => 'platform_operator',
+                'locale' => null,
+                'email_verified_at' => now(),
+            ],
+        );
+
+        app(PermissionRegistrar::class)->setPermissionsTeamId(null);
+        $role = Role::findOrCreate('platform_operator', 'web');
+        $role->syncPermissions(PermissionCatalog::all());
+        $platform->syncRoles([$role]);
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
     }
 
     private function seedDemoLogo(Tenant $tenant): void

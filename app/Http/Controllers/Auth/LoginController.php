@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Actions\AuthenticateUser;
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use App\Http\Requests\LoginRequest;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
@@ -30,7 +31,10 @@ final class LoginController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect()->intended(route('dashboard'))
+        $user = $request->user();
+        $defaultRoute = $user instanceof User && $user->isPlatformOperator() ? 'admin.tenants' : 'dashboard';
+
+        return redirect()->intended(route($defaultRoute))
             ->with('success_title', 'Welcome back')
             ->with('success', 'You are signed in and ready to work.');
     }

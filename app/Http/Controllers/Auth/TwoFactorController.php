@@ -16,7 +16,7 @@ final class TwoFactorController extends Controller
     {
         $user = $this->user($request);
         if ($twoFactor->enabled($user)) {
-            return redirect()->route('dashboard');
+            return redirect()->route($this->defaultRoute($user));
         }
 
         $setup = $request->session()->get('two_factor_setup');
@@ -44,7 +44,7 @@ final class TwoFactorController extends Controller
         $request->session()->put('two_factor_verified_user_id', $user->id);
         $request->session()->forget('two_factor_setup');
 
-        return redirect()->intended(route('dashboard'))->with('success', 'Two-factor authentication enabled.');
+        return redirect()->intended(route($this->defaultRoute($user)))->with('success', 'Two-factor authentication enabled.');
     }
 
     public function challenge(): Response
@@ -63,7 +63,7 @@ final class TwoFactorController extends Controller
 
         $request->session()->put('two_factor_verified_user_id', $user->id);
 
-        return redirect()->intended(route('dashboard'));
+        return redirect()->intended(route($this->defaultRoute($user)));
     }
 
     private function user(Request $request): User
@@ -73,5 +73,10 @@ final class TwoFactorController extends Controller
         abort_unless($user instanceof User, 401);
 
         return $user;
+    }
+
+    private function defaultRoute(User $user): string
+    {
+        return $user->isPlatformOperator() ? 'admin.tenants' : 'dashboard';
     }
 }

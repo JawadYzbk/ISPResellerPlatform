@@ -21,6 +21,7 @@ final class HandleInertiaRequests extends Middleware
         $settings = $tenant instanceof Tenant ? $tenant->settingsData() : null;
         $tenantLocale = $settings === null ? 'en' : $settings->locale;
         $locale = $user?->locale ?: $tenantLocale;
+        $isPlatformOperator = $user?->isPlatformOperator() ?? false;
         $rtlLocales = ['ar', 'fa', 'he', 'ur'];
         $direction = ($settings !== null && $settings->rtl) || in_array($tenantLocale, $rtlLocales, true) || in_array($locale, $rtlLocales, true) ? 'rtl' : 'ltr';
         $hasActionFlash = $request->session()->has('success') || $request->session()->has('error');
@@ -39,7 +40,8 @@ final class HandleInertiaRequests extends Middleware
                     'email' => $user->email,
                     'role' => $user->role,
                 ] : null,
-                'permissions' => $user?->getAllPermissions()->pluck('name')->values()->all() ?? [],
+                'isPlatformOperator' => $isPlatformOperator,
+                'permissions' => $isPlatformOperator ? [] : ($user?->getAllPermissions()->pluck('name')->values()->all() ?? []),
                 'tenant' => $tenant ? [
                     'id' => $tenant->public_id,
                     'name' => $tenant->name,

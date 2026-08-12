@@ -31,7 +31,9 @@ final class ReauthenticateController extends Controller
             return back()->withErrors(['password' => 'That password is not valid.']);
         }
 
-        return redirect()->intended(route('dashboard'))->with('success', 'Identity confirmed.');
+        $defaultRoute = $user->isPlatformOperator() ? 'admin.tenants' : 'dashboard';
+
+        return redirect()->intended(route($defaultRoute))->with('success', 'Identity confirmed.');
     }
 
     private function rememberPreviousUrl(Request $request): void

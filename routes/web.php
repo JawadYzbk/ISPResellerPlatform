@@ -24,6 +24,7 @@ use App\Http\Controllers\Web\NotificationController;
 use App\Http\Controllers\Web\PartnerController;
 use App\Http\Controllers\Web\PlanOperationsController;
 use App\Http\Controllers\Web\PopOperationsController;
+use App\Http\Controllers\Web\PlatformTenantController;
 use App\Http\Controllers\Web\PortalPageController;
 use App\Http\Controllers\Web\ProfileController;
 use App\Http\Controllers\Web\ReportController;
@@ -39,9 +40,18 @@ use App\Http\Controllers\Web\TicketOperationsController;
 use App\Http\Controllers\Web\UserOperationsController;
 use App\Http\Controllers\Web\WorkOrderOperationsController;
 use App\Http\Controllers\Web\WorkspaceSearchController;
+use App\Models\User;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', fn () => redirect()->route(auth()->check() ? 'dashboard' : 'login'));
+Route::get('/', function () {
+    $user = auth()->user();
+
+    if (! $user instanceof User) {
+        return redirect()->route('login');
+    }
+
+    return redirect()->route($user->isPlatformOperator() ? 'admin.tenants' : 'dashboard');
+});
 
 Route::get('/docs/api', function () {
     return response()->file(base_path('openapi/isp-platform-v1.yaml'), [
@@ -68,7 +78,7 @@ Route::middleware('guest')->group(function (): void {
     Route::post('/invite/{token}', [InvitationController::class, 'accept'])->name('invitations.accept');
 });
 
-Route::middleware(['auth', 'tenant'])->group(function (): void {
+Route::middleware(['auth'])->group(function (): void {
     Route::post('/logout', LogoutController::class)->name('logout');
     Route::get('/two-factor/setup', [TwoFactorController::class, 'setup'])->name('two-factor.setup');
     Route::post('/two-factor/setup', [TwoFactorController::class, 'confirm'])->middleware('recent-auth')->name('two-factor.setup.confirm');
@@ -76,9 +86,18 @@ Route::middleware(['auth', 'tenant'])->group(function (): void {
     Route::post('/two-factor/challenge', [TwoFactorController::class, 'verify'])->name('two-factor.challenge.verify');
     Route::get('/security/reauthenticate', [ReauthenticateController::class, 'create'])->name('security.reauthenticate');
     Route::post('/security/reauthenticate', [ReauthenticateController::class, 'store'])->name('security.reauthenticate.store');
+});
+
+Route::middleware(['auth', 'tenant'])->group(function (): void {
     Route::get('/security/sessions', [SecurityController::class, 'sessions'])->middleware('2fa')->name('security.sessions');
     Route::delete('/security/sessions/{session}', [SecurityController::class, 'revoke'])->middleware('2fa')->name('security.sessions.revoke');
     Route::post('/settings/locale', [SecurityController::class, 'locale'])->middleware('2fa')->name('settings.locale');
+});
+
+Route::middleware(['auth', 'platform', '2fa'])->prefix('admin')->group(function (): void {
+    Route::get('/tenants', [PlatformTenantController::class, 'index'])->name('admin.tenants');
+    Route::post('/tenants', [PlatformTenantController::class, 'store'])->middleware('recent-auth')->name('admin.tenants.store');
+    Route::patch('/tenants/{tenant:public_id}', [PlatformTenantController::class, 'update'])->middleware('recent-auth')->name('admin.tenants.update');
 });
 
 Route::middleware(['auth', 'tenant', '2fa'])->group(function (): void {

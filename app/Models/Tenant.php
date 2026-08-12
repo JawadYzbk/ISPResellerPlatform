@@ -91,6 +91,11 @@ class Tenant extends Model
         return $this->hasMany(Zone::class);
     }
 
+    public function currencies(): HasMany
+    {
+        return $this->hasMany(Currency::class);
+    }
+
     public function whatsappAccounts(): HasMany
     {
         return $this->hasMany(WhatsAppAccount::class);

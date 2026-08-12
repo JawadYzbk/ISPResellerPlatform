@@ -9,6 +9,7 @@ use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\IdentifyPortalTenant;
 use App\Http\Middleware\IdentifyPortalTenantFromRequest;
 use App\Http\Middleware\IdentifyTenant;
+use App\Http\Middleware\EnsurePlatformOperator;
 use App\Http\Middleware\SecurityHeaders;
 use App\Http\Responses\ProblemDetails;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -68,6 +69,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->alias([
             'tenant' => IdentifyTenant::class,
+            'platform' => EnsurePlatformOperator::class,
             '2fa' => EnsureTwoFactorVerified::class,
             'recent-auth' => EnsureRecentAuthentication::class,
             'idempotency' => EnsureApiIdempotency::class,
