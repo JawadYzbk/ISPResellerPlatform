@@ -46,8 +46,10 @@ export default function CurrencyCombobox({
                 const rightPriority = PRIORITY_CODES.indexOf(right.code.toUpperCase());
 
                 if (leftPriority !== -1 || rightPriority !== -1) {
-                    return (leftPriority === -1 ? Number.MAX_SAFE_INTEGER : leftPriority) -
-                        (rightPriority === -1 ? Number.MAX_SAFE_INTEGER : rightPriority);
+                    return (
+                        (leftPriority === -1 ? Number.MAX_SAFE_INTEGER : leftPriority) -
+                        (rightPriority === -1 ? Number.MAX_SAFE_INTEGER : rightPriority)
+                    );
                 }
 
                 return left.code.localeCompare(right.code);
