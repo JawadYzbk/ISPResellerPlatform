@@ -3,6 +3,7 @@
 use App\Models\ExchangeRate;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Models\WhatsAppAccount;
 use App\Support\Tenancy;
 use Database\Seeders\CapabilitySeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -17,6 +18,13 @@ it('renders and updates tenant settings through the owner surface', function ():
     $user = User::create(['tenant_id' => $tenant->id, 'name' => 'Owner', 'email' => 'settings@example.test', 'password' => Hash::make('password'), 'role' => 'tenant_owner']);
     app(CapabilitySeeder::class)->run();
     app(Tenancy::class)->set($tenant);
+    WhatsAppAccount::create([
+        'label' => 'Primary WhatsApp',
+        'job' => 'general',
+        'bridge_id' => 'isp-manager',
+        'status' => 'ready',
+        'is_active' => true,
+    ]);
     $user->assignRole('tenant_owner');
     $user->forceFill(['last_authenticated_at' => now()])->save();
     config()->set([
