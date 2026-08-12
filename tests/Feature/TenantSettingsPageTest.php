@@ -20,6 +20,7 @@ it('renders and updates tenant settings through the owner surface', function ():
     $user->assignRole('tenant_owner');
     $user->forceFill(['last_authenticated_at' => now()])->save();
     config()->set([
+        'services.frankfurter.currency_catalog_enabled' => false,
         'services.whatsapp.mode' => 'web',
         'services.whatsapp.web.enabled' => true,
         'services.whatsapp.web.endpoint' => 'http://whatsapp-web:3001',
