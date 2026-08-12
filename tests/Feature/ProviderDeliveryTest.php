@@ -7,6 +7,7 @@ use App\Domain\Communications\WhatsAppCloudMessageProvider;
 use App\Domain\Communications\WhatsAppWebMessageProvider;
 use App\Models\Message;
 use App\Models\Tenant;
+use App\Models\WhatsAppAccount;
 use App\Support\Tenancy;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
@@ -44,6 +45,13 @@ it('delivers through configured WhatsApp, SMS, FCM and email adapters', function
 it('delivers WhatsApp through the private Web.js bridge when selected', function (): void {
     $tenant = Tenant::create(['name' => 'Northline', 'slug' => 'northline', 'base_currency' => 'USD', 'collection_currency' => 'USD']);
     app(Tenancy::class)->set($tenant);
+    WhatsAppAccount::create([
+        'label' => 'Primary WhatsApp',
+        'job' => 'general',
+        'bridge_id' => 'isp-manager',
+        'status' => 'ready',
+        'is_active' => true,
+    ]);
     $message = Message::create(['channel' => 'whatsapp', 'recipient' => '96170123456', 'locale' => 'en', 'body' => 'Hello', 'status' => 'queued', 'idempotency_key' => 'provider-wa-web']);
     config([
         'services.whatsapp.mode' => 'web',
