@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Currency;
+use App\Models\JournalEntry;
 use App\Models\Supplier;
 use App\Models\SupplierBill;
 use App\Models\SupplierContract;
@@ -50,14 +51,20 @@ it('manages supplier contracts, bills and partial payments', function (): void {
         ->post(route('operations.supplier-bills.payments.store', $bill), ['amount' => 200, 'paid_at' => '2026-08-10', 'method' => 'bank_transfer', 'reference' => 'TRX-001'])
         ->assertRedirect(route('operations.suppliers'));
     app(Tenancy::class)->set($tenant);
-    expect(SupplierPayment::query()->sum('amount'))->toBe(200)->and($bill->refresh()->status)->toBe('open');
+    expect(SupplierPayment::query()->sum('amount'))->toBe(200)
+        ->and(SupplierBill::query()->sole()->journal_entry_id)->not->toBeNull()
+        ->and(SupplierPayment::query()->sole()->journal_entry_id)->not->toBeNull()
+        ->and($bill->refresh()->status)->toBe('open');
 
     $this->actingAs($user)
         ->post(route('operations.supplier-bills.payments.store', $bill), ['amount' => 300, 'paid_at' => '2026-08-20', 'method' => 'bank_transfer', 'reference' => 'TRX-002'])
         ->assertRedirect(route('operations.suppliers'));
     app(Tenancy::class)->set($tenant);
     expect($bill->refresh()->status)->toBe('paid')
-        ->and(SupplierContract::query()->count())->toBe(1);
+        ->and(SupplierContract::query()->count())->toBe(1)
+        ->and(SupplierPayment::query()->count())->toBe(2)
+        ->and(JournalEntry::query()->where('source_type', SupplierBill::class)->count())->toBe(1)
+        ->and(JournalEntry::query()->where('source_type', SupplierPayment::class)->count())->toBe(2);
 });
 
 it('isolates supplier workspaces and forbids supplier writes without management capability', function (): void {

@@ -89,7 +89,7 @@ final class SupplierOperationsController extends Controller
             'currency' => ['required', 'string', 'size:3', Rule::exists('currencies', 'code')->where('tenant_id', $request->user()->tenant_id)->where('is_active', true)],
             'notes' => ['nullable', 'string', 'max:2000'],
         ]);
-        $create->handle($supplier, $validated);
+        $create->handle($supplier, $validated, $request->user());
 
         return redirect()->route('operations.suppliers')->with('success', 'Supplier bill recorded.');
     }
