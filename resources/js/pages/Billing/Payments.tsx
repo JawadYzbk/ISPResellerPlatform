@@ -1,5 +1,5 @@
 import ResponsiveSelect from '@/components/ui/responsive-select';
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import { ChevronLeft, ChevronRight, CreditCard, Search } from 'lucide-react';
 import { useState } from 'react';
 
@@ -7,6 +7,7 @@ import StatusBadge from '@/components/StatusBadge';
 import AppLayout from '@/layouts/AppLayout';
 import ConfirmDialog from '@/components/ui/confirm-dialog';
 import { formatDate, formatMoney } from '@/lib/format';
+import { createTranslator } from '@/lib/i18n';
 import type { PageProps, Paginator } from '@/types';
 
 type PaymentRow = {
@@ -30,6 +31,8 @@ type Props = PageProps & {
 };
 
 export default function PaymentsPage({ payments, filters, canReverse = false }: Props) {
+    const { app } = usePage<PageProps>().props;
+    const t = createTranslator(app.locale);
     const [search, setSearch] = useState(filters.search ?? '');
     const [status, setStatus] = useState(filters.status ?? '');
     const [method, setMethod] = useState(filters.method ?? '');
@@ -45,59 +48,59 @@ export default function PaymentsPage({ payments, filters, canReverse = false }: 
 
     return (
         <AppLayout>
-            <Head title="Payments" />
+            <Head title={t('Payments')} />
             <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
                 <div>
-                    <p className="eyebrow">Billing operations</p>
-                    <h1 className="page-title">Payments</h1>
-                    <p className="page-subtitle">Review posted collections and keep ledger reversals visible.</p>
+                    <p className="eyebrow">{t('Billing operations')}</p>
+                    <h1 className="page-title">{t('Payments')}</h1>
+                    <p className="page-subtitle">{t('Review posted collections and keep ledger reversals visible.')}</p>
                 </div>
                 <Link href="/billing/invoices" className="button-secondary">
-                    Invoice queue
+                    {t('Invoice queue')}
                 </Link>
             </div>
 
             <form onSubmit={applyFilters} className="card mt-8 flex flex-col gap-4 p-5 sm:flex-row sm:items-end">
                 <label className="block sm:min-w-72">
-                    <span className="field-label">Search receipt or customer</span>
+                    <span className="field-label">{t('Search receipt or customer')}</span>
                     <div className="relative">
                         <Search size={17} className="pointer-events-none absolute start-3 top-3 text-muted" />
                         <input
                             className="field ps-10"
                             value={search}
                             onChange={(event) => setSearch(event.target.value)}
-                            placeholder="RCT-0001, customer code, name"
+                            placeholder={t('RCT-0001, customer code, name')}
                         />
                     </div>
                 </label>
                 <label className="block sm:min-w-40">
-                    <span className="field-label">Payment status</span>
+                    <span className="field-label">{t('Payment status')}</span>
                     <ResponsiveSelect
                         className="field"
                         value={status}
                         onChange={(event) => setStatus(event.target.value)}
                     >
-                        <option value="">All statuses</option>
-                        <option value="posted">Posted</option>
-                        <option value="reversed">Reversed</option>
+                        <option value="">{t('All statuses')}</option>
+                        <option value="posted">{t('Posted')}</option>
+                        <option value="reversed">{t('Reversed')}</option>
                     </ResponsiveSelect>
                 </label>
                 <label className="block sm:min-w-44">
-                    <span className="field-label">Method</span>
+                    <span className="field-label">{t('Method')}</span>
                     <ResponsiveSelect
                         className="field"
                         value={method}
                         onChange={(event) => setMethod(event.target.value)}
                     >
-                        <option value="">All methods</option>
-                        <option value="cash">Cash</option>
-                        <option value="bank_transfer">Bank transfer</option>
-                        <option value="card">Card</option>
-                        <option value="mobile_wallet">Mobile wallet</option>
+                        <option value="">{t('All methods')}</option>
+                        <option value="cash">{t('Cash')}</option>
+                        <option value="bank_transfer">{t('Bank transfer')}</option>
+                        <option value="card">{t('Card')}</option>
+                        <option value="mobile_wallet">{t('Mobile wallet')}</option>
                     </ResponsiveSelect>
                 </label>
                 <button type="submit" className="button-primary">
-                    Apply filters
+                    {t('Apply filters')}
                 </button>
             </form>
 
@@ -105,21 +108,23 @@ export default function PaymentsPage({ payments, filters, canReverse = false }: 
                 <div className="flex items-center justify-between border-b border-line px-5 py-4">
                     <div className="flex items-center gap-2">
                         <CreditCard size={17} className="text-brand" />
-                        <p className="text-sm font-semibold">{payments.total.toLocaleString()} payment(s)</p>
+                        <p className="text-sm font-semibold">
+                            {payments.total.toLocaleString()} {t('payment(s)')}
+                        </p>
                     </div>
-                    <p className="text-xs text-muted">Reversals remain in the queue for audit history.</p>
+                    <p className="text-xs text-muted">{t('Reversals remain in the queue for audit history.')}</p>
                 </div>
                 <div className="overflow-x-auto">
                     <table className="w-full min-w-[1120px] text-start">
                         <thead>
                             <tr className="border-b border-line bg-sand/50 text-xs font-semibold uppercase tracking-wider text-muted">
-                                <th className="px-5 py-3.5 text-start">Receipt</th>
-                                <th className="px-5 py-3.5 text-start">Customer</th>
-                                <th className="px-5 py-3.5 text-start">Status</th>
-                                <th className="px-5 py-3.5 text-start">Amount</th>
-                                <th className="px-5 py-3.5 text-start">Method</th>
-                                <th className="px-5 py-3.5 text-start">Invoice</th>
-                                <th className="px-5 py-3.5 text-start">Received</th>
+                                <th className="px-5 py-3.5 text-start">{t('Receipt')}</th>
+                                <th className="px-5 py-3.5 text-start">{t('Customer')}</th>
+                                <th className="px-5 py-3.5 text-start">{t('Status')}</th>
+                                <th className="px-5 py-3.5 text-start">{t('Amount')}</th>
+                                <th className="px-5 py-3.5 text-start">{t('Method')}</th>
+                                <th className="px-5 py-3.5 text-start">{t('Invoice')}</th>
+                                <th className="px-5 py-3.5 text-start">{t('Received')}</th>
                                 <th className="px-5 py-3.5" />
                             </tr>
                         </thead>
@@ -133,7 +138,7 @@ export default function PaymentsPage({ payments, filters, canReverse = false }: 
                                         >
                                             {payment.number}
                                         </Link>
-                                        <p className="mt-1 text-xs text-muted">{payment.collector ?? 'System'}</p>
+                                        <p className="mt-1 text-xs text-muted">{payment.collector ?? t('System')}</p>
                                     </td>
                                     <td className="px-5 py-4">
                                         <Link
@@ -154,25 +159,35 @@ export default function PaymentsPage({ payments, filters, canReverse = false }: 
                                         {formatMoney(payment.amount, payment.currency)}
                                     </td>
                                     <td className="px-5 py-4 text-sm capitalize text-muted">
-                                        {payment.method.replace('_', ' ')}
+                                        {t(
+                                            payment.method === 'bank_transfer'
+                                                ? 'Bank transfer'
+                                                : payment.method === 'mobile_wallet'
+                                                  ? 'Mobile wallet'
+                                                  : payment.method === 'cash'
+                                                    ? 'Cash'
+                                                    : 'Card',
+                                        )}
                                     </td>
                                     <td className="px-5 py-4 text-sm text-muted">
-                                        {payment.invoice?.number ?? 'Account credit'}
+                                        {payment.invoice?.number ?? t('Account credit')}
                                     </td>
                                     <td className="px-5 py-4 text-sm text-muted">{formatDate(payment.received_at)}</td>
                                     <td className="px-5 py-4 text-end">
                                         {canReverse && payment.status === 'posted' && (
                                             <ConfirmDialog
-                                                title={`Reverse payment ${payment.number}?`}
-                                                description="The reversal is append-only and the original receipt remains available for audit."
-                                                confirmLabel="Reverse payment"
+                                                title={`${t('Reverse payment')} ${payment.number}?`}
+                                                description={t(
+                                                    'The reversal is append-only and the original receipt remains available for audit.',
+                                                )}
+                                                confirmLabel={t('Reverse payment')}
                                                 destructive
                                                 onConfirm={() =>
                                                     router.post(`/billing/payments/${payment.public_id}/reverse`)
                                                 }
                                             >
                                                 <button type="button" className="text-sm font-semibold text-coral">
-                                                    Reverse
+                                                    {t('Reverse')}
                                                 </button>
                                             </ConfirmDialog>
                                         )}
@@ -183,7 +198,7 @@ export default function PaymentsPage({ payments, filters, canReverse = false }: 
                                 <tr>
                                     <td colSpan={8} className="px-5 py-16 text-center">
                                         <CreditCard className="mx-auto text-muted" size={28} />
-                                        <p className="mt-3 font-semibold">No payments match these filters</p>
+                                        <p className="mt-3 font-semibold">{t('No payments match these filters')}</p>
                                     </td>
                                 </tr>
                             )}
@@ -192,7 +207,7 @@ export default function PaymentsPage({ payments, filters, canReverse = false }: 
                 </div>
                 <div className="flex items-center justify-between border-t border-line px-5 py-4">
                     <p className="text-xs text-muted">
-                        Page {payments.current_page} of {payments.last_page}
+                        {t('Page')} {payments.current_page} {t('of')} {payments.last_page}
                     </p>
                     <div className="flex items-center gap-1">
                         {payments.links.map((link, index) => {

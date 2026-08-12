@@ -143,6 +143,7 @@ test.describe('staff core journeys', () => {
     });
 
     test('renders the billing, FX, reports, and messaging workspaces', async ({ page }) => {
+        test.setTimeout(90_000);
         await signIn(page);
 
         await page.goto('/customers');

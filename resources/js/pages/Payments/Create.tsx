@@ -1,10 +1,12 @@
 import CurrencyCombobox from '@/components/ui/currency-combobox';
 import ResponsiveSelect from '@/components/ui/responsive-select';
-import { Head, Link, router, useForm } from '@inertiajs/react';
+import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
 import { ArrowLeft, CreditCard, QrCode, Receipt, Save } from 'lucide-react';
 
 import AppLayout from '@/layouts/AppLayout';
 import { currencyFractionDigits, formatMoney, parseMoneyToMinor } from '@/lib/format';
+import { createTranslator } from '@/lib/i18n';
+import type { PageProps } from '@/types';
 
 type CustomerSummary = {
     public_id: string;
@@ -49,6 +51,8 @@ type Props = {
 };
 
 export default function PaymentCreate({ customer, invoices, defaultCurrency, paymentCurrencies, whishEnabled }: Props) {
+    const { app } = usePage<PageProps>().props;
+    const t = createTranslator(app.locale);
     const form = useForm({
         amount: '',
         currency: defaultCurrency ?? customer.balance_currency,
@@ -152,23 +156,25 @@ export default function PaymentCreate({ customer, invoices, defaultCurrency, pay
 
     return (
         <AppLayout>
-            <Head title="Record payment" />
+            <Head title={t('Record payment')} />
             <Link
                 href={`/customers/${customer.public_id}`}
                 className="mb-6 inline-flex items-center gap-2 text-sm font-semibold text-muted hover:text-brand"
             >
-                <ArrowLeft size={16} /> Back to customer
+                <ArrowLeft size={16} /> {t('Back to customer')}
             </Link>
             <div className="max-w-3xl">
-                <p className="eyebrow">Billing · {customer.code}</p>
-                <h1 className="page-title">Record payment</h1>
+                <p className="eyebrow">
+                    {t('Billing ·')} {customer.code}
+                </p>
+                <h1 className="page-title">{t('Record payment')}</h1>
                 <p className="page-subtitle">
-                    Apply a payment to {customer.first_name} {customer.last_name ?? ''} or leave it unallocated as
-                    account credit.
+                    {t('Apply a payment to')} {customer.first_name} {customer.last_name ?? ''}{' '}
+                    {t('or leave it unallocated as')} {t('account credit')}.
                 </p>
                 <div className="mt-6 flex items-center gap-3 rounded-xl border border-line bg-white px-4 py-3 text-sm">
                     <CreditCard size={18} className="text-brand" />
-                    <span className="text-muted">Current balance</span>
+                    <span className="text-muted">{t('Current balance')}</span>
                     <span className="ms-auto font-semibold">
                         {formatMoney(customer.balance_amount, customer.balance_currency)}
                     </span>
@@ -176,7 +182,7 @@ export default function PaymentCreate({ customer, invoices, defaultCurrency, pay
                 <form onSubmit={submit} className="card mt-6 space-y-6 p-6">
                     <div>
                         <label className="field-label" htmlFor="amount">
-                            Amount ({form.data.currency})
+                            {t('Amount')} ({form.data.currency})
                         </label>
                         <input
                             id="amount"
@@ -190,14 +196,14 @@ export default function PaymentCreate({ customer, invoices, defaultCurrency, pay
                             onChange={(event) => form.setData('amount', event.target.value)}
                         />
                         <p className="mt-1 text-xs text-muted">
-                            Enter the amount in {form.data.currency}. The ledger stores the converted value in{' '}
-                            {customer.balance_currency}.
+                            {t('Enter the amount in')} {form.data.currency}.{' '}
+                            {t('The ledger stores the converted value in')} {customer.balance_currency}.
                         </p>
                         {form.errors.amount && <p className="field-error">{form.errors.amount}</p>}
                     </div>
                     <div>
                         <label className="field-label" htmlFor="currency">
-                            Payment currency
+                            {t('Payment currency')}
                         </label>
                         <CurrencyCombobox
                             id="currency"
@@ -207,17 +213,19 @@ export default function PaymentCreate({ customer, invoices, defaultCurrency, pay
                             onChange={selectCurrency}
                         />
                         {selectedRate ? (
-                            <p className="mt-1 text-xs text-muted">Current rate: {formatRate(selectedRate)}</p>
+                            <p className="mt-1 text-xs text-muted">
+                                {t('Current rate')}: {formatRate(selectedRate)}
+                            </p>
                         ) : needsFx ? (
                             <p className="mt-1 text-xs text-amber-700">
-                                No current rate is configured. Enter an approved override before saving.
+                                {t('No effective rate is available for this currency pair.')}
                             </p>
                         ) : null}
                         {form.errors.currency && <p className="field-error">{form.errors.currency}</p>}
                     </div>
                     <div>
                         <label className="field-label" htmlFor="invoice_id">
-                            Apply to invoice (optional)
+                            {t('Apply to invoice (optional)')}
                         </label>
                         <ResponsiveSelect
                             id="invoice_id"
@@ -225,11 +233,11 @@ export default function PaymentCreate({ customer, invoices, defaultCurrency, pay
                             value={form.data.invoice_id}
                             onChange={(event) => selectInvoice(event.target.value)}
                         >
-                            <option value="">Leave as account credit</option>
+                            <option value="">{t('Leave as account credit')}</option>
                             {invoices.map((invoice) => (
                                 <option key={invoice.public_id} value={invoice.public_id}>
                                     {invoice.number} · {formatMoney(invoice.outstanding_amount, invoice.currency)}{' '}
-                                    outstanding
+                                    {t('outstanding')}
                                 </option>
                             ))}
                         </ResponsiveSelect>
@@ -237,7 +245,7 @@ export default function PaymentCreate({ customer, invoices, defaultCurrency, pay
                     </div>
                     <div>
                         <label className="field-label" htmlFor="method">
-                            Payment method
+                            {t('Payment method')}
                         </label>
                         <ResponsiveSelect
                             id="method"
@@ -245,10 +253,10 @@ export default function PaymentCreate({ customer, invoices, defaultCurrency, pay
                             value={form.data.method}
                             onChange={(event) => form.setData('method', event.target.value)}
                         >
-                            <option value="cash">Cash</option>
-                            <option value="bank_transfer">Bank transfer</option>
-                            <option value="card">Card (manual record)</option>
-                            <option value="mobile_wallet">Mobile wallet</option>
+                            <option value="cash">{t('Cash')}</option>
+                            <option value="bank_transfer">{t('Bank transfer')}</option>
+                            <option value="card">{t('Card (manual record)')}</option>
+                            <option value="mobile_wallet">{t('Mobile wallet')}</option>
                         </ResponsiveSelect>
                         {form.errors.method && <p className="field-error">{form.errors.method}</p>}
                     </div>
@@ -262,9 +270,9 @@ export default function PaymentCreate({ customer, invoices, defaultCurrency, pay
                                     onChange={(event) => toggleFxOverride(event.target.checked)}
                                 />
                                 <span>
-                                    <span className="font-semibold text-ink">Use an approved FX override</span>
+                                    <span className="font-semibold text-ink">{t('Use an approved FX override')}</span>
                                     <span className="mt-1 block text-xs text-muted">
-                                        The ratio and reason are stored with this receipt for audit review.
+                                        {t('The ratio and reason are stored with this receipt for audit review.')}
                                     </span>
                                 </span>
                             </label>
@@ -272,7 +280,7 @@ export default function PaymentCreate({ customer, invoices, defaultCurrency, pay
                                 <div className="grid gap-4 sm:grid-cols-2">
                                     <div>
                                         <label className="field-label" htmlFor="fx_rate_numerator">
-                                            FX numerator
+                                            {t('FX numerator')}
                                         </label>
                                         <input
                                             id="fx_rate_numerator"
@@ -288,7 +296,7 @@ export default function PaymentCreate({ customer, invoices, defaultCurrency, pay
                                     </div>
                                     <div>
                                         <label className="field-label" htmlFor="fx_rate_denominator">
-                                            FX denominator
+                                            {t('FX denominator')}
                                         </label>
                                         <input
                                             id="fx_rate_denominator"
@@ -306,13 +314,13 @@ export default function PaymentCreate({ customer, invoices, defaultCurrency, pay
                                     </div>
                                     <div className="sm:col-span-2">
                                         <label className="field-label" htmlFor="fx_override_reason">
-                                            Override reason
+                                            {t('Override reason')}
                                         </label>
                                         <input
                                             id="fx_override_reason"
                                             type="text"
                                             className="field"
-                                            placeholder="Approved counter rate"
+                                            placeholder={t('Approved counter rate')}
                                             value={form.data.fx_override_reason}
                                             onChange={(event) => form.setData('fx_override_reason', event.target.value)}
                                         />
@@ -324,7 +332,7 @@ export default function PaymentCreate({ customer, invoices, defaultCurrency, pay
                             )}
                             <div>
                                 <label className="field-label" htmlFor="rounding_mode">
-                                    Conversion rounding
+                                    {t('Conversion rounding')}
                                 </label>
                                 <ResponsiveSelect
                                     id="rounding_mode"
@@ -332,12 +340,14 @@ export default function PaymentCreate({ customer, invoices, defaultCurrency, pay
                                     value={form.data.rounding_mode}
                                     onChange={(event) => form.setData('rounding_mode', event.target.value)}
                                 >
-                                    <option value="half_up">Half up (standard)</option>
-                                    <option value="floor">Floor (never over-collect)</option>
-                                    <option value="ceil">Ceiling</option>
+                                    <option value="half_up">{t('Half up (standard)')}</option>
+                                    <option value="floor">{t('Floor (never over-collect)')}</option>
+                                    <option value="ceil">{t('Ceiling')}</option>
                                 </ResponsiveSelect>
                                 <p className="mt-1 text-xs text-muted">
-                                    The selected policy is saved with the payment rate for audit and receipt history.
+                                    {t(
+                                        'The selected policy is saved with the payment rate for audit and receipt history.',
+                                    )}
                                 </p>
                                 {form.errors.rounding_mode && (
                                     <p className="field-error">{form.errors.rounding_mode}</p>
@@ -347,13 +357,13 @@ export default function PaymentCreate({ customer, invoices, defaultCurrency, pay
                     )}
                     <div>
                         <label className="field-label" htmlFor="reference">
-                            Payment reference (optional)
+                            {t('Payment reference (optional)')}
                         </label>
                         <input
                             id="reference"
                             type="text"
                             className="field"
-                            placeholder="Receipt or transfer reference"
+                            placeholder={t('Receipt or transfer reference')}
                             value={form.data.reference}
                             onChange={(event) => form.setData('reference', event.target.value)}
                         />
@@ -361,20 +371,20 @@ export default function PaymentCreate({ customer, invoices, defaultCurrency, pay
                     </div>
                     {form.data.invoice_id && form.data.currency !== customer.balance_currency && (
                         <p className="text-xs text-muted">
-                            Any amount above the invoice balance stays as customer credit after conversion.
+                            {t('Any amount above the invoice balance stays as customer credit after conversion.')}
                         </p>
                     )}
                     <div className="flex justify-end gap-3 border-t border-line pt-5">
                         <Link href={`/customers/${customer.public_id}`} className="button-secondary">
-                            Cancel
+                            {t('Cancel')}
                         </Link>
                         {whishSupported && (
                             <button type="button" className="button-secondary" onClick={generateWhishQr}>
-                                <QrCode size={16} /> Generate Whish QR
+                                <QrCode size={16} /> {t('Create Whish QR')}
                             </button>
                         )}
                         <button className="button-primary" disabled={form.processing}>
-                            <Save size={16} /> Record payment
+                            <Save size={16} /> {t('Record payment')}
                         </button>
                     </div>
                     {invoices.length === 0 && (

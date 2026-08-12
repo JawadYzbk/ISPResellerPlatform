@@ -1,11 +1,12 @@
 import ResponsiveSelect from '@/components/ui/responsive-select';
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import { ChevronLeft, ChevronRight, FileText, Search } from 'lucide-react';
 import { useState } from 'react';
 
 import StatusBadge from '@/components/StatusBadge';
 import AppLayout from '@/layouts/AppLayout';
 import { formatDate, formatMoney } from '@/lib/format';
+import { createTranslator } from '@/lib/i18n';
 import type { PageProps, Paginator } from '@/types';
 
 type InvoiceRow = {
@@ -30,6 +31,8 @@ type Props = PageProps & {
 };
 
 export default function InvoicesPage({ invoices, filters, canIssue = false }: Props) {
+    const { app } = usePage<PageProps>().props;
+    const t = createTranslator(app.locale);
     const [search, setSearch] = useState(filters.search ?? '');
     const [status, setStatus] = useState(filters.status ?? '');
 
@@ -44,46 +47,48 @@ export default function InvoicesPage({ invoices, filters, canIssue = false }: Pr
 
     return (
         <AppLayout>
-            <Head title="Invoices" />
+            <Head title={t('Invoices')} />
             <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
                 <div>
-                    <p className="eyebrow">Billing operations</p>
-                    <h1 className="page-title">Invoices</h1>
-                    <p className="page-subtitle">Review issued balances and move draft invoices into the ledger.</p>
+                    <p className="eyebrow">{t('Billing operations')}</p>
+                    <h1 className="page-title">{t('Invoices')}</h1>
+                    <p className="page-subtitle">
+                        {t('Review issued balances and move draft invoices into the ledger.')}
+                    </p>
                 </div>
                 <Link href="/reports/finance" className="button-secondary">
-                    Finance report
+                    {t('Finance report')}
                 </Link>
             </div>
 
             <form onSubmit={applyFilters} className="card mt-8 flex flex-col gap-4 p-5 sm:flex-row sm:items-end">
                 <label className="block sm:min-w-72">
-                    <span className="field-label">Search invoice or customer</span>
+                    <span className="field-label">{t('Search invoice or customer')}</span>
                     <div className="relative">
                         <Search size={17} className="pointer-events-none absolute start-3 top-3 text-muted" />
                         <input
                             className="field ps-10"
                             value={search}
                             onChange={(event) => setSearch(event.target.value)}
-                            placeholder="INV-0001, customer code, name"
+                            placeholder={t('INV-0001, customer code, name')}
                         />
                     </div>
                 </label>
                 <label className="block sm:min-w-48">
-                    <span className="field-label">Invoice status</span>
+                    <span className="field-label">{t('Invoice status')}</span>
                     <ResponsiveSelect
                         className="field"
                         value={status}
                         onChange={(event) => setStatus(event.target.value)}
                     >
-                        <option value="">All statuses</option>
-                        <option value="draft">Draft</option>
-                        <option value="issued">Issued</option>
-                        <option value="void">Void</option>
+                        <option value="">{t('All statuses')}</option>
+                        <option value="draft">{t('Draft')}</option>
+                        <option value="issued">{t('Issued')}</option>
+                        <option value="void">{t('Void')}</option>
                     </ResponsiveSelect>
                 </label>
                 <button type="submit" className="button-primary">
-                    Apply filters
+                    {t('Apply filters')}
                 </button>
             </form>
 
@@ -91,20 +96,22 @@ export default function InvoicesPage({ invoices, filters, canIssue = false }: Pr
                 <div className="flex items-center justify-between border-b border-line px-5 py-4">
                     <div className="flex items-center gap-2">
                         <FileText size={17} className="text-brand" />
-                        <p className="text-sm font-semibold">{invoices.total.toLocaleString()} invoice(s)</p>
+                        <p className="text-sm font-semibold">
+                            {invoices.total.toLocaleString()} {t('invoice(s)')}
+                        </p>
                     </div>
-                    <p className="text-xs text-muted">Balances use posted payment allocations.</p>
+                    <p className="text-xs text-muted">{t('Balances use posted payment allocations.')}</p>
                 </div>
                 <div className="overflow-x-auto">
                     <table className="w-full min-w-[1080px] text-start">
                         <thead>
                             <tr className="border-b border-line bg-sand/50 text-xs font-semibold uppercase tracking-wider text-muted">
-                                <th className="px-5 py-3.5 text-start">Invoice</th>
-                                <th className="px-5 py-3.5 text-start">Customer</th>
-                                <th className="px-5 py-3.5 text-start">Status</th>
-                                <th className="px-5 py-3.5 text-start">Total</th>
-                                <th className="px-5 py-3.5 text-start">Outstanding</th>
-                                <th className="px-5 py-3.5 text-start">Due</th>
+                                <th className="px-5 py-3.5 text-start">{t('Invoice')}</th>
+                                <th className="px-5 py-3.5 text-start">{t('Customer')}</th>
+                                <th className="px-5 py-3.5 text-start">{t('Status')}</th>
+                                <th className="px-5 py-3.5 text-start">{t('Total')}</th>
+                                <th className="px-5 py-3.5 text-start">{t('Outstanding')}</th>
+                                <th className="px-5 py-3.5 text-start">{t('Due')}</th>
                                 <th className="px-5 py-3.5" />
                             </tr>
                         </thead>
@@ -119,7 +126,7 @@ export default function InvoicesPage({ invoices, filters, canIssue = false }: Pr
                                             {invoice.number}
                                         </Link>
                                         <p className="mt-1 text-xs text-muted">
-                                            Issued {formatDate(invoice.issued_at)}
+                                            {t('Issued')} {formatDate(invoice.issued_at)}
                                         </p>
                                     </td>
                                     <td className="px-5 py-4">
@@ -158,7 +165,7 @@ export default function InvoicesPage({ invoices, filters, canIssue = false }: Pr
                                                     router.post(`/billing/invoices/${invoice.public_id}/issue`)
                                                 }
                                             >
-                                                Issue invoice
+                                                {t('Issue invoice')}
                                             </button>
                                         )}
                                         {invoice.outstanding_amount > 0 && invoice.status === 'issued' && (
@@ -166,7 +173,7 @@ export default function InvoicesPage({ invoices, filters, canIssue = false }: Pr
                                                 href={`/customers/${invoice.customer.public_id}/payments/create`}
                                                 className="text-sm font-semibold text-brand"
                                             >
-                                                Take payment
+                                                {t('Take payment')}
                                             </Link>
                                         )}
                                     </td>
@@ -176,7 +183,7 @@ export default function InvoicesPage({ invoices, filters, canIssue = false }: Pr
                                 <tr>
                                     <td colSpan={7} className="px-5 py-16 text-center">
                                         <FileText className="mx-auto text-muted" size={28} />
-                                        <p className="mt-3 font-semibold">No invoices match these filters</p>
+                                        <p className="mt-3 font-semibold">{t('No invoices match these filters')}</p>
                                     </td>
                                 </tr>
                             )}
@@ -185,7 +192,7 @@ export default function InvoicesPage({ invoices, filters, canIssue = false }: Pr
                 </div>
                 <div className="flex items-center justify-between border-t border-line px-5 py-4">
                     <p className="text-xs text-muted">
-                        Page {invoices.current_page} of {invoices.last_page}
+                        {t('Page')} {invoices.current_page} {t('of')} {invoices.last_page}
                     </p>
                     <div className="flex items-center gap-1">
                         {invoices.links.map((link, index) => {

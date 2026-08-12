@@ -1,10 +1,11 @@
 import CurrencyCombobox, { type CurrencyOption } from '@/components/ui/currency-combobox';
-import { Head, Link, router, useForm } from '@inertiajs/react';
+import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
 import { ArrowLeft, ChevronLeft, ChevronRight, Plus, RefreshCw, Scale } from 'lucide-react';
 import { useState } from 'react';
 
 import AppLayout from '@/layouts/AppLayout';
 import { formatDate } from '@/lib/format';
+import { createTranslator } from '@/lib/i18n';
 import type { PageProps, Paginator } from '@/types';
 
 type ExchangeRate = {
@@ -34,11 +35,11 @@ type Props = PageProps & {
     currencies: CurrencyOption[];
 };
 
-function Pagination({ rates }: { rates: Paginator<ExchangeRate> }) {
+function Pagination({ rates, t }: { rates: Paginator<ExchangeRate>; t: (key: string) => string }) {
     return (
         <div className="flex items-center justify-between border-t border-line px-5 py-4">
             <p className="text-xs text-muted">
-                Page {rates.current_page} of {rates.last_page}
+                {t('Page')} {rates.current_page} {t('of')} {rates.last_page}
             </p>
             <div className="flex items-center gap-1">
                 {rates.links.map((link, index) => {
@@ -81,6 +82,8 @@ export default function ExchangeRatesPage({
     workspaceCurrencies,
     currencies,
 }: Props) {
+    const { app } = usePage<PageProps>().props;
+    const t = createTranslator(app.locale);
     const [baseCurrency, setBaseCurrency] = useState(filters.base_currency ?? '');
     const [quoteCurrency, setQuoteCurrency] = useState(filters.quote_currency ?? '');
     const form = useForm<RateForm>({
@@ -120,33 +123,35 @@ export default function ExchangeRatesPage({
 
     return (
         <AppLayout>
-            <Head title="Exchange rates" />
+            <Head title={t('Exchange rates')} />
             <Link
                 href="/settings/general"
                 className="mb-6 inline-flex items-center gap-2 text-sm font-semibold text-muted hover:text-brand"
             >
-                <ArrowLeft size={16} /> Back to settings
+                <ArrowLeft size={16} /> {t('Back to settings')}
             </Link>
 
             <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
                 <div>
-                    <p className="eyebrow">Billing configuration</p>
-                    <h1 className="page-title">Exchange rates</h1>
+                    <p className="eyebrow">{t('Billing configuration')}</p>
+                    <h1 className="page-title">{t('Exchange rates')}</h1>
                     <p className="page-subtitle">
-                        Maintain exact, effective-dated currency ratios for billing and collection.
+                        {t('Maintain exact, effective-dated currency ratios for billing and collection.')}
                     </p>
                 </div>
                 <div className="rounded-xl border border-line bg-white px-4 py-3 text-sm text-muted">
-                    <span className="font-semibold text-ink">Fraction based</span> · No rounding in the rate history
+                    <span className="font-semibold text-ink">{t('Fraction based')}</span> ·{' '}
+                    {t('No rounding is applied before the payment snapshot.')}
                 </div>
             </div>
 
             <div className="card mt-6 flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                    <p className="text-sm font-semibold">Frankfurter market rates</p>
+                    <p className="text-sm font-semibold">{t('Frankfurter market rates')}</p>
                     <p className="mt-1 text-sm text-muted">
-                        Import append-only rates for {workspaceCurrencies.base ?? 'the workspace base currency'} into{' '}
-                        {workspaceCurrencies.collection ?? 'the collection currency'}.
+                        {t('Import append-only rates for')}{' '}
+                        {workspaceCurrencies.base ?? t('the workspace base currency')} {t('into')}{' '}
+                        {workspaceCurrencies.collection ?? t('the collection currency')}.
                     </p>
                 </div>
                 {frankfurterEnabled ? (
@@ -155,24 +160,24 @@ export default function ExchangeRatesPage({
                         className="button-secondary shrink-0"
                         onClick={() => router.post('/billing/exchange-rates/sync')}
                     >
-                        <RefreshCw size={16} /> Sync Frankfurter
+                        <RefreshCw size={16} /> {t('Sync Frankfurter')}
                     </button>
                 ) : (
-                    <span className="text-xs text-muted">Enable FRANKFURTER_ENABLED to use provider sync.</span>
+                    <span className="text-xs text-muted">{t('Enable FRANKFURTER_ENABLED to use provider rates.')}</span>
                 )}
             </div>
 
             <form onSubmit={submit} className="card mt-8 p-6">
                 <div className="flex items-center gap-2">
                     <Plus size={17} className="text-brand" />
-                    <h2 className="section-title">Add a rate</h2>
+                    <h2 className="section-title">{t('Add a rate')}</h2>
                 </div>
                 <p className="mt-1 text-sm text-muted">
-                    Add a new effective time instead of editing a rate already used by a transaction.
+                    {t('Use an exact fraction so historical payments remain reproducible.')}
                 </p>
                 <div className="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
                     <label>
-                        <span className="field-label">Base currency</span>
+                        <span className="field-label">{t('Base currency')}</span>
                         <CurrencyCombobox
                             id="base_currency"
                             className="field"
@@ -183,7 +188,7 @@ export default function ExchangeRatesPage({
                         {form.errors.base_currency && <p className="field-error">{form.errors.base_currency}</p>}
                     </label>
                     <label>
-                        <span className="field-label">Quote currency</span>
+                        <span className="field-label">{t('Quote currency')}</span>
                         <CurrencyCombobox
                             id="quote_currency"
                             className="field"
@@ -194,7 +199,7 @@ export default function ExchangeRatesPage({
                         {form.errors.quote_currency && <p className="field-error">{form.errors.quote_currency}</p>}
                     </label>
                     <label>
-                        <span className="field-label">Effective from</span>
+                        <span className="field-label">{t('Effective from')}</span>
                         <input
                             className="field"
                             type="date"
@@ -204,7 +209,7 @@ export default function ExchangeRatesPage({
                         {form.errors.effective_from && <p className="field-error">{form.errors.effective_from}</p>}
                     </label>
                     <label>
-                        <span className="field-label">Numerator</span>
+                        <span className="field-label">{t('Numerator')}</span>
                         <input
                             className="field"
                             type="number"
@@ -216,7 +221,7 @@ export default function ExchangeRatesPage({
                         {form.errors.rate_numerator && <p className="field-error">{form.errors.rate_numerator}</p>}
                     </label>
                     <label>
-                        <span className="field-label">Denominator</span>
+                        <span className="field-label">{t('Denominator')}</span>
                         <input
                             className="field"
                             type="number"
@@ -228,7 +233,7 @@ export default function ExchangeRatesPage({
                         {form.errors.rate_denominator && <p className="field-error">{form.errors.rate_denominator}</p>}
                     </label>
                     <label>
-                        <span className="field-label">Source</span>
+                        <span className="field-label">{t('Source')}</span>
                         <input
                             className="field"
                             maxLength={80}
@@ -241,7 +246,7 @@ export default function ExchangeRatesPage({
                 </div>
                 <div className="mt-5 flex justify-end">
                     <button type="submit" className="button-primary" disabled={form.processing}>
-                        <RefreshCw size={16} className={form.processing ? 'animate-spin' : ''} /> Save rate
+                        <RefreshCw size={16} className={form.processing ? 'animate-spin' : ''} /> {t('Save rate')}
                     </button>
                 </div>
             </form>
@@ -286,10 +291,10 @@ export default function ExchangeRatesPage({
                     <table className="w-full min-w-[900px] text-start">
                         <thead>
                             <tr className="border-b border-line bg-sand/50 text-xs font-semibold uppercase tracking-wider text-muted">
-                                <th className="px-5 py-3.5 text-start">Pair</th>
-                                <th className="px-5 py-3.5 text-start">Exact ratio</th>
-                                <th className="px-5 py-3.5 text-start">Effective from</th>
-                                <th className="px-5 py-3.5 text-start">Source</th>
+                                <th className="px-5 py-3.5 text-start">{t('Pair')}</th>
+                                <th className="px-5 py-3.5 text-start">{t('Exact ratio')}</th>
+                                <th className="px-5 py-3.5 text-start">{t('Effective from')}</th>
+                                <th className="px-5 py-3.5 text-start">{t('Source')}</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-line">
@@ -310,9 +315,9 @@ export default function ExchangeRatesPage({
                                 <tr>
                                     <td colSpan={4} className="px-5 py-16 text-center">
                                         <Scale className="mx-auto text-muted" size={28} />
-                                        <p className="mt-3 font-semibold">No rates match these filters</p>
+                                        <p className="mt-3 font-semibold">{t('No rates match these filters')}</p>
                                         <p className="mt-1 text-sm text-muted">
-                                            Add the first effective-dated ratio above.
+                                            {t('Add the first effective-dated ratio above.')}
                                         </p>
                                     </td>
                                 </tr>
@@ -320,7 +325,7 @@ export default function ExchangeRatesPage({
                         </tbody>
                     </table>
                 </div>
-                <Pagination rates={rates} />
+                <Pagination rates={rates} t={t} />
             </div>
         </AppLayout>
     );
