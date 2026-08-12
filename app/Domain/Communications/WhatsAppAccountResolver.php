@@ -2,15 +2,11 @@
 
 namespace App\Domain\Communications;
 
-use App\Actions\EnsureWhatsAppAccount;
 use App\Models\Message;
-use App\Models\Tenant;
 use App\Models\WhatsAppAccount;
 
 final readonly class WhatsAppAccountResolver
 {
-    public function __construct(private EnsureWhatsAppAccount $ensureAccount) {}
-
     public function resolve(Message $message): ?WhatsAppAccount
     {
         $message->loadMissing('whatsappAccount');
@@ -43,9 +39,7 @@ final readonly class WhatsAppAccountResolver
             }
         }
 
-        $tenant = Tenant::query()->find($message->tenant_id);
-
-        return $tenant instanceof Tenant ? $this->ensureAccount->handle($tenant) : null;
+        return null;
     }
 
     public function jobFor(Message $message): string

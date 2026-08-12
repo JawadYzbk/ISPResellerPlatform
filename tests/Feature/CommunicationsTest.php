@@ -121,6 +121,13 @@ it('routes the existing WhatsApp channel through the Web.js bridge when enabled'
 
     $tenant = Tenant::create(['name' => 'Webline', 'slug' => 'webline', 'base_currency' => 'USD', 'collection_currency' => 'USD']);
     app(Tenancy::class)->set($tenant);
+    WhatsAppAccount::create([
+        'label' => 'Primary WhatsApp',
+        'job' => 'general',
+        'bridge_id' => 'isp-manager',
+        'status' => 'ready',
+        'is_active' => true,
+    ]);
     $template = MessageTemplate::updateOrCreate(
         ['key' => 'payment.receipt', 'channel' => 'whatsapp', 'locale' => 'en'],
         ['body' => 'Receipt {{ receipt_number }}'],
@@ -132,6 +139,33 @@ it('routes the existing WhatsApp channel through the Web.js bridge when enabled'
     expect($message->refresh()->status->value)->toBe('sent')
         ->and($message->provider)->toBe('whatsapp_web')
         ->and($message->provider_message_id)->toBe('wamid-web-002');
+});
+
+it('does not recreate a WhatsApp account when the tenant has no configured account', function (): void {
+    Queue::fake();
+    config([
+        'services.whatsapp.mode' => 'web',
+        'services.whatsapp.web.enabled' => true,
+        'services.whatsapp.web.endpoint' => 'http://whatsapp-web:3001',
+        'services.whatsapp.web.token' => 'bridge-token',
+    ]);
+
+    $tenant = Tenant::create(['name' => 'Emptyline', 'slug' => 'emptyline', 'base_currency' => 'USD', 'collection_currency' => 'USD']);
+    app(Tenancy::class)->set($tenant);
+    $template = MessageTemplate::updateOrCreate(
+        ['key' => 'payment.receipt', 'channel' => 'whatsapp', 'locale' => 'en'],
+        ['body' => 'Receipt {{ receipt_number }}'],
+    );
+    $message = app(QueueMessage::class)->handle($template, '96170123456', 'whatsapp', 'en', 'web-message-no-account', ['receipt_number' => 'RCT-NO-ACCOUNT']);
+
+    expect(function () use ($message, $tenant): void {
+        (new DeliverMessage($message->id, $tenant->id))->handle(app(MessageProviderManager::class));
+    })
+        ->toThrow(RuntimeException::class);
+
+    expect($message->refresh()->status->value)->toBe('failed')
+        ->and($message->failure_reason)->toBe('account_not_configured')
+        ->and(WhatsAppAccount::withoutGlobalScopes()->where('tenant_id', $tenant->id)->count())->toBe(0);
 });
 
 it('routes WhatsApp messages to the assigned job account and preserves explicit account selection', function (): void {
