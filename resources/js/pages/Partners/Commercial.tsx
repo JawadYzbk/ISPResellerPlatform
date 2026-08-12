@@ -37,6 +37,22 @@ type Settlement = {
     due_amount: number;
     status: string;
 };
+type PriceBookOverride = {
+    id: number;
+    buy_amount_minor: number;
+    sell_amount_minor: number;
+    min_amount_minor: number | null;
+    max_amount_minor: number | null;
+    effective_from: string;
+};
+type PricingPlan = {
+    id: string;
+    name: string;
+    duration_days: number;
+    currency: string;
+    base_amount_minor: number | null;
+    override: PriceBookOverride | null;
+};
 
 type Props = PageProps & {
     partners: Partner[];
@@ -46,7 +62,117 @@ type Props = PageProps & {
     showCost: boolean;
     canManage: boolean;
     currencies: CurrencyOption[];
+    pricingPlans: PricingPlan[];
 };
+
+function PriceBookEditorRow({
+    partnerId,
+    plan,
+    currencies,
+}: {
+    partnerId: string;
+    plan: PricingPlan;
+    currencies: CurrencyOption[];
+}) {
+    const form = useForm({
+        plan_id: plan.id,
+        currency: plan.currency,
+        buy_amount_minor: String(plan.override?.buy_amount_minor ?? plan.base_amount_minor ?? ''),
+        sell_amount_minor: String(plan.override?.sell_amount_minor ?? plan.base_amount_minor ?? ''),
+        min_amount_minor: plan.override?.min_amount_minor === null || plan.override === null ? '' : String(plan.override.min_amount_minor),
+        max_amount_minor: plan.override?.max_amount_minor === null || plan.override === null ? '' : String(plan.override.max_amount_minor),
+        effective_from: plan.override?.effective_from ?? new Date().toISOString().slice(0, 10),
+    });
+
+    const submit = (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        form.post(`/partners/${partnerId}/price-books/items`, { preserveScroll: true });
+    };
+
+    return (
+        <form onSubmit={submit} className="grid gap-3 border-t border-line px-6 py-5 lg:grid-cols-[1.2fr_repeat(6,minmax(0,1fr))]">
+            <div className="min-w-0">
+                <p className="font-semibold">{plan.name}</p>
+                <p className="mt-1 text-xs text-muted">
+                    {plan.duration_days} days · Base {plan.base_amount_minor === null ? 'not set' : formatMoney(plan.base_amount_minor, plan.currency)}
+                </p>
+                {plan.override && <p className="mt-1 text-xs font-semibold text-brand">Override from {plan.override.effective_from}</p>}
+            </div>
+            <label>
+                <span className="field-label">Buy</span>
+                <input
+                    className="field"
+                    type="number"
+                    min="0"
+                    value={form.data.buy_amount_minor}
+                    onChange={(event) => form.setData('buy_amount_minor', event.target.value)}
+                    required
+                />
+                {form.errors.buy_amount_minor && <p className="field-error">{form.errors.buy_amount_minor}</p>}
+            </label>
+            <label>
+                <span className="field-label">Sell</span>
+                <input
+                    className="field"
+                    type="number"
+                    min="0"
+                    value={form.data.sell_amount_minor}
+                    onChange={(event) => form.setData('sell_amount_minor', event.target.value)}
+                    required
+                />
+                {form.errors.sell_amount_minor && <p className="field-error">{form.errors.sell_amount_minor}</p>}
+            </label>
+            <label>
+                <span className="field-label">Floor</span>
+                <input
+                    className="field"
+                    type="number"
+                    min="0"
+                    value={form.data.min_amount_minor}
+                    onChange={(event) => form.setData('min_amount_minor', event.target.value)}
+                />
+                {form.errors.min_amount_minor && <p className="field-error">{form.errors.min_amount_minor}</p>}
+            </label>
+            <label>
+                <span className="field-label">Ceiling</span>
+                <input
+                    className="field"
+                    type="number"
+                    min="0"
+                    value={form.data.max_amount_minor}
+                    onChange={(event) => form.setData('max_amount_minor', event.target.value)}
+                />
+                {form.errors.max_amount_minor && <p className="field-error">{form.errors.max_amount_minor}</p>}
+            </label>
+            <label>
+                <span className="field-label">Currency</span>
+                <CurrencyCombobox
+                    className="field"
+                    value={form.data.currency}
+                    currencies={currencies}
+                    onChange={(value) => form.setData('currency', value)}
+                />
+                {form.errors.currency && <p className="field-error">{form.errors.currency}</p>}
+            </label>
+            <label>
+                <span className="field-label">Effective from</span>
+                <input
+                    className="field"
+                    type="date"
+                    value={form.data.effective_from}
+                    onChange={(event) => form.setData('effective_from', event.target.value)}
+                    required
+                />
+                {form.errors.effective_from && <p className="field-error">{form.errors.effective_from}</p>}
+            </label>
+            <div className="flex items-end">
+                <button type="submit" className="button-primary w-full" disabled={form.processing}>
+                    <Save size={15} /> Save price
+                </button>
+            </div>
+        </form>
+    );
+}
 
 export default function Commercial({
     partners,
@@ -56,6 +182,7 @@ export default function Commercial({
     showCost,
     canManage,
     currencies,
+    pricingPlans,
 }: Props) {
     const [editOpen, setEditOpen] = useState(false);
     const form = useForm({
@@ -324,6 +451,34 @@ export default function Commercial({
                                 </button>
                             </div>
                         </form>
+                    )}
+                </section>
+            )}
+            {selectedPartner && canManage && (
+                <section className="card mt-8 overflow-hidden">
+                    <div className="flex items-start justify-between gap-4 px-6 py-5">
+                        <div>
+                            <p className="section-title">Reseller price book</p>
+                            <p className="mt-1 text-sm text-muted">
+                                Set the partner buy price, retail price, floor, ceiling, and effective date. Existing
+                                renewals keep their original snapshot.
+                            </p>
+                        </div>
+                        <span className="status-badge">{pricingPlans.length} plans</span>
+                    </div>
+                    {pricingPlans.length > 0 ? (
+                        pricingPlans.map((plan) => (
+                            <PriceBookEditorRow
+                                key={plan.id}
+                                partnerId={selectedPartner.id}
+                                plan={plan}
+                                currencies={currencies}
+                            />
+                        ))
+                    ) : (
+                        <p className="border-t border-line px-6 py-8 text-sm text-muted">
+                            Create an active plan before setting reseller prices.
+                        </p>
                     )}
                 </section>
             )}
