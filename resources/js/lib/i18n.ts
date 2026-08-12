@@ -163,6 +163,20 @@ const messages: Record<Exclude<Locale, 'en'>, Messages> = {
         Open: 'فتح',
         'No customers found': 'لم يتم العثور على عملاء',
         'Try a different search or add your first customer.': 'جرّب بحثًا مختلفًا أو أضف أول عميل.',
+        'Workspace setup': 'إعداد مساحة العمل',
+        'Get your workspace ready': 'جهّز مساحة عملك',
+        'Complete these basics before importing customers or activating services.':
+            'أكمل هذه الأساسيات قبل استيراد العملاء أو تفعيل الخدمات.',
+        'Add one customer': 'إضافة عميل واحد',
+        'Add a service zone': 'إضافة منطقة خدمة',
+        'Define where customers are served.': 'حدّد المناطق التي تقدّم فيها الخدمة للعملاء.',
+        'Create a billable plan': 'إنشاء باقة قابلة للفوترة',
+        'Set the service speed, duration, and customer price.': 'حدّد سرعة الخدمة ومدتها وسعرها للعميل.',
+        'Connect a router': 'ربط موجّه',
+        'Register the network device used to provision services.': 'سجّل جهاز الشبكة المستخدم لتجهيز الخدمات.',
+        'Import customers': 'استيراد العملاء',
+        'Bring in an existing customer list with row-level validation.':
+            'استورد قائمة العملاء الحالية مع التحقق من كل صف.',
         Showing: 'عرض',
         of: 'من',
         service: 'خدمة',
@@ -708,6 +722,22 @@ const messages: Record<Exclude<Locale, 'en'>, Messages> = {
         'No customers found': 'Aucun client trouvé',
         'Try a different search or add your first customer.':
             'Essayez une autre recherche ou ajoutez votre premier client.',
+        'Workspace setup': 'Configuration de l’espace de travail',
+        'Get your workspace ready': 'Préparez votre espace de travail',
+        'Complete these basics before importing customers or activating services.':
+            'Complétez ces bases avant d’importer des clients ou d’activer des services.',
+        'Add one customer': 'Ajouter un client',
+        'Add a service zone': 'Ajouter une zone de service',
+        'Define where customers are served.': 'Définissez les zones où les clients sont desservis.',
+        'Create a billable plan': 'Créer une offre facturable',
+        'Set the service speed, duration, and customer price.':
+            'Définissez le débit, la durée et le prix client du service.',
+        'Connect a router': 'Connecter un routeur',
+        'Register the network device used to provision services.':
+            'Enregistrez l’équipement réseau utilisé pour provisionner les services.',
+        'Import customers': 'Importer des clients',
+        'Bring in an existing customer list with row-level validation.':
+            'Importez une liste existante avec une validation ligne par ligne.',
         Showing: 'Affichage',
         of: 'sur',
         service: 'service',

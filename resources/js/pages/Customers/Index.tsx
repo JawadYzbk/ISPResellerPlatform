@@ -7,8 +7,12 @@ import {
     ChevronRight,
     Download,
     Filter,
+    MapPin,
+    Router,
     Search,
     SlidersHorizontal,
+    Tags,
+    Upload,
     Users,
 } from 'lucide-react';
 import { useState } from 'react';
@@ -53,7 +57,7 @@ function getNextExpiry(customer: Customer): string | null {
 }
 
 export default function CustomersIndex({ customers, filters, zones, savedViews, canExport = false }: Props) {
-    const { app } = usePage<PageProps>().props;
+    const { app, auth } = usePage<PageProps>().props;
     const t = createTranslator(app.locale);
     const [search, setSearch] = useState(filters.search ?? '');
     const [status, setStatus] = useState(filters.status ?? '');
@@ -67,6 +71,37 @@ export default function CustomersIndex({ customers, filters, zones, savedViews, 
     const [selectedCustomerIds, setSelectedCustomerIds] = useState<string[]>([]);
     const saveViewForm = useForm({ name: '' });
     const translatedColumnOptions = columnOptions.map((option) => ({ ...option, label: t(option.label) }));
+    const hasActiveFilters = Object.values(filters).some((value) => value !== undefined && value !== '');
+    const setupItems = [
+        {
+            label: t('Add a service zone'),
+            detail: t('Define where customers are served.'),
+            href: '/settings/locations',
+            permission: 'settings.manage',
+            icon: MapPin,
+        },
+        {
+            label: t('Create a billable plan'),
+            detail: t('Set the service speed, duration, and customer price.'),
+            href: '/plans',
+            permission: 'plans.manage',
+            icon: Tags,
+        },
+        {
+            label: t('Connect a router'),
+            detail: t('Register the network device used to provision services.'),
+            href: '/operations/routers/create',
+            permission: 'network.provision',
+            icon: Router,
+        },
+        {
+            label: t('Import customers'),
+            detail: t('Bring in an existing customer list with row-level validation.'),
+            href: '/operations/imports',
+            permission: 'customers.create',
+            icon: Upload,
+        },
+    ].filter((item) => auth.permissions.includes(item.permission));
 
     const applyFilters = () => {
         router.get(
@@ -443,7 +478,54 @@ export default function CustomersIndex({ customers, filters, zones, savedViews, 
                                     </tr>
                                 );
                             })}
-                            {customers.data.length === 0 && (
+                            {customers.data.length === 0 && customers.total === 0 && !hasActiveFilters ? (
+                                <tr>
+                                    <td colSpan={visibleColumns.length + 3} className="px-5 py-10">
+                                        <div className="mx-auto max-w-3xl rounded-2xl border border-brand/20 bg-brand-soft/30 p-6 text-start">
+                                            <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
+                                                <div>
+                                                    <p className="eyebrow">{t('Workspace setup')}</p>
+                                                    <h2 className="mt-2 text-xl font-semibold">
+                                                        {t('Get your workspace ready')}
+                                                    </h2>
+                                                    <p className="mt-2 max-w-xl text-sm leading-6 text-muted">
+                                                        {t(
+                                                            'Complete these basics before importing customers or activating services.',
+                                                        )}
+                                                    </p>
+                                                </div>
+                                                <Link href="/customers/create" className="button-primary shrink-0">
+                                                    <Users size={16} />
+                                                    {t('Add one customer')}
+                                                </Link>
+                                            </div>
+                                            <div className="mt-6 grid gap-3 sm:grid-cols-2">
+                                                {setupItems.map(({ label, detail, href, icon: Icon }) => (
+                                                    <Link
+                                                        key={href}
+                                                        href={href}
+                                                        className="group rounded-xl border border-line bg-white p-4 transition hover:border-brand/40 hover:shadow-sm"
+                                                    >
+                                                        <div className="flex items-start gap-3">
+                                                            <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-brand-soft text-brand">
+                                                                <Icon size={17} />
+                                                            </span>
+                                                            <span>
+                                                                <span className="block text-sm font-semibold group-hover:text-brand">
+                                                                    {label}
+                                                                </span>
+                                                                <span className="mt-1 block text-xs leading-5 text-muted">
+                                                                    {detail}
+                                                                </span>
+                                                            </span>
+                                                        </div>
+                                                    </Link>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ) : customers.data.length === 0 ? (
                                 <tr>
                                     <td colSpan={visibleColumns.length + 3} className="px-5 py-16 text-center">
                                         <Users className="mx-auto text-muted" size={28} />
@@ -453,7 +535,7 @@ export default function CustomersIndex({ customers, filters, zones, savedViews, 
                                         </p>
                                     </td>
                                 </tr>
-                            )}
+                            ) : null}
                         </tbody>
                     </table>
                 </div>
