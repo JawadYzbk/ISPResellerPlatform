@@ -61,6 +61,18 @@ it('lets a workspace owner manage ticket responses and archive them', function (
     app(Tenancy::class)->set($tenant);
     expect($response->refresh()->is_active)->toBeFalse()
         ->and($response->title)->toBe('Need a router photo');
+
+    $this->actingAs($owner)
+        ->patch(route('settings.ticket-responses.update', $response->public_id), [
+            'title' => 'Need a router photo',
+            'body' => 'Please send a clear photo of the router lights.',
+            'category' => 'support',
+            'is_active' => true,
+        ])
+        ->assertRedirect(route('settings.ticket-responses'));
+
+    app(Tenancy::class)->set($tenant);
+    expect($response->refresh()->is_active)->toBeTrue();
 });
 
 it('does not expose ticket responses to a different tenant', function (): void {
