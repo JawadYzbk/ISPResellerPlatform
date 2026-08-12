@@ -1,6 +1,7 @@
 import ResponsiveSelect from '@/components/ui/responsive-select';
+import ConfirmDialog from '@/components/ui/confirm-dialog';
 import { Head, Link, router, useForm } from '@inertiajs/react';
-import { ChevronLeft, ChevronRight, Copy, MailPlus, Search, Users } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Copy, Edit3, MailPlus, Save, Search, Users, X } from 'lucide-react';
 import { useState } from 'react';
 
 import AppLayout from '@/layouts/AppLayout';
@@ -18,6 +19,8 @@ type UserRow = {
     two_factor_enabled: boolean;
 };
 
+const protectedRoles = ['admin', 'platform_operator', 'tenant_owner'];
+
 type Invitation = { email: string; role: string; expires_at: string | null; created_at: string | null };
 type NewInvitation = Invitation & { token: string };
 
@@ -25,13 +28,16 @@ type Props = PageProps & {
     users: Paginator<UserRow>;
     invitations: Invitation[];
     roles: string[];
+    canManageRoles: boolean;
     filters: { search?: string };
     invitation?: NewInvitation | null;
 };
 
-export default function UsersPage({ users, invitations, roles, filters, invitation }: Props) {
+export default function UsersPage({ users, invitations, roles, canManageRoles, filters, invitation }: Props) {
     const [search, setSearch] = useState(filters.search ?? '');
+    const [editingUserId, setEditingUserId] = useState<number | null>(null);
     const form = useForm({ email: '', role: roles[0] ?? 'support_agent' });
+    const roleForm = useForm({ role: roles[0] ?? 'support_agent' });
 
     const applySearch = (event: React.FormEvent) => {
         event.preventDefault();
@@ -44,6 +50,24 @@ export default function UsersPage({ users, invitations, roles, filters, invitati
     };
 
     const inviteLink = invitation ? `${window.location.origin}/invite/${invitation.token}` : '';
+
+    const startRoleEdit = (member: UserRow) => {
+        setEditingUserId(member.id);
+        roleForm.setData('role', member.role);
+        roleForm.clearErrors();
+    };
+
+    const cancelRoleEdit = () => {
+        setEditingUserId(null);
+        roleForm.reset();
+        roleForm.clearErrors();
+    };
+
+    const saveRole = (member: UserRow) => {
+        roleForm.patch(`/settings/users/${member.id}`, {
+            onSuccess: () => cancelRoleEdit(),
+        });
+    };
 
     return (
         <AppLayout>
@@ -113,6 +137,7 @@ export default function UsersPage({ users, invitations, roles, filters, invitati
                                     <th className="px-5 py-3.5 text-start">Role</th>
                                     <th className="px-5 py-3.5 text-start">Locale</th>
                                     <th className="px-5 py-3.5 text-start">Security</th>
+                                    {canManageRoles && <th className="px-5 py-3.5 text-end">Actions</th>}
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-line">
@@ -123,7 +148,28 @@ export default function UsersPage({ users, invitations, roles, filters, invitati
                                             <p className="mt-1 text-xs text-muted">{member.email}</p>
                                         </td>
                                         <td className="px-5 py-4 text-sm capitalize">
-                                            {member.role.replaceAll('_', ' ')}
+                                            {editingUserId === member.id ? (
+                                                <div className="min-w-52 space-y-2">
+                                                    <ResponsiveSelect
+                                                        className="field py-2 text-xs"
+                                                        value={roleForm.data.role}
+                                                        onChange={(event) =>
+                                                            roleForm.setData('role', event.target.value)
+                                                        }
+                                                    >
+                                                        {roles.map((role) => (
+                                                            <option key={role} value={role}>
+                                                                {role.replaceAll('_', ' ')}
+                                                            </option>
+                                                        ))}
+                                                    </ResponsiveSelect>
+                                                    {roleForm.errors.role && (
+                                                        <p className="field-error">{roleForm.errors.role}</p>
+                                                    )}
+                                                </div>
+                                            ) : (
+                                                member.role.replaceAll('_', ' ')
+                                            )}
                                         </td>
                                         <td className="px-5 py-4 text-sm text-muted">
                                             {member.locale.toUpperCase()} · {member.timezone ?? 'Tenant time'}
@@ -134,11 +180,51 @@ export default function UsersPage({ users, invitations, roles, filters, invitati
                                                 {member.two_factor_enabled ? '2FA enabled' : '2FA not configured'}
                                             </p>
                                         </td>
+                                        {canManageRoles && (
+                                            <td className="px-5 py-4 text-end">
+                                                {editingUserId === member.id ? (
+                                                    <div className="flex justify-end gap-2">
+                                                        <ConfirmDialog
+                                                            title="Change operator role?"
+                                                            description={`This will update ${member.name}'s workspace permissions.`}
+                                                            confirmLabel="Save role"
+                                                            onConfirm={() => saveRole(member)}
+                                                        >
+                                                            <button
+                                                                type="button"
+                                                                className="button-secondary px-3 py-2 text-xs"
+                                                                disabled={roleForm.processing}
+                                                            >
+                                                                <Save size={14} /> Save
+                                                            </button>
+                                                        </ConfirmDialog>
+                                                        <button
+                                                            type="button"
+                                                            className="button-quiet px-2 py-2 text-xs"
+                                                            onClick={cancelRoleEdit}
+                                                            disabled={roleForm.processing}
+                                                        >
+                                                            <X size={14} /> Cancel
+                                                        </button>
+                                                    </div>
+                                                ) : protectedRoles.includes(member.role) ? (
+                                                    <span className="text-xs text-muted">Protected</span>
+                                                ) : (
+                                                    <button
+                                                        type="button"
+                                                        className="button-quiet px-2 py-2 text-xs"
+                                                        onClick={() => startRoleEdit(member)}
+                                                    >
+                                                        <Edit3 size={14} /> Edit role
+                                                    </button>
+                                                )}
+                                            </td>
+                                        )}
                                     </tr>
                                 ))}
                                 {users.data.length === 0 && (
                                     <tr>
-                                        <td colSpan={4} className="px-5 py-14 text-center">
+                                        <td colSpan={canManageRoles ? 5 : 4} className="px-5 py-14 text-center">
                                             <Users className="mx-auto text-muted" size={28} />
                                             <p className="mt-3 font-semibold">No operators match this search</p>
                                         </td>

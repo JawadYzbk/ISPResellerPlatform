@@ -215,6 +215,18 @@ test.describe('staff core journeys', () => {
         await expect(page.getByRole('heading', { name: 'Ticket responses' })).toBeVisible();
     });
 
+    test('exposes protected operator role controls to the tenant owner', async ({ page }) => {
+        await signIn(page);
+
+        await page.goto('/settings/users');
+        await expect(page.getByRole('heading', { name: 'Users and invitations' })).toBeVisible();
+        const editRole = page.getByRole('button', { name: 'Edit role', exact: true }).first();
+        await expect(editRole).toBeVisible();
+        await editRole.click();
+        await expect(page.getByRole('button', { name: 'Save', exact: true })).toBeVisible();
+        await page.getByRole('button', { name: 'Cancel', exact: true }).click();
+    });
+
     test('manages a temporary WhatsApp Web.js account from the browser', async ({ page }) => {
         test.setTimeout(120_000);
         await signIn(page);
