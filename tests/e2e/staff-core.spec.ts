@@ -74,6 +74,14 @@ async function signInAs(page: Page, email: string): Promise<void> {
     await Promise.all([page.waitForURL('**/dashboard'), page.getByRole('button', { name: 'Enter workspace' }).click()]);
 }
 
+async function restoreEnglishProfile(page: Page): Promise<void> {
+    await page.goto('/profile');
+    await page.getByRole('combobox').click();
+    await page.getByRole('option', { name: /^(English|Anglais|الإنجليزية)$/ }).click();
+    await page.getByRole('button', { name: /^(Save profile|Enregistrer le profil|حفظ الملف الشخصي)$/ }).click();
+    await expect(page.getByRole('combobox')).toContainText(/^(English|Anglais|الإنجليزية)$/);
+}
+
 test.describe('staff core journeys', () => {
     test('redirects guests away from the partner commercial workspace', async ({ page }) => {
         await page.goto('/partners/commercial');
@@ -295,25 +303,32 @@ test.describe('staff core journeys', () => {
     test('saves French as the profile language', async ({ page }) => {
         await signIn(page);
         await page.goto('/profile');
-        await expect(page.getByRole('heading', { name: /^(Your profile|Votre profil|ملفك الشخصي)$/ })).toBeVisible();
-
-        await page.getByRole('combobox').click();
-        await page.getByRole('option', { name: /^(French|Français|الفرنسية)$/ }).click();
-        await page.getByRole('button', { name: /^(Save profile|Enregistrer le profil|حفظ الملف الشخصي)$/ }).click();
-
-        await expect(page.getByRole('combobox')).toContainText(/^(French|Français|الفرنسية)$/);
+        try {
+            await expect(
+                page.getByRole('heading', { name: /^(Your profile|Votre profil|ملفك الشخصي)$/ }),
+            ).toBeVisible();
+            await page.getByRole('combobox').click();
+            await page.getByRole('option', { name: /^(French|Français|الفرنسية)$/ }).click();
+            await page.getByRole('button', { name: /^(Save profile|Enregistrer le profil|حفظ الملف الشخصي)$/ }).click();
+            await expect(page.getByRole('combobox')).toContainText(/^(French|Français|الفرنسية)$/);
+        } finally {
+            await restoreEnglishProfile(page);
+        }
     });
 
     test('renders the shared shell in French after switching locale', async ({ page }) => {
         await signIn(page);
         await page.goto('/profile');
-        await page.getByRole('combobox').click();
-        await page.getByRole('option', { name: /^(French|Français|الفرنسية)$/ }).click();
-        await page.getByRole('button', { name: /^(Save profile|Enregistrer le profil|حفظ الملف الشخصي)$/ }).click();
-
-        await expect(page.getByRole('link', { name: 'Clients' })).toBeVisible();
-        await expect(page.getByRole('link', { name: 'Paramètres de l’espace de travail' })).toBeVisible();
-        await expect(page.getByText('Votre profil')).toBeVisible();
+        try {
+            await page.getByRole('combobox').click();
+            await page.getByRole('option', { name: /^(French|Français|الفرنسية)$/ }).click();
+            await page.getByRole('button', { name: /^(Save profile|Enregistrer le profil|حفظ الملف الشخصي)$/ }).click();
+            await expect(page.getByRole('link', { name: 'Clients' })).toBeVisible();
+            await expect(page.getByRole('link', { name: 'Paramètres de l’espace de travail' })).toBeVisible();
+            await expect(page.getByText('Votre profil')).toBeVisible();
+        } finally {
+            await restoreEnglishProfile(page);
+        }
     });
 
     test('keeps the owner workspace routes free of authorization and not-found failures', async ({ page }) => {
