@@ -20,7 +20,7 @@ final class HandleInertiaRequests extends Middleware
         $tenant = $tenant instanceof Tenant ? $tenant : null;
         $settings = $tenant instanceof Tenant ? $tenant->settingsData() : null;
         $tenantLocale = $settings === null ? 'en' : $settings->locale;
-        $locale = $user instanceof User && $user->locale !== null ? $user->locale : $tenantLocale;
+        $locale = $user?->locale ?: $tenantLocale;
         $rtlLocales = ['ar', 'fa', 'he', 'ur'];
         $direction = ($settings !== null && $settings->rtl) || in_array($tenantLocale, $rtlLocales, true) || in_array($locale, $rtlLocales, true) ? 'rtl' : 'ltr';
         $hasActionFlash = $request->session()->has('success') || $request->session()->has('error');

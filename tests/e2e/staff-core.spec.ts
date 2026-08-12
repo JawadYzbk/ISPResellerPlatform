@@ -88,6 +88,22 @@ async function restoreEnglishProfile(page: Page): Promise<void> {
 }
 
 test.describe('staff core journeys', () => {
+    test('keeps the login layout in one full-height shell', async ({ page }) => {
+        await page.goto('/login');
+
+        const viewport = page.viewportSize();
+        const brandPanel = page.getByTestId('auth-brand-panel');
+        const formPanel = page.getByTestId('auth-form-panel');
+        const [brandBox, formBox] = await Promise.all([brandPanel.boundingBox(), formPanel.boundingBox()]);
+
+        expect(viewport).not.toBeNull();
+        expect(brandBox).not.toBeNull();
+        expect(formBox).not.toBeNull();
+        expect(brandBox?.height).toBeGreaterThanOrEqual((viewport?.height ?? 0) - 2);
+        expect(formBox?.height).toBeGreaterThanOrEqual((viewport?.height ?? 0) - 2);
+        await expect(page.locator('.auth-ambient')).toBeVisible();
+    });
+
     test('redirects guests away from the partner commercial workspace', async ({ page }) => {
         await page.goto('/partners/commercial');
 
@@ -508,6 +524,44 @@ test.describe('staff core journeys', () => {
         await expect(page.getByRole('heading', { name: 'Workspace settings' })).toBeVisible();
         await expect(page.getByText('The name field is required.')).toHaveCount(0);
         await expect(page.getByText('The base currency field is required.')).toHaveCount(0);
+    });
+
+    test('applies the workspace language when no personal override is selected', async ({ page }) => {
+        test.setTimeout(90_000);
+        await signIn(page);
+        await page.goto('/security/reauthenticate');
+        await page.getByLabel('Password').fill(adminPassword);
+        await Promise.all([page.waitForURL('**/dashboard'), page.getByRole('button', { name: 'Confirm' }).click()]);
+
+        try {
+            await page.goto('/profile');
+            await page.getByRole('combobox').click();
+            await page.getByRole('option').first().click();
+            await page.locator('#save-profile').click();
+
+            await page.goto('/settings/general');
+            await page.locator('#workspace-locale').click();
+            await page.getByRole('option', { name: 'French' }).click();
+            await Promise.all([
+                page.waitForResponse(
+                    (response) => response.url().endsWith('/settings/general') && response.request().method() === 'POST',
+                ),
+                page.locator('#save-workspace-settings').click(),
+            ]);
+            await page.goto('/dashboard');
+            await expect(page.getByRole('heading', { name: 'Vos opérations en un coup d’œil.' })).toBeVisible();
+        } finally {
+            if (!page.isClosed()) {
+                await page.goto('/settings/general');
+                await page.locator('#workspace-locale').click();
+                await page.getByRole('option').first().click();
+                await page.locator('#save-workspace-settings').click();
+                await page.goto('/profile');
+                await page.locator('#profile-locale').click();
+                await page.getByRole('option').first().click();
+                await page.locator('#save-profile').click();
+            }
+        }
     });
 
     test('opens the profile menu and notifications center from the header', async ({ page }) => {

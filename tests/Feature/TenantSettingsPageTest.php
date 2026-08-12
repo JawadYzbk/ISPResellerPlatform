@@ -106,6 +106,12 @@ it('renders and updates tenant settings through the owner surface', function ():
         ->and($tenant->collection_currency)->toBe('LBP')
         ->and($tenant->settingsData()->settings['grace_extends_period'])->toBeTrue()
         ->and($tenant->settingsData()->settings['resolved_ticket_auto_close_hours'])->toBe(96);
+
+    $user->refresh();
+    app(Tenancy::class)->set($tenant);
+    $this->actingAs($user)
+        ->get(route('dashboard'))
+        ->assertInertia(fn ($page) => $page->where('app.locale', 'ar')->where('app.direction', 'rtl'));
 });
 
 it('does not expose tenant settings to a user without settings capability', function (): void {

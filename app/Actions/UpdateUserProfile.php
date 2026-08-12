@@ -7,7 +7,7 @@ use App\Models\User;
 
 final readonly class UpdateUserProfile implements Action
 {
-    /** @param array{name: string, locale: string, timezone: string|null} $data */
+    /** @param array{name: string, locale: string|null, timezone: string|null} $data */
     public function handle(User $user, array $data): User
     {
         $user->forceFill($data)->save();

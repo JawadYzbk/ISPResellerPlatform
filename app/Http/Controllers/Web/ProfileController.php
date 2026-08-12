@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Web;
 use App\Actions\UpdateUserProfile;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\UpdateUserProfileRequest;
+use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -16,6 +17,7 @@ final class ProfileController extends Controller
     public function show(Request $request): Response
     {
         $user = $this->user($request);
+        $tenant = Tenant::query()->find($user->tenant_id);
 
         return Inertia::render('Settings/Profile', [
             'profile' => [
@@ -25,6 +27,7 @@ final class ProfileController extends Controller
                 'locale' => $user->locale,
                 'timezone' => $user->timezone,
             ],
+            'workspaceLocale' => $tenant?->settingsData()->locale ?? 'en',
         ]);
     }
 

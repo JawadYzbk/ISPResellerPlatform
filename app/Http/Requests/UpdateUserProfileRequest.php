@@ -16,7 +16,7 @@ final class UpdateUserProfileRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255'],
-            'locale' => ['required', 'in:en,ar,fr'],
+            'locale' => ['nullable', 'in:en,ar,fr'],
             'timezone' => ['nullable', 'timezone'],
         ];
     }
@@ -27,7 +27,7 @@ final class UpdateUserProfileRequest extends FormRequest
 
         $this->merge([
             'name' => trim((string) $this->input('name', '')),
-            'locale' => strtolower(trim((string) $this->input('locale', ''))),
+            'locale' => ($locale = strtolower(trim((string) $this->input('locale', '')))) === '' ? null : $locale,
             'timezone' => $timezone === '' ? null : $timezone,
         ]);
     }

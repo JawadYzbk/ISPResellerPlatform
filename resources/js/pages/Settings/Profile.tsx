@@ -10,13 +10,13 @@ type Profile = {
     name: string;
     email: string;
     role: string;
-    locale: 'en' | 'ar' | 'fr';
+    locale: 'en' | 'ar' | 'fr' | null;
     timezone: string | null;
 };
 
-type Props = { profile: Profile };
+type Props = { profile: Profile; workspaceLocale: 'en' | 'ar' | 'fr' };
 
-export default function ProfilePage({ profile }: Props) {
+export default function ProfilePage({ profile, workspaceLocale }: Props) {
     const form = useForm<Profile>(profile);
     const page = usePage<PageProps>();
     const t = createTranslator(page.props.app.locale);
@@ -75,12 +75,14 @@ export default function ProfilePage({ profile }: Props) {
                             <label>
                                 <span className="field-label">{t('Language')}</span>
                                 <ResponsiveSelect
+                                    id="profile-locale"
                                     className="field"
-                                    value={form.data.locale}
+                                    value={form.data.locale ?? ''}
                                     onChange={(event) =>
                                         form.setData('locale', event.target.value as Profile['locale'])
                                     }
                                 >
+                                    <option value="">{t('Use workspace language')} ({workspaceLocale.toUpperCase()})</option>
                                     <option value="en">{t('English')}</option>
                                     <option value="ar">{t('Arabic')}</option>
                                     <option value="fr">{t('French')}</option>
@@ -109,7 +111,7 @@ export default function ProfilePage({ profile }: Props) {
                                 {t('Workspace settings')}
                             </Link>
                         </div>
-                        <button className="button-primary" disabled={form.processing}>
+                        <button id="save-profile" className="button-primary" disabled={form.processing}>
                             <Save size={16} /> {t('Save profile')}
                         </button>
                     </div>

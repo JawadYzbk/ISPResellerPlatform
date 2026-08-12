@@ -75,7 +75,7 @@ SVG;
         foreach (self::DEMO_STAFF_ACCOUNTS as $account) {
             $user = User::updateOrCreate(
                 ['email' => $account['email']],
-                ['tenant_id' => $tenant->id, 'name' => $account['name'], 'password' => Hash::make('password'), 'role' => $account['role'], 'locale' => 'en', 'email_verified_at' => now()],
+                ['tenant_id' => $tenant->id, 'name' => $account['name'], 'password' => Hash::make('password'), 'role' => $account['role'], 'locale' => null, 'email_verified_at' => now()],
             );
             app(Tenancy::class)->run($tenant, fn (): mixed => $user->syncRoles([$account['role']]));
             $staff[$account['role']] = $user;

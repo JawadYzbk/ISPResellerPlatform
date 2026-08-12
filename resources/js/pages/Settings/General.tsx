@@ -279,6 +279,7 @@ export default function GeneralSettings({ tenant, settings, currencies, payments
                             <label>
                                 <span className="field-label">{t('Locale')}</span>
                                 <ResponsiveSelect
+                                    id="workspace-locale"
                                     className="field"
                                     value={form.data.locale}
                                     onChange={(event) =>
@@ -415,7 +416,7 @@ export default function GeneralSettings({ tenant, settings, currencies, payments
                         </label>
                     </section>
                     <div className="flex justify-end border-t border-line pt-5">
-                        <button className="button-primary" disabled={form.processing}>
+                        <button id="save-workspace-settings" className="button-primary" disabled={form.processing}>
                             <Save size={16} /> {t('Save settings')}
                         </button>
                     </div>
