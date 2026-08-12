@@ -156,6 +156,13 @@ final readonly class GetTenantReadiness implements Action
         $maxAgeHours = max(1, (int) config('services.fx.rate_max_age_hours', 72));
         $detail = 'An effective direct or inverse '.$baseCurrency.'/'.$collectionCurrency.' rate from '.$rate->source.' is available ('.$rate->effective_from?->toDateString().').';
 
+        if (strtolower((string) $rate->source) === 'demo') {
+            return $this->check(
+                (string) config('app.env') === 'production' ? 'FAIL' : 'WARN',
+                $detail.' Demo seed rates cannot satisfy production readiness; run fx:sync-frankfurter or approve a current manual treasury rate.',
+            );
+        }
+
         if ($ageHours > $maxAgeHours) {
             return $this->check(
                 'WARN',

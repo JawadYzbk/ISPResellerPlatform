@@ -173,3 +173,30 @@ it('warns when the collection rate is older than the configured freshness window
         ->assertExitCode(Command::FAILURE)
         ->expectsOutputToContain('Collection FX rate');
 });
+
+it('does not treat a demo FX rate as production ready', function (): void {
+    $tenant = Tenant::factory()->create([
+        'slug' => 'demo-rate-tenant',
+        'base_currency' => 'USD',
+        'collection_currency' => 'LBP',
+    ]);
+
+    app(Tenancy::class)->run($tenant, function (): void {
+        ExchangeRate::create([
+            'base_currency' => 'USD',
+            'quote_currency' => 'LBP',
+            'rate_numerator' => 90_000,
+            'rate_denominator' => 1,
+            'effective_from' => now(),
+            'source' => 'demo',
+        ]);
+    });
+
+    $check = app(GetTenantReadiness::class)->handle($tenant)['Collection FX rate'];
+    expect($check['status'])->toBe('WARN', $check['detail'])
+        ->and($check['detail'])->toContain('Demo seed rates cannot satisfy production readiness');
+
+    Config::set('app.env', 'production');
+    $productionCheck = app(GetTenantReadiness::class)->handle($tenant)['Collection FX rate'];
+    expect($productionCheck['status'])->toBe('FAIL', $productionCheck['detail']);
+});
