@@ -12,6 +12,7 @@ import {
   hasValidSignature,
   isHealthyStatus,
   normalizeRecipient,
+  resourceSnapshot,
   signPayload,
 } from '../src/bridge.js';
 
@@ -74,6 +75,25 @@ test('signatures, recipients and readiness are enforced', async () => {
   } finally {
     await rm(directory, { recursive: true, force: true });
   }
+});
+
+test('reports account and process resource counters without exposing session data', () => {
+  assert.deepEqual(
+    resourceSnapshot({
+      statuses: [{ status: 'ready' }, { status: 'qr' }, { status: 'disconnected' }],
+      memoryUsage: { rss: 157286400, heapUsed: 52428800, external: 1048576 },
+      uptime: 91.9,
+    }),
+    {
+      uptime_seconds: 91,
+      active_accounts: 3,
+      ready_accounts: 1,
+      qr_accounts: 1,
+      rss_mb: 150,
+      heap_used_mb: 50,
+      external_mb: 1,
+    },
+  );
 });
 
 test('clears stale Chromium profile locks before initialization', async () => {

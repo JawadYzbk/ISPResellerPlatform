@@ -14,6 +14,7 @@ const config = {
   defaultAccountId: process.env.WHATSAPP_WEB_CLIENT_ID || 'isp-manager',
   headless: process.env.WHATSAPP_WEB_HEADLESS !== 'false',
   executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || '',
+  memoryWarningMb: Math.max(0, Number.parseInt(process.env.WHATSAPP_WEB_MEMORY_WARNING_MB || '2048', 10)),
 };
 
 if (!config.token) {
@@ -75,6 +76,8 @@ const server = http.createServer(async (request, response) => {
         service: 'whatsapp-web',
         status: summary.status,
         accounts: summary.accounts,
+        resources: manager.resources(),
+        warnings: manager.resources().rss_mb >= config.memoryWarningMb ? ['memory'] : [],
       });
     }
     if (!bearerMatches(request.headers.authorization, config.token)) {

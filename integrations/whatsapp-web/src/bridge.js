@@ -10,6 +10,24 @@ export function isHealthyStatus(status) {
   return ['idle', 'qr', 'authenticated', 'ready'].includes(status);
 }
 
+export function resourceSnapshot({
+  statuses = [],
+  memoryUsage = process.memoryUsage(),
+  uptime = process.uptime(),
+} = {}) {
+  const megabytes = (bytes) => Math.round((bytes / 1024 / 1024) * 10) / 10;
+
+  return {
+    uptime_seconds: Math.floor(uptime),
+    active_accounts: statuses.length,
+    ready_accounts: statuses.filter((status) => status.status === 'ready').length,
+    qr_accounts: statuses.filter((status) => status.status === 'qr').length,
+    rss_mb: megabytes(memoryUsage.rss),
+    heap_used_mb: megabytes(memoryUsage.heapUsed),
+    external_mb: megabytes(memoryUsage.external),
+  };
+}
+
 const CHROMIUM_PROFILE_LOCKS = new Set(['SingletonCookie', 'SingletonLock', 'SingletonSocket']);
 
 export async function clearStaleChromiumProfileLocks(directory) {
@@ -421,6 +439,10 @@ export class WhatsAppBridgeManager {
 
   statuses() {
     return [...this.bridges.values()].map((bridge) => bridge.status());
+  }
+
+  resources() {
+    return resourceSnapshot({ statuses: this.statuses() });
   }
 
   summary() {
