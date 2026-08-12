@@ -145,6 +145,12 @@ services:
     volumes:
       - .:/var/www/html
       - frontend-node-modules:/var/www/html/node_modules
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:5173/@vite/client').then((response) => process.exit(response.ok ? 0 : 1)).catch(() => process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 15s
     depends_on:
       app:
         condition: service_started
