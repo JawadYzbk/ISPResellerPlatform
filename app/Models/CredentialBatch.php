@@ -12,7 +12,7 @@ class CredentialBatch extends Model
 {
     use Auditable, BelongsToTenant;
 
-    protected $fillable = ['tenant_id', 'supplier_id', 'reference', 'contract_reference', 'unit_cost_amount', 'total_cost_amount', 'currency', 'imported_at', 'expires_at', 'metadata'];
+    protected $fillable = ['tenant_id', 'supplier_id', 'supplier_contract_id', 'reference', 'contract_reference', 'unit_cost_amount', 'total_cost_amount', 'currency', 'imported_at', 'expires_at', 'metadata'];
 
     protected function casts(): array
     {
@@ -28,6 +28,12 @@ class CredentialBatch extends Model
     public function supplier(): BelongsTo
     {
         return $this->belongsTo(Supplier::class);
+    }
+
+    /** @return BelongsTo<SupplierContract, $this> */
+    public function supplierContract(): BelongsTo
+    {
+        return $this->belongsTo(SupplierContract::class);
     }
 
     /** @return HasMany<UpstreamCredential, $this> */

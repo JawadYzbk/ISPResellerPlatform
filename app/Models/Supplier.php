@@ -28,4 +28,16 @@ class Supplier extends Model
     {
         return $this->hasMany(CredentialBatch::class);
     }
+
+    /** @return HasMany<SupplierContract, $this> */
+    public function contracts(): HasMany
+    {
+        return $this->hasMany(SupplierContract::class);
+    }
+
+    /** @return HasMany<SupplierBill, $this> */
+    public function bills(): HasMany
+    {
+        return $this->hasMany(SupplierBill::class);
+    }
 }
