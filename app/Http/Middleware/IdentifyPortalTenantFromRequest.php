@@ -47,6 +47,11 @@ final class IdentifyPortalTenantFromRequest
 
     private function hostSlug(string $host): ?string
     {
+        $applicationHost = parse_url((string) config('app.url'), PHP_URL_HOST);
+        if (is_string($applicationHost) && strcasecmp($applicationHost, $host) === 0) {
+            return null;
+        }
+
         if (filter_var($host, FILTER_VALIDATE_IP) !== false || in_array($host, ['localhost', 'test', 'api'], true)) {
             return null;
         }
