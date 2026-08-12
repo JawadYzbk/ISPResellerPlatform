@@ -26,6 +26,7 @@ type Props = PageProps & {
 export default function Dashboard({ metrics, attentionQueue }: Props) {
     const { auth, app } = usePage<PageProps>().props;
     const t = createTranslator(app.locale);
+    const collectionsTodayByCurrency = metrics?.collectionsTodayByCurrency ?? {};
     const canCreateCustomer = auth.permissions.includes('customers.create');
     const cards = metrics
         ? [
@@ -119,19 +120,14 @@ export default function Dashboard({ metrics, attentionQueue }: Props) {
                                             {t('Collections')}
                                         </p>
                                         <div className="mt-3 space-y-1">
-                                            {Object.entries(metrics.collectionsTodayByCurrency).length === 0 ? (
+                                            {Object.entries(collectionsTodayByCurrency).length === 0 ? (
                                                 <p className="font-display text-2xl font-semibold">—</p>
                                             ) : (
-                                                Object.entries(metrics.collectionsTodayByCurrency).map(
-                                                    ([currency, amount]) => (
-                                                        <p
-                                                            key={currency}
-                                                            className="font-display text-2xl font-semibold"
-                                                        >
-                                                            {formatMoney(amount, currency)}
-                                                        </p>
-                                                    ),
-                                                )
+                                                Object.entries(collectionsTodayByCurrency).map(([currency, amount]) => (
+                                                    <p key={currency} className="font-display text-2xl font-semibold">
+                                                        {formatMoney(amount, currency)}
+                                                    </p>
+                                                ))
                                             )}
                                         </div>
                                         <p className="mt-1 text-xs text-muted">{t('Posted collections today')}</p>
@@ -287,6 +283,8 @@ function DashboardAttentionFallback() {
 function OwnerFinancePanel({ owner }: { owner: NonNullable<DashboardMetrics['owner']> }) {
     const { app } = usePage<PageProps>().props;
     const t = createTranslator(app.locale);
+    const currencyMetrics = owner.currencyMetrics ?? {};
+    const statusTrend = owner.statusTrend ?? [];
     const cards = [
         { label: t('Revenue'), value: formatMoney(owner.revenue, owner.baseCurrency), icon: TrendingUp },
         { label: t('Collected'), value: formatMoney(owner.collected, owner.baseCurrency), icon: WalletCards },
@@ -297,8 +295,8 @@ function OwnerFinancePanel({ owner }: { owner: NonNullable<DashboardMetrics['own
         },
         { label: t('Margin'), value: formatMoney(owner.margin, owner.baseCurrency), icon: TrendingUp },
     ];
-    const maxServices = Math.max(1, ...owner.statusTrend.flatMap((month) => [month.active, month.suspended]));
-    const currencies = Object.entries(owner.currencyMetrics);
+    const maxServices = Math.max(1, ...statusTrend.flatMap((month) => [month.active, month.suspended]));
+    const currencies = Object.entries(currencyMetrics);
 
     return (
         <section className="card mt-6 overflow-hidden" aria-label="Owner finance metrics">
@@ -337,7 +335,7 @@ function OwnerFinancePanel({ owner }: { owner: NonNullable<DashboardMetrics['own
                         <span className="text-xs text-muted">{t('Active / suspended')}</span>
                     </div>
                     <div className="mt-5 grid grid-cols-6 gap-3">
-                        {owner.statusTrend.map((month) => (
+                        {statusTrend.map((month) => (
                             <div key={month.month} className="min-w-0 text-center">
                                 <div className="flex h-24 items-end justify-center gap-1.5">
                                     <span
