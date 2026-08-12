@@ -4,13 +4,16 @@ namespace App\Http\Controllers\Web;
 
 use App\Actions\InviteUser;
 use App\Actions\ListTenantUsers;
+use App\Actions\UpdateTenantUserRole;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\InviteUserRequest;
+use App\Http\Requests\UpdateUserRoleRequest;
 use App\Models\Invitation;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -54,6 +57,7 @@ final class UserOperationsController extends Controller
             'users' => $users,
             'invitations' => $invitations,
             'roles' => InviteUserRequest::INVITABLE_ROLES,
+            'canManageRoles' => $user->can('roles.manage'),
             'filters' => $request->only(['search']),
             'invitation' => $request->session()->get('invitation'),
         ]);
@@ -71,5 +75,19 @@ final class UserOperationsController extends Controller
             'token' => $result['token'],
             'expires_at' => $result['invitation']->expires_at?->toIso8601String(),
         ])->with('success', 'Invitation created. Copy the one-time link before leaving this page.');
+    }
+
+    public function updateRole(UpdateUserRoleRequest $request, User $user, UpdateTenantUserRole $updateRole): RedirectResponse
+    {
+        $actor = $request->user();
+        abort_unless($actor instanceof User && $actor->can('roles.manage'), 403);
+
+        try {
+            $updated = $updateRole->handle($actor, $user, $request->validated());
+        } catch (\DomainException $exception) {
+            throw ValidationException::withMessages(['role' => $exception->getMessage()]);
+        }
+
+        return redirect()->route('settings.users')->with('success', "{$updated->name}'s role was updated.");
     }
 }

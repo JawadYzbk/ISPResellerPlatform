@@ -27,6 +27,7 @@ it('lists tenant users, creates a one-time invite, and accepts it', function ():
             ->where('users.total', 1)
             ->where('users.data.0.email', 'owner@example.test')
             ->where('roles.0', 'operations_manager')
+            ->where('canManageRoles', true)
         );
 
     app(Tenancy::class)->set($tenant);
@@ -69,4 +70,67 @@ it('rejects user administration without the management capability', function ():
     $user->assignRole('cashier');
 
     $this->actingAs($user)->get(route('settings.users'))->assertForbidden();
+});
+
+it('lets a tenant owner correct an operator role and synchronizes capabilities', function (): void {
+    $tenant = Tenant::create(['name' => 'Northline', 'slug' => 'northline', 'base_currency' => 'USD', 'collection_currency' => 'USD']);
+    $owner = User::create([
+        'tenant_id' => $tenant->id,
+        'name' => 'Owner',
+        'email' => 'role-owner@example.test',
+        'password' => Hash::make('password'),
+        'role' => 'tenant_owner',
+    ]);
+    $member = User::create([
+        'tenant_id' => $tenant->id,
+        'name' => 'Front Desk',
+        'email' => 'role-member@example.test',
+        'password' => Hash::make('password'),
+        'role' => 'support_agent',
+    ]);
+    app(CapabilitySeeder::class)->run();
+    app(Tenancy::class)->set($tenant);
+    $owner->assignRole('tenant_owner');
+    $member->assignRole('support_agent');
+    $owner->forceFill(['last_authenticated_at' => now()])->save();
+
+    $this->actingAs($owner)
+        ->patch(route('settings.users.role', $member), ['role' => 'billing_manager'])
+        ->assertRedirect(route('settings.users'))
+        ->assertSessionHas('success', "Front Desk's role was updated.");
+
+    app(Tenancy::class)->set($tenant);
+    expect($member->refresh()->role)->toBe('billing_manager')
+        ->and($member->hasRole('billing_manager'))->toBeTrue()
+        ->and($member->can('payments.collect'))->toBeTrue()
+        ->and($member->can('roles.manage'))->toBeFalse();
+});
+
+it('does not allow role changes to protected workspace accounts', function (): void {
+    $tenant = Tenant::create(['name' => 'Northline', 'slug' => 'northline', 'base_currency' => 'USD', 'collection_currency' => 'USD']);
+    $owner = User::create([
+        'tenant_id' => $tenant->id,
+        'name' => 'Owner',
+        'email' => 'protected-owner@example.test',
+        'password' => Hash::make('password'),
+        'role' => 'tenant_owner',
+    ]);
+    $protected = User::create([
+        'tenant_id' => $tenant->id,
+        'name' => 'Second Owner',
+        'email' => 'protected-member@example.test',
+        'password' => Hash::make('password'),
+        'role' => 'tenant_owner',
+    ]);
+    app(CapabilitySeeder::class)->run();
+    app(Tenancy::class)->set($tenant);
+    $owner->assignRole('tenant_owner');
+    $protected->assignRole('tenant_owner');
+    $owner->forceFill(['last_authenticated_at' => now()])->save();
+
+    $this->actingAs($owner)
+        ->patch(route('settings.users.role', $protected), ['role' => 'billing_manager'])
+        ->assertSessionHasErrors(['role']);
+
+    expect($protected->refresh()->role)->toBe('tenant_owner');
 });
