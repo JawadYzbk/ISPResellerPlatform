@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Inertia\Middleware;
 
 final class HandleInertiaRequests extends Middleware
@@ -22,6 +23,7 @@ final class HandleInertiaRequests extends Middleware
         $locale = $user instanceof User && $user->locale !== null ? $user->locale : $tenantLocale;
         $rtlLocales = ['ar', 'fa', 'he', 'ur'];
         $direction = ($settings !== null && $settings->rtl) || in_array($tenantLocale, $rtlLocales, true) || in_array($locale, $rtlLocales, true) ? 'rtl' : 'ltr';
+        $hasActionFlash = $request->session()->has('success') || $request->session()->has('error');
 
         return [
             ...parent::share($request),
@@ -46,6 +48,7 @@ final class HandleInertiaRequests extends Middleware
                 ] : null,
             ],
             'flash' => [
+                'id' => $hasActionFlash ? (string) Str::uuid() : null,
                 'success' => fn () => $request->session()->get('success'),
                 'error' => fn () => $request->session()->get('error'),
                 'importResult' => fn () => $request->session()->get('importResult'),

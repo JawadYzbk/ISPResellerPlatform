@@ -24,6 +24,7 @@ export type PageProps = {
         permissions: string[];
     };
     flash: {
+        id?: string | null;
         success?: string;
         error?: string;
         importResult?: ImportBatchResult;

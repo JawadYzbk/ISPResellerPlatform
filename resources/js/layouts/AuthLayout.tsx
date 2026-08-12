@@ -1,9 +1,12 @@
 import { Activity } from 'lucide-react';
 import type { PropsWithChildren } from 'react';
 
+import { Toaster } from '@/components/ui/toaster';
+
 export default function AuthLayout({ children }: PropsWithChildren) {
     return (
         <div className="grid min-h-screen bg-canvas lg:grid-cols-[1.1fr_0.9fr]">
+            <Toaster />
             <div className="relative hidden overflow-hidden bg-brand p-12 text-white lg:flex lg:flex-col lg:justify-between">
                 <div className="absolute -end-24 -top-24 size-96 rounded-full border-[42px] border-white/5" />
                 <div className="absolute -bottom-40 -start-20 size-[30rem] rounded-full border-[60px] border-white/5" />
