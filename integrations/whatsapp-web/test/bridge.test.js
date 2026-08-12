@@ -71,7 +71,10 @@ test('signatures, recipients and readiness are enforced', async () => {
   const directory = await mkdtemp(join(tmpdir(), 'isp-whatsapp-'));
   try {
     const bridge = new WhatsAppBridge({ client: new FakeClient(), store: new JsonIdempotencyStore(directory) });
-    await assert.rejects(() => bridge.send({ idempotencyKey: 'message-002', to: '96170123456', body: 'Hello' }), /not ready/);
+    await assert.rejects(
+      () => bridge.send({ idempotencyKey: 'message-002', to: '96170123456', body: 'Hello' }),
+      /not ready/,
+    );
   } finally {
     await rm(directory, { recursive: true, force: true });
   }
@@ -156,6 +159,63 @@ test('returns a starting status while an account client initializes', async () =
   }
 });
 
+test('removes an account while its client is still initializing', async () => {
+  const directory = await mkdtemp(join(tmpdir(), 'isp-whatsapp-'));
+  let releaseInitialization;
+  const initialization = new Promise((resolve) => {
+    releaseInitialization = resolve;
+  });
+
+  try {
+    const clients = new Map();
+    const manager = new WhatsAppBridgeManager({
+      sessionPath: directory,
+      clientFactory: (accountId) => {
+        const client = new FakeClient();
+        client.initialize = () => initialization;
+        clients.set(accountId, client);
+        return client;
+      },
+    });
+
+    await manager.status('removing-account');
+    const removed = await manager.remove('removing-account');
+
+    assert.equal(removed.status, 'deleted');
+    assert.equal(clients.get('removing-account').destroyed, true);
+    releaseInitialization();
+  } finally {
+    await rm(directory, { recursive: true, force: true });
+  }
+});
+
+test('restarts pairing without waiting for client initialization', async () => {
+  const directory = await mkdtemp(join(tmpdir(), 'isp-whatsapp-'));
+  let releaseInitialization;
+  const initialization = new Promise((resolve) => {
+    releaseInitialization = resolve;
+  });
+
+  try {
+    const manager = new WhatsAppBridgeManager({
+      sessionPath: directory,
+      clientFactory: () => {
+        const client = new FakeClient();
+        client.initialize = () => initialization;
+        return client;
+      },
+    });
+
+    await manager.status('restarting-account');
+    const restarted = await manager.disconnect('restarting-account');
+
+    assert.equal(restarted.status, 'starting');
+    releaseInitialization();
+  } finally {
+    await rm(directory, { recursive: true, force: true });
+  }
+});
+
 test('keeps multiple account sessions isolated and disconnects one account without affecting another', async () => {
   const directory = await mkdtemp(join(tmpdir(), 'isp-whatsapp-'));
   const clients = new Map();
@@ -176,8 +236,16 @@ test('keeps multiple account sessions isolated and disconnects one account witho
 
     assert.equal(billing.status().account_id, 'billing-account');
     assert.equal(support.status().account_id, 'support-account');
-    await manager.send('billing-account', { idempotencyKey: 'billing-001', to: '+961 70 123 456', body: 'Billing' });
-    await manager.send('support-account', { idempotencyKey: 'support-001', to: '+961 71 123 456', body: 'Support' });
+    await manager.send('billing-account', {
+      idempotencyKey: 'billing-001',
+      to: '+961 70 123 456',
+      body: 'Billing',
+    });
+    await manager.send('support-account', {
+      idempotencyKey: 'support-001',
+      to: '+961 71 123 456',
+      body: 'Support',
+    });
     assert.deepEqual(clients.get('billing-account').sent[0], { to: '96170123456@c.us', body: 'Billing' });
     assert.deepEqual(clients.get('support-account').sent[0], { to: '96171123456@c.us', body: 'Support' });
 

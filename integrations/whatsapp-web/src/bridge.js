@@ -29,6 +29,7 @@ export function resourceSnapshot({
 }
 
 const CHROMIUM_PROFILE_LOCKS = new Set(['SingletonCookie', 'SingletonLock', 'SingletonSocket']);
+const CLIENT_OPERATION_TIMEOUT_MS = 5000;
 
 export async function clearStaleChromiumProfileLocks(directory) {
   const pending = [directory];
@@ -153,6 +154,8 @@ export class WhatsAppBridge {
     this.beforeStart = beforeStart;
     this.state = { status: 'starting', qr: null, lastError: null, readyAt: null };
     this.pending = new Map();
+    this.stopRequested = false;
+    this.disconnectPromise = null;
   }
 
   async start() {
@@ -185,6 +188,9 @@ export class WhatsAppBridge {
     });
     await this.beforeStart();
     await this.client.initialize();
+    if (this.stopRequested) {
+      await this.disconnect();
+    }
   }
 
   status() {
@@ -200,19 +206,38 @@ export class WhatsAppBridge {
   }
 
   async disconnect() {
+    this.stopRequested = true;
+    if (this.disconnectPromise) {
+      return this.disconnectPromise;
+    }
+
+    this.disconnectPromise = (async () => {
+      await this.clientOperation('logout');
+      await this.clientOperation('destroy');
+      this.state = { ...this.state, status: 'disconnected', qr: null, lastError: null };
+    })();
+
+    return this.disconnectPromise;
+  }
+
+  async clientOperation(method) {
+    if (typeof this.client[method] !== 'function') {
+      return;
+    }
+
+    let timer;
     try {
-      if (typeof this.client.logout === 'function') {
-        await this.client.logout();
-      }
+      await Promise.race([
+        this.client[method](),
+        new Promise((resolve) => {
+          timer = setTimeout(resolve, CLIENT_OPERATION_TIMEOUT_MS);
+        }),
+      ]);
     } catch (error) {
-      this.logger.warn(`WhatsApp logout failed: ${error.message}`);
+      this.logger.warn(`WhatsApp ${method} failed: ${error.message}`);
+    } finally {
+      clearTimeout(timer);
     }
-
-    if (typeof this.client.destroy === 'function') {
-      await this.client.destroy();
-    }
-
-    this.state = { ...this.state, status: 'disconnected', qr: null, lastError: null };
   }
 
   async send({ idempotencyKey, to, body }) {
@@ -330,6 +355,7 @@ export class WhatsAppBridgeManager {
     this.logger = logger;
     this.bridges = new Map();
     this.starting = new Map();
+    this.removing = new Set();
   }
 
   async ensure(accountId) {
@@ -363,7 +389,15 @@ export class WhatsAppBridgeManager {
       this.bridges.set(accountId, bridge);
 
       try {
+        if (this.removing.has(accountId)) {
+          await bridge.disconnect();
+
+          return bridge;
+        }
         await bridge.start();
+        if (bridge.stopRequested) {
+          this.bridges.delete(accountId);
+        }
       } catch (error) {
         this.bridges.delete(accountId);
         throw error;
@@ -394,30 +428,29 @@ export class WhatsAppBridgeManager {
       this.bridges.delete(accountId);
     }
 
-    return restart
-      ? (await this.ensure(accountId)).status()
-      : { account_id: accountId, status: 'disconnected', qr: null };
+    return restart ? this.status(accountId) : { account_id: accountId, status: 'disconnected', qr: null };
   }
 
   async remove(accountId) {
     this.validateAccountId(accountId);
-    const pending = this.starting.get(accountId);
-    if (pending) {
-      await pending.catch(() => undefined);
+    this.removing.add(accountId);
+
+    try {
+      const bridge = this.bridges.get(accountId);
+      if (bridge) {
+        await bridge.disconnect();
+        this.bridges.delete(accountId);
+      }
+
+      await Promise.all([
+        rm(join(this.sessionPath, `session-${accountId}`), { recursive: true, force: true }),
+        rm(join(this.sessionPath, `account-${accountId}`), { recursive: true, force: true }),
+      ]);
+
+      return { account_id: accountId, status: 'deleted' };
+    } finally {
+      this.removing.delete(accountId);
     }
-
-    const bridge = this.bridges.get(accountId);
-    if (bridge) {
-      await bridge.disconnect();
-      this.bridges.delete(accountId);
-    }
-
-    await Promise.all([
-      rm(join(this.sessionPath, `session-${accountId}`), { recursive: true, force: true }),
-      rm(join(this.sessionPath, `account-${accountId}`), { recursive: true, force: true }),
-    ]);
-
-    return { account_id: accountId, status: 'deleted' };
   }
 
   status(accountId) {
