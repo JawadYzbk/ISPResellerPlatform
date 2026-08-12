@@ -31,7 +31,7 @@ final class SecurityController extends Controller
 
     public function locale(Request $request, ChangeUserLocale $changeUserLocale): RedirectResponse
     {
-        $validated = $request->validate(['locale' => ['required', 'in:en,ar']]);
+        $validated = $request->validate(['locale' => ['required', 'in:en,ar,fr']]);
         $changeUserLocale->handle($this->user($request), $validated['locale']);
 
         return back()->with('success', 'Language preference updated.');

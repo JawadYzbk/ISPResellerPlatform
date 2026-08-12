@@ -29,5 +29,5 @@ it('lists sessions and revokes only another device', function (): void {
 it('supports the supported locale switch', function (): void {
     $user = User::factory()->create(['locale' => 'en']);
 
-    expect(app(ChangeUserLocale::class)->handle($user, 'ar')->locale)->toBe('ar');
+    expect(app(ChangeUserLocale::class)->handle($user, 'fr')->locale)->toBe('fr');
 });

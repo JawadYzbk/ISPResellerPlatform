@@ -286,6 +286,18 @@ test.describe('staff core journeys', () => {
         await expect(page.getByRole('heading', { name: 'Notifications & attention' })).toBeVisible();
     });
 
+    test('saves French as the profile language', async ({ page }) => {
+        await signIn(page);
+        await page.goto('/profile');
+        await expect(page.getByRole('heading', { name: 'Your profile' })).toBeVisible();
+
+        await page.getByLabel('Language').click();
+        await page.getByRole('option', { name: 'French' }).click();
+        await page.getByRole('button', { name: 'Save profile' }).click();
+
+        await expect(page.getByRole('combobox', { name: 'Language' })).toContainText('French');
+    });
+
     test('keeps the owner workspace routes free of authorization and not-found failures', async ({ page }) => {
         test.setTimeout(120_000);
         await signIn(page);

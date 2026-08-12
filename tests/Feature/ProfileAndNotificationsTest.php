@@ -67,3 +67,17 @@ it('lets staff open the permission-aware notifications center', function (): voi
             ->where('attentionQueue', [])
         );
 });
+
+it('accepts French as a profile language', function (): void {
+    $user = profileAndNotificationsUser();
+
+    $this->actingAs($user)
+        ->patch(route('profile.update'), [
+            'name' => $user->name,
+            'locale' => 'fr',
+            'timezone' => null,
+        ])
+        ->assertRedirect(route('profile'));
+
+    expect($user->refresh()->locale)->toBe('fr');
+});
