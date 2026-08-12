@@ -224,6 +224,9 @@ test.describe('staff core journeys', () => {
         await page.goto('/settings/general');
 
         await page.getByLabel('Base currency').click();
+        await expect(page.locator('[cmdk-item]').filter({ hasText: 'USD' }).first()).toContainText('USD');
+        await expect(page.locator('[cmdk-item]').filter({ hasText: 'EUR' }).first()).toContainText('EUR');
+        await expect(page.locator('[cmdk-item]').filter({ hasText: 'LBP' }).first()).toContainText('LBP');
         await page.locator('input[aria-label="Search currencies"]').fill('euro');
         await page.getByRole('option', { name: /EUR.*Euro/ }).click();
 

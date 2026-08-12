@@ -1,5 +1,5 @@
 import { Check, ChevronsUpDown } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useMemo, useState, type MouseEvent } from 'react';
 
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { cn } from '@/lib/utils';
@@ -24,6 +24,8 @@ type CurrencyComboboxProps = {
     emptyLabel?: string;
 };
 
+const PRIORITY_CODES = ['USD', 'EUR', 'LBP'];
+
 export default function CurrencyCombobox({
     id,
     value,
@@ -37,17 +39,39 @@ export default function CurrencyCombobox({
     const isMobile = useMediaQuery('(max-width: 767px)');
     const [open, setOpen] = useState(false);
     const [query, setQuery] = useState('');
-    const selected = currencies.find((currency) => currency.code === value);
+    const orderedCurrencies = useMemo(
+        () =>
+            [...currencies].sort((left, right) => {
+                const leftPriority = PRIORITY_CODES.indexOf(left.code.toUpperCase());
+                const rightPriority = PRIORITY_CODES.indexOf(right.code.toUpperCase());
+
+                if (leftPriority !== -1 || rightPriority !== -1) {
+                    return (leftPriority === -1 ? Number.MAX_SAFE_INTEGER : leftPriority) -
+                        (rightPriority === -1 ? Number.MAX_SAFE_INTEGER : rightPriority);
+                }
+
+                return left.code.localeCompare(right.code);
+            }),
+        [currencies],
+    );
+    const selected = orderedCurrencies.find((currency) => currency.code === value);
     const filtered = useMemo(() => {
         const normalized = query.trim().toLowerCase();
-        if (normalized === '') return currencies;
+        if (normalized === '') return orderedCurrencies;
 
-        return currencies.filter((currency) => `${currency.code} ${currency.name}`.toLowerCase().includes(normalized));
-    }, [currencies, query]);
+        return orderedCurrencies.filter((currency) =>
+            `${currency.code} ${currency.name}`.toLowerCase().includes(normalized),
+        );
+    }, [orderedCurrencies, query]);
 
     const selectCurrency = (code: string) => {
         onChange(code);
         setOpen(false);
+    };
+
+    const selectWithMouse = (event: MouseEvent, code: string) => {
+        event.preventDefault();
+        selectCurrency(code);
     };
 
     if (isMobile) {
@@ -61,7 +85,7 @@ export default function CurrencyCombobox({
                 onChange={(event) => onChange(event.target.value)}
             >
                 {emptyLabel && <option value="">{emptyLabel}</option>}
-                {currencies.map((currency) => (
+                {orderedCurrencies.map((currency) => (
                     <option key={currency.code} value={currency.code}>
                         {currency.code} — {currency.name}
                     </option>
@@ -108,13 +132,7 @@ export default function CurrencyCombobox({
                             {emptyLabel && (
                                 <CommandItem
                                     value="__empty__"
-                                    onPointerDown={(event) => {
-                                        if (event.pointerType === 'mouse') {
-                                            event.preventDefault();
-                                            onChange('');
-                                            setOpen(false);
-                                        }
-                                    }}
+                                    onMouseDown={(event) => selectWithMouse(event, '')}
                                     onSelect={() => {
                                         onChange('');
                                         setOpen(false);
@@ -128,12 +146,7 @@ export default function CurrencyCombobox({
                                 <CommandItem
                                     key={currency.code}
                                     value={currency.code}
-                                    onPointerDown={(event) => {
-                                        if (event.pointerType === 'mouse') {
-                                            event.preventDefault();
-                                            selectCurrency(currency.code);
-                                        }
-                                    }}
+                                    onMouseDown={(event) => selectWithMouse(event, currency.code)}
                                     onSelect={() => {
                                         selectCurrency(currency.code);
                                     }}
