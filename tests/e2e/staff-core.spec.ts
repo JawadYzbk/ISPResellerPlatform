@@ -126,7 +126,7 @@ test.describe('staff core journeys', () => {
         await expect(page.getByRole('heading', { name: 'Tenant workspaces' })).toBeVisible();
         await expect(page.getByRole('heading', { name: 'Create workspace' })).toBeVisible();
         await expect(page.getByRole('button', { name: 'Create workspace' })).toBeVisible();
-        await expect(page.getByText('Platform administration', { exact: true })).toBeVisible();
+        await expect(page.getByRole('main').getByText('Platform administration', { exact: true })).toBeVisible();
     });
 
     test('redirects guests away from the partner commercial workspace', async ({ page }) => {
