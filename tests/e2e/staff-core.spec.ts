@@ -177,8 +177,14 @@ test.describe('staff core journeys', () => {
         await accountCard.getByRole('button', { name: 'Delete account' }).click();
         const deleteDialog = page.getByRole('alertdialog');
         await expect(deleteDialog).toBeVisible();
+        const deleteResponse = page.waitForResponse(
+            (response) =>
+                response.url().includes('/settings/whatsapp/accounts/') && response.request().method() === 'DELETE',
+        );
         await deleteDialog.getByRole('button', { name: 'Delete account', exact: true }).click();
-        await expect(accountCard).toHaveCount(0);
+        expect((await deleteResponse).status()).toBeLessThan(400);
+        await page.reload();
+        await expect(page.getByText(label, { exact: true })).toHaveCount(0);
     });
 
     test('shows the customer payment grid by month', async ({ page }) => {
