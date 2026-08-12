@@ -26,7 +26,9 @@ it('lists tenant users, creates a one-time invite, and accepts it', function ():
             ->component('Settings/Users')
             ->where('users.total', 1)
             ->where('users.data.0.email', 'owner@example.test')
+            ->where('users.data.0.locale', null)
             ->where('roles.0', 'operations_manager')
+            ->where('workspaceLocale', 'en')
             ->where('canManageRoles', true)
         );
 

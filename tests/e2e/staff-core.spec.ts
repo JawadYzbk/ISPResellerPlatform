@@ -151,11 +151,15 @@ test.describe('staff core journeys', () => {
         await signIn(page);
         await page.goto('/partners/commercial');
 
-        await page.getByLabel('Name').first().fill('Browser Reseller');
-        await page.getByLabel('Code').first().fill('BROWSER-RESELLER');
+        const code = `BROWSER-RESELLER-${Date.now()}`;
+        await page.getByLabel('Name').first().fill(`Browser Reseller ${code.slice(-8)}`);
+        await page.getByLabel('Code').first().fill(code);
         await page.locator('#partner_currency').click();
         await page.getByRole('option', { name: /USD/ }).click();
-        await page.getByRole('button', { name: 'Create partner' }).click();
+        await Promise.all([
+            page.waitForURL(/\/partners\/commercial\?partner=/),
+            page.getByRole('button', { name: 'Create partner' }).click(),
+        ]);
 
         await expect(page.getByText('Reseller price book', { exact: true })).toBeVisible();
         const pricingSection = page.locator('section').filter({ hasText: 'Reseller price book' });
@@ -168,11 +172,15 @@ test.describe('staff core journeys', () => {
         await signIn(page);
         await page.goto('/partners/commercial');
 
-        await page.getByLabel('Name').first().fill('Browser Settlement Reseller');
-        await page.getByLabel('Code').first().fill('BROWSER-SETTLEMENT');
+        const code = `BROWSER-SETTLEMENT-${Date.now()}`;
+        await page.getByLabel('Name').first().fill(`Browser Settlement ${code.slice(-8)}`);
+        await page.getByLabel('Code').first().fill(code);
         await page.locator('#partner_currency').click();
         await page.getByRole('option', { name: /USD/ }).click();
-        await page.getByRole('button', { name: 'Create partner' }).click();
+        await Promise.all([
+            page.waitForURL(/\/partners\/commercial\?partner=/),
+            page.getByRole('button', { name: 'Create partner' }).click(),
+        ]);
 
         await expect(page.getByRole('heading', { name: 'Wallet operations' })).toBeVisible();
         await page.getByLabel(/Amount \(USD\)/).fill('100.00');

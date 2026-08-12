@@ -13,7 +13,7 @@ type UserRow = {
     name: string;
     email: string;
     role: string;
-    locale: string;
+    locale: string | null;
     timezone: string | null;
     email_verified: boolean;
     two_factor_enabled: boolean;
@@ -29,11 +29,12 @@ type Props = PageProps & {
     invitations: Invitation[];
     roles: string[];
     canManageRoles: boolean;
+    workspaceLocale: 'en' | 'ar' | 'fr';
     filters: { search?: string };
     invitation?: NewInvitation | null;
 };
 
-export default function UsersPage({ users, invitations, roles, canManageRoles, filters, invitation }: Props) {
+export default function UsersPage({ users, invitations, roles, canManageRoles, workspaceLocale, filters, invitation }: Props) {
     const [search, setSearch] = useState(filters.search ?? '');
     const [editingUserId, setEditingUserId] = useState<number | null>(null);
     const form = useForm({ email: '', role: roles[0] ?? 'support_agent' });
@@ -172,7 +173,9 @@ export default function UsersPage({ users, invitations, roles, canManageRoles, f
                                             )}
                                         </td>
                                         <td className="px-5 py-4 text-sm text-muted">
-                                            {member.locale.toUpperCase()} · {member.timezone ?? 'Tenant time'}
+                                            {member.locale?.toUpperCase() ?? workspaceLocale.toUpperCase()} ·{' '}
+                                            {member.locale ? 'Personal language' : 'Workspace language'} ·{' '}
+                                            {member.timezone ?? 'Tenant time'}
                                         </td>
                                         <td className="px-5 py-4 text-xs text-muted">
                                             <p>{member.email_verified ? 'Email verified' : 'Email unverified'}</p>

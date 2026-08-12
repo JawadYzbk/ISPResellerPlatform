@@ -9,6 +9,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\InviteUserRequest;
 use App\Http\Requests\UpdateUserRoleRequest;
 use App\Models\Invitation;
+use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -23,6 +24,7 @@ final class UserOperationsController extends Controller
     {
         $user = $request->user();
         abort_unless($user instanceof User && $user->can('users.manage'), 403);
+        $workspaceLocale = Tenant::query()->find($user->tenant_id)?->settingsData()->locale ?? 'en';
         $users = $listUsers->handle($request->string('search')->toString() ?: null);
         $rows = $users->getCollection()->map(fn (User $member): array => [
             'id' => $member->id,
@@ -58,6 +60,7 @@ final class UserOperationsController extends Controller
             'invitations' => $invitations,
             'roles' => InviteUserRequest::INVITABLE_ROLES,
             'canManageRoles' => $user->can('roles.manage'),
+            'workspaceLocale' => $workspaceLocale,
             'filters' => $request->only(['search']),
             'invitation' => $request->session()->get('invitation'),
         ]);
