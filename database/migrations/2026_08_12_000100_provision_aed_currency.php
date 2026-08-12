@@ -12,15 +12,26 @@ return new class extends Migration
             ->orderBy('id')
             ->get()
             ->each(function (object $tenant): void {
-                DB::table('currencies')->updateOrInsert(
-                    ['tenant_id' => $tenant->id, 'code' => 'AED'],
-                    [
-                        'name' => 'United Arab Emirates Dirham',
-                        'decimal_digits' => 2,
-                        'is_active' => true,
-                        'updated_at' => now(),
-                    ],
-                );
+                $values = [
+                    'name' => 'United Arab Emirates Dirham',
+                    'decimal_digits' => 2,
+                    'is_active' => true,
+                    'updated_at' => now(),
+                ];
+                $query = DB::table('currencies')->where('tenant_id', $tenant->id)->where('code', 'AED');
+
+                if ($query->exists()) {
+                    $query->update($values);
+
+                    return;
+                }
+
+                DB::table('currencies')->insert([
+                    'tenant_id' => $tenant->id,
+                    'code' => 'AED',
+                    ...$values,
+                    'created_at' => now(),
+                ]);
             });
     }
 
