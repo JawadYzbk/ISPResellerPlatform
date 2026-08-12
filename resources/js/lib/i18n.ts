@@ -337,6 +337,24 @@ const messages: Record<Exclude<Locale, 'en'>, Messages> = {
         Cancel: 'إلغاء',
         'Billing operations': 'عمليات الفوترة',
         Invoices: 'الفواتير',
+        'Create invoice': 'إنشاء فاتورة',
+        'Create a one-off customer charge with a saved currency and amount snapshot.':
+            'أنشئ رسماً لمرة واحدة مع حفظ العملة ولقطة المبلغ.',
+        'Select a customer': 'اختر عميلاً',
+        'No matching customers.': 'لا يوجد عملاء مطابقون.',
+        Description: 'الوصف',
+        'Installation, equipment, or other one-off charge': 'تركيب أو معدات أو رسم آخر لمرة واحدة',
+        'The saved invoice uses the smallest unit for exact ledger math.':
+            'تستخدم الفاتورة المحفوظة أصغر وحدة لضمان دقة الحسابات.',
+        'Due date': 'تاريخ الاستحقاق',
+        optional: 'اختياري',
+        'Issue invoice immediately': 'إصدار الفاتورة فوراً',
+        'When enabled, the invoice is posted to accounts receivable and revenue now.':
+            'عند التفعيل، تُسجّل الفاتورة الآن على الذمم المدينة والإيرادات.',
+        'Create and issue invoice': 'إنشاء وإصدار الفاتورة',
+        'Create draft invoice': 'إنشاء فاتورة مسودة',
+        'Saving...': 'جارٍ الحفظ...',
+        'Enter a valid positive amount.': 'أدخل مبلغاً موجباً صالحاً.',
         'Review issued balances and move draft invoices into the ledger.':
             'راجع الأرصدة الصادرة وانقل الفواتير المسودة إلى السجل.',
         'Credit notes': 'إشعارات الدائن',
@@ -915,6 +933,24 @@ const messages: Record<Exclude<Locale, 'en'>, Messages> = {
         Cancel: 'Annuler',
         'Billing operations': 'Opérations de facturation',
         Invoices: 'Factures',
+        'Create invoice': 'Créer une facture',
+        'Create a one-off customer charge with a saved currency and amount snapshot.':
+            'Créez une charge ponctuelle avec un instantané enregistré de la devise et du montant.',
+        'Select a customer': 'Sélectionner un client',
+        'No matching customers.': 'Aucun client correspondant.',
+        Description: 'Description',
+        'Installation, equipment, or other one-off charge': 'Installation, équipement ou autre charge ponctuelle',
+        'The saved invoice uses the smallest unit for exact ledger math.':
+            'La facture conserve la plus petite unité pour des calculs comptables exacts.',
+        'Due date': 'Date d’échéance',
+        optional: 'facultatif',
+        'Issue invoice immediately': 'Émettre la facture immédiatement',
+        'When enabled, the invoice is posted to accounts receivable and revenue now.':
+            'Lorsque cette option est activée, la facture est comptabilisée maintenant en créance et en revenu.',
+        'Create and issue invoice': 'Créer et émettre la facture',
+        'Create draft invoice': 'Créer une facture brouillon',
+        'Saving...': 'Enregistrement...',
+        'Enter a valid positive amount.': 'Saisissez un montant positif valide.',
         'Review issued balances and move draft invoices into the ledger.':
             'Consultez les soldes émis et comptabilisez les factures brouillon.',
         'Credit notes': 'Avoirs',

@@ -1,6 +1,6 @@
 import ResponsiveSelect from '@/components/ui/responsive-select';
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { ChevronLeft, ChevronRight, FileText, Search } from 'lucide-react';
+import { ChevronLeft, ChevronRight, FileText, Plus, Search } from 'lucide-react';
 import { useState } from 'react';
 
 import StatusBadge from '@/components/StatusBadge';
@@ -56,9 +56,16 @@ export default function InvoicesPage({ invoices, filters, canIssue = false }: Pr
                         {t('Review issued balances and move draft invoices into the ledger.')}
                     </p>
                 </div>
-                <Link href="/reports/finance" className="button-secondary">
-                    {t('Finance report')}
-                </Link>
+                <div className="flex flex-wrap gap-2">
+                    {canIssue && (
+                        <Link href="/billing/invoices/create" className="button-primary">
+                            <Plus size={16} /> {t('Create invoice')}
+                        </Link>
+                    )}
+                    <Link href="/reports/finance" className="button-secondary">
+                        {t('Finance report')}
+                    </Link>
+                </div>
             </div>
 
             <form onSubmit={applyFilters} className="card mt-8 flex flex-col gap-4 p-5 sm:flex-row sm:items-end">
