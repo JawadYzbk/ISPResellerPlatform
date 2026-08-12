@@ -564,6 +564,25 @@ test.describe('staff core journeys', () => {
         }
     });
 
+    test('highlights the active sidebar section for nested pages', async ({ page }) => {
+        await signIn(page);
+        const sidebar = page.locator('aside nav');
+
+        await page.goto('/partners/commercial?partner=demo');
+        await expect(sidebar.getByRole('link', { name: 'Partners' })).toHaveAttribute('aria-current', 'page');
+
+        await page.goto('/billing/invoices');
+        await expect(sidebar.getByRole('link', { name: 'Billing' })).toHaveAttribute('aria-current', 'page');
+        await expect(sidebar.getByRole('link', { name: 'Payments' })).not.toHaveAttribute('aria-current', 'page');
+
+        await page.goto('/operations/work-orders/calendar');
+        await expect(sidebar.getByRole('link', { name: 'Work-order calendar' })).toHaveAttribute('aria-current', 'page');
+        await expect(sidebar.getByRole('link', { name: 'Work orders', exact: true })).not.toHaveAttribute(
+            'aria-current',
+            'page',
+        );
+    });
+
     test('opens the profile menu and notifications center from the header', async ({ page }) => {
         await signIn(page);
         await expect(page.getByRole('heading', { name: 'Your operations at a glance.' })).toBeVisible();

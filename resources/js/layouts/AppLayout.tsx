@@ -186,6 +186,11 @@ export default function AppLayout({ children }: PropsWithChildren) {
         { label: 'Shifts', href: '/billing/shifts', icon: WalletCards, permission: 'payments.collect' },
         { label: 'Work', href: '/operations/work-orders', icon: ClipboardList, permission: 'workorders.complete' },
     ].filter((item) => item.permission === undefined || can(item.permission));
+    const pathname = url.split('?')[0].replace(/\/+$/, '') || '/';
+    const matchesPath = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
+    const activeNavHref = nav
+        .filter((item) => matchesPath(item.href))
+        .sort((left, right) => right.href.length - left.href.length)[0]?.href;
 
     return (
         <div className="min-h-screen bg-canvas text-ink" dir={app.direction}>
@@ -213,16 +218,21 @@ export default function AppLayout({ children }: PropsWithChildren) {
                         <p className="mt-1 truncate text-sm font-semibold">{auth.tenant?.name ?? 'Platform'}</p>
                     </div>
                     <nav className="space-y-1">
-                        {nav.map(({ label, href, icon: Icon }) => (
+                        {nav.map(({ label, href, icon: Icon }) => {
+                            const active = href === activeNavHref;
+
+                            return (
                             <Link
                                 key={href}
                                 href={href}
-                                className="group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-muted transition hover:bg-sand hover:text-ink"
+                                className={`group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition ${active ? 'bg-brand-soft text-brand' : 'text-muted hover:bg-sand hover:text-ink'}`}
+                                aria-current={active ? 'page' : undefined}
                             >
-                                <Icon size={18} strokeWidth={1.8} />
+                                <Icon size={18} strokeWidth={active ? 2.2 : 1.8} />
                                 <span>{t(label)}</span>
                             </Link>
-                        ))}
+                            );
+                        })}
                     </nav>
                 </div>
                 <div className="mt-auto border-t border-line p-4"></div>
@@ -404,7 +414,7 @@ export default function AppLayout({ children }: PropsWithChildren) {
             >
                 <div className="mx-auto flex max-w-lg items-stretch justify-around">
                     {fieldNav.map(({ label, href, icon: Icon }) => {
-                        const active = url === href || url?.startsWith(`${href}/`) === true;
+                        const active = matchesPath(href);
 
                         return (
                             <Link
