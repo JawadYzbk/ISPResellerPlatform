@@ -14,7 +14,7 @@ final readonly class ImportCredentialCsv implements Action
 {
     public function __construct(private ImportCredentials $importCredentials) {}
 
-    public function handle(Supplier $supplier, string $reference, ?string $expiresAt, string $contents): CredentialBatch
+    public function handle(Supplier $supplier, string $reference, ?string $expiresAt, string $contents, array $commercial = []): CredentialBatch
     {
         $rows = $this->parse($contents);
         $lookupHashes = array_map(fn (array $row): string => hash('sha256', $row['identifier']), $rows);
@@ -23,10 +23,14 @@ final readonly class ImportCredentialCsv implements Action
             throw new InvalidArgumentException('One or more credential identifiers already exist in this tenant.');
         }
 
-        return DB::transaction(function () use ($supplier, $reference, $expiresAt, $rows): CredentialBatch {
+        return DB::transaction(function () use ($supplier, $reference, $expiresAt, $rows, $commercial): CredentialBatch {
             $batch = CredentialBatch::create([
                 'supplier_id' => $supplier->id,
                 'reference' => $reference,
+                'contract_reference' => $commercial['contract_reference'] ?? null,
+                'unit_cost_amount' => $commercial['unit_cost_amount'] ?? null,
+                'total_cost_amount' => $commercial['total_cost_amount'] ?? null,
+                'currency' => $commercial['currency'] ?? null,
                 'imported_at' => now(),
                 'expires_at' => $expiresAt === null ? null : CarbonImmutable::parse($expiresAt),
             ]);

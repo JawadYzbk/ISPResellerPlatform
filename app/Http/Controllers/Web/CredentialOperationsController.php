@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Web;
 
 use App\Actions\AssignUpstreamCredential;
+use App\Actions\GetCurrencyCatalog;
 use App\Actions\ImportCredentialCsv;
 use App\Actions\ListUpstreamCredentials;
 use App\Actions\RevealUpstreamCredential;
@@ -25,7 +26,7 @@ use Inertia\Response;
 
 final class CredentialOperationsController extends Controller
 {
-    public function index(Request $request, ListUpstreamCredentials $listCredentials): Response
+    public function index(Request $request, ListUpstreamCredentials $listCredentials, GetCurrencyCatalog $currencyCatalog): Response
     {
         $user = $request->user();
         abort_unless($user instanceof User && $user->can('suppliers.view'), 403);
@@ -91,6 +92,7 @@ final class CredentialOperationsController extends Controller
             'suppliers' => $user->can('credentials.import')
                 ? Supplier::query()->where('is_active', true)->orderBy('name')->get(['id', 'name', 'code'])->values()
                 : [],
+            'currencies' => $user->can('credentials.import') ? $currencyCatalog->handle() : [],
         ]);
     }
 
@@ -101,13 +103,22 @@ final class CredentialOperationsController extends Controller
         $validated = $request->validate([
             'supplier_id' => [Rule::exists('suppliers', 'id')->where('tenant_id', $user->tenant->id)],
             'reference' => ['required', 'string', 'max:64'],
+            'contract_reference' => ['nullable', 'string', 'max:64'],
+            'unit_cost_amount' => ['nullable', 'integer', 'min:0'],
+            'total_cost_amount' => ['nullable', 'integer', 'min:0'],
+            'currency' => ['nullable', 'string', 'size:3', Rule::exists('currencies', 'code')->where('is_active', true)],
             'expires_at' => ['nullable', 'date'],
             'file' => ['required', 'file', 'mimes:csv,txt', 'max:10240'],
         ]);
         $file = $validated['file'];
         abort_unless($file instanceof UploadedFile, 422, 'A credential CSV file is required.');
         $supplier = Supplier::query()->findOrFail((int) $validated['supplier_id']);
-        $batch = $import->handle($supplier, (string) $validated['reference'], $validated['expires_at'] ?? null, $file->get());
+        $batch = $import->handle($supplier, (string) $validated['reference'], $validated['expires_at'] ?? null, $file->get(), [
+            'contract_reference' => $validated['contract_reference'] ?? null,
+            'unit_cost_amount' => $validated['unit_cost_amount'] ?? null,
+            'total_cost_amount' => $validated['total_cost_amount'] ?? null,
+            'currency' => $validated['currency'] ?? null,
+        ]);
 
         return redirect()->route('operations.credentials')->with('success', "Imported credentials into batch {$batch->reference}.");
     }

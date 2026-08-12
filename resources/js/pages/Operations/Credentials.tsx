@@ -8,6 +8,7 @@ import AppLayout from '@/layouts/AppLayout';
 import ConfirmDialog from '@/components/ui/confirm-dialog';
 import { formatDate } from '@/lib/format';
 import type { PageProps, Paginator } from '@/types';
+import CurrencyCombobox, { type CurrencyOption } from '@/components/ui/currency-combobox';
 
 type Credential = {
     id: number;
@@ -40,6 +41,7 @@ type Props = PageProps & {
     canImport?: boolean;
     canReveal?: boolean;
     suppliers?: Supplier[];
+    currencies?: CurrencyOption[];
 };
 
 export default function CredentialsPage({
@@ -50,6 +52,7 @@ export default function CredentialsPage({
     canImport = false,
     canReveal = false,
     suppliers = [],
+    currencies = [],
 }: Props) {
     const [search, setSearch] = useState(filters.search ?? '');
     const [status, setStatus] = useState(filters.status ?? '');
@@ -59,6 +62,10 @@ export default function CredentialsPage({
     const importForm = useForm({
         supplier_id: suppliers[0]?.id.toString() ?? '',
         reference: '',
+        contract_reference: '',
+        unit_cost_amount: '',
+        total_cost_amount: '',
+        currency: currencies[0]?.code ?? 'USD',
         expires_at: '',
         file: null as File | null,
     });
@@ -167,6 +174,44 @@ export default function CredentialsPage({
                             {importForm.errors.expires_at && (
                                 <p className="field-error">{importForm.errors.expires_at}</p>
                             )}
+                        </label>
+                        <label>
+                            <span className="field-label">Contract reference (optional)</span>
+                            <input
+                                className="field"
+                                value={importForm.data.contract_reference}
+                                onChange={(event) => importForm.setData('contract_reference', event.target.value)}
+                                placeholder="CONTRACT-01"
+                            />
+                        </label>
+                        <label>
+                            <span className="field-label">Unit cost (minor units)</span>
+                            <input
+                                className="field"
+                                type="number"
+                                min="0"
+                                value={importForm.data.unit_cost_amount}
+                                onChange={(event) => importForm.setData('unit_cost_amount', event.target.value)}
+                            />
+                        </label>
+                        <label>
+                            <span className="field-label">Total cost (minor units)</span>
+                            <input
+                                className="field"
+                                type="number"
+                                min="0"
+                                value={importForm.data.total_cost_amount}
+                                onChange={(event) => importForm.setData('total_cost_amount', event.target.value)}
+                            />
+                        </label>
+                        <label>
+                            <span className="field-label">Cost currency</span>
+                            <CurrencyCombobox
+                                className="field"
+                                value={importForm.data.currency}
+                                currencies={currencies}
+                                onChange={(value) => importForm.setData('currency', value)}
+                            />
                         </label>
                         <label>
                             <span className="field-label">CSV file</span>

@@ -26,6 +26,10 @@ it('imports and reveals supplier credentials through guarded web endpoints', fun
         ->post(route('operations.credentials.import'), [
             'supplier_id' => $supplier->id,
             'reference' => 'BATCH-01',
+            'contract_reference' => 'CONTRACT-01',
+            'unit_cost_amount' => 125,
+            'total_cost_amount' => 250,
+            'currency' => 'USD',
             'expires_at' => now()->addMonth()->toDateString(),
             'file' => UploadedFile::fake()->createWithContent('credentials.csv', "identifier,secret\nuser-001,secret-001\nuser-002,secret-002"),
         ])
@@ -35,6 +39,10 @@ it('imports and reveals supplier credentials through guarded web endpoints', fun
     $batch = CredentialBatch::query()->firstOrFail();
     $credential = UpstreamCredential::query()->where('identifier', 'user-001')->firstOrFail();
     expect($batch->reference)->toBe('BATCH-01')
+        ->and($batch->contract_reference)->toBe('CONTRACT-01')
+        ->and($batch->unit_cost_amount)->toBe(125)
+        ->and($batch->total_cost_amount)->toBe(250)
+        ->and($batch->currency)->toBe('USD')
         ->and(UpstreamCredential::count())->toBe(2)
         ->and($credential->toArray())->not->toHaveKey('secret');
 
