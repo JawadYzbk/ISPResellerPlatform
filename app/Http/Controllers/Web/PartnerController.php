@@ -42,6 +42,7 @@ final class PartnerController extends Controller
                 'partners' => [],
                 'selectedPartner' => null,
                 'catalog' => [],
+                'pricingPlans' => [],
                 'settlements' => [],
                 'showCost' => false,
                 'canManage' => $user->can('partners.manage'),
