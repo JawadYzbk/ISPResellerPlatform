@@ -123,6 +123,7 @@ test.describe('staff core journeys', () => {
         await expect(page.getByRole('heading', { name: 'Owner finance' })).toBeVisible();
         await expect(page.getByText('Collection rate', { exact: true })).toBeVisible();
         await expect(page.getByRole('heading', { name: 'Manager attention queue' })).toBeVisible();
+        expect(pageErrors).not.toContain('Unable to encrypt history');
         expect(pageErrors).not.toContain('Cannot convert undefined or null to object');
         await page.goto('/partners/commercial');
         await expect(page).toHaveURL(/\/partners\/commercial/);
