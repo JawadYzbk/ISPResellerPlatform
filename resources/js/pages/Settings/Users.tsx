@@ -34,7 +34,15 @@ type Props = PageProps & {
     invitation?: NewInvitation | null;
 };
 
-export default function UsersPage({ users, invitations, roles, canManageRoles, workspaceLocale, filters, invitation }: Props) {
+export default function UsersPage({
+    users,
+    invitations,
+    roles,
+    canManageRoles,
+    workspaceLocale,
+    filters,
+    invitation,
+}: Props) {
     const [search, setSearch] = useState(filters.search ?? '');
     const [editingUserId, setEditingUserId] = useState<number | null>(null);
     const form = useForm({ email: '', role: roles[0] ?? 'support_agent' });

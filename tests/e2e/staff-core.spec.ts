@@ -154,7 +154,10 @@ test.describe('staff core journeys', () => {
         await page.goto('/partners/commercial');
 
         const code = `BROWSER-RESELLER-${Date.now()}`;
-        await page.getByLabel('Name').first().fill(`Browser Reseller ${code.slice(-8)}`);
+        await page
+            .getByLabel('Name')
+            .first()
+            .fill(`Browser Reseller ${code.slice(-8)}`);
         await page.getByLabel('Code').first().fill(code);
         await page.locator('#partner_currency').click();
         await page.getByRole('option', { name: /USD/ }).click();
@@ -175,7 +178,10 @@ test.describe('staff core journeys', () => {
         await page.goto('/partners/commercial');
 
         const code = `BROWSER-SETTLEMENT-${Date.now()}`;
-        await page.getByLabel('Name').first().fill(`Browser Settlement ${code.slice(-8)}`);
+        await page
+            .getByLabel('Name')
+            .first()
+            .fill(`Browser Settlement ${code.slice(-8)}`);
         await page.getByLabel('Code').first().fill(code);
         await page.locator('#partner_currency').click();
         await page.getByRole('option', { name: /USD/ }).click();
@@ -303,7 +309,10 @@ test.describe('staff core journeys', () => {
         await expect(page.getByText(updatedAddonName, { exact: true })).toBeVisible();
 
         await page.goto('/operations/inventory');
-        const setupSection = page.locator('section').filter({ hasText: 'Create the item and storage records first' }).first();
+        const setupSection = page
+            .locator('section')
+            .filter({ hasText: 'Create the item and storage records first' })
+            .first();
         const itemSku = `E2E-${Date.now()}`;
         const itemName = `Browser inventory ${itemSku}`;
         const warehouseCode = `E2E${Date.now().toString().slice(-5)}`;
@@ -476,9 +485,7 @@ test.describe('staff core journeys', () => {
             await expect(page.getByText('Devise de base', { exact: true })).toBeVisible();
             await page.goto('/settings/whatsapp');
             await expect(page.getByRole('heading', { name: 'Livraison WhatsApp' })).toBeVisible();
-            await expect(
-                page.getByRole('heading', { name: 'Jumelage et livraison' }),
-            ).toBeVisible();
+            await expect(page.getByRole('heading', { name: 'Jumelage et livraison' })).toBeVisible();
             await expect(page.getByRole('button', { name: 'Ajouter un compte' })).toBeVisible();
             await expect(
                 page
@@ -591,7 +598,8 @@ test.describe('staff core journeys', () => {
             await page.getByRole('option', { name: 'French' }).click();
             await Promise.all([
                 page.waitForResponse(
-                    (response) => response.url().endsWith('/settings/general') && response.request().method() === 'POST',
+                    (response) =>
+                        response.url().endsWith('/settings/general') && response.request().method() === 'POST',
                 ),
                 page.locator('#save-workspace-settings').click(),
             ]);
@@ -623,7 +631,10 @@ test.describe('staff core journeys', () => {
         await expect(sidebar.getByRole('link', { name: 'Payments' })).not.toHaveAttribute('aria-current', 'page');
 
         await page.goto('/operations/work-orders/calendar');
-        await expect(sidebar.getByRole('link', { name: 'Work-order calendar' })).toHaveAttribute('aria-current', 'page');
+        await expect(sidebar.getByRole('link', { name: 'Work-order calendar' })).toHaveAttribute(
+            'aria-current',
+            'page',
+        );
         await expect(sidebar.getByRole('link', { name: 'Work orders', exact: true })).not.toHaveAttribute(
             'aria-current',
             'page',

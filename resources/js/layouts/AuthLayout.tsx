@@ -38,7 +38,10 @@ export default function AuthLayout({ children }: PropsWithChildren) {
                     </div>
                     <p className="relative z-10 text-sm text-white/50">Built for operators who do more with less.</p>
                 </section>
-                <div data-testid="auth-form-panel" className="auth-form-panel flex items-center justify-center px-5 py-12 sm:px-10">
+                <div
+                    data-testid="auth-form-panel"
+                    className="auth-form-panel flex items-center justify-center px-5 py-12 sm:px-10"
+                >
                     <div className="w-full max-w-sm">{children}</div>
                 </div>
             </div>

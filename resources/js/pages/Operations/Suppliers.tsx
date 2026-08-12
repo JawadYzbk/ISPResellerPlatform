@@ -265,11 +265,16 @@ function SupplierCard({
                 <span className={supplier.is_active ? 'text-brand' : 'text-muted'}>
                     {supplier.is_active ? 'Active supplier' : 'Inactive supplier'}
                 </span>
-                {!supplier.is_active && <span className="text-muted">New receiving and billing should be reviewed.</span>}
+                {!supplier.is_active && (
+                    <span className="text-muted">New receiving and billing should be reviewed.</span>
+                )}
             </div>
 
             {editOpen && (
-                <form onSubmit={submitEdit} className="mt-5 grid gap-4 rounded-lg bg-sand/50 p-4 md:grid-cols-2 xl:grid-cols-5">
+                <form
+                    onSubmit={submitEdit}
+                    className="mt-5 grid gap-4 rounded-lg bg-sand/50 p-4 md:grid-cols-2 xl:grid-cols-5"
+                >
                     <label>
                         <span className="field-label">Supplier name</span>
                         <input
@@ -298,7 +303,9 @@ function SupplierCard({
                             value={editForm.data.contact_email}
                             onChange={(event) => editForm.setData('contact_email', event.target.value)}
                         />
-                        {editForm.errors.contact_email && <p className="field-error">{editForm.errors.contact_email}</p>}
+                        {editForm.errors.contact_email && (
+                            <p className="field-error">{editForm.errors.contact_email}</p>
+                        )}
                     </label>
                     <label>
                         <span className="field-label">Status</span>
@@ -316,7 +323,12 @@ function SupplierCard({
                         <button type="submit" className="button-primary" disabled={editForm.processing}>
                             <Save size={15} /> Save changes
                         </button>
-                        <button type="button" className="button-quiet" disabled={editForm.processing} onClick={cancelEdit}>
+                        <button
+                            type="button"
+                            className="button-quiet"
+                            disabled={editForm.processing}
+                            onClick={cancelEdit}
+                        >
                             <X size={15} /> Cancel
                         </button>
                     </div>
@@ -487,10 +499,14 @@ function SupplierCard({
                                                 className="field"
                                                 value={contractEditForm.data.wholesale_currency}
                                                 currencies={currencies}
-                                                onChange={(value) => contractEditForm.setData('wholesale_currency', value)}
+                                                onChange={(value) =>
+                                                    contractEditForm.setData('wholesale_currency', value)
+                                                }
                                             />
                                             {contractEditForm.errors.wholesale_currency && (
-                                                <p className="field-error">{contractEditForm.errors.wholesale_currency}</p>
+                                                <p className="field-error">
+                                                    {contractEditForm.errors.wholesale_currency}
+                                                </p>
                                             )}
                                         </label>
                                         <label>
@@ -527,7 +543,9 @@ function SupplierCard({
                                             <ResponsiveSelect
                                                 className="field"
                                                 value={contractEditForm.data.status}
-                                                onChange={(event) => contractEditForm.setData('status', event.target.value)}
+                                                onChange={(event) =>
+                                                    contractEditForm.setData('status', event.target.value)
+                                                }
                                             >
                                                 <option value="active">Active</option>
                                                 <option value="suspended">Suspended</option>

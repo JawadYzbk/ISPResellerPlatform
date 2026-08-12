@@ -82,7 +82,9 @@ export default function ProfilePage({ profile, workspaceLocale }: Props) {
                                         form.setData('locale', event.target.value as Profile['locale'])
                                     }
                                 >
-                                    <option value="">{t('Use workspace language')} ({workspaceLocale.toUpperCase()})</option>
+                                    <option value="">
+                                        {t('Use workspace language')} ({workspaceLocale.toUpperCase()})
+                                    </option>
                                     <option value="en">{t('English')}</option>
                                     <option value="ar">{t('Arabic')}</option>
                                     <option value="fr">{t('French')}</option>

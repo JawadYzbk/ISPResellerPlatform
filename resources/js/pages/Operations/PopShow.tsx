@@ -316,7 +316,9 @@ export default function PopShowPage({ pop, canManage, statuses, currencies }: Pr
                                             <input
                                                 className="field"
                                                 value={linkEditForm.data.provider_name}
-                                                onChange={(event) => linkEditForm.setData('provider_name', event.target.value)}
+                                                onChange={(event) =>
+                                                    linkEditForm.setData('provider_name', event.target.value)
+                                                }
                                                 required
                                             />
                                             {linkEditForm.errors.provider_name && (
@@ -330,7 +332,9 @@ export default function PopShowPage({ pop, canManage, statuses, currencies }: Pr
                                                 min="0"
                                                 className="field"
                                                 value={linkEditForm.data.capacity_mbps}
-                                                onChange={(event) => linkEditForm.setData('capacity_mbps', event.target.value)}
+                                                onChange={(event) =>
+                                                    linkEditForm.setData('capacity_mbps', event.target.value)
+                                                }
                                             />
                                             {linkEditForm.errors.capacity_mbps && (
                                                 <p className="field-error">{linkEditForm.errors.capacity_mbps}</p>
@@ -370,7 +374,9 @@ export default function PopShowPage({ pop, canManage, statuses, currencies }: Pr
                                                 type="date"
                                                 className="field"
                                                 value={linkEditForm.data.contract_start}
-                                                onChange={(event) => linkEditForm.setData('contract_start', event.target.value)}
+                                                onChange={(event) =>
+                                                    linkEditForm.setData('contract_start', event.target.value)
+                                                }
                                                 required
                                             />
                                             {linkEditForm.errors.contract_start && (
@@ -383,7 +389,9 @@ export default function PopShowPage({ pop, canManage, statuses, currencies }: Pr
                                                 type="date"
                                                 className="field"
                                                 value={linkEditForm.data.contract_end}
-                                                onChange={(event) => linkEditForm.setData('contract_end', event.target.value)}
+                                                onChange={(event) =>
+                                                    linkEditForm.setData('contract_end', event.target.value)
+                                                }
                                             />
                                             {linkEditForm.errors.contract_end && (
                                                 <p className="field-error">{linkEditForm.errors.contract_end}</p>

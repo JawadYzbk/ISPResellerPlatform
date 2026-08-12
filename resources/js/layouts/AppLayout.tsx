@@ -222,15 +222,15 @@ export default function AppLayout({ children }: PropsWithChildren) {
                             const active = href === activeNavHref;
 
                             return (
-                            <Link
-                                key={href}
-                                href={href}
-                                className={`group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition ${active ? 'bg-brand-soft text-brand' : 'text-muted hover:bg-sand hover:text-ink'}`}
-                                aria-current={active ? 'page' : undefined}
-                            >
-                                <Icon size={18} strokeWidth={active ? 2.2 : 1.8} />
-                                <span>{t(label)}</span>
-                            </Link>
+                                <Link
+                                    key={href}
+                                    href={href}
+                                    className={`group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition ${active ? 'bg-brand-soft text-brand' : 'text-muted hover:bg-sand hover:text-ink'}`}
+                                    aria-current={active ? 'page' : undefined}
+                                >
+                                    <Icon size={18} strokeWidth={active ? 2.2 : 1.8} />
+                                    <span>{t(label)}</span>
+                                </Link>
                             );
                         })}
                     </nav>

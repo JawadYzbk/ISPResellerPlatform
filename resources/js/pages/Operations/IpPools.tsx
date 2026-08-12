@@ -261,7 +261,10 @@ export default function IpPoolsPage({ pools, selectedPoolId, addresses, routers,
                         </div>
                     </div>
                     {selectedPool && canManage && editOpen && (
-                        <form onSubmit={submitEdit} className="grid gap-4 border-b border-line bg-sand/30 p-5 md:grid-cols-2">
+                        <form
+                            onSubmit={submitEdit}
+                            className="grid gap-4 border-b border-line bg-sand/30 p-5 md:grid-cols-2"
+                        >
                             <label>
                                 <span className="field-label">Pool name</span>
                                 <input
@@ -308,7 +311,9 @@ export default function IpPoolsPage({ pools, selectedPoolId, addresses, routers,
                                         </option>
                                     ))}
                                 </ResponsiveSelect>
-                                {editForm.errors.router_id && <p className="field-error">{editForm.errors.router_id}</p>}
+                                {editForm.errors.router_id && (
+                                    <p className="field-error">{editForm.errors.router_id}</p>
+                                )}
                             </label>
                             <label>
                                 <span className="field-label">Status</span>
@@ -320,13 +325,20 @@ export default function IpPoolsPage({ pools, selectedPoolId, addresses, routers,
                                     <option value="active">Active</option>
                                     <option value="inactive">Inactive</option>
                                 </ResponsiveSelect>
-                                {editForm.errors.is_active && <p className="field-error">{editForm.errors.is_active}</p>}
+                                {editForm.errors.is_active && (
+                                    <p className="field-error">{editForm.errors.is_active}</p>
+                                )}
                             </label>
                             <div className="flex items-end gap-2">
                                 <button type="submit" className="button-primary" disabled={editForm.processing}>
                                     <Save size={15} /> Save changes
                                 </button>
-                                <button type="button" className="button-quiet" disabled={editForm.processing} onClick={cancelEdit}>
+                                <button
+                                    type="button"
+                                    className="button-quiet"
+                                    disabled={editForm.processing}
+                                    onClick={cancelEdit}
+                                >
                                     <X size={15} /> Cancel
                                 </button>
                             </div>

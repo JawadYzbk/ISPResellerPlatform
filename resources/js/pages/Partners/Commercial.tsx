@@ -88,8 +88,14 @@ function PriceBookEditorRow({
         currency: plan.currency,
         buy_amount_minor: String(plan.override?.buy_amount_minor ?? plan.base_amount_minor ?? ''),
         sell_amount_minor: String(plan.override?.sell_amount_minor ?? plan.base_amount_minor ?? ''),
-        min_amount_minor: plan.override?.min_amount_minor === null || plan.override === null ? '' : String(plan.override.min_amount_minor),
-        max_amount_minor: plan.override?.max_amount_minor === null || plan.override === null ? '' : String(plan.override.max_amount_minor),
+        min_amount_minor:
+            plan.override?.min_amount_minor === null || plan.override === null
+                ? ''
+                : String(plan.override.min_amount_minor),
+        max_amount_minor:
+            plan.override?.max_amount_minor === null || plan.override === null
+                ? ''
+                : String(plan.override.max_amount_minor),
         effective_from: plan.override?.effective_from ?? new Date().toISOString().slice(0, 10),
     });
 
@@ -99,13 +105,21 @@ function PriceBookEditorRow({
     };
 
     return (
-        <form onSubmit={submit} className="grid gap-3 border-t border-line px-6 py-5 lg:grid-cols-[1.2fr_repeat(6,minmax(0,1fr))]">
+        <form
+            onSubmit={submit}
+            className="grid gap-3 border-t border-line px-6 py-5 lg:grid-cols-[1.2fr_repeat(6,minmax(0,1fr))]"
+        >
             <div className="min-w-0">
                 <p className="font-semibold">{plan.name}</p>
                 <p className="mt-1 text-xs text-muted">
-                    {plan.duration_days} days · Base {plan.base_amount_minor === null ? 'not set' : formatMoney(plan.base_amount_minor, plan.currency)}
+                    {plan.duration_days} days · Base{' '}
+                    {plan.base_amount_minor === null ? 'not set' : formatMoney(plan.base_amount_minor, plan.currency)}
                 </p>
-                {plan.override && <p className="mt-1 text-xs font-semibold text-brand">Override from {plan.override.effective_from}</p>}
+                {plan.override && (
+                    <p className="mt-1 text-xs font-semibold text-brand">
+                        Override from {plan.override.effective_from}
+                    </p>
+                )}
             </div>
             <label>
                 <span className="field-label">Buy</span>
@@ -500,13 +514,20 @@ export default function Commercial({
                                     <option value="active">Active</option>
                                     <option value="suspended">Suspended</option>
                                 </ResponsiveSelect>
-                                {editForm.errors.status && <span className="field-error">{editForm.errors.status}</span>}
+                                {editForm.errors.status && (
+                                    <span className="field-error">{editForm.errors.status}</span>
+                                )}
                             </label>
                             <div className="flex items-end gap-2 md:col-span-2 xl:col-span-5">
                                 <button type="submit" className="button-primary" disabled={editForm.processing}>
                                     <Save size={15} /> Save changes
                                 </button>
-                                <button type="button" className="button-quiet" disabled={editForm.processing} onClick={cancelEdit}>
+                                <button
+                                    type="button"
+                                    className="button-quiet"
+                                    disabled={editForm.processing}
+                                    onClick={cancelEdit}
+                                >
                                     <X size={15} /> Cancel
                                 </button>
                             </div>
@@ -531,10 +552,17 @@ export default function Commercial({
                         <div className="rounded-xl border border-line bg-sand p-4">
                             <p className="field-label">Current balance</p>
                             <p className="mt-2 font-display text-2xl font-semibold">
-                                {formatMoney(selectedPartner.wallet?.balance_amount ?? 0, selectedPartner.wallet?.currency ?? selectedPartner.currency ?? 'USD')}
+                                {formatMoney(
+                                    selectedPartner.wallet?.balance_amount ?? 0,
+                                    selectedPartner.wallet?.currency ?? selectedPartner.currency ?? 'USD',
+                                )}
                             </p>
                             <p className="mt-1 text-xs text-muted">
-                                Available with credit: {formatMoney(selectedPartner.wallet?.available_amount ?? 0, selectedPartner.wallet?.currency ?? selectedPartner.currency ?? 'USD')}
+                                Available with credit:{' '}
+                                {formatMoney(
+                                    selectedPartner.wallet?.available_amount ?? 0,
+                                    selectedPartner.wallet?.currency ?? selectedPartner.currency ?? 'USD',
+                                )}
                             </p>
                         </div>
                         {canFund && (
@@ -550,12 +578,20 @@ export default function Commercial({
                                         type="number"
                                         inputMode="decimal"
                                         min="0"
-                                        step={currencyFractionDigits(selectedPartner.wallet?.currency ?? selectedPartner.currency ?? 'USD') === 0 ? '1' : '0.01'}
+                                        step={
+                                            currencyFractionDigits(
+                                                selectedPartner.wallet?.currency ?? selectedPartner.currency ?? 'USD',
+                                            ) === 0
+                                                ? '1'
+                                                : '0.01'
+                                        }
                                         value={walletForm.data.amount}
                                         onChange={(event) => walletForm.setData('amount', event.target.value)}
                                         required
                                     />
-                                    {walletForm.errors.amount && <p className="field-error">{walletForm.errors.amount}</p>}
+                                    {walletForm.errors.amount && (
+                                        <p className="field-error">{walletForm.errors.amount}</p>
+                                    )}
                                 </label>
                                 <button type="submit" className="button-primary mt-4" disabled={walletForm.processing}>
                                     <Plus size={15} /> Fund wallet
@@ -565,7 +601,9 @@ export default function Commercial({
                         {canApprove && (
                             <form onSubmit={submitSettlement} className="rounded-xl border border-line p-4">
                                 <p className="font-semibold">Create settlement</p>
-                                <p className="mt-1 text-xs text-muted">Capture wallet activity and accrued commission for a period.</p>
+                                <p className="mt-1 text-xs text-muted">
+                                    Capture wallet activity and accrued commission for a period.
+                                </p>
                                 <div className="mt-4 grid gap-3 sm:grid-cols-2">
                                     <label>
                                         <span className="field-label">From</span>
@@ -573,7 +611,9 @@ export default function Commercial({
                                             className="field"
                                             type="date"
                                             value={settlementForm.data.period_start}
-                                            onChange={(event) => settlementForm.setData('period_start', event.target.value)}
+                                            onChange={(event) =>
+                                                settlementForm.setData('period_start', event.target.value)
+                                            }
                                             required
                                         />
                                     </label>
@@ -583,17 +623,27 @@ export default function Commercial({
                                             className="field"
                                             type="date"
                                             value={settlementForm.data.period_end}
-                                            onChange={(event) => settlementForm.setData('period_end', event.target.value)}
+                                            onChange={(event) =>
+                                                settlementForm.setData('period_end', event.target.value)
+                                            }
                                             required
                                         />
                                     </label>
                                 </div>
-                                {(settlementForm.errors.period_start || settlementForm.errors.period_end || settlementForm.errors.currency) && (
+                                {(settlementForm.errors.period_start ||
+                                    settlementForm.errors.period_end ||
+                                    settlementForm.errors.currency) && (
                                     <p className="field-error">
-                                        {settlementForm.errors.period_start ?? settlementForm.errors.period_end ?? settlementForm.errors.currency}
+                                        {settlementForm.errors.period_start ??
+                                            settlementForm.errors.period_end ??
+                                            settlementForm.errors.currency}
                                     </p>
                                 )}
-                                <button type="submit" className="button-primary mt-4" disabled={settlementForm.processing}>
+                                <button
+                                    type="submit"
+                                    className="button-primary mt-4"
+                                    disabled={settlementForm.processing}
+                                >
                                     <CalendarRange size={15} /> Create statement
                                 </button>
                             </form>
@@ -713,7 +763,11 @@ export default function Commercial({
                                                     confirmLabel="Approve statement"
                                                     onConfirm={() => actOnSettlement(settlement.id, 'approve')}
                                                 >
-                                                    <button type="button" className="button-quiet" disabled={settlementActionForm.processing}>
+                                                    <button
+                                                        type="button"
+                                                        className="button-quiet"
+                                                        disabled={settlementActionForm.processing}
+                                                    >
                                                         <Check size={15} /> Approve
                                                     </button>
                                                 </ConfirmDialog>
@@ -725,7 +779,11 @@ export default function Commercial({
                                                     confirmLabel="Pay settlement"
                                                     onConfirm={() => actOnSettlement(settlement.id, 'pay')}
                                                 >
-                                                    <button type="button" className="button-primary" disabled={settlementActionForm.processing}>
+                                                    <button
+                                                        type="button"
+                                                        className="button-primary"
+                                                        disabled={settlementActionForm.processing}
+                                                    >
                                                         <Check size={15} /> Pay settlement
                                                     </button>
                                                 </ConfirmDialog>
