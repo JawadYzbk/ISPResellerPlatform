@@ -62,6 +62,19 @@ export type DashboardMetrics = {
     driftedServices: number;
     openIncidents: number;
     openWorkOrders: number;
+    owner: {
+        period: { from: string; to: string };
+        baseCurrency: string;
+        revenue: number;
+        collected: number;
+        collectionRate: number | null;
+        margin: number;
+        currencyMetrics: Record<
+            string,
+            { revenue: number; collected: number; collectionRate: number | null; margin: number }
+        >;
+        statusTrend: { month: string; active: number; suspended: number }[];
+    } | null;
 };
 
 export type AttentionQueueItem = {

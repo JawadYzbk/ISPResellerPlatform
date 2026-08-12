@@ -18,7 +18,7 @@ final class DashboardController extends Controller
         abort_unless($user instanceof User, 401);
 
         return Inertia::render('Dashboard/Index', [
-            'metrics' => Inertia::defer(fn (): array => $getDashboardMetrics->handle(), 'dashboard-metrics'),
+            'metrics' => Inertia::defer(fn (): array => $getDashboardMetrics->handle($user), 'dashboard-metrics'),
             'attentionQueue' => Inertia::defer(fn (): array => $getDashboardAttentionQueue->handle(user: $user), 'dashboard-attention'),
         ]);
     }

@@ -83,7 +83,7 @@ final readonly class GetDashboardAttentionQueue implements Action
             ->get()
             ->each(function (PartnerWallet $wallet) use (&$rows): void {
                 $partner = $wallet->partner;
-                $this->add($rows, 'low_reseller_balance', 'Low reseller balance', $partner->name.' · '.$wallet->balance_amount.' '.$wallet->currency, '/dashboard?attention=partner-wallet&partner='.urlencode($partner->code), 'warning');
+                $this->add($rows, 'low_reseller_balance', 'Low reseller balance', $partner->name.' · '.$wallet->balance_amount.' '.$wallet->currency, '/partners/commercial?partner='.urlencode($partner->public_id), 'warning');
             });
 
         if ($user === null) {

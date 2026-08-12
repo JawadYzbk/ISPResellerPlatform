@@ -1,5 +1,5 @@
 import { Deferred, Head, Link, usePage } from '@inertiajs/react';
-import { ArrowUpRight, CircleAlert, Clock3, CreditCard, Plus, Users, Wifi } from 'lucide-react';
+import { ArrowUpRight, CircleAlert, Clock3, CreditCard, Percent, Plus, TrendingUp, Users, WalletCards, Wifi } from 'lucide-react';
 
 import StatusBadge from '@/components/StatusBadge';
 import AppLayout from '@/layouts/AppLayout';
@@ -83,6 +83,7 @@ export default function Dashboard({ metrics, attentionQueue }: Props) {
                                 </div>
                             ))}
                         </div>
+                        {metrics.owner && <OwnerFinancePanel owner={metrics.owner} />}
                         <div className="mt-6 grid gap-6 xl:grid-cols-[1.4fr_0.9fr]">
                             <div className="card overflow-hidden">
                                 <div className="flex items-center justify-between border-b border-line px-6 py-5">
@@ -251,4 +252,101 @@ function DashboardMetricsFallback() {
 
 function DashboardAttentionFallback() {
     return <div className="card mt-6 h-32 animate-pulse bg-sand/60" aria-label="Loading manager attention queue" />;
+}
+
+function OwnerFinancePanel({ owner }: { owner: NonNullable<DashboardMetrics['owner']> }) {
+    const cards = [
+        { label: 'Revenue', value: formatMoney(owner.revenue, owner.baseCurrency), icon: TrendingUp },
+        { label: 'Collected', value: formatMoney(owner.collected, owner.baseCurrency), icon: WalletCards },
+        {
+            label: 'Collection rate',
+            value: owner.collectionRate === null ? '—' : `${owner.collectionRate.toFixed(2)}%`,
+            icon: Percent,
+        },
+        { label: 'Margin', value: formatMoney(owner.margin, owner.baseCurrency), icon: TrendingUp },
+    ];
+    const maxServices = Math.max(1, ...owner.statusTrend.flatMap((month) => [month.active, month.suspended]));
+    const currencies = Object.entries(owner.currencyMetrics);
+
+    return (
+        <section className="card mt-6 overflow-hidden" aria-label="Owner finance metrics">
+            <div className="flex flex-col justify-between gap-3 border-b border-line px-6 py-5 sm:flex-row sm:items-center">
+                <div>
+                    <h2 className="section-title">Owner finance</h2>
+                    <p className="mt-1 text-sm text-muted">
+                        Month to date · base currency {owner.baseCurrency}
+                    </p>
+                </div>
+                <Link href="/reports/finance" className="button-quiet">
+                    Open finance report
+                    <ArrowUpRight size={15} />
+                </Link>
+            </div>
+            <div className="grid divide-y divide-line sm:grid-cols-2 sm:divide-x sm:divide-y-0 xl:grid-cols-4">
+                {cards.map(({ label, value, icon: Icon }) => (
+                    <div key={label} className="p-5">
+                        <div className="grid size-9 place-items-center rounded-xl bg-brand-soft text-brand">
+                            <Icon size={16} />
+                        </div>
+                        <p className="mt-4 text-xs font-semibold uppercase tracking-wider text-muted">{label}</p>
+                        <p className="mt-1 font-display text-2xl font-semibold">{value}</p>
+                    </div>
+                ))}
+            </div>
+            <div className="grid gap-6 border-t border-line px-6 py-5 xl:grid-cols-[1.2fr_0.8fr]">
+                <div>
+                    <div className="flex items-center justify-between gap-3">
+                        <div>
+                            <h3 className="font-semibold">Service status trend</h3>
+                            <p className="mt-1 text-xs text-muted">Active and suspended services over six months.</p>
+                        </div>
+                        <span className="text-xs text-muted">Active / suspended</span>
+                    </div>
+                    <div className="mt-5 grid grid-cols-6 gap-3">
+                        {owner.statusTrend.map((month) => (
+                            <div key={month.month} className="min-w-0 text-center">
+                                <div className="flex h-24 items-end justify-center gap-1.5">
+                                    <span
+                                        className="w-3 rounded-t bg-brand"
+                                        style={{ height: `${Math.max(4, (month.active / maxServices) * 100)}%` }}
+                                        title={`${month.active} active`}
+                                    />
+                                    <span
+                                        className="w-3 rounded-t bg-rose-300"
+                                        style={{ height: `${Math.max(4, (month.suspended / maxServices) * 100)}%` }}
+                                        title={`${month.suspended} suspended`}
+                                    />
+                                </div>
+                                <p className="mt-2 truncate text-[11px] text-muted">{month.month}</p>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+                <div>
+                    <h3 className="font-semibold">By currency</h3>
+                    <p className="mt-1 text-xs text-muted">Issued revenue, posted collections, and margin.</p>
+                    <div className="mt-4 divide-y divide-line rounded-xl border border-line">
+                        <div className="grid grid-cols-[auto_1fr_1fr_1fr] gap-3 border-b border-line bg-sand/30 px-4 py-2 text-[11px] font-semibold uppercase tracking-wider text-muted">
+                            <span>Code</span>
+                            <span>Revenue</span>
+                            <span>Collected</span>
+                            <span className="text-end">Margin</span>
+                        </div>
+                        {currencies.length === 0 ? (
+                            <p className="px-4 py-4 text-sm text-muted">No finance activity this month.</p>
+                        ) : (
+                            currencies.map(([currency, values]) => (
+                                <div key={currency} className="grid grid-cols-[auto_1fr_1fr_1fr] items-center gap-3 px-4 py-3 text-sm">
+                                    <span className="font-semibold">{currency}</span>
+                                    <span className="text-muted">{formatMoney(values.revenue, currency)}</span>
+                                    <span className="text-muted">{formatMoney(values.collected, currency)}</span>
+                                    <span className="text-end font-medium">{formatMoney(values.margin, currency)}</span>
+                                </div>
+                            ))
+                        )}
+                    </div>
+                </div>
+            </div>
+        </section>
+    );
 }

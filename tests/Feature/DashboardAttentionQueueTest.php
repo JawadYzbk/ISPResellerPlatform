@@ -39,5 +39,6 @@ it('returns actionable manager attention rows for the current tenant', function 
 
     expect($types)->toContain('expired_service', 'paid_provisioning_failed', 'unallocated_payment', 'stale_session', 'low_reseller_balance')
         ->and(collect($rows)->firstWhere('type', 'expired_service')['href'])->toContain('/services?search='.urlencode($expired->username))
-        ->and(collect($rows)->firstWhere('type', 'unallocated_payment')['href'])->toContain('/customers/'.$unallocated->customer->public_id);
+        ->and(collect($rows)->firstWhere('type', 'unallocated_payment')['href'])->toContain('/customers/'.$unallocated->customer->public_id)
+        ->and(collect($rows)->firstWhere('type', 'low_reseller_balance')['href'])->toContain('/partners/commercial?partner=');
 });
