@@ -105,6 +105,37 @@ test('clears stale Chromium profile locks before initialization', async () => {
   }
 });
 
+test('returns a starting status while an account client initializes', async () => {
+  const directory = await mkdtemp(join(tmpdir(), 'isp-whatsapp-'));
+  let releaseInitialization;
+  const initialization = new Promise((resolve) => {
+    releaseInitialization = resolve;
+  });
+
+  try {
+    const manager = new WhatsAppBridgeManager({
+      sessionPath: directory,
+      clientFactory: () => {
+        const client = new FakeClient();
+        client.initialize = () => initialization;
+        return client;
+      },
+    });
+
+    const status = await manager.status('slow-account');
+    assert.equal(status.status, 'starting');
+    assert.equal(status.account_id, 'slow-account');
+
+    const startup = manager.starting.get('slow-account');
+    assert.ok(startup);
+    releaseInitialization();
+    await startup;
+    assert.equal((await manager.status('slow-account')).status, 'starting');
+  } finally {
+    await rm(directory, { recursive: true, force: true });
+  }
+});
+
 test('keeps multiple account sessions isolated and disconnects one account without affecting another', async () => {
   const directory = await mkdtemp(join(tmpdir(), 'isp-whatsapp-'));
   const clients = new Map();

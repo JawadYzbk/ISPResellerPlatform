@@ -402,11 +402,21 @@ export class WhatsAppBridgeManager {
     return { account_id: accountId, status: 'deleted' };
   }
 
-  async status(accountId) {
+  status(accountId) {
     this.validateAccountId(accountId);
-    const bridge = await this.ensure(accountId);
+    const bridge = this.bridges.get(accountId);
 
-    return bridge.status();
+    if (bridge) {
+      return bridge.status();
+    }
+
+    if (!this.starting.has(accountId)) {
+      void this.ensure(accountId).catch((error) => {
+        this.logger.error(`WhatsApp account ${accountId} failed to start: ${error.message}`);
+      });
+    }
+
+    return { account_id: accountId, status: 'starting', qr: null, lastError: null, readyAt: null };
   }
 
   statuses() {
