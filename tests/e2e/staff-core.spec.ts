@@ -316,7 +316,10 @@ test.describe('staff core journeys', () => {
                     )
                     .first(),
             ).toBeVisible();
-            await page.getByRole('combobox', { name: /^(Job|Tâche)$/ }).first().click();
+            await page
+                .getByRole('combobox', { name: /^(Job|Tâche)$/ })
+                .first()
+                .click();
             await expect(page.getByRole('option', { name: 'Livraison générale' })).toBeVisible();
             await page.keyboard.press('Escape');
         } finally {
