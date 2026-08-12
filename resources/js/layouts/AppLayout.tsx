@@ -175,7 +175,7 @@ export default function AppLayout({ children }: PropsWithChildren) {
         { label: 'Routers', href: '/operations/routers', icon: Router, permission: 'network.view' },
         { label: 'POPs', href: '/operations/pops', icon: Network, permission: 'network.view' },
         { label: 'IP pools', href: '/operations/ip-pools', icon: Network, permission: 'network.view' },
-        { label: 'Settings', href: '/settings/general', icon: Wrench, permission: 'settings.manage' },
+        { label: 'Settings', href: '/settings', icon: Wrench, permission: 'settings.manage' },
     ].filter((item) => item.permission === undefined || can(item.permission));
 
     const fieldNav: NavigationItem[] = [

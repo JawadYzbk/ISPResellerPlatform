@@ -8,11 +8,17 @@ type Check = { name: string; status: Status; detail: string };
 type Props = { overall: Status; checks: Check[] };
 
 const checkLinks: Record<string, string> = {
+    'Tenant status': '/settings/general',
     'Owner capability': '/settings/users',
+    'Default branch': '/settings/locations',
+    'Service zone': '/settings/locations',
     'Base currency': '/settings/general#money-display',
     'Collection currency': '/settings/general#money-display',
     'Collection FX rate': '/billing/exchange-rates',
+    'Billable plan': '/plans',
+    'Notification templates': '/settings/ticket-responses',
     'Tenant logo': '/settings/general#workspace-identity',
+    'Cash collection': '/billing/shifts',
     'Stripe gateway': '/settings/general#payment-channels',
     'Whish Pay gateway': '/settings/general#payment-channels',
     'WhatsApp channel': '/settings/whatsapp',

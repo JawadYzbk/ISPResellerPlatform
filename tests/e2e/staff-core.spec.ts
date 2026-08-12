@@ -589,6 +589,9 @@ test.describe('staff core journeys', () => {
             'aria-current',
             'page',
         );
+
+        await page.goto('/settings/locations');
+        await expect(sidebar.getByRole('link', { name: 'Settings' })).toHaveAttribute('aria-current', 'page');
     });
 
     test('opens the profile menu and notifications center from the header', async ({ page }) => {

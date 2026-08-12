@@ -129,6 +129,9 @@ export default function GeneralSettings({ tenant, settings, currencies, payments
                     <Link href="/settings/users" className="button-secondary">
                         {t('Users and invitations')}
                     </Link>
+                    <Link href="/settings/locations" className="button-secondary">
+                        {t('Branches and zones')}
+                    </Link>
                     <Link href="/settings/whatsapp" className="button-secondary">
                         WhatsApp setup
                     </Link>
