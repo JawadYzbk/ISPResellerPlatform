@@ -112,9 +112,22 @@ export default function Dashboard({ metrics, attentionQueue }: Props) {
                                         <p className="text-xs font-semibold uppercase tracking-wider text-muted">
                                             Collections
                                         </p>
-                                        <p className="mt-3 font-display text-2xl font-semibold">
-                                            {formatMoney(metrics.collectionsToday, metrics.collectionsCurrency)}
-                                        </p>
+                                        <div className="mt-3 space-y-1">
+                                            {Object.entries(metrics.collectionsTodayByCurrency).length === 0 ? (
+                                                <p className="font-display text-2xl font-semibold">—</p>
+                                            ) : (
+                                                Object.entries(metrics.collectionsTodayByCurrency).map(
+                                                    ([currency, amount]) => (
+                                                        <p
+                                                            key={currency}
+                                                            className="font-display text-2xl font-semibold"
+                                                        >
+                                                            {formatMoney(amount, currency)}
+                                                        </p>
+                                                    ),
+                                                )
+                                            )}
+                                        </div>
                                         <p className="mt-1 text-xs text-muted">Posted collections today</p>
                                     </div>
                                     <div className="p-6">

@@ -10,6 +10,7 @@ use App\Enums\ServiceStatus;
 use App\Models\CurrentSession;
 use App\Models\Incident;
 use App\Models\NetworkCommand;
+use App\Models\Payment;
 use App\Models\Plan;
 use App\Models\Router;
 use App\Models\Service;
@@ -61,4 +62,16 @@ it('includes finance and service trend metrics for authorised dashboard users', 
     $restricted = User::create(['tenant_id' => $tenant->id, 'name' => 'Collector', 'email' => 'collector-dashboard@example.test', 'password' => Hash::make('password'), 'role' => 'collector']);
 
     expect(app(GetDashboardMetrics::class)->handle($restricted)['owner'])->toBeNull();
+});
+
+it('keeps today dashboard collections separated by currency', function (): void {
+    $tenant = Tenant::create(['name' => 'Northline', 'slug' => 'northline', 'base_currency' => 'USD', 'collection_currency' => 'LBP']);
+    app(Tenancy::class)->set($tenant);
+
+    $customer = \App\Models\Customer::factory()->create();
+    Payment::create(['customer_id' => $customer->id, 'number' => 'RCT-DASH-USD', 'currency' => 'USD', 'amount' => 1000, 'status' => 'posted', 'method' => 'cash', 'idempotency_key' => 'dashboard-currency-usd', 'received_at' => now()]);
+    Payment::create(['customer_id' => $customer->id, 'number' => 'RCT-DASH-LBP', 'currency' => 'LBP', 'amount' => 250000, 'status' => 'posted', 'method' => 'cash', 'idempotency_key' => 'dashboard-currency-lbp', 'received_at' => now()]);
+
+    expect(app(GetDashboardMetrics::class)->handle())
+        ->toMatchArray(['collectionsTodayByCurrency' => ['LBP' => 250000, 'USD' => 1000]]);
 });

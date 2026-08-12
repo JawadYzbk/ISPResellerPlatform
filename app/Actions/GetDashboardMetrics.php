@@ -36,8 +36,15 @@ final readonly class GetDashboardMetrics implements Action
             'activeServices' => Service::where('status', ServiceStatus::Active)->count(),
             'attention' => Service::whereIn('status', [ServiceStatus::Suspended, ServiceStatus::Pending])->count(),
             'expiringSoon' => Service::whereBetween('expires_at', [now(), now()->addDays(7)])->count(),
-            'collectionsToday' => (int) Payment::where('status', PaymentStatus::Posted)->whereDate('received_at', today())->sum('amount'),
-            'collectionsCurrency' => (string) (Payment::where('status', PaymentStatus::Posted)->whereDate('received_at', today())->value('currency') ?? 'USD'),
+            'collectionsTodayByCurrency' => Payment::query()
+                ->where('status', PaymentStatus::Posted)
+                ->whereDate('received_at', today())
+                ->selectRaw('currency, SUM(amount) as total')
+                ->groupBy('currency')
+                ->orderBy('currency')
+                ->pluck('total', 'currency')
+                ->map(fn (mixed $value): int => (int) $value)
+                ->all(),
             'networkPending' => NetworkCommand::whereIn('status', ['pending', 'running', 'failed', 'awaiting_confirmation'])->count(),
             'failedCommands' => NetworkCommand::where('status', 'failed')->count(),
             'offlineRouters' => Router::where('status', 'offline')->count(),

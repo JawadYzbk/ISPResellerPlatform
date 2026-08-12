@@ -53,8 +53,7 @@ export type DashboardMetrics = {
     activeServices: number;
     attention: number;
     expiringSoon: number;
-    collectionsToday: number;
-    collectionsCurrency: string;
+    collectionsTodayByCurrency: Record<string, number>;
     networkPending: number;
     failedCommands: number;
     offlineRouters: number;
