@@ -55,6 +55,19 @@ type CatalogWarehouse = {
     is_active: boolean;
 };
 type FieldUser = { id: number; name: string; role: 'collector' | 'technician' };
+type TransferRequest = {
+    id: string;
+    type: 'replenishment' | 'return';
+    status: 'pending' | 'approved' | 'rejected';
+    quantity: string;
+    note: string | null;
+    review_note: string | null;
+    created_at: string | null;
+    requester: { name: string; role: string } | null;
+    item: { sku: string; name: string } | null;
+    source: { code: string; name: string } | null;
+    destination: { code: string; name: string } | null;
+};
 type InventoryMovement = {
     id: string;
     movement_type: string;
@@ -85,6 +98,7 @@ type Props = PageProps & {
     catalogWarehouses: CatalogWarehouse[];
     transferWarehouses: BulkWarehouse[];
     fieldUsers: FieldUser[];
+    transferRequests: TransferRequest[];
     movements: InventoryMovement[];
 };
 
@@ -103,6 +117,7 @@ export default function InventoryPage({
     catalogWarehouses,
     transferWarehouses,
     fieldUsers,
+    transferRequests,
     movements,
 }: Props) {
     const [search, setSearch] = useState(filters.search ?? '');
@@ -138,6 +153,7 @@ export default function InventoryPage({
         note: '',
     });
     const unitForm = useForm({ inventory_item_id: '', warehouse_id: '', serial_number: '' });
+    const reviewForm = useForm({ decision: 'approved', review_note: '' });
 
     const applyFilters = (event: React.FormEvent) => {
         event.preventDefault();
@@ -232,6 +248,15 @@ export default function InventoryPage({
     const transferUnit = (unit: InventoryUnit) => {
         const warehouseId = selectedWarehouses[unit.id];
         if (warehouseId) router.post(`/operations/inventory/${unit.id}/transfer`, { warehouse_id: warehouseId });
+    };
+
+    const reviewTransferRequest = (request: TransferRequest, decision: 'approved' | 'rejected') => {
+        reviewForm.transform(() => ({ decision, review_note: reviewForm.data.review_note }));
+        reviewForm.patch(`/operations/inventory/requests/${request.id}`, {
+            preserveScroll: true,
+            onSuccess: () => reviewForm.reset(),
+            onFinish: () => reviewForm.transform((data) => data),
+        });
     };
 
     return (
@@ -820,6 +845,97 @@ export default function InventoryPage({
                                 )}
                             </div>
                         </div>
+                    </div>
+                </section>
+            )}
+
+            {canTransfer && transferRequests.length > 0 && (
+                <section className="card mt-6 overflow-hidden">
+                    <div className="border-b border-line p-5">
+                        <p className="section-title">Field stock requests</p>
+                        <p className="mt-1 text-pretty text-sm text-muted">
+                            Approving a request immediately posts the audited transfer between the two locations.
+                        </p>
+                    </div>
+                    <div className="divide-y divide-line">
+                        {transferRequests.map((request) => (
+                            <div key={request.id} className="p-5">
+                                <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                                    <div className="min-w-0">
+                                        <div className="flex flex-wrap items-center gap-2">
+                                            <p className="font-semibold">{request.requester?.name ?? 'Field user'}</p>
+                                            <span className="rounded-full bg-sand px-2 py-1 text-xs font-semibold capitalize text-muted">
+                                                {request.type}
+                                            </span>
+                                            <span
+                                                className={`rounded-full px-2 py-1 text-xs font-semibold capitalize ${request.status === 'approved' ? 'bg-emerald-50 text-emerald-700' : request.status === 'rejected' ? 'bg-rose-50 text-rose-700' : 'bg-amber-50 text-amber-700'}`}
+                                            >
+                                                {request.status}
+                                            </span>
+                                        </div>
+                                        <p className="mt-2 text-sm">
+                                            <span className="font-semibold tabular-nums">{request.quantity}</span>{' '}
+                                            {request.item?.name ?? request.item?.sku ?? 'Unknown item'}
+                                        </p>
+                                        <p className="mt-1 text-pretty text-xs text-muted">
+                                            {request.source?.code ?? 'Unknown'} →{' '}
+                                            {request.destination?.code ?? 'Unknown'}
+                                            {request.note ? ` · ${request.note}` : ''}
+                                        </p>
+                                        {request.review_note && (
+                                            <p className="mt-1 text-xs text-muted">Review: {request.review_note}</p>
+                                        )}
+                                    </div>
+                                    {request.status === 'pending' && (
+                                        <div className="flex shrink-0 flex-col gap-2 sm:flex-row sm:items-end">
+                                            <label>
+                                                <span className="field-label">Review note</span>
+                                                <input
+                                                    className="field sm:w-64"
+                                                    value={reviewForm.data.review_note}
+                                                    onChange={(event) =>
+                                                        reviewForm.setData('review_note', event.target.value)
+                                                    }
+                                                    placeholder="Optional handover note"
+                                                />
+                                            </label>
+                                            <ConfirmDialog
+                                                title="Approve this stock transfer?"
+                                                description={`This immediately transfers ${request.quantity} ${request.item?.name ?? 'items'} from ${request.source?.code ?? 'the source'} to ${request.destination?.code ?? 'the destination'}.`}
+                                                confirmLabel="Approve transfer"
+                                                onConfirm={() => reviewTransferRequest(request, 'approved')}
+                                            >
+                                                <button
+                                                    type="button"
+                                                    className="button-primary"
+                                                    disabled={reviewForm.processing}
+                                                >
+                                                    Approve
+                                                </button>
+                                            </ConfirmDialog>
+                                            <ConfirmDialog
+                                                title="Reject this stock request?"
+                                                description="The request will close without moving any stock."
+                                                confirmLabel="Reject request"
+                                                destructive
+                                                onConfirm={() => reviewTransferRequest(request, 'rejected')}
+                                            >
+                                                <button
+                                                    type="button"
+                                                    className="button-quiet text-coral"
+                                                    disabled={reviewForm.processing}
+                                                >
+                                                    Reject
+                                                </button>
+                                            </ConfirmDialog>
+                                        </div>
+                                    )}
+                                </div>
+                                {reviewForm.errors.decision && request.status === 'pending' && (
+                                    <p className="field-error mt-2">{reviewForm.errors.decision}</p>
+                                )}
+                            </div>
+                        ))}
                     </div>
                 </section>
             )}

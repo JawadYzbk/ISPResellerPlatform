@@ -1,7 +1,7 @@
 import CurrencyCombobox, { type CurrencyOption } from '@/components/ui/currency-combobox';
 import ConfirmDialog from '@/components/ui/confirm-dialog';
 import ResponsiveSelect from '@/components/ui/responsive-select';
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, useForm } from '@inertiajs/react';
 import {
     CheckCircle2,
     CircleDollarSign,
@@ -139,6 +139,28 @@ type FieldCustody = {
     entries: FieldCustodyEntry[];
 };
 
+type FieldStock = {
+    locations: {
+        id: number;
+        code: string;
+        name: string;
+        balances: { item_id: number; sku: string; name: string; quantity: string }[];
+    }[];
+    central_locations: { id: number; code: string; name: string }[];
+    items: { id: number; sku: string; name: string }[];
+    requests: {
+        id: string;
+        type: 'replenishment' | 'return';
+        status: 'pending' | 'approved' | 'rejected';
+        quantity: string;
+        note: string | null;
+        review_note: string | null;
+        item: { sku: string; name: string } | null;
+        source: { code: string; name: string } | null;
+        destination: { code: string; name: string } | null;
+    }[];
+};
+
 type SyncResult = {
     index: number;
     status: 'created' | 'replayed' | 'rejected' | 'error';
@@ -153,6 +175,7 @@ type Props = {
     route: FieldRoute;
     tasks: FieldTask[];
     custody: FieldCustody;
+    stock: FieldStock;
     currencies: CurrencyOption[];
     defaultCurrency: string;
     storageKey: string;
@@ -190,6 +213,7 @@ export default function FieldIndex({
     route: initialRoute,
     tasks: initialTasks,
     custody: initialCustody,
+    stock,
     currencies,
     defaultCurrency,
     storageKey,
@@ -233,6 +257,32 @@ export default function FieldIndex({
     const [custodyDescription, setCustodyDescription] = useState('');
     const [custodyReference, setCustodyReference] = useState('');
     const [custodyBusy, setCustodyBusy] = useState(false);
+    const stockRequestForm = useForm({
+        type: 'replenishment',
+        inventory_item_id: '',
+        location_id: '',
+        central_id: '',
+        quantity: '',
+        note: '',
+    });
+
+    const submitStockRequest = (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        const replenishment = stockRequestForm.data.type === 'replenishment';
+        stockRequestForm.transform((data) => ({
+            type: data.type,
+            inventory_item_id: data.inventory_item_id,
+            source_warehouse_id: replenishment ? data.central_id : data.location_id,
+            destination_warehouse_id: replenishment ? data.location_id : data.central_id,
+            quantity: data.quantity,
+            note: data.note,
+        }));
+        stockRequestForm.post('/field/inventory-requests', {
+            preserveScroll: true,
+            onSuccess: () => stockRequestForm.reset(),
+            onFinish: () => stockRequestForm.transform((data) => data),
+        });
+    };
 
     const selectedCustomer = customers.find((customer) => customer.id === selectedCustomerId) ?? null;
     const selectedCurrency = currencyOptions.find((item) => item.code === currency);
@@ -948,6 +998,146 @@ export default function FieldIndex({
                                     </div>
                                 ))}
                             </div>
+                        </div>
+                    )}
+                </section>
+
+                <section className="card mt-6 overflow-hidden">
+                    <div className="border-b border-line p-5">
+                        <h2 className="text-balance text-xl font-semibold">Field stock</h2>
+                        <p className="mt-1 text-pretty text-sm text-muted">
+                            See stock in your custody and request replenishment or return unused material.
+                        </p>
+                        <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                            {stock.locations.flatMap((location) =>
+                                location.balances.map((balance) => (
+                                    <div
+                                        key={`${location.id}-${balance.item_id}`}
+                                        className="rounded-xl border border-line px-4 py-3"
+                                    >
+                                        <p className="truncate text-sm font-semibold">{balance.name}</p>
+                                        <p className="mt-1 text-xs text-muted">
+                                            {location.code} · {balance.sku}
+                                        </p>
+                                        <p className="mt-2 font-semibold tabular-nums text-brand">{balance.quantity}</p>
+                                    </div>
+                                )),
+                            )}
+                            {stock.locations.every((location) => location.balances.length === 0) && (
+                                <p className="text-sm text-muted">No material is currently assigned to you.</p>
+                            )}
+                        </div>
+                    </div>
+                    {stock.locations.length > 0 && stock.central_locations.length > 0 && (
+                        <form onSubmit={submitStockRequest} className="grid gap-4 p-5 sm:grid-cols-2 lg:grid-cols-3">
+                            <label className="field-label">
+                                Request type
+                                <ResponsiveSelect
+                                    className="mt-1"
+                                    value={stockRequestForm.data.type}
+                                    onChange={(event) => stockRequestForm.setData('type', event.target.value)}
+                                >
+                                    <option value="replenishment">Replenishment</option>
+                                    <option value="return">Return unused stock</option>
+                                </ResponsiveSelect>
+                            </label>
+                            <label className="field-label">
+                                Material
+                                <ResponsiveSelect
+                                    className="mt-1"
+                                    value={stockRequestForm.data.inventory_item_id}
+                                    onChange={(event) =>
+                                        stockRequestForm.setData('inventory_item_id', event.target.value)
+                                    }
+                                >
+                                    <option value="">Select material</option>
+                                    {stock.items.map((item) => (
+                                        <option key={item.id} value={item.id}>
+                                            {item.sku} · {item.name}
+                                        </option>
+                                    ))}
+                                </ResponsiveSelect>
+                            </label>
+                            <label className="field-label">
+                                Your stock location
+                                <ResponsiveSelect
+                                    className="mt-1"
+                                    value={stockRequestForm.data.location_id}
+                                    onChange={(event) => stockRequestForm.setData('location_id', event.target.value)}
+                                >
+                                    <option value="">Select location</option>
+                                    {stock.locations.map((location) => (
+                                        <option key={location.id} value={location.id}>
+                                            {location.code} · {location.name}
+                                        </option>
+                                    ))}
+                                </ResponsiveSelect>
+                            </label>
+                            <label className="field-label">
+                                Central warehouse
+                                <ResponsiveSelect
+                                    className="mt-1"
+                                    value={stockRequestForm.data.central_id}
+                                    onChange={(event) => stockRequestForm.setData('central_id', event.target.value)}
+                                >
+                                    <option value="">Select warehouse</option>
+                                    {stock.central_locations.map((location) => (
+                                        <option key={location.id} value={location.id}>
+                                            {location.code} · {location.name}
+                                        </option>
+                                    ))}
+                                </ResponsiveSelect>
+                            </label>
+                            <label className="field-label">
+                                Quantity
+                                <input
+                                    className="field mt-1 tabular-nums"
+                                    inputMode="decimal"
+                                    value={stockRequestForm.data.quantity}
+                                    onChange={(event) => stockRequestForm.setData('quantity', event.target.value)}
+                                    placeholder="0.000"
+                                />
+                                {stockRequestForm.errors.quantity && (
+                                    <span className="field-error">{stockRequestForm.errors.quantity}</span>
+                                )}
+                            </label>
+                            <label className="field-label">
+                                Note (optional)
+                                <input
+                                    className="field mt-1"
+                                    value={stockRequestForm.data.note}
+                                    onChange={(event) => stockRequestForm.setData('note', event.target.value)}
+                                    placeholder="Route or return context"
+                                />
+                            </label>
+                            <div className="flex justify-end sm:col-span-2 lg:col-span-3">
+                                <button className="button-primary" disabled={stockRequestForm.processing}>
+                                    Submit stock request
+                                </button>
+                            </div>
+                        </form>
+                    )}
+                    {stock.requests.length > 0 && (
+                        <div className="divide-y divide-line border-t border-line">
+                            {stock.requests.slice(0, 6).map((request) => (
+                                <div key={request.id} className="flex items-start justify-between gap-4 px-5 py-4">
+                                    <div className="min-w-0">
+                                        <p className="truncate text-sm font-semibold">
+                                            {request.item?.name ?? 'Stock request'}
+                                        </p>
+                                        <p className="mt-1 text-xs text-muted">
+                                            {request.source?.code} → {request.destination?.code}
+                                            {request.review_note ? ` · ${request.review_note}` : ''}
+                                        </p>
+                                    </div>
+                                    <div className="shrink-0 text-end">
+                                        <p className="text-sm font-semibold tabular-nums">{request.quantity}</p>
+                                        <p className="mt-1 text-xs font-semibold capitalize text-muted">
+                                            {request.status}
+                                        </p>
+                                    </div>
+                                </div>
+                            ))}
                         </div>
                     )}
                 </section>
