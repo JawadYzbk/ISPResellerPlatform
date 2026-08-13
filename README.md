@@ -101,6 +101,8 @@ The development-only platform operator signs in to **Admin → Tenants** at `/ad
 
 The tenant owner can use **Settings → Pilot readiness** or `php artisan platform:tenant-readiness northline --json` before a pilot handoff. The readiness report treats missing provider credentials and branding as explicit warnings/failures, and flags collection rates older than `FX_RATE_MAX_AGE_HOURS` (72 hours by default).
 
+After configuring an external provider, run `php artisan platform:provider-check --json`. This read-only probe validates only enabled Frankfurter, Stripe, Whish Pay, and WhatsApp Web.js integrations; it never creates a payment, sends a message, or changes tenant data.
+
 ### Docker
 
 ```powershell
