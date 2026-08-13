@@ -15,6 +15,7 @@ use App\Models\CashShift;
 use App\Models\Customer;
 use App\Models\Payment;
 use App\Models\User;
+use App\Support\CollectorTerritories;
 use DomainException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -92,9 +93,14 @@ final class CollectorApiController extends Controller
         ]);
     }
 
-    public function customer(string $customer, GetCollectorCustomer $get): JsonResponse
-    {
+    public function customer(
+        Request $request,
+        string $customer,
+        GetCollectorCustomer $get,
+        CollectorTerritories $territories,
+    ): JsonResponse {
         $customerModel = Customer::query()->where('public_id', $customer)->firstOrFail();
+        abort_unless($territories->allowsCustomer($this->user($request), $customerModel), 404);
         $this->authorize('view', $customerModel);
 
         return response()->json(['data' => $get->handle($customerModel)]);

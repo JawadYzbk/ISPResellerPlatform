@@ -11,12 +11,16 @@ use App\Models\Service;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Support\CollectorSyncToken;
+use App\Support\CollectorTerritories;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
 
 final readonly class GetCollectorSyncSnapshot implements Action
 {
-    public function __construct(private CollectorSyncToken $tokens) {}
+    public function __construct(
+        private CollectorSyncToken $tokens,
+        private CollectorTerritories $territories,
+    ) {}
 
     /** @return array<string, mixed> */
     public function handle(Tenant $tenant, User $user, ?string $zone, ?string $since): array
@@ -24,20 +28,24 @@ final readonly class GetCollectorSyncSnapshot implements Action
         $asOf = CarbonImmutable::now();
         $sinceAt = $since === null ? null : $this->tokens->read($since, $tenant->id, $user->id);
 
-        $customers = Customer::query()
+        $customerQuery = Customer::query()
             ->withTrashed()
             ->with('zone')
             ->when($zone !== null, fn (Builder $query): Builder => $query->whereHas('zone', fn (Builder $zoneQuery): Builder => $zoneQuery->where('code', $zone)))
             ->when($sinceAt !== null, fn (Builder $query): Builder => $query->where('updated_at', '>=', $sinceAt))
-            ->orderBy('id')
-            ->get();
-        $services = Service::query()
+            ->orderBy('id');
+        $this->territories->constrainCustomers($customerQuery, $user);
+        $customers = $customerQuery->get();
+
+        $territoryZoneIds = $this->territories->zoneIds($user);
+        $serviceQuery = Service::query()
             ->withTrashed()
             ->with(['customer', 'plan'])
+            ->when($territoryZoneIds !== null, fn (Builder $query): Builder => $query->whereHas('customer', fn (Builder $customerQuery): Builder => $customerQuery->whereIn('zone_id', $territoryZoneIds)))
             ->when($zone !== null, fn (Builder $query): Builder => $query->whereHas('customer', fn (Builder $customerQuery): Builder => $customerQuery->whereHas('zone', fn (Builder $zoneQuery): Builder => $zoneQuery->where('code', $zone))))
             ->when($sinceAt !== null, fn (Builder $query): Builder => $query->where('updated_at', '>=', $sinceAt))
-            ->orderBy('id')
-            ->get();
+            ->orderBy('id');
+        $services = $serviceQuery->get();
         $plans = Plan::query()
             ->when($sinceAt !== null, fn (Builder $query): Builder => $query->where('updated_at', '>=', $sinceAt))
             ->orderBy('id')
@@ -47,6 +55,10 @@ final readonly class GetCollectorSyncSnapshot implements Action
             'sync_token' => $this->tokens->issue($tenant->id, $user->id, $asOf),
             'generated_at' => $asOf->toIso8601String(),
             'since' => $since,
+            'territory' => [
+                'mode' => $territoryZoneIds === null ? 'all' : 'assigned',
+                'zone_ids' => $territoryZoneIds ?? [],
+            ],
             'data' => [
                 'customers' => $customers->map(fn (Customer $customer): array => $this->customer($customer))->values(),
                 'services' => $services->map(fn (Service $service): array => $this->service($service))->values(),

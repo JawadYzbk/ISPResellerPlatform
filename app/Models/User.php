@@ -8,12 +8,13 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 
-#[Fillable(['tenant_id', 'partner_id', 'name', 'email', 'password', 'role', 'locale', 'timezone'])]
+#[Fillable(['tenant_id', 'partner_id', 'name', 'email', 'password', 'role', 'locale', 'timezone', 'collector_all_zones'])]
 #[Hidden(['password', 'remember_token', 'two_factor_secret', 'two_factor_recovery_codes'])]
 /**
  * @property Carbon|null $last_authenticated_at
@@ -26,6 +27,11 @@ class User extends Authenticatable
 
     protected string $guard_name = 'web';
 
+    /** @var array<string, mixed> */
+    protected $attributes = [
+        'collector_all_zones' => true,
+    ];
+
     protected function casts(): array
     {
         return [
@@ -35,6 +41,7 @@ class User extends Authenticatable
             'two_factor_recovery_codes' => 'encrypted:array',
             'two_factor_secret' => 'encrypted',
             'two_factor_confirmed_at' => 'datetime',
+            'collector_all_zones' => 'boolean',
         ];
     }
 
@@ -52,6 +59,18 @@ class User extends Authenticatable
     public function partner(): BelongsTo
     {
         return $this->belongsTo(Partner::class);
+    }
+
+    /** @return HasMany<CollectorZoneAssignment, $this> */
+    public function collectorZoneAssignments(): HasMany
+    {
+        return $this->hasMany(CollectorZoneAssignment::class);
+    }
+
+    /** @return HasMany<CollectorZoneAssignment, $this> */
+    public function activeCollectorZoneAssignments(): HasMany
+    {
+        return $this->collectorZoneAssignments()->whereNull('ended_at');
     }
 
     public function isPlatformOperator(): bool

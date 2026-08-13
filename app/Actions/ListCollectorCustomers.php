@@ -5,11 +5,14 @@ namespace App\Actions;
 use App\Contracts\Action;
 use App\Models\Customer;
 use App\Models\User;
+use App\Support\CollectorTerritories;
 use Carbon\CarbonImmutable;
 use Illuminate\Pagination\CursorPaginator;
 
 final readonly class ListCollectorCustomers implements Action
 {
+    public function __construct(private CollectorTerritories $territories) {}
+
     /** @param list<string> $statuses @return CursorPaginator<int, Customer> */
     public function handle(User $user, ?string $search = null, ?string $zone = null, array $statuses = [], int $perPage = 50): CursorPaginator
     {
@@ -30,6 +33,8 @@ final readonly class ListCollectorCustomers implements Action
                 });
             })
             ->orderBy('id');
+
+        $this->territories->constrainCustomers($query, $user);
 
         return $query->cursorPaginate(min(max($perPage, 1), 100));
     }

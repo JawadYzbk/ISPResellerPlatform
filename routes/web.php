@@ -7,6 +7,7 @@ use App\Http\Controllers\Auth\ReauthenticateController;
 use App\Http\Controllers\Auth\TwoFactorController;
 use App\Http\Controllers\Web\BillingController;
 use App\Http\Controllers\Web\CashShiftOperationsController;
+use App\Http\Controllers\Web\CollectorTerritoryController;
 use App\Http\Controllers\Web\CredentialOperationsController;
 use App\Http\Controllers\Web\CustomerController;
 use App\Http\Controllers\Web\DashboardController;
@@ -135,6 +136,8 @@ Route::middleware(['auth', 'tenant', '2fa'])->group(function (): void {
     Route::get('/settings/users', [UserOperationsController::class, 'index'])->name('settings.users');
     Route::post('/settings/users/invite', [UserOperationsController::class, 'invite'])->middleware('recent-auth')->name('settings.users.invite');
     Route::patch('/settings/users/{user}', [UserOperationsController::class, 'updateRole'])->middleware('recent-auth')->name('settings.users.role');
+    Route::get('/settings/collector-territories', [CollectorTerritoryController::class, 'index'])->name('settings.collector-territories');
+    Route::patch('/settings/collector-territories/{collector}', [CollectorTerritoryController::class, 'update'])->middleware('recent-auth')->name('settings.collector-territories.update');
     Route::get('/customers', [CustomerController::class, 'index'])->name('customers.index');
     Route::get('/customers/export', [CustomerController::class, 'export'])->name('customers.export');
     Route::post('/customers/saved-views', [CustomerController::class, 'storeSavedView'])->name('customers.saved-views.store');

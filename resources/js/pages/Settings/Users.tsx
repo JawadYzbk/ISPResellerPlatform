@@ -92,6 +92,9 @@ export default function UsersPage({
                 <Link href="/settings/general" className="button-secondary">
                     Workspace settings
                 </Link>
+                <Link href="/settings/collector-territories" className="button-secondary">
+                    Collector territories
+                </Link>
             </div>
 
             {invitation && (

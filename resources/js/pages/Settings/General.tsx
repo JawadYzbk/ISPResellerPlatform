@@ -97,9 +97,7 @@ export default function GeneralSettings({ tenant, settings, currencies, timezone
     const settingsPath = page.url.split('?')[0].replace(/\/+$/, '') || '/';
     const tabClass = (href: string) => (settingsPath === href ? 'button-primary' : 'button-secondary');
     const form = useForm<FormSettings>({ ...settings, name: tenant.name, logo: null });
-    const availableTimezones = timezones.includes(form.data.timezone)
-        ? timezones
-        : [form.data.timezone, ...timezones];
+    const availableTimezones = timezones.includes(form.data.timezone) ? timezones : [form.data.timezone, ...timezones];
     const availableDateFormats = dateFormatOptions.some((option) => option.value === form.data.date_format)
         ? dateFormatOptions
         : [{ value: form.data.date_format, label: form.data.date_format }, ...dateFormatOptions];
@@ -159,6 +157,12 @@ export default function GeneralSettings({ tenant, settings, currencies, timezone
                     </Link>
                     <Link href="/settings/users" className={tabClass('/settings/users')}>
                         {t('Users and invitations')}
+                    </Link>
+                    <Link
+                        href="/settings/collector-territories"
+                        className={tabClass('/settings/collector-territories')}
+                    >
+                        {t('Collector territories')}
                     </Link>
                     <Link href="/settings/locations" className={tabClass('/settings/locations')}>
                         {t('Branches and zones')}
