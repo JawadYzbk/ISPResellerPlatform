@@ -64,6 +64,7 @@ final class SettingsController extends Controller
                 'radius_interim_interval_seconds' => (int) ($settings->settings['radius_interim_interval_seconds'] ?? 300),
             ],
             'currencies' => $currencyCatalog->handle(),
+            'timezones' => \DateTimeZone::listIdentifiers(),
             'payments' => $paymentStatus->handle(),
             'setup' => $setupSignals->handle($tenant),
         ]);

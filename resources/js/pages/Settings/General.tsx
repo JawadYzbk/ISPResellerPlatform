@@ -37,9 +37,25 @@ type Props = {
     tenant: Tenant;
     settings: Settings;
     currencies: CurrencyOption[];
+    timezones: string[];
     payments: Payments;
     setup: SetupSignals;
 };
+
+const dateFormatOptions = [
+    { value: 'Y-m-d', label: '2026-08-13 (Y-m-d)' },
+    { value: 'd/m/Y', label: '13/08/2026 (d/m/Y)' },
+    { value: 'm/d/Y', label: '08/13/2026 (m/d/Y)' },
+    { value: 'd.m.Y', label: '13.08.2026 (d.m.Y)' },
+    { value: 'D, d M Y', label: 'Thu, 13 Aug 2026 (D, d M Y)' },
+] as const;
+
+const timeFormatOptions = [
+    { value: 'H:i', label: '14:30 (24-hour)' },
+    { value: 'H:i:s', label: '14:30:45 (24-hour with seconds)' },
+    { value: 'h:i A', label: '02:30 PM (12-hour)' },
+    { value: 'h:i:s A', label: '02:30:45 PM (12-hour with seconds)' },
+] as const;
 
 function SetupSignal({
     label,
@@ -74,13 +90,22 @@ function SetupSignal({
     );
 }
 
-export default function GeneralSettings({ tenant, settings, currencies, payments, setup }: Props) {
+export default function GeneralSettings({ tenant, settings, currencies, timezones, payments, setup }: Props) {
     const page = usePage<PageProps>();
     const { app } = page.props;
     const t = createTranslator(app.locale);
     const settingsPath = page.url.split('?')[0].replace(/\/+$/, '') || '/';
     const tabClass = (href: string) => (settingsPath === href ? 'button-primary' : 'button-secondary');
     const form = useForm<FormSettings>({ ...settings, name: tenant.name, logo: null });
+    const availableTimezones = timezones.includes(form.data.timezone)
+        ? timezones
+        : [form.data.timezone, ...timezones];
+    const availableDateFormats = dateFormatOptions.some((option) => option.value === form.data.date_format)
+        ? dateFormatOptions
+        : [{ value: form.data.date_format, label: form.data.date_format }, ...dateFormatOptions];
+    const availableTimeFormats = timeFormatOptions.some((option) => option.value === form.data.time_format)
+        ? timeFormatOptions
+        : [{ value: form.data.time_format, label: form.data.time_format }, ...timeFormatOptions];
     const whatsappReady = setup.whatsapp.mode === 'web' ? setup.whatsapp.status === 'ready' : setup.whatsapp.configured;
     const whatsappDetail = whatsappReady
         ? setup.whatsapp.mode === 'web'
@@ -305,12 +330,18 @@ export default function GeneralSettings({ tenant, settings, currencies, payments
                             </label>
                             <label>
                                 <span className="field-label">{t('Timezone')}</span>
-                                <input
+                                <ResponsiveSelect
+                                    id="workspace-timezone"
                                     className="field"
                                     value={form.data.timezone}
                                     onChange={(event) => form.setData('timezone', event.target.value)}
-                                    placeholder="Asia/Beirut"
-                                />
+                                >
+                                    {availableTimezones.map((timezone) => (
+                                        <option key={timezone} value={timezone}>
+                                            {timezone}
+                                        </option>
+                                    ))}
+                                </ResponsiveSelect>
                                 {form.errors.timezone && <p className="field-error">{form.errors.timezone}</p>}
                             </label>
                         </div>
@@ -346,19 +377,33 @@ export default function GeneralSettings({ tenant, settings, currencies, payments
                             </label>
                             <label>
                                 <span className="field-label">{t('Date format')}</span>
-                                <input
+                                <ResponsiveSelect
+                                    id="workspace-date-format"
                                     className="field"
                                     value={form.data.date_format}
                                     onChange={(event) => form.setData('date_format', event.target.value)}
-                                />
+                                >
+                                    {availableDateFormats.map((option) => (
+                                        <option key={option.value} value={option.value}>
+                                            {option.label}
+                                        </option>
+                                    ))}
+                                </ResponsiveSelect>
                             </label>
                             <label>
                                 <span className="field-label">{t('Time format')}</span>
-                                <input
+                                <ResponsiveSelect
+                                    id="workspace-time-format"
                                     className="field"
                                     value={form.data.time_format}
                                     onChange={(event) => form.setData('time_format', event.target.value)}
-                                />
+                                >
+                                    {availableTimeFormats.map((option) => (
+                                        <option key={option.value} value={option.value}>
+                                            {option.label}
+                                        </option>
+                                    ))}
+                                </ResponsiveSelect>
                             </label>
                         </div>
                         <label className="mt-5 flex items-center gap-3 text-sm font-medium">
