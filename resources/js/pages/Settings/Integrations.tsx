@@ -55,11 +55,15 @@ const sourceCopy: Record<Source, string> = {
     missing: 'integrations.not_configured',
 };
 
-function FieldError({ message }: { message?: string }) {
+function FieldError({ id, message }: { id?: string; message?: string }) {
     const { props } = usePage<PageProps>();
     const t = createTranslator(props.app.locale);
 
-    return message ? <p className="field-error" role="alert">{t(message)}</p> : null;
+    return message ? (
+        <p id={id} className="field-error" role="alert">
+            {t(message)}
+        </p>
+    ) : null;
 }
 
 function SecretInput({
@@ -83,9 +87,12 @@ function SecretInput({
         <label className="block">
             <span className="field-label">{label}</span>
             <input
+                id={`integration-${field}`}
                 className="field"
                 type="password"
                 autoComplete="new-password"
+                aria-invalid={Boolean(form.errors[field])}
+                aria-describedby={form.errors[field] ? `integration-${field}-error` : undefined}
                 value={form.data[field]}
                 placeholder={configured ? t('integrations.keep_current_value') : t('integrations.paste_value')}
                 onChange={(event) => form.setData(field, event.target.value)}
@@ -102,7 +109,7 @@ function SecretInput({
                 />
                 {t('integrations.clear_saved_value')}
             </label>
-            <FieldError message={form.errors[field]} />
+            <FieldError id={`integration-${field}-error`} message={form.errors[field]} />
         </label>
     );
 }
@@ -177,14 +184,17 @@ export default function Integrations({ settings, configured, sources }: Props) {
                         <label className="block max-w-sm">
                             <span className="field-label">{t('integrations.online_payment_driver')}</span>
                             <ResponsiveSelect
+                                id="integration-payment-driver"
                                 className="field"
+                                aria-invalid={Boolean(form.errors.payment_driver)}
+                                aria-describedby={form.errors.payment_driver ? 'integration-payment-driver-error' : undefined}
                                 value={form.data.payment_driver}
                                 onChange={(event) => update('payment_driver', event.target.value)}
                             >
                                 <option value="null">{t('integrations.cash_only')}</option>
                                 <option value="stripe">Stripe</option>
                             </ResponsiveSelect>
-                            <FieldError message={form.errors.payment_driver} />
+                            <FieldError id="integration-payment-driver-error" message={form.errors.payment_driver} />
                         </label>
                     </section>
 
@@ -215,22 +225,28 @@ export default function Integrations({ settings, configured, sources }: Props) {
                             <label>
                                 <span className="field-label">{t('integrations.api_endpoint')}</span>
                                 <input
+                                    id="integration-frankfurter-endpoint"
                                     className="field"
+                                    aria-invalid={Boolean(form.errors.frankfurter_endpoint)}
+                                    aria-describedby={form.errors.frankfurter_endpoint ? 'integration-frankfurter-endpoint-error' : undefined}
                                     value={form.data.frankfurter_endpoint}
                                     onChange={(event) => update('frankfurter_endpoint', event.target.value)}
                                 />
-                                <FieldError message={form.errors.frankfurter_endpoint} />
+                                <FieldError id="integration-frankfurter-endpoint-error" message={form.errors.frankfurter_endpoint} />
                             </label>
                             <label>
                                 <span className="field-label">{t('integrations.quote_currencies')}</span>
                                 <input
+                                    id="integration-frankfurter-quotes"
                                     className="field"
+                                    aria-invalid={Boolean(form.errors.frankfurter_quotes)}
+                                    aria-describedby={form.errors.frankfurter_quotes ? 'integration-frankfurter-quotes-error' : undefined}
                                     value={form.data.frankfurter_quotes}
                                     onChange={(event) => update('frankfurter_quotes', event.target.value)}
                                     placeholder="LBP,USD,EUR"
                                 />
                                 <p className="mt-1 text-xs text-muted">{t('integrations.currency_codes_note')}</p>
-                                <FieldError message={form.errors.frankfurter_quotes} />
+                                <FieldError id="integration-frankfurter-quotes-error" message={form.errors.frankfurter_quotes} />
                             </label>
                             <label>
                                 <span className="field-label">{t('integrations.connect_timeout')}</span>

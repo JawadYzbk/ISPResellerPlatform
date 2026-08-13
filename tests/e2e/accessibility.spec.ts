@@ -512,6 +512,34 @@ test('connects IP pool creation errors to their controls', async ({ page }) => {
     await expect(page.locator('#pool-name-error')).toHaveAttribute('role', 'alert');
 });
 
+test('connects integration validation errors to their controls', async ({ page }) => {
+    test.setTimeout(60_000);
+
+    await page.goto('/login');
+    await page.getByLabel('Email address').fill(email);
+    await page.getByRole('textbox', { name: 'Password' }).fill(password);
+    await Promise.all([
+        page.waitForURL(/\/(dashboard|customers|profile)$/),
+        page.getByRole('button', { name: 'Enter workspace' }).click(),
+    ]);
+
+    await page.goto('/security/reauthenticate');
+    await page.getByRole('textbox', { name: 'Password' }).fill(password);
+    await Promise.all([
+        page.waitForURL(/\/(dashboard|customers|profile)$/),
+        page.getByRole('button', { name: 'Confirm' }).click(),
+    ]);
+
+    await page.goto('/settings/integrations');
+    await page.locator('#integration-frankfurter-quotes').fill('invalid');
+    await page.locator('form').filter({ has: page.locator('#integration-frankfurter-quotes') }).locator('button[type="submit"]').click();
+
+    const quotes = page.locator('#integration-frankfurter-quotes');
+    await expect(quotes).toHaveAttribute('aria-invalid', 'true');
+    await expect(quotes).toHaveAttribute('aria-describedby', 'integration-frankfurter-quotes-error');
+    await expect(page.locator('#integration-frankfurter-quotes-error')).toHaveAttribute('role', 'alert');
+});
+
 test('connects service validation errors to their controls', async ({ page }) => {
     test.setTimeout(60_000);
 
