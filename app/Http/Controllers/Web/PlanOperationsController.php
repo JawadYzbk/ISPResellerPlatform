@@ -3,18 +3,22 @@
 namespace App\Http\Controllers\Web;
 
 use App\Actions\ArchiveAddon;
+use App\Actions\ArchivePlanUsageRate;
 use App\Actions\ArchivePromotion;
 use App\Actions\CreateAddon;
 use App\Actions\CreatePlan;
+use App\Actions\CreatePlanUsageRate;
 use App\Actions\CreatePromotion;
 use App\Actions\GetCurrencyCatalog;
 use App\Actions\ListPlans;
 use App\Actions\UpdateAddon;
 use App\Actions\UpdatePlan;
+use App\Actions\UpdatePlanUsageRate;
 use App\Actions\UpdatePromotion;
 use App\Http\Controllers\Controller;
 use App\Models\Addon;
 use App\Models\Plan;
+use App\Models\PlanUsageRate;
 use App\Models\Promotion;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
@@ -75,6 +79,21 @@ final class PlanOperationsController extends Controller
                 'billing_period_days' => $addon->billing_period_days,
                 'status' => $addon->status,
             ])->values(),
+            'usageRates' => PlanUsageRate::query()->with('plan')->orderBy('status')->orderByDesc('effective_from')->get()->map(fn (PlanUsageRate $rate): array => [
+                'public_id' => $rate->public_id,
+                'plan_id' => $rate->plan->public_id,
+                'plan_name' => $rate->plan->name,
+                'name' => $rate->name,
+                'metric' => $rate->metric,
+                'included_bytes' => $rate->included_bytes,
+                'unit_bytes' => $rate->unit_bytes,
+                'amount_minor' => $rate->amount_minor,
+                'currency' => $rate->currency,
+                'rounding' => $rate->rounding,
+                'effective_from' => $rate->effective_from->toDateString(),
+                'effective_to' => $rate->effective_to?->toDateString(),
+                'status' => $rate->status,
+            ])->values(),
             'promotions' => Promotion::query()->orderByDesc('starts_at')->get()->map(fn (Promotion $promotion): array => [
                 'public_id' => $promotion->public_id,
                 'name' => $promotion->name,
@@ -119,6 +138,39 @@ final class PlanOperationsController extends Controller
         $archive->handle($addon);
 
         return redirect()->route('plans.index')->with('success', 'Addon archived.');
+    }
+
+    public function storeUsageRate(Request $request, CreatePlanUsageRate $create): RedirectResponse
+    {
+        $this->ensureManager($request);
+        $data = $this->usageRateData($request, true);
+        $plan = Plan::query()->where('public_id', $data['plan_public_id'])->firstOrFail();
+        unset($data['plan_public_id']);
+        $create->handle($plan, $data);
+
+        return redirect()->route('plans.index')
+            ->with('success_title', 'Usage rate created')
+            ->with('success', 'The plan usage rate is ready for renewal rating.');
+    }
+
+    public function updateUsageRate(Request $request, PlanUsageRate $usageRate, UpdatePlanUsageRate $update): RedirectResponse
+    {
+        $this->ensureManager($request);
+        $update->handle($usageRate, $this->usageRateData($request));
+
+        return redirect()->route('plans.index')
+            ->with('success_title', 'Usage rate updated')
+            ->with('success', 'Future renewals will use the updated usage rate.');
+    }
+
+    public function archiveUsageRate(Request $request, PlanUsageRate $usageRate, ArchivePlanUsageRate $archive): RedirectResponse
+    {
+        $this->ensureManager($request);
+        $archive->handle($usageRate);
+
+        return redirect()->route('plans.index')
+            ->with('success_title', 'Usage rate archived')
+            ->with('success', 'The rate will no longer be selected for new renewals.');
     }
 
     public function storePromotion(Request $request, CreatePromotion $create): RedirectResponse
@@ -275,6 +327,45 @@ final class PlanOperationsController extends Controller
         $data['code'] = strtoupper(trim((string) $data['code']));
 
         return $data;
+    }
+
+    /** @return array<string, mixed> */
+    private function usageRateData(Request $request, bool $includePlan = false): array
+    {
+        $rules = [
+            'name' => ['required', 'string', 'max:255'],
+            'included_gb' => ['required', 'numeric', 'min:0', 'max:1000000000'],
+            'unit_gb' => ['required', 'numeric', 'gt:0', 'max:1000000000'],
+            'amount_minor' => ['required', 'integer', 'min:0'],
+            'currency' => ['required', 'string', 'size:3', 'regex:/^[A-Za-z]{3}$/'],
+            'rounding' => ['required', Rule::in(['ceil', 'floor', 'half_up'])],
+            'effective_from' => ['required', 'date_format:Y-m-d'],
+            'effective_to' => ['nullable', 'date_format:Y-m-d', 'after_or_equal:effective_from'],
+            'status' => ['required', Rule::in(['active', 'inactive'])],
+        ];
+        if ($includePlan) {
+            $rules['plan_public_id'] = ['required', 'string', 'max:26'];
+        }
+        $data = $request->validate($rules);
+        $data['included_bytes'] = $this->gigabytesToBytes((string) $data['included_gb']);
+        $data['unit_bytes'] = $this->gigabytesToBytes((string) $data['unit_gb']);
+        $data['metric'] = 'total_octets';
+        $data['currency'] = strtoupper((string) $data['currency']);
+        unset($data['included_gb'], $data['unit_gb']);
+
+        if ($data['unit_bytes'] < 1) {
+            throw ValidationException::withMessages(['unit_gb' => 'The billing unit must be greater than zero.']);
+        }
+
+        return $data;
+    }
+
+    private function gigabytesToBytes(string $value): int
+    {
+        [$whole, $fraction] = array_pad(explode('.', trim($value), 2), 2, '');
+        $fraction = str_pad(substr($fraction, 0, 9), 9, '0');
+
+        return ((int) $whole * 1000000000) + (int) $fraction;
     }
 
     private function ensureUniqueAddonSlug(string $slug, ?Addon $except = null): void
