@@ -1,11 +1,15 @@
-import { Head, useForm } from '@inertiajs/react';
+import { Head, useForm, usePage } from '@inertiajs/react';
 import { CheckCircle2, LockKeyhole, UserPlus } from 'lucide-react';
 
 import AuthLayout from '@/layouts/AuthLayout';
+import { createTranslator } from '@/lib/i18n';
+import type { PageProps } from '@/types';
 
 type Props = { token: string };
 
 export default function AcceptInvitation({ token }: Props) {
+    const { props } = usePage<PageProps>();
+    const t = createTranslator(props.app.locale);
     const form = useForm({ name: '', password: '', password_confirmation: '' });
 
     const submit = (event: React.FormEvent) => {
@@ -15,16 +19,16 @@ export default function AcceptInvitation({ token }: Props) {
 
     return (
         <AuthLayout>
-            <Head title="Accept invitation" />
+            <Head title={t('auth.accept_invitation')} />
             <div className="mb-8 grid size-12 place-items-center rounded-2xl bg-brand text-white">
                 <UserPlus size={22} />
             </div>
-            <p className="eyebrow">Tenant invitation</p>
-            <h1 className="page-title">Create your operator account</h1>
-            <p className="page-subtitle">Set your name and password to join the ISP Manager workspace.</p>
+            <p className="eyebrow">{t('auth.tenant_invitation')}</p>
+            <h1 className="page-title">{t('auth.create_operator_account')}</h1>
+            <p className="page-subtitle">{t('auth.invitation_description')}</p>
             <form onSubmit={submit} className="card mt-8 space-y-5 p-6">
                 <label>
-                    <span className="field-label">Full name</span>
+                    <span className="field-label">{t('auth.full_name')}</span>
                     <input
                         className="field"
                         autoComplete="name"
@@ -34,7 +38,7 @@ export default function AcceptInvitation({ token }: Props) {
                     {form.errors.name && <p className="field-error">{form.errors.name}</p>}
                 </label>
                 <label>
-                    <span className="field-label">Password</span>
+                    <span className="field-label">{t('Password')}</span>
                     <input
                         className="field"
                         type="password"
@@ -43,10 +47,10 @@ export default function AcceptInvitation({ token }: Props) {
                         onChange={(event) => form.setData('password', event.target.value)}
                     />
                     {form.errors.password && <p className="field-error">{form.errors.password}</p>}
-                    <p className="mt-1 text-xs text-muted">Use at least 12 characters.</p>
+                    <p className="mt-1 text-xs text-muted">{t('auth.minimum_password')}</p>
                 </label>
                 <label>
-                    <span className="field-label">Confirm password</span>
+                    <span className="field-label">{t('auth.confirm_password')}</span>
                     <input
                         className="field"
                         type="password"
@@ -56,10 +60,10 @@ export default function AcceptInvitation({ token }: Props) {
                     />
                 </label>
                 <button className="button-primary w-full" disabled={form.processing}>
-                    <CheckCircle2 size={16} /> Accept invitation
+                    <CheckCircle2 size={16} /> {t('auth.accept_invitation')}
                 </button>
                 <p className="flex items-center gap-2 text-xs text-muted">
-                    <LockKeyhole size={14} /> The invitation is one-time and expires automatically.
+                    <LockKeyhole size={14} /> {t('auth.invitation_expiry')}
                 </p>
             </form>
         </AuthLayout>
