@@ -45,7 +45,7 @@ Sources:
 | Subscription, usage-based and one-time billing combinations | Partial | Add recurring invoice items and a metered-rating engine over usage/readings; retain operator-created invoice lines. |
 | Plan upgrades and renewals | Delivered | Keep immediate/next-cycle swaps, proration, multi-period renewal and router/RADIUS sync. |
 | Bulk billing operations | Partial | Add a previewable bulk invoice/renewal desk with row-level outcomes and idempotent retries. |
-| PDF invoices, receipts and Excel exports | Delivered | Add compact 58/80 mm browser print layouts now; Bluetooth printing remains mobile-phase work. |
+| PDF invoices, receipts and Excel exports | Delivered | A4 documents and compact 58/80 mm browser-printable receipts are delivered; Bluetooth printing remains mobile-phase work. |
 | Revenue, pending, overdue and financial reports | Delivered | Keep allocation-backed aging, margin, ARPU, retention, usage and reseller reporting. |
 | Cash collection and automatic reconciliation | Delivered | Keep append-only payments, cash shifts, allocations, reversals and daily collector totals. |
 | Lebanon multi-currency collection | Exceeds reference | Keep USD/LBP/AED support, FX snapshots, Frankfurter import, manual rates, Whish, Stripe and configurable rounding including nearest LBP 5,000. |
@@ -59,7 +59,7 @@ Sources:
 | Stock assigned to collectors and field sales | Delivered for responsive web | Collector/vehicle custody locations, audited direct transfers, replenishment and return approvals, stale-safe physical counts, manager-posted variances, and paid customer field sales are implemented. Sales atomically issue an invoice, record payment, update cash custody for cash methods, decrement stock and append movement history. |
 | Generic business expenses | Delivered for responsive web | Tenant-scoped categories and vendors, private receipt attachments, pending approval, cash/bank/collector sources, atomic ledger and custody posting, and pausable weekly/monthly/quarterly/yearly schedules are implemented. Recurring occurrences remain pending until a manager approves them. |
 | Customer/admin WhatsApp and SMS notifications | Delivered/partial | Complete live provider acceptance; retain multi-account jobs, deduplication, pacing and audit history. |
-| Customer portal and public invoice/payment access | Delivered/partial | Finish branded tenant-domain payment links, statement sharing, receipt access and production gateway acceptance. |
+| Customer portal and public invoice/payment access | Delivered for responsive web | Expiring, revocable branded invoice, statement, receipt and payment links are delivered with Stripe checkout, Whish QR collection, compact receipt downloads and hash-only token storage. Custom tenant domains and live gateway acceptance remain operational gates. |
 | Multi-company distributor operation | Delivered | Keep the stronger tenant and reseller hierarchy, wallets, price books, commissions and settlements. |
 | Network integrations | Exceeds reference in RouterOS/RADIUS; gap in optical access | Complete RouterOS/CoA lab acceptance, then add OLT/ONU installation inventory and a vendor-neutral optical driver boundary. |
 | Installations | Partial | Extend work orders into installation surveys, box/port/ONU assignment, optical readings and activation acceptance. |
@@ -95,7 +95,7 @@ Sources:
 1. Per-service custom billing anchors and cycle-change previews.
 2. Recurring invoice items, usage rating and safe bulk billing.
 3. Generic operational expenses with approval and ledger posting. **Delivered for responsive web.**
-4. Branded public payment/statement links and compact browser receipts.
+4. Branded public payment/statement links and compact browser receipts. **Delivered for responsive web.**
 5. Owner-facing backup health and audited business exports.
 
 ### Phase 4: physical ISP topology
