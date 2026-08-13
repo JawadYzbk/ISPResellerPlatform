@@ -72,6 +72,16 @@ export default function PaymentCreate({ customer, invoices, defaultCurrency, pay
     const fractionDigits = selectedCurrency?.decimal_digits ?? currencyFractionDigits(form.data.currency);
     const needsFx = form.data.currency !== customer.balance_currency;
     const whishSupported = whishEnabled && ['USD', 'LBP', 'AED'].includes(form.data.currency);
+    const fieldA11y = (name: keyof typeof form.data) => ({
+        'aria-invalid': Boolean(form.errors[name]),
+        'aria-describedby': form.errors[name] ? `${name}-error` : undefined,
+    });
+    const fieldError = (name: keyof typeof form.data) =>
+        form.errors[name] ? (
+            <p id={`${name}-error`} className="field-error" role="alert">
+                {t(form.errors[name])}
+            </p>
+        ) : null;
 
     const formatRate = (rate: FxRateSnapshot) => {
         const targetPerSource = rate.numerator / rate.denominator;
@@ -192,6 +202,7 @@ export default function PaymentCreate({ customer, invoices, defaultCurrency, pay
                             min="0"
                             step={fractionDigits === 0 ? '1' : '0.01'}
                             className="field"
+                            {...fieldA11y('amount')}
                             placeholder={fractionDigits === 0 ? '0' : '0.00'}
                             value={form.data.amount}
                             onChange={(event) => form.setData('amount', event.target.value)}
@@ -200,7 +211,7 @@ export default function PaymentCreate({ customer, invoices, defaultCurrency, pay
                             {t('Enter the amount in')} {form.data.currency}.{' '}
                             {t('The ledger stores the converted value in')} {customer.balance_currency}.
                         </p>
-                        {form.errors.amount && <p className="field-error" role="alert">{t(form.errors.amount)}</p>}
+                        {fieldError('amount')}
                     </div>
                     <div>
                         <label className="field-label" htmlFor="currency">
@@ -209,6 +220,8 @@ export default function PaymentCreate({ customer, invoices, defaultCurrency, pay
                         <CurrencyCombobox
                             id="currency"
                             className="field"
+                            aria-invalid={Boolean(form.errors.currency)}
+                            aria-describedby={form.errors.currency ? 'currency-error' : undefined}
                             value={form.data.currency}
                             currencies={paymentCurrencies}
                             onChange={selectCurrency}
@@ -222,7 +235,7 @@ export default function PaymentCreate({ customer, invoices, defaultCurrency, pay
                                 {t('No effective rate is available for this currency pair.')}
                             </p>
                         ) : null}
-                        {form.errors.currency && <p className="field-error" role="alert">{t(form.errors.currency)}</p>}
+                        {fieldError('currency')}
                     </div>
                     <div>
                         <label className="field-label" htmlFor="invoice_id">
@@ -231,6 +244,7 @@ export default function PaymentCreate({ customer, invoices, defaultCurrency, pay
                         <ResponsiveSelect
                             id="invoice_id"
                             className="field"
+                            {...fieldA11y('invoice_id')}
                             value={form.data.invoice_id}
                             onChange={(event) => selectInvoice(event.target.value)}
                         >
@@ -242,7 +256,7 @@ export default function PaymentCreate({ customer, invoices, defaultCurrency, pay
                                 </option>
                             ))}
                         </ResponsiveSelect>
-                        {form.errors.invoice_id && <p className="field-error" role="alert">{t(form.errors.invoice_id)}</p>}
+                        {fieldError('invoice_id')}
                     </div>
                     <div>
                         <label className="field-label" htmlFor="method">
@@ -251,6 +265,7 @@ export default function PaymentCreate({ customer, invoices, defaultCurrency, pay
                         <ResponsiveSelect
                             id="method"
                             className="field"
+                            {...fieldA11y('method')}
                             value={form.data.method}
                             onChange={(event) => form.setData('method', event.target.value)}
                         >
@@ -259,7 +274,7 @@ export default function PaymentCreate({ customer, invoices, defaultCurrency, pay
                             <option value="card">{t('Card (manual record)')}</option>
                             <option value="mobile_wallet">{t('Mobile wallet')}</option>
                         </ResponsiveSelect>
-                        {form.errors.method && <p className="field-error" role="alert">{t(form.errors.method)}</p>}
+                        {fieldError('method')}
                     </div>
                     {needsFx && (
                         <div className="space-y-4 rounded-xl border border-line bg-sand px-4 py-4">
@@ -288,12 +303,11 @@ export default function PaymentCreate({ customer, invoices, defaultCurrency, pay
                                             type="number"
                                             min="1"
                                             className="field"
+                                            {...fieldA11y('fx_rate_numerator')}
                                             value={form.data.fx_rate_numerator}
                                             onChange={(event) => form.setData('fx_rate_numerator', event.target.value)}
                                         />
-                                        {form.errors.fx_rate_numerator && (
-                                            <p className="field-error" role="alert">{t(form.errors.fx_rate_numerator)}</p>
-                                        )}
+                                        {fieldError('fx_rate_numerator')}
                                     </div>
                                     <div>
                                         <label className="field-label" htmlFor="fx_rate_denominator">
@@ -304,14 +318,13 @@ export default function PaymentCreate({ customer, invoices, defaultCurrency, pay
                                             type="number"
                                             min="1"
                                             className="field"
+                                            {...fieldA11y('fx_rate_denominator')}
                                             value={form.data.fx_rate_denominator}
                                             onChange={(event) =>
                                                 form.setData('fx_rate_denominator', event.target.value)
                                             }
                                         />
-                                        {form.errors.fx_rate_denominator && (
-                                            <p className="field-error" role="alert">{t(form.errors.fx_rate_denominator)}</p>
-                                        )}
+                                        {fieldError('fx_rate_denominator')}
                                     </div>
                                     <div className="sm:col-span-2">
                                         <label className="field-label" htmlFor="fx_override_reason">
@@ -321,13 +334,12 @@ export default function PaymentCreate({ customer, invoices, defaultCurrency, pay
                                             id="fx_override_reason"
                                             type="text"
                                             className="field"
+                                            {...fieldA11y('fx_override_reason')}
                                             placeholder={t('Approved counter rate')}
                                             value={form.data.fx_override_reason}
                                             onChange={(event) => form.setData('fx_override_reason', event.target.value)}
                                         />
-                                        {form.errors.fx_override_reason && (
-                                            <p className="field-error" role="alert">{t(form.errors.fx_override_reason)}</p>
-                                        )}
+                                        {fieldError('fx_override_reason')}
                                     </div>
                                 </div>
                             )}
@@ -338,6 +350,7 @@ export default function PaymentCreate({ customer, invoices, defaultCurrency, pay
                                 <ResponsiveSelect
                                     id="rounding_mode"
                                     className="field"
+                                    {...fieldA11y('rounding_mode')}
                                     value={form.data.rounding_mode}
                                     onChange={(event) => form.setData('rounding_mode', event.target.value)}
                                 >
@@ -351,9 +364,7 @@ export default function PaymentCreate({ customer, invoices, defaultCurrency, pay
                                         'The selected policy is saved with the payment rate for audit and receipt history.',
                                     )}
                                 </p>
-                                {form.errors.rounding_mode && (
-                                    <p className="field-error" role="alert">{t(form.errors.rounding_mode)}</p>
-                                )}
+                                {fieldError('rounding_mode')}
                             </div>
                         </div>
                     )}
@@ -365,11 +376,12 @@ export default function PaymentCreate({ customer, invoices, defaultCurrency, pay
                             id="reference"
                             type="text"
                             className="field"
+                            {...fieldA11y('reference')}
                             placeholder={t('Receipt or transfer reference')}
                             value={form.data.reference}
                             onChange={(event) => form.setData('reference', event.target.value)}
                         />
-                        {form.errors.reference && <p className="field-error" role="alert">{t(form.errors.reference)}</p>}
+                        {fieldError('reference')}
                     </div>
                     {form.data.invoice_id && form.data.currency !== customer.balance_currency && (
                         <p className="text-xs text-muted">

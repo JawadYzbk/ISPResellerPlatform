@@ -254,6 +254,28 @@ test('connects plan pricing errors to their controls', async ({ page }) => {
     await expect(page.locator('#amount-error')).toHaveAttribute('role', 'alert');
 });
 
+test('connects payment validation errors to their controls', async ({ page }) => {
+    test.setTimeout(60_000);
+
+    await page.goto('/login');
+    await page.getByLabel('Email address').fill(email);
+    await page.getByRole('textbox', { name: 'Password' }).fill(password);
+    await Promise.all([
+        page.waitForURL(/\/(dashboard|customers|profile)$/),
+        page.getByRole('button', { name: 'Enter workspace' }).click(),
+    ]);
+
+    const customerPath = await findDetailPath(page, '/customers', /^\/customers\/(?!create$)[^/]+$/);
+    expect(customerPath).not.toBeNull();
+    await page.goto(`${customerPath}/payments/create`);
+    await page.locator('form button[type="submit"]').click();
+
+    const amount = page.locator('#amount');
+    await expect(amount).toHaveAttribute('aria-invalid', 'true');
+    await expect(amount).toHaveAttribute('aria-describedby', 'amount-error');
+    await expect(page.locator('#amount-error')).toHaveAttribute('role', 'alert');
+});
+
 test('keeps customer portal sign-in inputs accessible', async ({ page }) => {
     await auditPage(page, '/portal/northline');
 
