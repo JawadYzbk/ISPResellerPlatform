@@ -1,4 +1,4 @@
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import {
     AlertTriangle,
     Archive,
@@ -11,6 +11,8 @@ import {
 } from 'lucide-react';
 
 import AppLayout from '@/layouts/AppLayout';
+import { createTranslator } from '@/lib/i18n';
+import type { PageProps } from '@/types';
 
 type Status = 'PASS' | 'WARN' | 'FAIL';
 type Check = { name: string; status: Status; detail: string };
@@ -108,41 +110,45 @@ function formatBytes(bytes: number): string {
     return `${(bytes / (1024 * 1024 * 1024)).toFixed(1)} GB`;
 }
 
-function formatBackupDate(value: string | null): string {
-    if (!value) return 'No archive found';
+function formatBackupDate(value: string | null, locale: string, translate: (key: string) => string): string {
+    if (!value) return translate('No archive found');
 
     const date = new Date(value);
 
-    return Number.isNaN(date.getTime()) ? 'Unknown' : date.toLocaleString();
+    return Number.isNaN(date.getTime()) ? translate('Unknown') : date.toLocaleString(locale);
 }
 
 export default function Readiness({ overall, checks, providerChecks = null, backupHealth }: Props) {
+    const page = usePage<PageProps>();
+    const t = createTranslator(page.props.app.locale);
     const summary = statusCopy[overall];
     const providerForm = useForm({});
     const backupForm = useForm({});
 
     return (
         <AppLayout>
-            <Head title="Pilot readiness" />
+            <Head title={t('Pilot readiness')} />
             <Link
                 href="/settings/general"
                 className="mb-6 inline-flex items-center gap-2 text-sm font-semibold text-muted hover:text-brand"
             >
-                <ArrowLeft size={16} /> Back to workspace settings
+                <ArrowLeft size={16} /> {t('Back to workspace settings')}
             </Link>
             <div className="max-w-4xl">
-                <p className="eyebrow">Handoff checklist</p>
-                <h1 className="page-title">Pilot readiness</h1>
+                <p className="eyebrow">{t('Handoff checklist')}</p>
+                <h1 className="page-title">{t('Pilot readiness')}</h1>
                 <p className="page-subtitle">
-                    Review the same tenant, billing, messaging, and provider checks used by the release handoff command.
+                    {t(
+                        'Review the same tenant, billing, messaging, and provider checks used by the release handoff command.',
+                    )}
                 </p>
 
                 <section className="card mt-6 flex items-start gap-4 p-6">
                     <StatusIcon status={overall} />
                     <div>
-                        <p className="eyebrow">Overall status</p>
-                        <h2 className={`mt-2 text-xl font-semibold ${summary.className}`}>{summary.label}</h2>
-                        <p className="mt-1 text-sm text-muted">{summary.detail}</p>
+                        <p className="eyebrow">{t('Overall status')}</p>
+                        <h2 className={`mt-2 text-xl font-semibold ${summary.className}`}>{t(summary.label)}</h2>
+                        <p className="mt-1 text-sm text-muted">{t(summary.detail)}</p>
                     </div>
                 </section>
 
@@ -154,14 +160,14 @@ export default function Readiness({ overall, checks, providerChecks = null, back
                             <div key={check.name} className="flex items-start gap-4 px-5 py-4">
                                 <StatusIcon status={check.status} />
                                 <div className="min-w-0 flex-1">
-                                    <p className="text-sm font-semibold">{check.name}</p>
-                                    <p className="mt-1 text-sm text-muted">{check.detail}</p>
+                                    <p className="text-sm font-semibold">{t(check.name)}</p>
+                                    <p className="mt-1 text-sm text-muted">{t(check.detail)}</p>
                                     {link && check.status !== 'PASS' && (
                                         <Link
                                             href={link}
                                             className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-brand"
                                         >
-                                            Review setup <ExternalLink size={13} />
+                                            {t('Review setup')} <ExternalLink size={13} />
                                         </Link>
                                     )}
                                 </div>
@@ -186,9 +192,9 @@ export default function Readiness({ overall, checks, providerChecks = null, back
                         <div className="flex items-start gap-3">
                             <Archive className="mt-0.5 shrink-0 text-brand" size={19} />
                             <div>
-                                <p className="eyebrow">Recovery</p>
-                                <h2 className="mt-1 text-base font-semibold">Backup health</h2>
-                                <p className="mt-1 text-sm text-muted text-pretty">{backupHealth.detail}</p>
+                                <p className="eyebrow">{t('Recovery')}</p>
+                                <h2 className="mt-1 text-base font-semibold">{t('Backup health')}</h2>
+                                <p className="mt-1 text-sm text-muted text-pretty">{t(backupHealth.detail)}</p>
                             </div>
                         </div>
                         <span className={`text-xs font-semibold ${statusCopy[backupHealth.status].className}`}>
@@ -197,8 +203,9 @@ export default function Readiness({ overall, checks, providerChecks = null, back
                     </div>
                     <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line bg-sand/30 px-5 py-4">
                         <p className="max-w-2xl text-sm text-muted">
-                            Create a fresh encrypted archive after configuration changes. Restore operations stay
-                            server-controlled and follow the documented isolated restore runbook.
+                            {t(
+                                'Create a fresh encrypted archive after configuration changes. Restore operations stay server-controlled and follow the documented isolated restore runbook.',
+                            )}
                         </p>
                         <button
                             type="button"
@@ -211,23 +218,29 @@ export default function Readiness({ overall, checks, providerChecks = null, back
                             ) : (
                                 <Archive size={16} />
                             )}
-                            {backupForm.processing ? 'Creating backup…' : 'Create backup now'}
+                            {backupForm.processing ? t('Creating backup…') : t('Create backup now')}
                         </button>
                     </div>
                     <div className="grid gap-3 border-b border-line px-5 py-4 text-sm sm:grid-cols-3">
                         <div>
                             <p className="text-xs font-semibold uppercase tracking-wide text-muted">
-                                Archive verification
+                                {t('Archive verification')}
                             </p>
-                            <p className="mt-1 font-semibold">{backupHealth.verify_backup ? 'Enabled' : 'Disabled'}</p>
+                            <p className="mt-1 font-semibold">
+                                {backupHealth.verify_backup ? t('Enabled') : t('Disabled')}
+                            </p>
                         </div>
                         <div>
-                            <p className="text-xs font-semibold uppercase tracking-wide text-muted">Encryption</p>
+                            <p className="text-xs font-semibold uppercase tracking-wide text-muted">
+                                {t('Encryption')}
+                            </p>
                             <p className="mt-1 font-semibold">{backupHealth.encryption}</p>
                         </div>
                         <div>
-                            <p className="text-xs font-semibold uppercase tracking-wide text-muted">Checked</p>
-                            <p className="mt-1 font-semibold">{formatBackupDate(backupHealth.checked_at)}</p>
+                            <p className="text-xs font-semibold uppercase tracking-wide text-muted">{t('Checked')}</p>
+                            <p className="mt-1 font-semibold">
+                                {formatBackupDate(backupHealth.checked_at, page.props.app.locale, t)}
+                            </p>
                         </div>
                     </div>
                     <div className="divide-y divide-line">
@@ -250,15 +263,15 @@ export default function Readiness({ overall, checks, providerChecks = null, back
                                                 </span>
                                             </div>
                                             <p className="mt-1 text-sm text-muted">
-                                                {destination.backup_count} archive(s) · Latest:{' '}
-                                                {formatBackupDate(destination.newest_at)} ·{' '}
+                                                {destination.backup_count} {t('archive(s)')} · {t('Latest')}:{' '}
+                                                {formatBackupDate(destination.newest_at, page.props.app.locale, t)} ·{' '}
                                                 {formatBytes(destination.used_storage_bytes)}
                                             </p>
                                             {destination.failures.length > 0 && (
                                                 <div className="mt-2 space-y-1 text-xs text-amber-800">
                                                     {destination.failures.map((failure) => (
                                                         <p key={`${destination.disk}-${failure.check}`}>
-                                                            {failure.message}
+                                                            {t(failure.message)}
                                                         </p>
                                                     ))}
                                                 </div>
@@ -274,11 +287,12 @@ export default function Readiness({ overall, checks, providerChecks = null, back
                 <section className="card mt-6 overflow-hidden">
                     <div className="flex flex-wrap items-start justify-between gap-4 border-b border-line px-5 py-5">
                         <div>
-                            <p className="eyebrow">External services</p>
-                            <h2 className="mt-1 text-base font-semibold">Provider connectivity</h2>
+                            <p className="eyebrow">{t('External services')}</p>
+                            <h2 className="mt-1 text-base font-semibold">{t('Provider connectivity')}</h2>
                             <p className="mt-1 text-sm text-muted">
-                                Read-only probes use server-side credentials and never create a payment or send a
-                                message.
+                                {t(
+                                    'Read-only probes use server-side credentials and never create a payment or send a message.',
+                                )}
                             </p>
                         </div>
                         <button
@@ -294,7 +308,7 @@ export default function Readiness({ overall, checks, providerChecks = null, back
                             ) : (
                                 <RefreshCw size={16} />
                             )}
-                            {providerForm.processing ? 'Checking…' : 'Run provider checks'}
+                            {providerForm.processing ? t('Checking…') : t('Run provider checks')}
                         </button>
                     </div>
                     {providerChecks ? (
@@ -303,7 +317,9 @@ export default function Readiness({ overall, checks, providerChecks = null, back
                                 <div key={provider} className="flex items-start gap-3 px-5 py-4">
                                     <ProviderIcon status={check.status} />
                                     <div className="min-w-0 flex-1">
-                                        <p className="text-sm font-semibold">{providerLabels[provider] ?? provider}</p>
+                                        <p className="text-sm font-semibold">
+                                            {t(providerLabels[provider] ?? provider)}
+                                        </p>
                                         <p className="mt-1 text-sm text-muted">{check.detail}</p>
                                     </div>
                                     <span
@@ -324,7 +340,7 @@ export default function Readiness({ overall, checks, providerChecks = null, back
                         </div>
                     ) : (
                         <p className="px-5 py-5 text-sm text-muted">
-                            Run the probe after loading your provider configuration.
+                            {t('Run the probe after loading your provider configuration.')}
                         </p>
                     )}
                 </section>
