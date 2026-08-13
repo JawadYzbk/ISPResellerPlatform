@@ -26,6 +26,7 @@ class CapabilitySeeder extends Seeder
             'plans.manage',
             'tickets.view', 'tickets.create', 'tickets.assign', 'tickets.close', 'workorders.complete',
             'inventory.view', 'inventory.receive', 'inventory.transfer', 'inventory.assign',
+            'expenses.view', 'expenses.create', 'expenses.approve', 'expenses.manage',
             'suppliers.view', 'suppliers.manage',
             'reports.operations', 'reports.export', 'users.manage', 'audit.view',
         ],
@@ -33,9 +34,10 @@ class CapabilitySeeder extends Seeder
             'customers.view', 'services.view', 'billing.invoices.view', 'billing.invoices.issue',
             'billing.adjustments.create', 'payments.collect', 'payments.backdate', 'payments.void',
             'refunds.approve', 'wallets.view', 'settlements.approve', 'reports.finance', 'reports.export',
+            'expenses.view', 'expenses.create', 'expenses.approve', 'expenses.manage',
         ],
-        'cashier' => ['customers.view', 'services.view', 'billing.invoices.view', 'payments.collect', 'reports.finance'],
-        'collector' => ['customers.view', 'services.view', 'payments.collect', 'tickets.view'],
+        'cashier' => ['customers.view', 'services.view', 'billing.invoices.view', 'payments.collect', 'reports.finance', 'expenses.view', 'expenses.create'],
+        'collector' => ['customers.view', 'services.view', 'payments.collect', 'tickets.view', 'expenses.view', 'expenses.create'],
         'support_agent' => ['customers.view', 'services.view', 'network.view', 'tickets.view', 'tickets.create', 'tickets.close'],
         'technician' => ['customers.view', 'services.view', 'network.view', 'inventory.view', 'inventory.assign', 'tickets.view', 'tickets.assign', 'workorders.complete'],
         'network_administrator' => [
@@ -48,7 +50,7 @@ class CapabilitySeeder extends Seeder
             'payments.collect', 'partners.manage', 'wallets.view', 'wallets.fund', 'tickets.view', 'tickets.create', 'reports.operations',
         ],
         'reseller_staff' => ['customers.view', 'customers.create', 'customers.update', 'services.view', 'tickets.view', 'tickets.create'],
-        'auditor' => ['customers.view', 'services.view', 'billing.invoices.view', 'wallets.view', 'network.view', 'tickets.view', 'reports.finance', 'reports.operations', 'reports.export', 'audit.view'],
+        'auditor' => ['customers.view', 'services.view', 'billing.invoices.view', 'wallets.view', 'network.view', 'tickets.view', 'reports.finance', 'reports.operations', 'reports.export', 'audit.view', 'expenses.view'],
         'customer' => ['services.view', 'billing.invoices.view', 'payments.collect', 'tickets.view', 'tickets.create'],
     ];
 

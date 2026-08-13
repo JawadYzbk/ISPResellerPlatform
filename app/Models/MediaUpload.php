@@ -15,7 +15,7 @@ class MediaUpload extends Model
 {
     use BelongsToTenant;
 
-    protected $fillable = ['tenant_id', 'uploaded_by_id', 'customer_id', 'work_order_id', 'collector_task_message_id', 'public_id', 'disk', 'path', 'original_name', 'mime_type', 'size_bytes', 'sha256', 'purpose', 'document_type', 'retention_until'];
+    protected $fillable = ['tenant_id', 'uploaded_by_id', 'customer_id', 'work_order_id', 'collector_task_message_id', 'operational_expense_id', 'public_id', 'disk', 'path', 'original_name', 'mime_type', 'size_bytes', 'sha256', 'purpose', 'document_type', 'retention_until'];
 
     protected $hidden = ['path', 'sha256'];
 
@@ -53,5 +53,11 @@ class MediaUpload extends Model
     public function collectorTaskMessage(): BelongsTo
     {
         return $this->belongsTo(CollectorTaskMessage::class);
+    }
+
+    /** @return BelongsTo<OperationalExpense, $this> */
+    public function operationalExpense(): BelongsTo
+    {
+        return $this->belongsTo(OperationalExpense::class);
     }
 }

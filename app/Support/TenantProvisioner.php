@@ -64,6 +64,7 @@ final class TenantProvisioner
             foreach ([
                 ['code' => '1100', 'name' => 'Accounts Receivable', 'category' => 'asset', 'normal_balance' => 'debit'],
                 ['code' => '1000', 'name' => 'Cash', 'category' => 'asset', 'normal_balance' => 'debit'],
+                ['code' => '1010', 'name' => 'Bank', 'category' => 'asset', 'normal_balance' => 'debit'],
                 ['code' => '4000', 'name' => 'Service Revenue', 'category' => 'revenue', 'normal_balance' => 'credit'],
                 ['code' => '3990', 'name' => 'Opening Balance Equity', 'category' => 'equity', 'normal_balance' => 'credit'],
                 ['code' => '4900', 'name' => 'FX Gain/Loss', 'category' => 'income', 'normal_balance' => 'credit'],
@@ -72,6 +73,7 @@ final class TenantProvisioner
                 ['code' => '5100', 'name' => 'Partner Commission Expense', 'category' => 'expense', 'normal_balance' => 'debit'],
                 ['code' => '2220', 'name' => 'Supplier Payable', 'category' => 'liability', 'normal_balance' => 'credit'],
                 ['code' => '5200', 'name' => 'Supplier Cost', 'category' => 'expense', 'normal_balance' => 'debit'],
+                ['code' => '5300', 'name' => 'Operating Expenses', 'category' => 'expense', 'normal_balance' => 'debit'],
             ] as $account) {
                 LedgerAccount::firstOrCreate(['code' => $account['code']], [...$account, 'is_system' => true]);
             }
