@@ -690,13 +690,13 @@ export default function AppLayout({ children }: PropsWithChildren) {
                             onKeyDown={(event) => trapTabKey(event, event.currentTarget)}
                         >
                             <div className="flex items-center gap-3 border-b border-line px-5 py-4">
-                                <Search size={19} className="text-brand" />
+                                <Search size={19} className="text-brand" aria-hidden="true" />
                                 <input
                                     ref={searchInput}
                                     value={search}
                                     onChange={(event) => setSearch(event.target.value)}
                                     onKeyDown={(event) => event.key === 'Escape' && setSearchOpen(false)}
-                                    className="min-w-0 flex-1 border-0 bg-transparent text-base outline-none placeholder:text-muted"
+                                    className="min-w-0 flex-1 border-0 bg-transparent text-base outline-none placeholder:text-muted focus-visible:ring-2 focus-visible:ring-brand/30"
                                     placeholder={t('Search pages, settings, customers, services…')}
                                     aria-label={t('Search workspace')}
                                 />

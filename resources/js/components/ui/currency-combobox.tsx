@@ -118,7 +118,7 @@ export default function CurrencyCombobox({
                     <span className="min-w-0 truncate">
                         {selected ? `${selected.code} — ${selected.name}` : (emptyLabel ?? t('Select a currency'))}
                     </span>
-                    <ChevronsUpDown className="size-4 shrink-0 opacity-60" />
+                    <ChevronsUpDown className="size-4 shrink-0 opacity-60" aria-hidden="true" />
                 </button>
             </PopoverTrigger>
             <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
@@ -134,7 +134,10 @@ export default function CurrencyCombobox({
                         <CommandGroup>
                             {emptyLabel && (
                                 <CommandItem value="__empty__" onSelect={() => selectCurrency('')}>
-                                    <Check className={cn('me-2 size-4', value === '' ? 'opacity-100' : 'opacity-0')} />
+                                    <Check
+                                        aria-hidden="true"
+                                        className={cn('me-2 size-4', value === '' ? 'opacity-100' : 'opacity-0')}
+                                    />
                                     {emptyLabel}
                                 </CommandItem>
                             )}
@@ -145,6 +148,7 @@ export default function CurrencyCombobox({
                                     onSelect={() => selectCurrency(currency.code)}
                                 >
                                     <Check
+                                        aria-hidden="true"
                                         className={cn(
                                             'me-2 size-4',
                                             value === currency.code ? 'opacity-100' : 'opacity-0',

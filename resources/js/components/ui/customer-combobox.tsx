@@ -115,7 +115,7 @@ export default function CustomerCombobox({
                     <span className="min-w-0 truncate">
                         {selected ? `${selected.name} · ${selected.code}` : (placeholder ?? t('Select a customer'))}
                     </span>
-                    <ChevronsUpDown className="size-4 shrink-0 opacity-60" />
+                    <ChevronsUpDown className="size-4 shrink-0 opacity-60" aria-hidden="true" />
                 </button>
             </PopoverTrigger>
             <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
@@ -137,6 +137,7 @@ export default function CustomerCombobox({
                             {filtered.map((customer) => (
                                 <CommandItem key={customer.id} value={customer.id} onSelect={selectCustomer}>
                                     <Check
+                                        aria-hidden="true"
                                         className={cn(
                                             'me-2 size-4',
                                             value === customer.id ? 'opacity-100' : 'opacity-0',
@@ -149,10 +150,10 @@ export default function CustomerCombobox({
                                             {customer.phone ? ` · ${customer.phone}` : ''}
                                         </span>
                                         <span className="block truncate text-xs text-muted">
-                                        {enumLabel(customer.status, t)}
-                                        {customer.balance_currency
-                                            ? ` · ${formatMoney(customer.balance_amount, customer.balance_currency)}`
-                                            : ''}
+                                            {enumLabel(customer.status, t)}
+                                            {customer.balance_currency
+                                                ? ` · ${formatMoney(customer.balance_amount, customer.balance_currency)}`
+                                                : ''}
                                         </span>
                                     </span>
                                 </CommandItem>
