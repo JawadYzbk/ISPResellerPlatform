@@ -33,8 +33,8 @@ it('serves the collector field surface from the authenticated web session', func
             ->component('Field/Index')
             ->where('snapshot.data.customers.0.id', $customer->public_id)
             ->where('currencies.0.code', 'USD')
-            ->where('currencies.1.code', 'EUR')
-            ->where('currencies.2.code', 'LBP')
+            ->where('currencies.1.code', 'LBP')
+            ->where('currencies.2.code', 'EUR')
             ->where('storageEncryptionKey', fn ($key): bool => is_string($key) && strlen(base64_decode($key, true) ?: '') === 32));
 });
 
@@ -61,4 +61,30 @@ it('rejects an empty field payment queue before dispatching it', function (): vo
     $this->actingAs($user)
         ->postJson(route('field.push'), ['items' => []])
         ->assertStatus(422);
+});
+
+it('keeps the collector field surface and check-in action limited to collector accounts', function (): void {
+    $tenant = Tenant::create(['name' => 'Northline', 'slug' => 'northline', 'base_currency' => 'USD', 'collection_currency' => 'USD']);
+    app(Tenancy::class)->set($tenant);
+    $user = User::create([
+        'tenant_id' => $tenant->id,
+        'name' => 'Workspace owner',
+        'email' => 'field-owner@example.test',
+        'password' => Hash::make('password'),
+        'role' => 'tenant_owner',
+    ]);
+    app(CapabilitySeeder::class)->run();
+    $user->assignRole('tenant_owner');
+
+    $this->actingAs($user)
+        ->get(route('field.index'))
+        ->assertForbidden();
+
+    $this->actingAs($user)
+        ->postJson(route('field.check-in'), [
+            'latitude' => 33.8938,
+            'longitude' => 35.5018,
+            'accuracy_meters' => 20,
+        ])
+        ->assertForbidden();
 });

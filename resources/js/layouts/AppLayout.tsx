@@ -77,7 +77,8 @@ export default function AppLayout({ children }: PropsWithChildren) {
         Array.isArray(permission)
             ? permission.some((item) => auth.permissions.includes(item))
             : auth.permissions.includes(permission);
-    const canUseCollectorDesk = can('customers.view') && can('payments.collect');
+    const canUseCollectorDesk =
+        auth.user?.role === 'collector' && can('customers.view') && can('payments.collect');
     const pathname = url.split('?')[0].replace(/\/+$/, '') || '/';
     const matchesPath = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
 

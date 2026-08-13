@@ -119,7 +119,7 @@ final class FieldController extends Controller
     {
         $user = $request->user();
         abort_unless($user instanceof User, 401);
-        abort_unless($user->can('customers.view') && $user->can('payments.collect'), 403);
+        abort_unless($user->role === 'collector' && $user->can('customers.view') && $user->can('payments.collect'), 403);
 
         return $user;
     }
