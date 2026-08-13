@@ -464,6 +464,26 @@ test('connects workspace location errors to their controls', async ({ page }) =>
     await expect(page.locator('#branch-name-error')).toHaveAttribute('role', 'alert');
 });
 
+test('keeps notification template language tabs keyboard-addressable', async ({ page }) => {
+    test.setTimeout(60_000);
+
+    await page.goto('/login');
+    await page.getByLabel('Email address').fill(email);
+    await page.getByRole('textbox', { name: 'Password' }).fill(password);
+    await Promise.all([
+        page.waitForURL(/\/(dashboard|customers|profile)$/),
+        page.getByRole('button', { name: 'Enter workspace' }).click(),
+    ]);
+
+    await page.goto('/settings/notification-templates');
+    const tabs = page.getByRole('tablist').first();
+    const arabic = tabs.getByRole('tab', { name: 'Arabic' });
+    await expect(arabic).toHaveAttribute('aria-selected', 'false');
+    await arabic.click();
+    await expect(arabic).toHaveAttribute('aria-selected', 'true');
+    await expect(page.getByRole('tabpanel').first()).toHaveAttribute('aria-labelledby', /-tab-ar$/);
+});
+
 test('connects service validation errors to their controls', async ({ page }) => {
     test.setTimeout(60_000);
 

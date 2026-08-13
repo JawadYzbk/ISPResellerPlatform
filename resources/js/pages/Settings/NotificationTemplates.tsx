@@ -46,6 +46,8 @@ function TemplateCard({
     const [copiedVariable, setCopiedVariable] = useState<string | null>(null);
     const selected = templates.find((template) => template.locale === locale) ?? initial;
     const form = useForm({ subject: selected?.subject ?? '', body: selected?.body ?? '' });
+    const templateId = definition.key.replace(/[^a-z0-9]+/gi, '-').toLowerCase();
+    const bodyError = form.errors.body;
 
     const selectLocale = (nextLocale: string) => {
         const next = templates.find((template) => template.locale === nextLocale);
@@ -91,6 +93,8 @@ function TemplateCard({
                             key={option}
                             type="button"
                             role="tab"
+                            id={`${templateId}-tab-${option}`}
+                            aria-controls={`${templateId}-panel`}
                             aria-selected={locale === option}
                             onClick={() => selectLocale(option)}
                             className={`rounded-md px-3 py-1.5 text-xs font-semibold transition ${locale === option ? 'bg-white text-brand shadow-sm' : 'text-muted hover:text-ink'}`}
@@ -99,16 +103,30 @@ function TemplateCard({
                         </button>
                     ))}
                 </div>
+                <div
+                    id={`${templateId}-panel`}
+                    role="tabpanel"
+                    aria-labelledby={`${templateId}-tab-${locale}`}
+                    tabIndex={0}
+                >
                 <label>
                     <span className="field-label">{t('Message body')}</span>
                     <textarea
+                        id={`${templateId}-body`}
                         dir="auto"
                         className="field min-h-36 resize-y font-mono text-sm leading-6"
+                        aria-invalid={Boolean(bodyError)}
+                        aria-describedby={bodyError ? `${templateId}-body-error` : undefined}
                         value={form.data.body}
                         onChange={(event) => form.setData('body', event.target.value)}
                     />
-                    {form.errors.body && <p className="field-error" role="alert">{t(form.errors.body)}</p>}
+                    {bodyError && (
+                        <p id={`${templateId}-body-error`} className="field-error" role="alert">
+                            {t(bodyError)}
+                        </p>
+                    )}
                 </label>
+                </div>
                 <div className="rounded-xl border border-line bg-sand/40 p-4">
                     <div className="flex items-center justify-between gap-3">
                         <p className="text-sm font-semibold">{t('Available variables')}</p>

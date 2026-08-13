@@ -41,6 +41,16 @@ export default function TicketResponses({ responses }: Props) {
     const [editingId, setEditingId] = useState<string | null>(null);
     const [responseToArchive, setResponseToArchive] = useState<TicketResponse | null>(null);
     const form = useForm<FormData>({ title: '', body: '', category: 'support', is_active: true });
+    const fieldA11y = (id: string, error?: string) => ({
+        'aria-invalid': Boolean(error),
+        'aria-describedby': error ? `${id}-error` : undefined,
+    });
+    const fieldError = (id: string, error?: string) =>
+        error ? (
+            <p id={`${id}-error`} className="field-error" role="alert">
+                {t(error)}
+            </p>
+        ) : null;
 
     const resetForm = () => {
         setEditingId(null);
@@ -115,17 +125,21 @@ export default function TicketResponses({ responses }: Props) {
                     <label>
                         <span className="field-label">{t('Title')}</span>
                         <input
+                            id="response-title"
                             className="field"
+                            {...fieldA11y('response-title', form.errors.title)}
                             value={form.data.title}
                             onChange={(event) => form.setData('title', event.target.value)}
                             placeholder={t('ticket_responses.title_placeholder')}
                         />
-                        {form.errors.title && <p className="field-error" role="alert">{t(form.errors.title)}</p>}
+                        {fieldError('response-title', form.errors.title)}
                     </label>
                     <label>
                         <span className="field-label">{t('Category')}</span>
                         <ResponsiveSelect
+                            id="response-category"
                             className="field"
+                            {...fieldA11y('response-category', form.errors.category)}
                             value={form.data.category}
                             onChange={(event) => form.setData('category', event.target.value)}
                         >
@@ -135,28 +149,33 @@ export default function TicketResponses({ responses }: Props) {
                                 </option>
                             ))}
                         </ResponsiveSelect>
-                        {form.errors.category && <p className="field-error" role="alert">{t(form.errors.category)}</p>}
+                        {fieldError('response-category', form.errors.category)}
                     </label>
                     <label>
                         <span className="field-label">{t('ticket_responses.reply_text')}</span>
                         <textarea
+                            id="response-body"
                             className="field min-h-36 resize-y"
+                            {...fieldA11y('response-body', form.errors.body)}
                             value={form.data.body}
                             onChange={(event) => form.setData('body', event.target.value)}
                             placeholder={t('ticket_responses.reply_placeholder')}
                         />
-                        {form.errors.body && <p className="field-error" role="alert">{t(form.errors.body)}</p>}
+                        {fieldError('response-body', form.errors.body)}
                     </label>
                     {editingId && (
                         <label className="flex items-center gap-3 text-sm">
                             <input
+                                id="response-is-active"
                                 type="checkbox"
+                                {...fieldA11y('response-is-active', form.errors.is_active)}
                                 checked={form.data.is_active}
                                 onChange={(event) => form.setData('is_active', event.target.checked)}
                             />
                             {t('ticket_responses.keep_available')}
                         </label>
                     )}
+                    {fieldError('response-is-active', form.errors.is_active)}
                     <button type="submit" className="button-primary w-full justify-center" disabled={form.processing}>
                         <Save size={16} /> {editingId ? t('ticket_responses.save') : t('ticket_responses.create')}
                     </button>
