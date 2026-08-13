@@ -4,6 +4,7 @@ import ResponsiveSelect from '@/components/ui/responsive-select';
 import { Head, Link } from '@inertiajs/react';
 import {
     CheckCircle2,
+    CircleDollarSign,
     ClipboardCheck,
     CloudOff,
     CreditCard,
@@ -120,6 +121,24 @@ type FieldTask = {
     }[];
 };
 
+type FieldCustodyEntry = {
+    id: string;
+    type: 'advance' | 'expense' | 'handover' | 'adjustment';
+    direction: 'credit' | 'debit';
+    status: 'pending' | 'posted' | 'rejected';
+    amount: number;
+    currency: string;
+    description: string;
+    reference: string | null;
+    occurred_at: string;
+    review_note: string | null;
+};
+
+type FieldCustody = {
+    position: { balances: Record<string, number>; cash_payment_count: number; pending_count: number };
+    entries: FieldCustodyEntry[];
+};
+
 type SyncResult = {
     index: number;
     status: 'created' | 'replayed' | 'rejected' | 'error';
@@ -133,6 +152,7 @@ type Props = {
     fieldDay: FieldDay;
     route: FieldRoute;
     tasks: FieldTask[];
+    custody: FieldCustody;
     currencies: CurrencyOption[];
     defaultCurrency: string;
     storageKey: string;
@@ -169,6 +189,7 @@ export default function FieldIndex({
     fieldDay: initialFieldDay,
     route: initialRoute,
     tasks: initialTasks,
+    custody: initialCustody,
     currencies,
     defaultCurrency,
     storageKey,
@@ -205,6 +226,13 @@ export default function FieldIndex({
     const [taskReply, setTaskReply] = useState('');
     const [taskAttachment, setTaskAttachment] = useState<File | null>(null);
     const [taskBusy, setTaskBusy] = useState(false);
+    const [custody, setCustody] = useState(initialCustody);
+    const [custodyType, setCustodyType] = useState<'expense' | 'handover'>('expense');
+    const [custodyAmount, setCustodyAmount] = useState('');
+    const [custodyCurrency, setCustodyCurrency] = useState(defaultCurrency || currencies[0]?.code || 'USD');
+    const [custodyDescription, setCustodyDescription] = useState('');
+    const [custodyReference, setCustodyReference] = useState('');
+    const [custodyBusy, setCustodyBusy] = useState(false);
 
     const selectedCustomer = customers.find((customer) => customer.id === selectedCustomerId) ?? null;
     const selectedCurrency = currencyOptions.find((item) => item.code === currency);
@@ -654,6 +682,61 @@ export default function FieldIndex({
         }
     };
 
+    const submitCustodyRequest = async (event: React.FormEvent) => {
+        event.preventDefault();
+        if (!online) {
+            setError('Connect to the internet before submitting a custody request.');
+            return;
+        }
+        const amount = parseMoneyToMinor(custodyAmount, custodyCurrency);
+        if (amount === null || amount <= 0) {
+            setError('Enter a positive custody amount.');
+            return;
+        }
+        if (custodyDescription.trim() === '') {
+            setError('Describe the expense or handover before submitting.');
+            return;
+        }
+
+        setCustodyBusy(true);
+        setError(null);
+        try {
+            const response = await fetch('/field/custody', {
+                method: 'POST',
+                headers: {
+                    Accept: 'application/json',
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken(),
+                },
+                body: JSON.stringify({
+                    type: custodyType,
+                    amount,
+                    currency: custodyCurrency,
+                    description: custodyDescription,
+                    reference: custodyReference || null,
+                }),
+            });
+            const body = (await response.json()) as {
+                message?: string;
+                data?: { entry: FieldCustodyEntry; position: FieldCustody['position'] };
+            };
+            if (!response.ok || !body.data)
+                throw new Error(body.message ?? 'The custody request could not be submitted.');
+            setCustody((current) => ({
+                position: body.data!.position,
+                entries: [body.data!.entry, ...current.entries],
+            }));
+            setCustodyAmount('');
+            setCustodyDescription('');
+            setCustodyReference('');
+            setMessage(body.message ?? 'Custody request submitted.');
+        } catch (caught) {
+            setError(caught instanceof Error ? caught.message : 'The custody request could not be submitted.');
+        } finally {
+            setCustodyBusy(false);
+        }
+    };
+
     return (
         <AppLayout>
             <Head title="Field collection" />
@@ -736,6 +819,138 @@ export default function FieldIndex({
                         </div>
                     </div>
                 </div>
+
+                <section className="card mt-6 overflow-hidden">
+                    <div className="border-b border-line p-5">
+                        <div className="flex items-start gap-3">
+                            <CircleDollarSign className="mt-0.5 shrink-0 text-brand" size={20} />
+                            <div>
+                                <h2 className="text-balance text-xl font-semibold">Cash custody</h2>
+                                <p className="mt-1 text-pretty text-sm text-muted">
+                                    Cash collections and opening float stay in custody until an expense or handover is
+                                    approved.
+                                </p>
+                            </div>
+                        </div>
+                        <div className="mt-4 flex flex-wrap gap-3">
+                            {entriesOrEmpty(custody.position.balances).map(([currencyCode, amount]) => (
+                                <div key={currencyCode} className="rounded-xl border border-line px-4 py-3">
+                                    <p className="eyebrow">{currencyCode} balance</p>
+                                    <p className={`mt-1 font-semibold tabular-nums ${amount < 0 ? 'text-coral' : ''}`}>
+                                        {formatMoney(amount, currencyCode)}
+                                    </p>
+                                </div>
+                            ))}
+                            <div className="rounded-xl border border-line px-4 py-3">
+                                <p className="eyebrow">Pending review</p>
+                                <p className="mt-1 font-semibold tabular-nums">{custody.position.pending_count}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <form
+                        className="grid gap-4 p-5 sm:grid-cols-2"
+                        onSubmit={(event) => void submitCustodyRequest(event)}
+                    >
+                        <label className="field-label">
+                            Request type
+                            <ResponsiveSelect
+                                className="mt-1"
+                                value={custodyType}
+                                onChange={(event) => setCustodyType(event.target.value as 'expense' | 'handover')}
+                            >
+                                <option value="expense">Field expense</option>
+                                <option value="handover">Cash handover</option>
+                            </ResponsiveSelect>
+                        </label>
+                        <label className="field-label">
+                            Currency
+                            <CurrencyCombobox
+                                className="field mt-1"
+                                value={custodyCurrency}
+                                currencies={currencyOptions}
+                                onChange={setCustodyCurrency}
+                            />
+                        </label>
+                        <label className="field-label">
+                            Amount
+                            <input
+                                className="field mt-1 tabular-nums"
+                                inputMode="decimal"
+                                value={custodyAmount}
+                                onChange={(event) => setCustodyAmount(event.target.value)}
+                            />
+                        </label>
+                        <label className="field-label">
+                            Reference (optional)
+                            <input
+                                className="field mt-1"
+                                value={custodyReference}
+                                maxLength={120}
+                                placeholder="Receipt or handover reference"
+                                onChange={(event) => setCustodyReference(event.target.value)}
+                            />
+                        </label>
+                        <label className="field-label sm:col-span-2">
+                            Description
+                            <textarea
+                                className="field mt-1 min-h-20"
+                                value={custodyDescription}
+                                maxLength={2000}
+                                placeholder={
+                                    custodyType === 'expense'
+                                        ? 'What was purchased and why?'
+                                        : 'Who received the cash and where?'
+                                }
+                                onChange={(event) => setCustodyDescription(event.target.value)}
+                            />
+                        </label>
+                        <div className="flex justify-end sm:col-span-2">
+                            <button
+                                className="button-primary"
+                                disabled={!online || custodyBusy || custodyDescription.trim() === ''}
+                            >
+                                {custodyBusy
+                                    ? 'Submitting…'
+                                    : custodyType === 'expense'
+                                      ? 'Submit expense'
+                                      : 'Submit handover'}
+                            </button>
+                        </div>
+                    </form>
+                    {custody.entries.length > 0 && (
+                        <div className="border-t border-line">
+                            <div className="px-5 py-3">
+                                <p className="eyebrow">Recent custody activity</p>
+                            </div>
+                            <div className="divide-y divide-line">
+                                {custody.entries.slice(0, 6).map((entry) => (
+                                    <div key={entry.id} className="flex items-start justify-between gap-4 px-5 py-4">
+                                        <div className="min-w-0">
+                                            <div className="flex flex-wrap items-center gap-2">
+                                                <p className="text-sm font-semibold capitalize">{entry.type}</p>
+                                                <span
+                                                    className={`rounded-full px-2 py-0.5 text-xs font-semibold capitalize ${entry.status === 'posted' ? 'bg-emerald-50 text-emerald-700' : entry.status === 'rejected' ? 'bg-rose-50 text-rose-700' : 'bg-amber-50 text-amber-700'}`}
+                                                >
+                                                    {entry.status}
+                                                </span>
+                                            </div>
+                                            <p className="mt-1 line-clamp-2 text-xs text-muted">{entry.description}</p>
+                                            {entry.review_note && (
+                                                <p className="mt-1 text-xs text-muted">Manager: {entry.review_note}</p>
+                                            )}
+                                        </div>
+                                        <p
+                                            className={`shrink-0 text-sm font-semibold tabular-nums ${entry.direction === 'debit' ? 'text-coral' : 'text-emerald-700'}`}
+                                        >
+                                            {entry.direction === 'debit' ? '−' : '+'}
+                                            {formatMoney(entry.amount, entry.currency)}
+                                        </p>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                </section>
 
                 <section className="card mt-6 flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">
                     <div className="flex items-start gap-3">

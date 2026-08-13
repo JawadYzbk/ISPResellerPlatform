@@ -162,6 +162,12 @@ export default function AppLayout({ children }: PropsWithChildren) {
             icon: ClipboardCheck,
             permission: 'reports.operations',
         },
+        {
+            label: 'Collector custody',
+            href: '/operations/collector-custody',
+            icon: HandCoins,
+            permission: 'reports.operations',
+        },
         { label: 'FX rates', href: '/billing/exchange-rates', icon: Scale, permission: 'settings.manage' },
         { label: 'Tickets', href: '/operations/tickets', icon: MessageSquare, permission: 'tickets.view' },
         {

@@ -25,6 +25,7 @@ type FieldDay = {
         route: { status: string | null; stops: number; completed: number; outcomes: Record<string, number> };
         tasks: { completed: number; open: number };
         cash_shift: { id: string; status: string; system_totals: Record<string, number>; variance: boolean } | null;
+        custody: { balances: Record<string, number>; cash_payment_count: number; pending_count: number };
     } | null;
     summary_note: string | null;
 };
@@ -174,6 +175,13 @@ export default function CollectorCheckIns({ date, fieldDays }: { date: string; f
                                                 <p className="mt-1 max-w-64 text-pretty text-xs text-muted">
                                                     {fieldDay.summary_note ??
                                                         `${fieldDay.summary.duration_minutes} minutes in field`}
+                                                </p>
+                                                <p className="mt-1 max-w-64 text-xs text-muted">
+                                                    Custody:{' '}
+                                                    {entriesOrEmpty(fieldDay.summary.custody.balances)
+                                                        .map(([currency, amount]) => formatMoney(amount, currency))
+                                                        .join(' · ') || 'No physical cash'}{' '}
+                                                    · {fieldDay.summary.custody.pending_count} pending
                                                 </p>
                                             </>
                                         ) : (

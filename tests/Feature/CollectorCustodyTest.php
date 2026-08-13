@@ -125,3 +125,74 @@ it('limits collector submissions and prevents a second review', function (): voi
         ->toThrow(DomainException::class, 'already been reviewed')
         ->and(CollectorCustodyEntry::query()->where('status', 'rejected')->count())->toBe(1);
 });
+
+it('provides manager approval and collector field custody workflows', function (): void {
+    [$tenant, $manager, $collector] = collectorCustodyWorkspace();
+
+    $this->actingAs($manager)
+        ->get(route('operations.collector-custody'))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->component('Operations/CollectorCustody')
+            ->where('collectors.0.name', $collector->name)
+            ->where('collectors.0.position.pending_count', 0));
+
+    $this->actingAs($manager)
+        ->post(route('operations.collector-custody.store'), [
+            'collector_id' => $collector->id,
+            'type' => 'advance',
+            'amount' => 1000,
+            'currency' => 'USD',
+            'description' => 'Morning cash float',
+        ])
+        ->assertRedirect()
+        ->assertSessionHas('success', 'Custody entry posted.');
+
+    $this->actingAs($collector)
+        ->get(route('field.index'))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->where('custody.position.balances.USD', 1000)
+            ->where('custody.entries.0.type', 'advance'));
+
+    $this->actingAs($collector)
+        ->postJson(route('field.custody.store'), [
+            'type' => 'expense',
+            'amount' => 250,
+            'currency' => 'USD',
+            'description' => 'Fuel for the collection route',
+            'reference' => 'FUEL-01',
+        ])
+        ->assertCreated()
+        ->assertJsonPath('data.entry.status', 'pending')
+        ->assertJsonPath('data.position.balances.USD', 1000)
+        ->assertJsonPath('data.position.pending_count', 1);
+
+    app(Tenancy::class)->set($tenant);
+    $expense = CollectorCustodyEntry::query()->where('type', 'expense')->firstOrFail();
+    $this->actingAs($manager)
+        ->patch(route('operations.collector-custody.review', $expense), [
+            'decision' => 'posted',
+            'review_note' => 'Receipt accepted',
+        ])
+        ->assertRedirect()
+        ->assertSessionHas('success', 'Custody entry approved.');
+
+    app(Tenancy::class)->set($tenant);
+    expect(app(GetCollectorCustodyPosition::class)->handle($collector)['balances']['USD'])->toBe(750)
+        ->and($expense->refresh()->status)->toBe('posted');
+});
+
+it('prevents an approved debit from making custody negative', function (): void {
+    [, $manager, $collector] = collectorCustodyWorkspace();
+    $handover = app(CreateCollectorCustodyEntry::class)->handle($collector, $collector, null, [
+        'type' => 'handover',
+        'amount' => 500,
+        'currency' => 'USD',
+        'description' => 'Cash count',
+    ]);
+
+    expect(fn () => app(ReviewCollectorCustodyEntry::class)->handle($manager, $handover, 'posted'))
+        ->toThrow(DomainException::class, 'exceeds this collector\'s available cash custody')
+        ->and($handover->refresh()->status)->toBe('pending');
+});

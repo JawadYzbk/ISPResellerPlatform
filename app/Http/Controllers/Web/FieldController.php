@@ -2,17 +2,20 @@
 
 namespace App\Http\Controllers\Web;
 
+use App\Actions\GetCollectorCustodyPosition;
 use App\Actions\GetCollectorShift;
 use App\Actions\GetCollectorSummary;
 use App\Actions\GetCollectorSyncSnapshot;
 use App\Actions\GetCurrencyCatalog;
 use App\Actions\PushCollectorSync;
 use App\Http\Controllers\Controller;
+use App\Models\CollectorCustodyEntry;
 use App\Models\CollectorFieldDay;
 use App\Models\CollectorRoute;
 use App\Models\CollectorTask;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Support\CollectorCustodyPresenter;
 use App\Support\CollectorRoutePresenter;
 use App\Support\CollectorTaskPresenter;
 use App\Support\Tenancy;
@@ -32,6 +35,8 @@ final class FieldController extends Controller
         GetCurrencyCatalog $currencyCatalog,
         CollectorRoutePresenter $routePresenter,
         CollectorTaskPresenter $taskPresenter,
+        GetCollectorCustodyPosition $custodyPosition,
+        CollectorCustodyPresenter $custodyPresenter,
     ): Response {
         $user = $this->collector($request);
         $tenant = $this->tenant();
@@ -57,6 +62,17 @@ final class FieldController extends Controller
                 ->get()
                 ->map(fn (CollectorTask $task): array => $taskPresenter->make($task, $user))
                 ->values(),
+            'custody' => [
+                'position' => $custodyPosition->handle($user),
+                'entries' => CollectorCustodyEntry::query()
+                    ->where('collector_id', $user->id)
+                    ->with(['collector:id,name,email', 'requestedBy:id,name', 'reviewedBy:id,name', 'cashShift:id,public_id'])
+                    ->latest('occurred_at')
+                    ->limit(20)
+                    ->get()
+                    ->map(fn (CollectorCustodyEntry $entry): array => $custodyPresenter->entry($entry))
+                    ->values(),
+            ],
             'currencies' => $currencyCatalog->handle(),
             'defaultCurrency' => $tenant->collection_currency,
             'storageKey' => 'field:'.$tenant->public_id.':'.$user->id,

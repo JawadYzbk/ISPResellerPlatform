@@ -18,6 +18,8 @@ Supported token abilities are `staff:collector`, `staff:technician`, `staff:oper
 6. Persist each item’s `created`, `replayed`, or `rejected` result. A replay is not a new payment; surface a rejected item for operator resolution.
 7. Read `GET /api/v1/collector/shift`, `GET /api/v1/collector/payments?date=YYYY-MM-DD`, and `GET /api/v1/collector/summary?date=YYYY-MM-DD` for reconciliation. Close with `POST /api/v1/collector/shift/close`; a variance requires `variance_note`.
 
+The responsive `/field` desk also shows the collector's physical cash-custody position. Submit a field expense or cash handover with its currency, amount, description and optional reference. It remains pending and does not reduce custody until a manager approves it; electronic Whish and Stripe collections never enter the physical cash balance.
+
 ## Browser field desk
 
 Collectors can use the authenticated `/field` workspace from a phone-sized browser without issuing a separate API token. It loads the same tenant-scoped customer snapshot and currency catalog, requires an open cash shift before enabling collection, and sends queued payments through the signed server-side sync actions.

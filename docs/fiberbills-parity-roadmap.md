@@ -54,7 +54,7 @@ Sources:
 | Live collector GPS, check-ins, routes and nearby dues | Delivered for responsive web | Explicit consent-based field-day check-in/out, GPS accuracy evidence, manager route planning, territory-safe ordered stops, on-demand nearby sorting and location-backed visit outcomes are delivered without continuous background tracking. Native background execution remains deferred. |
 | Collector tasks, messaging and daily summaries | Delivered for responsive web | Managers can assign prioritized, due-dated, customer-linked tasks; collectors acknowledge/start/complete them in order; participant-only threads include unread state and private attachments; checkout persists route, collection, task, cash-shift and handover summaries. Native push/background behavior remains deferred. |
 | Collector performance | Partial | Route progress and visit outcomes are now visible to managers; extend finance totals with collection rate, cash variance and historical trends. |
-| Collector wallet/cash custody | Partial | Connect cash shifts, advances, handover, expenses and settlement into one auditable collector custody view. |
+| Collector wallet/cash custody | Delivered for responsive web | Physical custody combines cash-only collections, opening float, manager advances, approved field expenses, confirmed handovers and documented adjustments in an append-only multi-currency position. Pending requests do not affect balances, debits cannot overdraw custody, and checkout snapshots the handover position. |
 | Inventory and equipment assignment | Delivered | Keep serialized and bulk stock, warehouses, transfers, service assignment and movement audit. |
 | Stock assigned to collectors and field sales | Partial | Add collector/vehicle stock locations, custody handover, returns, replenishment, sales and variance reconciliation. |
 | Generic business expenses | Gap | Add categories, vendors, attachments, recurring expenses, approvals, cash/bank/collector payment sources and ledger posting. |
@@ -86,7 +86,7 @@ Sources:
 1. Collector territories and zone assignment.
 2. Shift check-in/out, GPS consent, routes, nearby dues and stop outcomes.
 3. Collector/admin tasks and messaging. **Delivered for responsive web.**
-4. Collector cash custody, handover, expenses and reconciliation.
+4. Collector cash custody, handover, expenses and reconciliation. **Delivered for responsive web.**
 5. Collector stock custody, replenishment, return, sale and variance.
 6. Daily route, collection and performance supervision.
 

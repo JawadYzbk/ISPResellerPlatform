@@ -7,6 +7,7 @@ use App\Http\Controllers\Auth\ReauthenticateController;
 use App\Http\Controllers\Auth\TwoFactorController;
 use App\Http\Controllers\Web\BillingController;
 use App\Http\Controllers\Web\CashShiftOperationsController;
+use App\Http\Controllers\Web\CollectorCustodyController;
 use App\Http\Controllers\Web\CollectorFieldDayController;
 use App\Http\Controllers\Web\CollectorRouteController;
 use App\Http\Controllers\Web\CollectorTaskController;
@@ -115,6 +116,7 @@ Route::middleware(['auth', 'tenant', '2fa'])->group(function (): void {
     Route::post('/field/tasks/{collectorTask:public_id}/messages', [CollectorTaskController::class, 'message'])->name('field.tasks.messages.store');
     Route::patch('/field/tasks/{collectorTask:public_id}/status', [CollectorTaskController::class, 'status'])->name('field.tasks.status');
     Route::post('/field/tasks/{collectorTask:public_id}/read', [CollectorTaskController::class, 'read'])->name('field.tasks.read');
+    Route::post('/field/custody', [CollectorCustodyController::class, 'storeField'])->name('field.custody.store');
     Route::get('/profile', [ProfileController::class, 'show'])->name('profile');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications');
@@ -188,6 +190,9 @@ Route::middleware(['auth', 'tenant', '2fa'])->group(function (): void {
     Route::post('/operations/collector-tasks/{collectorTask:public_id}/messages', [CollectorTaskController::class, 'message'])->name('operations.collector-tasks.messages.store');
     Route::patch('/operations/collector-tasks/{collectorTask:public_id}/status', [CollectorTaskController::class, 'status'])->name('operations.collector-tasks.status');
     Route::post('/operations/collector-tasks/{collectorTask:public_id}/read', [CollectorTaskController::class, 'read'])->name('operations.collector-tasks.read');
+    Route::get('/operations/collector-custody', [CollectorCustodyController::class, 'index'])->name('operations.collector-custody');
+    Route::post('/operations/collector-custody', [CollectorCustodyController::class, 'storeManager'])->name('operations.collector-custody.store');
+    Route::patch('/operations/collector-custody/{collectorCustodyEntry:public_id}/review', [CollectorCustodyController::class, 'review'])->name('operations.collector-custody.review');
     Route::post('/operations/network-commands/{command:public_id}/retry', [NetworkOperationsController::class, 'retry'])->name('operations.network-commands.retry');
     Route::get('/operations/sessions', [SessionOperationsController::class, 'index'])->name('operations.sessions');
     Route::get('/operations/incidents', [IncidentOperationsController::class, 'index'])->name('operations.incidents');

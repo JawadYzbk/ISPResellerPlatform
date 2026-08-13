@@ -12,6 +12,8 @@ use App\Models\Payment;
 
 final readonly class BuildCollectorFieldDaySummary implements Action
 {
+    public function __construct(private GetCollectorCustodyPosition $custodyPosition) {}
+
     /** @return array<string, mixed> */
     public function handle(CollectorFieldDay $fieldDay): array
     {
@@ -71,6 +73,7 @@ final readonly class BuildCollectorFieldDaySummary implements Action
                 'system_totals' => $cashShift->system_totals ?? [],
                 'variance' => $cashShift->variance,
             ],
+            'custody' => $this->custodyPosition->handle($fieldDay->collector),
         ];
     }
 }
