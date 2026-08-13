@@ -5,6 +5,7 @@ namespace App\Support;
 use App\Models\Branch;
 use App\Models\Currency;
 use App\Models\DocumentSequence;
+use App\Models\ExpenseCategory;
 use App\Models\LedgerAccount;
 use App\Models\Tenant;
 use App\Models\Zone;
@@ -77,6 +78,12 @@ final class TenantProvisioner
             ] as $account) {
                 LedgerAccount::firstOrCreate(['code' => $account['code']], [...$account, 'is_system' => true]);
             }
+
+            $expenseAccount = LedgerAccount::query()->where('code', '5300')->firstOrFail();
+            ExpenseCategory::firstOrCreate(
+                ['code' => 'GENERAL'],
+                ['name' => 'General operations', 'ledger_account_id' => $expenseAccount->id, 'is_active' => true],
+            );
         });
 
     }
