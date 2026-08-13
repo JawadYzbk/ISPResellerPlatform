@@ -80,6 +80,7 @@ export default function ResponsiveSelect({
                     id={id}
                     aria-label={props['aria-label']}
                     aria-describedby={props['aria-describedby']}
+                    aria-invalid={props['aria-invalid']}
                     className={cn('w-full', className)}
                 >
                     <SelectValue placeholder={placeholder} />

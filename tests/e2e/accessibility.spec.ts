@@ -154,6 +154,29 @@ test('keeps guest authentication pages accessible', async ({ page }) => {
     await auditPage(page, '/forgot-password');
 });
 
+test('connects customer validation messages to their controls', async ({ page }) => {
+    test.setTimeout(60_000);
+
+    await page.goto('/login');
+    await page.getByLabel('Email address').fill(email);
+    await page.getByRole('textbox', { name: 'Password' }).fill(password);
+    await Promise.all([
+        page.waitForURL(/\/(dashboard|customers|profile)$/),
+        page.getByRole('button', { name: 'Enter workspace' }).click(),
+    ]);
+
+    await page.goto('/customers/create');
+    await page.locator('#first_name').fill('Accessibility');
+    await page.locator('#phone').fill('+96170123456');
+    await page.locator('#username').fill('invalid username');
+    await page.locator('form button[type="submit"]').click();
+
+    const username = page.locator('#username');
+    await expect(username).toHaveAttribute('aria-invalid', 'true');
+    await expect(username).toHaveAttribute('aria-describedby', 'username-error');
+    await expect(page.locator('#username-error')).toHaveAttribute('role', 'alert');
+});
+
 test('keeps customer portal sign-in inputs accessible', async ({ page }) => {
     await auditPage(page, '/portal/northline');
 
