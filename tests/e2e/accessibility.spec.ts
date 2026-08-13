@@ -95,6 +95,15 @@ test('keeps guest authentication pages accessible', async ({ page }) => {
     await auditPage(page, '/forgot-password');
 });
 
+test('keeps customer portal sign-in inputs accessible', async ({ page }) => {
+    await auditPage(page, '/portal/northline');
+
+    const phone = page.locator('input[type="tel"]');
+    await expect(phone).toHaveCount(1);
+    await expect(phone).toHaveAttribute('type', 'tel');
+    await expect(phone).toHaveAttribute('autocomplete', 'tel');
+});
+
 test('keeps the collector workspace accessible to collector accounts', async ({ page }) => {
     test.setTimeout(60_000);
 

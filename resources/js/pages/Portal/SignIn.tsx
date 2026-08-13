@@ -88,10 +88,15 @@ export default function PortalSignIn({ tenant }: Props) {
                                 <span className="field-label">{t('Phone number')}</span>
                                 <input
                                     required
+                                    type="tel"
+                                    autoComplete="tel"
+                                    inputMode="tel"
                                     value={phone}
                                     onChange={(event) => setPhone(event.target.value)}
                                     className="field"
                                     placeholder="+961 70 123 456"
+                                    aria-invalid={Boolean(error)}
+                                    aria-describedby={error ? 'portal-sign-in-error' : undefined}
                                 />
                             </label>
                             <button type="submit" disabled={busy} className="button-primary w-full justify-center">
@@ -108,10 +113,13 @@ export default function PortalSignIn({ tenant }: Props) {
                                     inputMode="numeric"
                                     pattern="[0-9]{6}"
                                     maxLength={6}
+                                    autoComplete="one-time-code"
                                     value={code}
                                     onChange={(event) => setCode(event.target.value)}
                                     className="field tracking-[0.4em]"
                                     placeholder="000000"
+                                    aria-invalid={Boolean(error)}
+                                    aria-describedby={error ? 'portal-sign-in-error' : undefined}
                                 />
                             </label>
                             <button type="submit" disabled={busy} className="button-primary w-full justify-center">
@@ -128,7 +136,7 @@ export default function PortalSignIn({ tenant }: Props) {
                         </form>
                     )}
                     {error && (
-                        <p className="field-error" role="alert">
+                        <p id="portal-sign-in-error" className="field-error" role="alert">
                             {error}
                         </p>
                     )}
