@@ -39,7 +39,7 @@ Sources:
 | Subscriber history, plans, contacts, status and expiry | Delivered | Keep ISP Manager's richer service lifecycle, documents, tickets and timeline. |
 | Plan/speed, PPPoE credentials and bandwidth usage | Delivered/partial | Finish live-device acceptance and add an operator-friendly usage/FUP history. |
 | Zone organization | Delivered | Retain tenant, branch, zone, POP and reseller scoping. |
-| Box and building organization | Gap | Add building/site and distribution-box/cabinet entities, map placement, capacity and subscriber assignment. |
+| Box and building organization | Delivered for responsive web | Tenant-safe building/site and distribution-box/cabinet records, map placement, POP linkage, capacity validation, port occupancy and subscriber assignment are delivered; installation surveys and optical readings remain in the installation phase. |
 | Monthly auto-invoicing, grace and overdue handling | Delivered | Keep idempotent billing runs, ledger posting and network enforcement. |
 | Custom billing cycle per subscriber | Delivered for monthly prepaid billing | Each service can follow its plan duration or use a day-of-month anchor. Initial and transition periods use previewed half-up proration, days 29–31 clamp safely, open renewal invoices lock their quote, and paid renewal applies the scheduled anchor. |
 | Subscription, usage-based and one-time billing combinations | Partial | Add recurring invoice items and a metered-rating engine over usage/readings; retain operator-created invoice lines. |
@@ -58,7 +58,7 @@ Sources:
 | Inventory and equipment assignment | Delivered | Keep serialized and bulk stock, warehouses, transfers, service assignment and movement audit. |
 | Stock assigned to collectors and field sales | Delivered for responsive web | Collector/vehicle custody locations, audited direct transfers, replenishment and return approvals, stale-safe physical counts, manager-posted variances, and paid customer field sales are implemented. Sales atomically issue an invoice, record payment, update cash custody for cash methods, decrement stock and append movement history. |
 | Generic business expenses | Delivered for responsive web | Tenant-scoped categories and vendors, private receipt attachments, pending approval, cash/bank/collector sources, atomic ledger and custody posting, and pausable weekly/monthly/quarterly/yearly schedules are implemented. Recurring occurrences remain pending until a manager approves them. |
-| Customer/admin WhatsApp and SMS notifications | Delivered/partial | Complete live provider acceptance; retain multi-account jobs, deduplication, pacing and audit history. |
+| Customer/admin WhatsApp and SMS notifications | Delivered/partial | Shared localized WhatsApp template editor now covers English, Arabic and French with validated variables; complete live provider acceptance while retaining multi-account jobs, deduplication, pacing and audit history. |
 | Customer portal and public invoice/payment access | Delivered for responsive web | Expiring, revocable branded invoice, statement, receipt and payment links are delivered with Stripe checkout, Whish QR collection, compact receipt downloads and hash-only token storage. Custom tenant domains and live gateway acceptance remain operational gates. |
 | Multi-company distributor operation | Delivered | Keep the stronger tenant and reseller hierarchy, wallets, price books, commissions and settlements. |
 | Network integrations | Exceeds reference in RouterOS/RADIUS; gap in optical access | Complete RouterOS/CoA lab acceptance, then add OLT/ONU installation inventory and a vendor-neutral optical driver boundary. |
@@ -100,7 +100,7 @@ Sources:
 
 ### Phase 4: physical ISP topology
 
-1. Buildings/sites, boxes/cabinets, ports, capacity and map views.
+1. Buildings/sites, boxes/cabinets, ports, capacity and map views. **Delivered for responsive web.**
 2. Installation survey and activation workflow.
 3. OLT/ONU registry, optical readings and vendor-neutral integration drivers.
 4. Usage/FUP and network-quality history tied to customers and topology.
