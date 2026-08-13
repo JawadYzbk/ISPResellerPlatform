@@ -19,6 +19,7 @@ export type Status =
     | 'online'
     | 'offline'
     | 'draft'
+    | 'planned'
     | 'issued'
     | 'void'
     | 'posted'
@@ -66,6 +67,7 @@ const styles: Record<Status, string> = {
     online: 'bg-emerald-50 text-emerald-700 ring-emerald-600/20',
     offline: 'bg-rose-50 text-rose-700 ring-rose-600/20',
     draft: 'bg-slate-100 text-slate-600 ring-slate-500/20',
+    planned: 'bg-violet-50 text-violet-700 ring-violet-600/20',
     issued: 'bg-blue-50 text-blue-700 ring-blue-600/20',
     void: 'bg-slate-100 text-slate-500 ring-slate-500/20',
     posted: 'bg-emerald-50 text-emerald-700 ring-emerald-600/20',

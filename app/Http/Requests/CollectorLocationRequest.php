@@ -5,7 +5,7 @@ namespace App\Http\Requests;
 use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
 
-final class CollectorLocationRequest extends FormRequest
+class CollectorLocationRequest extends FormRequest
 {
     public function authorize(): bool
     {

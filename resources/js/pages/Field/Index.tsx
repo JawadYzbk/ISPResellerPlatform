@@ -8,6 +8,8 @@ import {
     CreditCard,
     LogIn,
     LogOut,
+    ListOrdered,
+    LocateFixed,
     MapPin,
     RefreshCw,
     Search,
@@ -67,6 +69,36 @@ type FieldDay = {
     check_out: { latitude: number; longitude: number; accuracy_meters: number | null } | null;
 } | null;
 
+type FieldRouteStop = {
+    id: string;
+    position: number;
+    outcome: 'pending' | 'collected' | 'no_answer' | 'refused' | 'reschedule' | 'address_issue';
+    note: string | null;
+    visited_at: string | null;
+    customer: {
+        id: string;
+        code: string;
+        name: string;
+        phone: string | null;
+        address: string | null;
+        latitude: number | null;
+        longitude: number | null;
+        zone: string | null;
+        balance_amount: number;
+        balance_currency: string;
+        next_expires_at: string | null;
+    };
+};
+
+type FieldRoute = {
+    id: string;
+    route_date: string;
+    status: 'planned' | 'in_progress' | 'completed';
+    stop_count: number;
+    completed_count: number;
+    stops: FieldRouteStop[];
+} | null;
+
 type SyncResult = {
     index: number;
     status: 'created' | 'replayed' | 'rejected' | 'error';
@@ -78,6 +110,7 @@ type Props = {
     shift: CollectorShift;
     summary: CollectorSummary;
     fieldDay: FieldDay;
+    route: FieldRoute;
     currencies: CurrencyOption[];
     defaultCurrency: string;
     storageKey: string;
@@ -92,11 +125,27 @@ function csrfToken(): string {
     return document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ?? '';
 }
 
+function distanceMeters(origin: { latitude: number; longitude: number }, stop: FieldRouteStop): number {
+    if (stop.customer.latitude === null || stop.customer.longitude === null) return Number.POSITIVE_INFINITY;
+    const radians = (degrees: number) => (degrees * Math.PI) / 180;
+    const earthRadius = 6_371_000;
+    const latitudeDelta = radians(stop.customer.latitude - origin.latitude);
+    const longitudeDelta = radians(stop.customer.longitude - origin.longitude);
+    const firstLatitude = radians(origin.latitude);
+    const secondLatitude = radians(stop.customer.latitude);
+    const value =
+        Math.sin(latitudeDelta / 2) ** 2 +
+        Math.cos(firstLatitude) * Math.cos(secondLatitude) * Math.sin(longitudeDelta / 2) ** 2;
+
+    return earthRadius * 2 * Math.atan2(Math.sqrt(value), Math.sqrt(1 - value));
+}
+
 export default function FieldIndex({
     snapshot,
     shift,
     summary,
     fieldDay: initialFieldDay,
+    route: initialRoute,
     currencies,
     defaultCurrency,
     storageKey,
@@ -118,6 +167,13 @@ export default function FieldIndex({
     const [hydrated, setHydrated] = useState(false);
     const [fieldDay, setFieldDay] = useState<FieldDay>(initialFieldDay);
     const [locationBusy, setLocationBusy] = useState(false);
+    const [collectorRoute, setCollectorRoute] = useState<FieldRoute>(initialRoute);
+    const [routeOrigin, setRouteOrigin] = useState<{ latitude: number; longitude: number } | null>(null);
+    const [nearbyOrder, setNearbyOrder] = useState(false);
+    const [selectedStopId, setSelectedStopId] = useState('');
+    const [visitOutcome, setVisitOutcome] = useState<FieldRouteStop['outcome']>('no_answer');
+    const [visitNote, setVisitNote] = useState('');
+    const [visitBusy, setVisitBusy] = useState(false);
 
     const selectedCustomer = customers.find((customer) => customer.id === selectedCustomerId) ?? null;
     const selectedCurrency = currencyOptions.find((item) => item.code === currency);
@@ -132,6 +188,13 @@ export default function FieldIndex({
                 .includes(query),
         );
     }, [customers, search]);
+    const orderedRouteStops = useMemo(() => {
+        if (!collectorRoute) return [];
+        const stops = [...collectorRoute.stops];
+        return nearbyOrder && routeOrigin
+            ? stops.sort((left, right) => distanceMeters(routeOrigin, left) - distanceMeters(routeOrigin, right))
+            : stops.sort((left, right) => left.position - right.position);
+    }, [collectorRoute, nearbyOrder, routeOrigin]);
 
     const persist = useCallback(
         async (
@@ -410,6 +473,77 @@ export default function FieldIndex({
         }
     };
 
+    const captureLocation = () =>
+        new Promise<GeolocationPosition>((resolve, reject) =>
+            navigator.geolocation.getCurrentPosition(resolve, reject, {
+                enableHighAccuracy: true,
+                timeout: 15000,
+                maximumAge: 0,
+            }),
+        );
+
+    const sortRouteNearby = async () => {
+        if (!('geolocation' in navigator)) {
+            setError('Location capture is not available in this browser.');
+            return;
+        }
+        setLocationBusy(true);
+        setError(null);
+        try {
+            const position = await captureLocation();
+            setRouteOrigin({ latitude: position.coords.latitude, longitude: position.coords.longitude });
+            setNearbyOrder(true);
+            setMessage('Route ordered by your current location. The manager’s planned order is unchanged.');
+        } catch {
+            setError('A reliable location could not be captured for nearby sorting.');
+        } finally {
+            setLocationBusy(false);
+        }
+    };
+
+    const recordVisit = async (event: React.FormEvent) => {
+        event.preventDefault();
+        if (!fieldDay) {
+            setError('Start your field day before recording a visit.');
+            return;
+        }
+        if (!selectedStopId || !('geolocation' in navigator)) return;
+
+        setVisitBusy(true);
+        setError(null);
+        try {
+            const position = await captureLocation();
+            const response = await fetch(`/field/route-stops/${selectedStopId}`, {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: {
+                    Accept: 'application/json',
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken(),
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+                body: JSON.stringify({
+                    outcome: visitOutcome,
+                    note: visitNote || null,
+                    latitude: position.coords.latitude,
+                    longitude: position.coords.longitude,
+                    accuracy_meters: Math.round(position.coords.accuracy),
+                }),
+            });
+            const body = (await response.json()) as { message?: string; data?: Exclude<FieldRoute, null> };
+            if (!response.ok || !body.data) throw new Error(body.message ?? 'The visit outcome could not be saved.');
+
+            setCollectorRoute(body.data);
+            setSelectedStopId('');
+            setVisitNote('');
+            setMessage(body.message ?? 'Visit outcome recorded.');
+        } catch (caught) {
+            setError(caught instanceof Error ? caught.message : 'The visit outcome could not be saved.');
+        } finally {
+            setVisitBusy(false);
+        }
+    };
+
     return (
         <AppLayout>
             <Head title="Field collection" />
@@ -515,6 +649,146 @@ export default function FieldIndex({
                     </button>
                 </section>
 
+                <section className="card mt-6 overflow-hidden">
+                    <div className="flex flex-col gap-4 border-b border-line p-5 sm:flex-row sm:items-start sm:justify-between">
+                        <div>
+                            <p className="eyebrow">Today’s route</p>
+                            <h2 className="mt-1 text-xl font-semibold text-balance">
+                                {collectorRoute
+                                    ? `${collectorRoute.completed_count}/${collectorRoute.stop_count} stops completed`
+                                    : 'No route assigned'}
+                            </h2>
+                            <p className="mt-1 text-pretty text-sm text-muted">
+                                Planned order is preserved. Nearby sorting changes only your current view.
+                            </p>
+                        </div>
+                        {collectorRoute && (
+                            <div className="flex flex-wrap gap-2">
+                                <button
+                                    type="button"
+                                    className={nearbyOrder ? 'button-secondary' : 'button-primary'}
+                                    onClick={() => void sortRouteNearby()}
+                                    disabled={locationBusy}
+                                >
+                                    <LocateFixed size={15} /> Nearest first
+                                </button>
+                                <button
+                                    type="button"
+                                    className={!nearbyOrder ? 'button-secondary' : 'button-quiet'}
+                                    onClick={() => setNearbyOrder(false)}
+                                >
+                                    <ListOrdered size={15} /> Planned order
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                    {collectorRoute ? (
+                        <div className="divide-y divide-line">
+                            {orderedRouteStops.map((stop, visibleIndex) => {
+                                const distance = routeOrigin ? distanceMeters(routeOrigin, stop) : null;
+                                const selected = selectedStopId === stop.id;
+                                return (
+                                    <div key={stop.id} className="p-5">
+                                        <div className="flex items-start gap-3">
+                                            <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-brand-soft text-xs font-bold tabular-nums text-brand">
+                                                {nearbyOrder ? visibleIndex + 1 : stop.position}
+                                            </span>
+                                            <div className="min-w-0 flex-1">
+                                                <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                                                    <p className="font-semibold">{stop.customer.name}</p>
+                                                    <span className="text-xs text-muted">{stop.customer.code}</span>
+                                                    {stop.outcome !== 'pending' && (
+                                                        <span className="rounded-full bg-sand px-2 py-1 text-xs font-semibold capitalize text-muted">
+                                                            {stop.outcome.replaceAll('_', ' ')}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                <p className="mt-1 text-pretty text-sm text-muted">
+                                                    {stop.customer.address ?? stop.customer.zone ?? 'No address saved'}
+                                                </p>
+                                                <p className="mt-2 text-xs font-semibold tabular-nums text-muted">
+                                                    {formatMoney(
+                                                        stop.customer.balance_amount,
+                                                        stop.customer.balance_currency,
+                                                    )}
+                                                    {distance !== null && Number.isFinite(distance)
+                                                        ? ` · ${distance < 1000 ? `${Math.round(distance)} m` : `${(distance / 1000).toFixed(1)} km`}`
+                                                        : ''}
+                                                </p>
+                                            </div>
+                                            <div className="flex shrink-0 flex-col gap-2 sm:flex-row">
+                                                <button
+                                                    type="button"
+                                                    className="button-secondary"
+                                                    onClick={() => {
+                                                        setSelectedCustomerId(stop.customer.id);
+                                                        document
+                                                            .getElementById('field-payment-form')
+                                                            ?.scrollIntoView({ block: 'start' });
+                                                    }}
+                                                >
+                                                    Collect
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    className="button-primary"
+                                                    onClick={() => setSelectedStopId(selected ? '' : stop.id)}
+                                                    disabled={!fieldDay || stop.outcome !== 'pending'}
+                                                >
+                                                    Outcome
+                                                </button>
+                                            </div>
+                                        </div>
+                                        {selected && (
+                                            <form
+                                                onSubmit={recordVisit}
+                                                className="mt-4 grid gap-4 rounded-xl border border-line bg-sand/50 p-4 sm:grid-cols-[0.7fr_1.3fr_auto] sm:items-end"
+                                            >
+                                                <label>
+                                                    <span className="field-label">Visit outcome</span>
+                                                    <ResponsiveSelect
+                                                        className="field"
+                                                        value={visitOutcome}
+                                                        onChange={(event) =>
+                                                            setVisitOutcome(
+                                                                event.target.value as FieldRouteStop['outcome'],
+                                                            )
+                                                        }
+                                                    >
+                                                        <option value="collected">Collected</option>
+                                                        <option value="no_answer">No answer</option>
+                                                        <option value="refused">Refused</option>
+                                                        <option value="reschedule">Reschedule</option>
+                                                        <option value="address_issue">Address issue</option>
+                                                    </ResponsiveSelect>
+                                                </label>
+                                                <label>
+                                                    <span className="field-label">Visit note</span>
+                                                    <input
+                                                        className="field"
+                                                        value={visitNote}
+                                                        onChange={(event) => setVisitNote(event.target.value)}
+                                                        placeholder="Optional operational note"
+                                                    />
+                                                </label>
+                                                <button className="button-primary" disabled={visitBusy}>
+                                                    {visitBusy ? 'Saving…' : 'Save outcome'}
+                                                </button>
+                                            </form>
+                                        )}
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    ) : (
+                        <div className="p-10 text-center">
+                            <MapPin className="mx-auto text-muted" size={28} />
+                            <p className="mt-3 font-semibold">No customer stops assigned today</p>
+                            <p className="mt-1 text-sm text-muted">Your manager can publish a route from operations.</p>
+                        </div>
+                    )}
+                </section>
+
                 {!shift && (
                     <div className="mt-6 flex flex-col gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900 sm:flex-row sm:items-center sm:justify-between">
                         <span>Open a cash shift before recording collector payments.</span>
@@ -533,7 +807,7 @@ export default function FieldIndex({
                     </div>
                 )}
 
-                <section className="card mt-6 overflow-hidden">
+                <section id="field-payment-form" className="card mt-6 overflow-hidden scroll-mt-24">
                     <div className="border-b border-line p-5">
                         <p className="eyebrow">Customer queue</p>
                         <div className="flex items-start justify-between gap-4">

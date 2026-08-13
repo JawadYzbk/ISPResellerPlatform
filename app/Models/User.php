@@ -79,6 +79,12 @@ class User extends Authenticatable
         return $this->hasMany(CollectorFieldDay::class);
     }
 
+    /** @return HasMany<CollectorRoute, $this> */
+    public function collectorRoutes(): HasMany
+    {
+        return $this->hasMany(CollectorRoute::class);
+    }
+
     public function isPlatformOperator(): bool
     {
         return $this->tenant_id === null && $this->role === 'platform_operator';

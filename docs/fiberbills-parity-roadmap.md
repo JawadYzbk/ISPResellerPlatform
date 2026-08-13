@@ -49,11 +49,11 @@ Sources:
 | Revenue, pending, overdue and financial reports | Delivered | Keep allocation-backed aging, margin, ARPU, retention, usage and reseller reporting. |
 | Cash collection and automatic reconciliation | Delivered | Keep append-only payments, cash shifts, allocations, reversals and daily collector totals. |
 | Lebanon multi-currency collection | Exceeds reference | Keep USD/LBP/AED support, FX snapshots, Frankfurter import, manual rates, Whish, Stripe and configurable rounding including nearest LBP 5,000. |
-| Collector due/overdue customer list and offline collection | Delivered/partial | Keep encrypted offline web queue and add route-oriented daily execution. |
+| Collector due/overdue customer list and offline collection | Delivered | Keep the encrypted offline web queue and daily route-oriented execution with ordered customer stops. |
 | Collector assignment to zones | Delivered | Scoped all-zone/restricted territories, descendant coverage, server-side sync/API enforcement and effective-dated reassignment history are implemented; temporary scheduled coverage remains part of route planning. |
-| Live collector GPS, check-ins, routes and nearby dues | Partial | Explicit consent-based field-day check-in/out, GPS accuracy evidence and manager supervision are delivered without continuous background tracking; route stops, proximity queues and visit outcomes remain. |
+| Live collector GPS, check-ins, routes and nearby dues | Delivered for responsive web | Explicit consent-based field-day check-in/out, GPS accuracy evidence, manager route planning, territory-safe ordered stops, on-demand nearby sorting and location-backed visit outcomes are delivered without continuous background tracking. Native background execution remains deferred. |
 | Collector tasks, messaging and daily summaries | Gap | Add role-scoped tasks, admin/collector conversation threads, read states, attachments and shift summaries. |
-| Collector performance | Partial | Extend finance totals with visits, route completion, collection rate, exceptions, cash variance and trend reporting. |
+| Collector performance | Partial | Route progress and visit outcomes are now visible to managers; extend finance totals with collection rate, cash variance and historical trends. |
 | Collector wallet/cash custody | Partial | Connect cash shifts, advances, handover, expenses and settlement into one auditable collector custody view. |
 | Inventory and equipment assignment | Delivered | Keep serialized and bulk stock, warehouses, transfers, service assignment and movement audit. |
 | Stock assigned to collectors and field sales | Partial | Add collector/vehicle stock locations, custody handover, returns, replenishment, sales and variance reconciliation. |

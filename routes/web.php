@@ -8,6 +8,7 @@ use App\Http\Controllers\Auth\TwoFactorController;
 use App\Http\Controllers\Web\BillingController;
 use App\Http\Controllers\Web\CashShiftOperationsController;
 use App\Http\Controllers\Web\CollectorFieldDayController;
+use App\Http\Controllers\Web\CollectorRouteController;
 use App\Http\Controllers\Web\CollectorTerritoryController;
 use App\Http\Controllers\Web\CredentialOperationsController;
 use App\Http\Controllers\Web\CustomerController;
@@ -109,6 +110,7 @@ Route::middleware(['auth', 'tenant', '2fa'])->group(function (): void {
     Route::post('/field/push', [FieldController::class, 'push'])->name('field.push');
     Route::post('/field/check-in', [CollectorFieldDayController::class, 'checkIn'])->name('field.check-in');
     Route::post('/field/check-out', [CollectorFieldDayController::class, 'checkOut'])->name('field.check-out');
+    Route::post('/field/route-stops/{routeStop:public_id}', [CollectorRouteController::class, 'recordStop'])->name('field.route-stops.record');
     Route::get('/profile', [ProfileController::class, 'show'])->name('profile');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications');
@@ -175,6 +177,8 @@ Route::middleware(['auth', 'tenant', '2fa'])->group(function (): void {
     Route::delete('/services/{service:public_id}/change-plan', [ServiceController::class, 'cancelPlan'])->name('services.change-plan.cancel');
     Route::get('/operations/network-commands', [NetworkOperationsController::class, 'index'])->name('operations.network-commands');
     Route::get('/operations/collector-check-ins', [CollectorFieldDayController::class, 'index'])->name('operations.collector-check-ins');
+    Route::get('/operations/collector-routes', [CollectorRouteController::class, 'index'])->name('operations.collector-routes');
+    Route::post('/operations/collector-routes', [CollectorRouteController::class, 'store'])->middleware('recent-auth')->name('operations.collector-routes.store');
     Route::post('/operations/network-commands/{command:public_id}/retry', [NetworkOperationsController::class, 'retry'])->name('operations.network-commands.retry');
     Route::get('/operations/sessions', [SessionOperationsController::class, 'index'])->name('operations.sessions');
     Route::get('/operations/incidents', [IncidentOperationsController::class, 'index'])->name('operations.incidents');

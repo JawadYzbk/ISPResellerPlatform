@@ -9,8 +9,10 @@ use App\Actions\GetCurrencyCatalog;
 use App\Actions\PushCollectorSync;
 use App\Http\Controllers\Controller;
 use App\Models\CollectorFieldDay;
+use App\Models\CollectorRoute;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Support\CollectorRoutePresenter;
 use App\Support\Tenancy;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -26,6 +28,7 @@ final class FieldController extends Controller
         GetCollectorSummary $summary,
         GetCollectorSyncSnapshot $snapshot,
         GetCurrencyCatalog $currencyCatalog,
+        CollectorRoutePresenter $routePresenter,
     ): Response {
         $user = $this->collector($request);
         $tenant = $this->tenant();
@@ -40,6 +43,7 @@ final class FieldController extends Controller
             'shift' => $shift->handle($user),
             'summary' => $summary->handle($user, now()->toDateString()),
             'fieldDay' => $this->fieldDay($user),
+            'route' => $this->route($user, $tenant, $routePresenter),
             'currencies' => $currencyCatalog->handle(),
             'defaultCurrency' => $tenant->collection_currency,
             'storageKey' => 'field:'.$tenant->public_id.':'.$user->id,
@@ -111,5 +115,18 @@ final class FieldController extends Controller
             ],
             'check_out' => null,
         ] : null;
+    }
+
+    /** @return array<string, mixed>|null */
+    private function route(User $user, Tenant $tenant, CollectorRoutePresenter $presenter): ?array
+    {
+        $date = now($tenant->settingsData()->timezone)->toDateString();
+        $route = CollectorRoute::query()
+            ->where('user_id', $user->id)
+            ->whereDate('route_date', $date)
+            ->with(['stops.customer.zone', 'stops.customer.services'])
+            ->first();
+
+        return $route instanceof CollectorRoute ? $presenter->make($route) : null;
     }
 }
