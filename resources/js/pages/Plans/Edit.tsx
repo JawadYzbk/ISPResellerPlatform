@@ -92,7 +92,7 @@ export default function PlanEdit({ plan, currencies }: Props) {
                                 onChange={(event) => form.setData(key, event.target.value)}
                                 placeholder={placeholder}
                             />
-                            {form.errors[key] && <p className="field-error">{t(form.errors[key])}</p>}
+                            {form.errors[key] && <p className="field-error" role="alert">{t(form.errors[key])}</p>}
                         </label>
                     ))}
                     <label>
@@ -108,7 +108,7 @@ export default function PlanEdit({ plan, currencies }: Props) {
                             onChange={(event) => form.setData('amount', event.target.value)}
                             placeholder="35.00"
                         />
-                        {form.errors.amount && <p className="field-error">{t(form.errors.amount)}</p>}
+                        {form.errors.amount && <p className="field-error" role="alert">{t(form.errors.amount)}</p>}
                     </label>
                     <label>
                         <span className="field-label">{t('Currency')}</span>
@@ -118,7 +118,7 @@ export default function PlanEdit({ plan, currencies }: Props) {
                             currencies={currencies}
                             onChange={(value) => form.setData('currency', value)}
                         />
-                        {form.errors.currency && <p className="field-error">{t(form.errors.currency)}</p>}
+                        {form.errors.currency && <p className="field-error" role="alert">{t(form.errors.currency)}</p>}
                     </label>
                     <label>
                         <span className="field-label">{t('plan.price_effective_from')}</span>
@@ -128,7 +128,7 @@ export default function PlanEdit({ plan, currencies }: Props) {
                             value={form.data.effective_from}
                             onChange={(event) => form.setData('effective_from', event.target.value)}
                         />
-                        {form.errors.effective_from && <p className="field-error">{t(form.errors.effective_from)}</p>}
+                        {form.errors.effective_from && <p className="field-error" role="alert">{t(form.errors.effective_from)}</p>}
                     </label>
                 </div>
                 <label>

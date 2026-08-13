@@ -318,7 +318,7 @@ export default function GeneralSettings({
                                     value={form.data.name}
                                     onChange={(event) => form.setData('name', event.target.value)}
                                 />
-                                {form.errors.name && <p className="field-error">{t(form.errors.name)}</p>}
+                                {form.errors.name && <p className="field-error" role="alert">{t(form.errors.name)}</p>}
                             </label>
                             <label className="sm:col-span-2">
                                 <span className="field-label">{t('Tenant logo')}</span>
@@ -346,7 +346,7 @@ export default function GeneralSettings({
                                                 'JPG, PNG, or WebP up to 2 MB. It appears in the staff shell and customer portal.',
                                             )}
                                         </p>
-                                        {form.errors.logo && <p className="field-error">{t(form.errors.logo)}</p>}
+                                        {form.errors.logo && <p className="field-error" role="alert">{t(form.errors.logo)}</p>}
                                     </div>
                                 </div>
                             </label>
@@ -394,7 +394,7 @@ export default function GeneralSettings({
                                         </option>
                                     ))}
                                 </ResponsiveSelect>
-                                {form.errors.timezone && <p className="field-error">{t(form.errors.timezone)}</p>}
+                                {form.errors.timezone && <p className="field-error" role="alert">{t(form.errors.timezone)}</p>}
                             </label>
                         </div>
                     </section>
@@ -411,7 +411,7 @@ export default function GeneralSettings({
                                     onChange={(value) => form.setData('base_currency', value)}
                                 />
                                 {form.errors.base_currency && (
-                                    <p className="field-error">{t(form.errors.base_currency)}</p>
+                                    <p className="field-error" role="alert">{t(form.errors.base_currency)}</p>
                                 )}
                             </label>
                             <label>
@@ -424,7 +424,7 @@ export default function GeneralSettings({
                                     onChange={(value) => form.setData('collection_currency', value)}
                                 />
                                 {form.errors.collection_currency && (
-                                    <p className="field-error">{t(form.errors.collection_currency)}</p>
+                                    <p className="field-error" role="alert">{t(form.errors.collection_currency)}</p>
                                 )}
                             </label>
                             <label>

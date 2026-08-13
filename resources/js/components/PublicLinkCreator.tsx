@@ -92,7 +92,7 @@ export default function PublicLinkCreator({
                     {t('Create link')}
                 </button>
             </form>
-            {form.errors.type && <p className="field-error mt-2">{t(form.errors.type)}</p>}
+            {form.errors.type && <p className="field-error mt-2" role="alert">{t(form.errors.type)}</p>}
             {flash.publicLink && (
                 <div className="mt-4 rounded-xl border border-line bg-sand/30 p-3">
                     <label className="field-label" htmlFor={`${fieldId}-url`}>

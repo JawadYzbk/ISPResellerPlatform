@@ -244,7 +244,7 @@ export default function CustomersIndex({ customers, filters, zones, savedViews, 
                             onChange={(event) => saveViewForm.setData('name', event.target.value)}
                             placeholder={t('Renewal queue')}
                         />
-                        {saveViewForm.errors.name && <p className="field-error">{t(saveViewForm.errors.name)}</p>}
+                        {saveViewForm.errors.name && <p className="field-error" role="alert">{t(saveViewForm.errors.name)}</p>}
                     </label>
                     <button type="submit" className="button-secondary" disabled={saveViewForm.processing}>
                         {t('Save view')}

@@ -112,7 +112,7 @@ export default function Imports({ types, routers, batches }: Props) {
                                 </option>
                             ))}
                         </ResponsiveSelect>
-                        {form.errors.type && <p className="field-error">{t(form.errors.type)}</p>}
+                        {form.errors.type && <p className="field-error" role="alert">{t(form.errors.type)}</p>}
                     </label>
 
                     {isRouterDiscovery ? (
@@ -131,7 +131,7 @@ export default function Imports({ types, routers, batches }: Props) {
                                 ))}
                             </ResponsiveSelect>
                             {form.errors.router_public_id && (
-                                <p className="field-error">{t(form.errors.router_public_id)}</p>
+                                <p className="field-error" role="alert">{t(form.errors.router_public_id)}</p>
                             )}
                             <p className="mt-2 text-xs leading-5 text-muted">{t('imports.discovery_description')}</p>
                         </label>
@@ -144,7 +144,7 @@ export default function Imports({ types, routers, batches }: Props) {
                                 accept=".csv,.txt,.xlsx"
                                 onChange={(event) => form.setData('file', event.target.files?.[0] ?? null)}
                             />
-                            {form.errors.file && <p className="field-error">{t(form.errors.file)}</p>}
+                            {form.errors.file && <p className="field-error" role="alert">{t(form.errors.file)}</p>}
                             <p className="mt-2 text-xs leading-5 text-muted">
                                 {t('imports.required_columns')}: {selectedType?.columns ?? t('imports.choose_type')}
                             </p>

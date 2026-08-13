@@ -228,8 +228,8 @@ export default function CollectorRoutes({ date, collectors, customers, routes }:
                         </div>
                     )}
 
-                    {form.errors.customer_ids && <p className="field-error mt-3">{t(form.errors.customer_ids)}</p>}
-                    {form.errors.collector_id && <p className="field-error mt-3">{t(form.errors.collector_id)}</p>}
+                    {form.errors.customer_ids && <p className="field-error mt-3" role="alert">{t(form.errors.customer_ids)}</p>}
+                    {form.errors.collector_id && <p className="field-error mt-3" role="alert">{t(form.errors.collector_id)}</p>}
                 </section>
 
                 <section className="card p-6">

@@ -59,7 +59,7 @@ function FieldError({ message }: { message?: string }) {
     const { props } = usePage<PageProps>();
     const t = createTranslator(props.app.locale);
 
-    return message ? <p className="field-error">{t(message)}</p> : null;
+    return message ? <p className="field-error" role="alert">{t(message)}</p> : null;
 }
 
 function SecretInput({

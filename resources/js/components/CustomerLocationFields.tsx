@@ -109,7 +109,7 @@ export default function CustomerLocationFields({
                 onLatitudeChange={onLatitudeChange}
                 onLongitudeChange={onLongitudeChange}
             />
-            {locationError && <p className="field-error">{locationError}</p>}
+            {locationError && <p className="field-error" role="alert">{locationError}</p>}
             {mapUrl && (
                 <a
                     href={mapUrl}

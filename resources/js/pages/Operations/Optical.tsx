@@ -123,7 +123,7 @@ function ErrorText({ message }: { message?: string }) {
     const page = usePage<PageProps>();
     const t = createTranslator(page.props.app.locale);
 
-    return message ? <p className="field-error">{t(message)}</p> : null;
+    return message ? <p className="field-error" role="alert">{t(message)}</p> : null;
 }
 
 function DeviceFields({

@@ -63,7 +63,7 @@ export default function CustomersEdit({ customer, zones }: Props) {
                                 value={form.data.first_name}
                                 onChange={(event) => form.setData('first_name', event.target.value)}
                             />
-                            {form.errors.first_name && <p className="field-error">{t(form.errors.first_name)}</p>}
+                            {form.errors.first_name && <p className="field-error" role="alert">{t(form.errors.first_name)}</p>}
                         </div>
                         <div>
                             <label className="field-label" htmlFor="last_name">
@@ -75,7 +75,7 @@ export default function CustomersEdit({ customer, zones }: Props) {
                                 value={form.data.last_name}
                                 onChange={(event) => form.setData('last_name', event.target.value)}
                             />
-                            {form.errors.last_name && <p className="field-error">{t(form.errors.last_name)}</p>}
+                            {form.errors.last_name && <p className="field-error" role="alert">{t(form.errors.last_name)}</p>}
                         </div>
                         <div>
                             <label className="field-label" htmlFor="phone">
@@ -87,7 +87,7 @@ export default function CustomersEdit({ customer, zones }: Props) {
                                 value={form.data.phone}
                                 onChange={(event) => form.setData('phone', event.target.value)}
                             />
-                            {form.errors.phone && <p className="field-error">{t(form.errors.phone)}</p>}
+                            {form.errors.phone && <p className="field-error" role="alert">{t(form.errors.phone)}</p>}
                         </div>
                         <div>
                             <label className="field-label" htmlFor="email">
@@ -100,7 +100,7 @@ export default function CustomersEdit({ customer, zones }: Props) {
                                 value={form.data.email}
                                 onChange={(event) => form.setData('email', event.target.value)}
                             />
-                            {form.errors.email && <p className="field-error">{t(form.errors.email)}</p>}
+                            {form.errors.email && <p className="field-error" role="alert">{t(form.errors.email)}</p>}
                         </div>
                         <div>
                             <label className="field-label" htmlFor="zone_id">
@@ -119,7 +119,7 @@ export default function CustomersEdit({ customer, zones }: Props) {
                                     </option>
                                 ))}
                             </ResponsiveSelect>
-                            {form.errors.zone_id && <p className="field-error">{t(form.errors.zone_id)}</p>}
+                            {form.errors.zone_id && <p className="field-error" role="alert">{t(form.errors.zone_id)}</p>}
                         </div>
                         <div>
                             <label className="field-label" htmlFor="address">
@@ -131,7 +131,7 @@ export default function CustomersEdit({ customer, zones }: Props) {
                                 value={form.data.address}
                                 onChange={(event) => form.setData('address', event.target.value)}
                             />
-                            {form.errors.address && <p className="field-error">{t(form.errors.address)}</p>}
+                            {form.errors.address && <p className="field-error" role="alert">{t(form.errors.address)}</p>}
                         </div>
                     </div>
                     <CustomerLocationFields

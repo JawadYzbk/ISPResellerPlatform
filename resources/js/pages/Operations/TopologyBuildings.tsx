@@ -91,7 +91,7 @@ export default function TopologyBuildingsPage({ buildings, canManage, statuses }
                                 onChange={(event) => form.setData('name', event.target.value)}
                                 placeholder={t('Cedar Residence')}
                             />
-                            {form.errors.name && <p className="field-error">{t(form.errors.name)}</p>}
+                            {form.errors.name && <p className="field-error" role="alert">{t(form.errors.name)}</p>}
                         </label>
                         <label>
                             <span className="field-label">{t('Code')}</span>
@@ -101,7 +101,7 @@ export default function TopologyBuildingsPage({ buildings, canManage, statuses }
                                 onChange={(event) => form.setData('code', event.target.value)}
                                 placeholder="CEDAR-01"
                             />
-                            {form.errors.code && <p className="field-error">{t(form.errors.code)}</p>}
+                            {form.errors.code && <p className="field-error" role="alert">{t(form.errors.code)}</p>}
                         </label>
                         <label className="md:col-span-2">
                             <span className="field-label">{t('Address')}</span>
@@ -111,7 +111,7 @@ export default function TopologyBuildingsPage({ buildings, canManage, statuses }
                                 onChange={(event) => form.setData('address', event.target.value)}
                                 placeholder={t('Street, district, city')}
                             />
-                            {form.errors.address && <p className="field-error">{t(form.errors.address)}</p>}
+                            {form.errors.address && <p className="field-error" role="alert">{t(form.errors.address)}</p>}
                         </label>
                         <label>
                             <span className="field-label">{t('Floors')}</span>
@@ -123,7 +123,7 @@ export default function TopologyBuildingsPage({ buildings, canManage, statuses }
                                 onChange={(event) => form.setData('floors', event.target.value)}
                                 placeholder="8"
                             />
-                            {form.errors.floors && <p className="field-error">{t(form.errors.floors)}</p>}
+                            {form.errors.floors && <p className="field-error" role="alert">{t(form.errors.floors)}</p>}
                         </label>
                         <label>
                             <span className="field-label">{t('Units')}</span>
@@ -135,7 +135,7 @@ export default function TopologyBuildingsPage({ buildings, canManage, statuses }
                                 onChange={(event) => form.setData('unit_count', event.target.value)}
                                 placeholder="64"
                             />
-                            {form.errors.unit_count && <p className="field-error">{t(form.errors.unit_count)}</p>}
+                            {form.errors.unit_count && <p className="field-error" role="alert">{t(form.errors.unit_count)}</p>}
                         </label>
                         <label>
                             <span className="field-label">{t('Status')}</span>
@@ -150,7 +150,7 @@ export default function TopologyBuildingsPage({ buildings, canManage, statuses }
                                     </option>
                                 ))}
                             </ResponsiveSelect>
-                            {form.errors.status && <p className="field-error">{t(form.errors.status)}</p>}
+                            {form.errors.status && <p className="field-error" role="alert">{t(form.errors.status)}</p>}
                         </label>
                     </div>
                     <CustomerLocationFields
@@ -169,7 +169,7 @@ export default function TopologyBuildingsPage({ buildings, canManage, statuses }
                             onChange={(event) => form.setData('notes', event.target.value)}
                                 placeholder={t('Access notes, caretaker, or riser details')}
                         />
-                        {form.errors.notes && <p className="field-error">{t(form.errors.notes)}</p>}
+                        {form.errors.notes && <p className="field-error" role="alert">{t(form.errors.notes)}</p>}
                     </label>
                     <div className="flex justify-end">
                         <button type="submit" className="button-primary" disabled={form.processing}>

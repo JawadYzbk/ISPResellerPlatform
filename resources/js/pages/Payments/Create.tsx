@@ -200,7 +200,7 @@ export default function PaymentCreate({ customer, invoices, defaultCurrency, pay
                             {t('Enter the amount in')} {form.data.currency}.{' '}
                             {t('The ledger stores the converted value in')} {customer.balance_currency}.
                         </p>
-                        {form.errors.amount && <p className="field-error">{t(form.errors.amount)}</p>}
+                        {form.errors.amount && <p className="field-error" role="alert">{t(form.errors.amount)}</p>}
                     </div>
                     <div>
                         <label className="field-label" htmlFor="currency">
@@ -222,7 +222,7 @@ export default function PaymentCreate({ customer, invoices, defaultCurrency, pay
                                 {t('No effective rate is available for this currency pair.')}
                             </p>
                         ) : null}
-                        {form.errors.currency && <p className="field-error">{t(form.errors.currency)}</p>}
+                        {form.errors.currency && <p className="field-error" role="alert">{t(form.errors.currency)}</p>}
                     </div>
                     <div>
                         <label className="field-label" htmlFor="invoice_id">
@@ -242,7 +242,7 @@ export default function PaymentCreate({ customer, invoices, defaultCurrency, pay
                                 </option>
                             ))}
                         </ResponsiveSelect>
-                        {form.errors.invoice_id && <p className="field-error">{t(form.errors.invoice_id)}</p>}
+                        {form.errors.invoice_id && <p className="field-error" role="alert">{t(form.errors.invoice_id)}</p>}
                     </div>
                     <div>
                         <label className="field-label" htmlFor="method">
@@ -259,7 +259,7 @@ export default function PaymentCreate({ customer, invoices, defaultCurrency, pay
                             <option value="card">{t('Card (manual record)')}</option>
                             <option value="mobile_wallet">{t('Mobile wallet')}</option>
                         </ResponsiveSelect>
-                        {form.errors.method && <p className="field-error">{t(form.errors.method)}</p>}
+                        {form.errors.method && <p className="field-error" role="alert">{t(form.errors.method)}</p>}
                     </div>
                     {needsFx && (
                         <div className="space-y-4 rounded-xl border border-line bg-sand px-4 py-4">
@@ -292,7 +292,7 @@ export default function PaymentCreate({ customer, invoices, defaultCurrency, pay
                                             onChange={(event) => form.setData('fx_rate_numerator', event.target.value)}
                                         />
                                         {form.errors.fx_rate_numerator && (
-                                            <p className="field-error">{t(form.errors.fx_rate_numerator)}</p>
+                                            <p className="field-error" role="alert">{t(form.errors.fx_rate_numerator)}</p>
                                         )}
                                     </div>
                                     <div>
@@ -310,7 +310,7 @@ export default function PaymentCreate({ customer, invoices, defaultCurrency, pay
                                             }
                                         />
                                         {form.errors.fx_rate_denominator && (
-                                            <p className="field-error">{t(form.errors.fx_rate_denominator)}</p>
+                                            <p className="field-error" role="alert">{t(form.errors.fx_rate_denominator)}</p>
                                         )}
                                     </div>
                                     <div className="sm:col-span-2">
@@ -326,7 +326,7 @@ export default function PaymentCreate({ customer, invoices, defaultCurrency, pay
                                             onChange={(event) => form.setData('fx_override_reason', event.target.value)}
                                         />
                                         {form.errors.fx_override_reason && (
-                                            <p className="field-error">{t(form.errors.fx_override_reason)}</p>
+                                            <p className="field-error" role="alert">{t(form.errors.fx_override_reason)}</p>
                                         )}
                                     </div>
                                 </div>
@@ -352,7 +352,7 @@ export default function PaymentCreate({ customer, invoices, defaultCurrency, pay
                                     )}
                                 </p>
                                 {form.errors.rounding_mode && (
-                                    <p className="field-error">{t(form.errors.rounding_mode)}</p>
+                                    <p className="field-error" role="alert">{t(form.errors.rounding_mode)}</p>
                                 )}
                             </div>
                         </div>
@@ -369,7 +369,7 @@ export default function PaymentCreate({ customer, invoices, defaultCurrency, pay
                             value={form.data.reference}
                             onChange={(event) => form.setData('reference', event.target.value)}
                         />
-                        {form.errors.reference && <p className="field-error">{t(form.errors.reference)}</p>}
+                        {form.errors.reference && <p className="field-error" role="alert">{t(form.errors.reference)}</p>}
                     </div>
                     {form.data.invoice_id && form.data.currency !== customer.balance_currency && (
                         <p className="text-xs text-muted">

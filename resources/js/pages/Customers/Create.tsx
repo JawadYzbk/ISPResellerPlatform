@@ -111,7 +111,7 @@ export default function CustomersCreate({ zones, canCreateService, plans, router
                                 value={form.data.first_name}
                                 onChange={(event) => form.setData('first_name', event.target.value)}
                             />
-                            {form.errors.first_name && <p className="field-error">{t(form.errors.first_name)}</p>}
+                            {form.errors.first_name && <p className="field-error" role="alert">{t(form.errors.first_name)}</p>}
                         </div>
                         <div>
                             <label className="field-label" htmlFor="last_name">
@@ -135,7 +135,7 @@ export default function CustomersCreate({ zones, canCreateService, plans, router
                                 value={form.data.phone}
                                 onChange={(event) => form.setData('phone', event.target.value)}
                             />
-                            {form.errors.phone && <p className="field-error">{t(form.errors.phone)}</p>}
+                            {form.errors.phone && <p className="field-error" role="alert">{t(form.errors.phone)}</p>}
                         </div>
                         <div>
                             <label className="field-label" htmlFor="email">
@@ -148,7 +148,7 @@ export default function CustomersCreate({ zones, canCreateService, plans, router
                                 value={form.data.email}
                                 onChange={(event) => form.setData('email', event.target.value)}
                             />
-                            {form.errors.email && <p className="field-error">{t(form.errors.email)}</p>}
+                            {form.errors.email && <p className="field-error" role="alert">{t(form.errors.email)}</p>}
                         </div>
                         <div>
                             <label className="field-label" htmlFor="zone_id">
@@ -167,7 +167,7 @@ export default function CustomersCreate({ zones, canCreateService, plans, router
                                     </option>
                                 ))}
                             </ResponsiveSelect>
-                            {form.errors.zone_id && <p className="field-error">{t(form.errors.zone_id)}</p>}
+                            {form.errors.zone_id && <p className="field-error" role="alert">{t(form.errors.zone_id)}</p>}
                         </div>
                         <div>
                             <label className="field-label" htmlFor="address">
@@ -224,7 +224,7 @@ export default function CustomersCreate({ zones, canCreateService, plans, router
                                                 </option>
                                             ))}
                                         </ResponsiveSelect>
-                                        {form.errors.plan_id && <p className="field-error">{t(form.errors.plan_id)}</p>}
+                                        {form.errors.plan_id && <p className="field-error" role="alert">{t(form.errors.plan_id)}</p>}
                                         {selectedPlan && (
                                             <p className="mt-1 text-xs text-muted">
                                                 {t('customer.plan_currency')}: {selectedPlan.currency}
@@ -243,7 +243,7 @@ export default function CustomersCreate({ zones, canCreateService, plans, router
                                                 onChange={(event) => form.setData('username', event.target.value)}
                                             />
                                             {form.errors.username && (
-                                                <p className="field-error">{t(form.errors.username)}</p>
+                                                <p className="field-error" role="alert">{t(form.errors.username)}</p>
                                             )}
                                         </div>
                                         <div>
@@ -268,7 +268,7 @@ export default function CustomersCreate({ zones, canCreateService, plans, router
                                                 </button>
                                             </div>
                                             {form.errors.password && (
-                                                <p className="field-error">{t(form.errors.password)}</p>
+                                                <p className="field-error" role="alert">{t(form.errors.password)}</p>
                                             )}
                                             <p className="mt-1 text-xs text-muted">{t('customer.minimum_password')}</p>
                                         </div>
@@ -291,7 +291,7 @@ export default function CustomersCreate({ zones, canCreateService, plans, router
                                             ))}
                                         </ResponsiveSelect>
                                         {form.errors.billing_anchor_day && (
-                                            <p className="field-error">{t(form.errors.billing_anchor_day)}</p>
+                                            <p className="field-error" role="alert">{t(form.errors.billing_anchor_day)}</p>
                                         )}
                                         <p className="mt-1 text-xs text-pretty text-muted">
                                             {t('customer.billing_anchor_description')}
@@ -330,7 +330,7 @@ export default function CustomersCreate({ zones, canCreateService, plans, router
                                             ))}
                                         </div>
                                         {form.errors.provisioning_mode && (
-                                            <p className="field-error">{t(form.errors.provisioning_mode)}</p>
+                                            <p className="field-error" role="alert">{t(form.errors.provisioning_mode)}</p>
                                         )}
                                     </div>
                                     {needsRouter && (
@@ -352,7 +352,7 @@ export default function CustomersCreate({ zones, canCreateService, plans, router
                                                 ))}
                                             </ResponsiveSelect>
                                             {form.errors.router_id && (
-                                                <p className="field-error">{t(form.errors.router_id)}</p>
+                                                <p className="field-error" role="alert">{t(form.errors.router_id)}</p>
                                             )}
                                         </div>
                                     )}

@@ -71,7 +71,7 @@ export default function CustomerRenew({ customer, services }: Props) {
                                 </option>
                             ))}
                         </ResponsiveSelect>
-                        {form.errors.service_id && <p className="field-error">{t(form.errors.service_id)}</p>}
+                        {form.errors.service_id && <p className="field-error" role="alert">{t(form.errors.service_id)}</p>}
                     </div>
                     {selectedService && (
                         <div className="grid gap-4 rounded-xl bg-sand/50 p-4 sm:grid-cols-3">

@@ -666,10 +666,10 @@ export default function ServiceShow({
                                         ))}
                                     </ResponsiveSelect>
                                     {cycleForm.errors.anchor_day && (
-                                        <p className="field-error">{t(cycleForm.errors.anchor_day)}</p>
+                                        <p className="field-error" role="alert">{t(cycleForm.errors.anchor_day)}</p>
                                     )}
                                 </label>
-                                {cyclePreviewError && <p className="field-error">{cyclePreviewError}</p>}
+                                {cyclePreviewError && <p className="field-error" role="alert">{cyclePreviewError}</p>}
                                 {cyclePreview && (
                                     <div className="rounded-xl border border-line bg-sand/60 p-4">
                                         <div className="flex items-center justify-between gap-3">
@@ -735,7 +735,7 @@ export default function ServiceShow({
                                         ))}
                                     </ResponsiveSelect>
                                     {planForm.errors.plan_id && (
-                                        <p className="field-error">{t(planForm.errors.plan_id)}</p>
+                                        <p className="field-error" role="alert">{t(planForm.errors.plan_id)}</p>
                                     )}
                                 </label>
                                 <label>
@@ -754,7 +754,7 @@ export default function ServiceShow({
                                         {t('The unused part of the current plan is credited and the remainder of the new plan is charged in the customer ledger currency.')}
                                     </p>
                                 )}
-                                {planPreviewError && <p className="field-error">{planPreviewError}</p>}
+                                {planPreviewError && <p className="field-error" role="alert">{planPreviewError}</p>}
                                 {planPreview && (
                                     <div className="rounded-xl border border-line bg-sand/60 p-4 text-sm">
                                         <div className="flex items-center justify-between gap-3">
@@ -921,7 +921,7 @@ export default function ServiceShow({
                                             ))}
                                         </ResponsiveSelect>
                                         {addonForm.errors.addon_id && (
-                                            <p className="field-error">{t(addonForm.errors.addon_id)}</p>
+                                            <p className="field-error" role="alert">{t(addonForm.errors.addon_id)}</p>
                                         )}
                                     </label>
                                     <label>
@@ -935,7 +935,7 @@ export default function ServiceShow({
                                             onChange={(event) => addonForm.setData('quantity', event.target.value)}
                                         />
                                         {addonForm.errors.quantity && (
-                                            <p className="field-error">{t(addonForm.errors.quantity)}</p>
+                                            <p className="field-error" role="alert">{t(addonForm.errors.quantity)}</p>
                                         )}
                                     </label>
                                     <label>
@@ -947,7 +947,7 @@ export default function ServiceShow({
                                             onChange={(event) => addonForm.setData('starts_at', event.target.value)}
                                         />
                                         {addonForm.errors.starts_at && (
-                                            <p className="field-error">{t(addonForm.errors.starts_at)}</p>
+                                            <p className="field-error" role="alert">{t(addonForm.errors.starts_at)}</p>
                                         )}
                                     </label>
                                     <label>
@@ -959,7 +959,7 @@ export default function ServiceShow({
                                             onChange={(event) => addonForm.setData('ends_at', event.target.value)}
                                         />
                                         {addonForm.errors.ends_at && (
-                                            <p className="field-error">{t(addonForm.errors.ends_at)}</p>
+                                            <p className="field-error" role="alert">{t(addonForm.errors.ends_at)}</p>
                                         )}
                                     </label>
                                     <div className="flex items-end justify-end sm:col-span-2">

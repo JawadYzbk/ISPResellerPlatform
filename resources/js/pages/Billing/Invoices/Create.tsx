@@ -136,7 +136,7 @@ export default function CreateInvoice({ customerOptions, selectedCustomer, curre
                             searchStatus={customerSearchStatus}
                             placeholder={t('Select a customer')}
                         />
-                        {form.errors.customer_id && <p className="field-error">{t(form.errors.customer_id)}</p>}
+                        {form.errors.customer_id && <p className="field-error" role="alert">{t(form.errors.customer_id)}</p>}
                     </div>
 
                     <div>
@@ -151,7 +151,7 @@ export default function CreateInvoice({ customerOptions, selectedCustomer, curre
                             onChange={(event) => form.setData('description', event.target.value)}
                             placeholder={t('Installation, equipment, or other one-off charge')}
                         />
-                        {form.errors.description && <p className="field-error">{t(form.errors.description)}</p>}
+                        {form.errors.description && <p className="field-error" role="alert">{t(form.errors.description)}</p>}
                     </div>
 
                     <div className="grid gap-6 sm:grid-cols-2">
@@ -173,7 +173,7 @@ export default function CreateInvoice({ customerOptions, selectedCustomer, curre
                             <p className="mt-1 text-xs text-muted">
                                 {t('The saved invoice uses the smallest unit for exact ledger math.')}
                             </p>
-                            {form.errors.amount && <p className="field-error">{t(form.errors.amount)}</p>}
+                            {form.errors.amount && <p className="field-error" role="alert">{t(form.errors.amount)}</p>}
                         </div>
                         <div>
                             <label className="field-label" htmlFor="currency">
@@ -189,7 +189,7 @@ export default function CreateInvoice({ customerOptions, selectedCustomer, curre
                                     form.setData('amount', '');
                                 }}
                             />
-                            {form.errors.currency && <p className="field-error">{t(form.errors.currency)}</p>}
+                            {form.errors.currency && <p className="field-error" role="alert">{t(form.errors.currency)}</p>}
                         </div>
                     </div>
 
@@ -204,7 +204,7 @@ export default function CreateInvoice({ customerOptions, selectedCustomer, curre
                             value={form.data.due_at}
                             onChange={(event) => form.setData('due_at', event.target.value)}
                         />
-                        {form.errors.due_at && <p className="field-error">{t(form.errors.due_at)}</p>}
+                        {form.errors.due_at && <p className="field-error" role="alert">{t(form.errors.due_at)}</p>}
                     </div>
 
                     <label className="flex items-start gap-3 rounded-xl border border-line bg-sand/40 p-4 text-sm">

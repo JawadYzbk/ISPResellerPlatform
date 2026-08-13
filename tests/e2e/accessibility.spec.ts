@@ -45,6 +45,12 @@ async function auditPage(page: Page, path: string): Promise<void> {
         .evaluateAll((elements) => elements.map((element) => element.outerHTML.slice(0, 180)));
 
     expect(implicitSubmitButtons, `${path} has buttons without an explicit type`).toEqual([]);
+
+    const unannouncedErrors = await page
+        .locator('[class~="field-error"]:visible:not([role="alert"])')
+        .evaluateAll((elements) => elements.map((element) => element.outerHTML.slice(0, 180)));
+
+    expect(unannouncedErrors, `${path} has validation errors without an alert role`).toEqual([]);
     await expect(page.locator('main h1:visible'), `${path} should expose a page heading`).toHaveCount(1);
 }
 

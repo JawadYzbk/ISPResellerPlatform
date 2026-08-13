@@ -40,7 +40,7 @@ export default function ForgotPassword() {
                             onChange={(event) => form.setData('email', event.target.value)}
                         />
                     </div>
-                    {form.errors.email && <p className="field-error">{t(form.errors.email)}</p>}
+                    {form.errors.email && <p className="field-error" role="alert">{t(form.errors.email)}</p>}
                 </label>
                 {submitted && !form.errors.email && (
                     <p className="rounded-xl bg-emerald-50 p-3 text-sm text-emerald-700">{t('auth.reset_sent')}</p>

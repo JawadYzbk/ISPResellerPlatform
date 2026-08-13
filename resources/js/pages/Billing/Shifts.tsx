@@ -181,7 +181,7 @@ export default function ShiftsPage({ shifts, currentShift, currencies, canViewRe
                             />
                         </label>
                         {form.errors.declared_totals && (
-                            <p className="field-error mt-2">{t(form.errors.declared_totals)}</p>
+                            <p className="field-error mt-2" role="alert">{t(form.errors.declared_totals)}</p>
                         )}
                         <div className="mt-5 flex justify-end">
                             <button type="submit" className="button-primary" disabled={form.processing}>

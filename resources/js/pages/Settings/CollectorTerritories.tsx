@@ -113,8 +113,8 @@ function CollectorTerritoryCard({ collector, zones }: { collector: Collector; zo
                 </fieldset>
             )}
 
-            {form.errors.all_zones && <p className="field-error mt-3">{t(form.errors.all_zones)}</p>}
-            {form.errors.zone_ids && <p className="field-error mt-3">{t(form.errors.zone_ids)}</p>}
+            {form.errors.all_zones && <p className="field-error mt-3" role="alert">{t(form.errors.all_zones)}</p>}
+            {form.errors.zone_ids && <p className="field-error mt-3" role="alert">{t(form.errors.zone_ids)}</p>}
         </form>
     );
 }

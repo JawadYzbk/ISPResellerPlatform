@@ -133,7 +133,7 @@ export default function RouterShowPage({ router: device, pops, canEdit }: Props)
                                     value={form.data.name}
                                     onChange={(event) => form.setData('name', event.target.value)}
                                 />
-                                {form.errors.name && <p className="field-error">{t(form.errors.name)}</p>}
+                                {form.errors.name && <p className="field-error" role="alert">{t(form.errors.name)}</p>}
                             </label>
                             <label>
                                 <span className="field-label">{t('router_create.host')}</span>
@@ -142,7 +142,7 @@ export default function RouterShowPage({ router: device, pops, canEdit }: Props)
                                     value={form.data.host}
                                     onChange={(event) => form.setData('host', event.target.value)}
                                 />
-                                {form.errors.host && <p className="field-error">{t(form.errors.host)}</p>}
+                                {form.errors.host && <p className="field-error" role="alert">{t(form.errors.host)}</p>}
                             </label>
                             <label>
                                 <span className="field-label">{t('router_create.api_port')}</span>
@@ -188,7 +188,7 @@ export default function RouterShowPage({ router: device, pops, canEdit }: Props)
                                     value={form.data.password}
                                     onChange={(event) => form.setData('password', event.target.value)}
                                 />
-                                {form.errors.password && <p className="field-error">{t(form.errors.password)}</p>}
+                                {form.errors.password && <p className="field-error" role="alert">{t(form.errors.password)}</p>}
                             </label>
                             <label>
                                 <span className="field-label">{t('router_show.new_radius')}</span>

@@ -250,7 +250,7 @@ export default function PortalDashboard({ tenant }: Props) {
                         {t('portal.dashboard.sign_out')}
                     </button>
                 </header>
-                {error && <p className="mt-8 field-error">{error}</p>}
+                {error && <p className="mt-8 field-error" role="alert">{error}</p>}
                 {customer && (
                     <>
                         <div className="mt-12">

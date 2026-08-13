@@ -66,7 +66,7 @@ export default function ProfilePage({ profile, workspaceLocale, defaultViews }: 
                                     autoComplete="name"
                                 />
                                 {(form.errors.name ?? validationErrors.name ?? pageErrors.name) && (
-                                    <p className="field-error">
+                                    <p className="field-error" role="alert">
                                         {t(form.errors.name ?? validationErrors.name ?? pageErrors.name ?? '')}
                                     </p>
                                 )}
@@ -114,7 +114,7 @@ export default function ProfilePage({ profile, workspaceLocale, defaultViews }: 
                                     autoComplete="off"
                                 />
                                 {(form.errors.timezone ?? validationErrors.timezone ?? pageErrors.timezone) && (
-                                    <p className="field-error">
+                                    <p className="field-error" role="alert">
                                         {t(
                                             form.errors.timezone ??
                                                 validationErrors.timezone ??
@@ -142,7 +142,7 @@ export default function ProfilePage({ profile, workspaceLocale, defaultViews }: 
                                     {t('This is used when there is no page you were trying to open before signing in.')}
                                 </p>
                                 {form.errors.default_view && (
-                                    <p className="field-error">{t(form.errors.default_view)}</p>
+                                    <p className="field-error" role="alert">{t(form.errors.default_view)}</p>
                                 )}
                             </label>
                         </div>

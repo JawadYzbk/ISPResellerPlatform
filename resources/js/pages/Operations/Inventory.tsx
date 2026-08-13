@@ -355,7 +355,7 @@ export default function InventoryPage({
                                     onChange={(event) => itemForm.setData('sku', event.target.value)}
                                     placeholder="CABLE-UTP"
                                 />
-                                {itemForm.errors.sku && <p className="field-error">{t(itemForm.errors.sku)}</p>}
+                                {itemForm.errors.sku && <p className="field-error" role="alert">{t(itemForm.errors.sku)}</p>}
                             </label>
                             <label>
                                 <span className="field-label">{t('Name')}</span>
@@ -365,7 +365,7 @@ export default function InventoryPage({
                                     onChange={(event) => itemForm.setData('name', event.target.value)}
                                     placeholder={t('Outdoor UTP cable')}
                                 />
-                                {itemForm.errors.name && <p className="field-error">{t(itemForm.errors.name)}</p>}
+                                {itemForm.errors.name && <p className="field-error" role="alert">{t(itemForm.errors.name)}</p>}
                             </label>
                             <label>
                                 <span className="field-label">{t('Category')}</span>
@@ -375,7 +375,7 @@ export default function InventoryPage({
                                     onChange={(event) => itemForm.setData('category', event.target.value)}
                                     placeholder={t('cable')}
                                 />
-                                {itemForm.errors.category && <p className="field-error">{t(itemForm.errors.category)}</p>}
+                                {itemForm.errors.category && <p className="field-error" role="alert">{t(itemForm.errors.category)}</p>}
                             </label>
                             <label>
                                 <span className="field-label">{t('inventory.inventory_type')}</span>
@@ -400,7 +400,7 @@ export default function InventoryPage({
                                     onChange={(event) => itemForm.setData('reorder_level', event.target.value)}
                                 />
                                 {itemForm.errors.reorder_level && (
-                                    <p className="field-error">{t(itemForm.errors.reorder_level)}</p>
+                                    <p className="field-error" role="alert">{t(itemForm.errors.reorder_level)}</p>
                                 )}
                             </label>
                             <button type="submit" className="button-secondary sm:col-span-2" disabled={itemForm.processing}>
@@ -421,7 +421,7 @@ export default function InventoryPage({
                                     placeholder={t('Main warehouse')}
                                 />
                                 {warehouseForm.errors.name && (
-                                    <p className="field-error">{t(warehouseForm.errors.name)}</p>
+                                    <p className="field-error" role="alert">{t(warehouseForm.errors.name)}</p>
                                 )}
                             </label>
                             <label>
@@ -433,7 +433,7 @@ export default function InventoryPage({
                                     placeholder="MAIN"
                                 />
                                 {warehouseForm.errors.code && (
-                                    <p className="field-error">{t(warehouseForm.errors.code)}</p>
+                                    <p className="field-error" role="alert">{t(warehouseForm.errors.code)}</p>
                                 )}
                             </label>
                             <label>
@@ -457,7 +457,7 @@ export default function InventoryPage({
                                     <option value="collector">{t('inventory.collector_stock')}</option>
                                 </ResponsiveSelect>
                                 {warehouseForm.errors.type && (
-                                    <p className="field-error">{t(warehouseForm.errors.type)}</p>
+                                    <p className="field-error" role="alert">{t(warehouseForm.errors.type)}</p>
                                 )}
                             </label>
                             {warehouseForm.data.type !== 'warehouse' && (
@@ -478,7 +478,7 @@ export default function InventoryPage({
                                         ))}
                                     </ResponsiveSelect>
                                     {warehouseForm.errors.assigned_user_id && (
-                                        <p className="field-error">{t(warehouseForm.errors.assigned_user_id)}</p>
+                                        <p className="field-error" role="alert">{t(warehouseForm.errors.assigned_user_id)}</p>
                                     )}
                                 </label>
                             )}
@@ -509,7 +509,7 @@ export default function InventoryPage({
                                     ))}
                                 </ResponsiveSelect>
                                 {unitForm.errors.inventory_item_id && (
-                                    <p className="field-error">{t(unitForm.errors.inventory_item_id)}</p>
+                                    <p className="field-error" role="alert">{t(unitForm.errors.inventory_item_id)}</p>
                                 )}
                             </label>
                             <label>
@@ -527,7 +527,7 @@ export default function InventoryPage({
                                     ))}
                                 </ResponsiveSelect>
                                 {unitForm.errors.warehouse_id && (
-                                    <p className="field-error">{t(unitForm.errors.warehouse_id)}</p>
+                                    <p className="field-error" role="alert">{t(unitForm.errors.warehouse_id)}</p>
                                 )}
                             </label>
                             <label>
@@ -539,7 +539,7 @@ export default function InventoryPage({
                                     placeholder="CPE-ONU-0001"
                                 />
                                 {unitForm.errors.serial_number && (
-                                    <p className="field-error">{t(unitForm.errors.serial_number)}</p>
+                                    <p className="field-error" role="alert">{t(unitForm.errors.serial_number)}</p>
                                 )}
                             </label>
                             <button type="submit" className="button-secondary sm:col-span-3" disabled={unitForm.processing}>
@@ -578,7 +578,7 @@ export default function InventoryPage({
                                                         }
                                                     />
                                                     {itemEditForm.errors.sku && (
-                                                        <p className="field-error">{t(itemEditForm.errors.sku)}</p>
+                                                        <p className="field-error" role="alert">{t(itemEditForm.errors.sku)}</p>
                                                     )}
                                                 </label>
                                                 <label>
@@ -591,7 +591,7 @@ export default function InventoryPage({
                                                         }
                                                     />
                                                     {itemEditForm.errors.name && (
-                                                        <p className="field-error">{t(itemEditForm.errors.name)}</p>
+                                                        <p className="field-error" role="alert">{t(itemEditForm.errors.name)}</p>
                                                     )}
                                                 </label>
                                                 <label>
@@ -604,7 +604,7 @@ export default function InventoryPage({
                                                         }
                                                     />
                                                     {itemEditForm.errors.category && (
-                                                        <p className="field-error">{t(itemEditForm.errors.category)}</p>
+                                                        <p className="field-error" role="alert">{t(itemEditForm.errors.category)}</p>
                                                     )}
                                                 </label>
                                                 <label>
@@ -623,7 +623,7 @@ export default function InventoryPage({
                                                         <option value="serialized">{t('inventory.serialized_units')}</option>
                                                     </ResponsiveSelect>
                                                     {itemEditForm.errors.is_serialized && (
-                                                        <p className="field-error">
+                                                        <p className="field-error" role="alert">
                                                             {t(itemEditForm.errors.is_serialized)}
                                                         </p>
                                                     )}
@@ -730,7 +730,7 @@ export default function InventoryPage({
                                                         }
                                                     />
                                                     {warehouseEditForm.errors.name && (
-                                                        <p className="field-error">{t(warehouseEditForm.errors.name)}</p>
+                                                        <p className="field-error" role="alert">{t(warehouseEditForm.errors.name)}</p>
                                                     )}
                                                 </label>
                                                 <label>
@@ -743,7 +743,7 @@ export default function InventoryPage({
                                                         }
                                                     />
                                                     {warehouseEditForm.errors.code && (
-                                                        <p className="field-error">{t(warehouseEditForm.errors.code)}</p>
+                                                        <p className="field-error" role="alert">{t(warehouseEditForm.errors.code)}</p>
                                                     )}
                                                 </label>
                                                 <label>
@@ -791,7 +791,7 @@ export default function InventoryPage({
                                                             ))}
                                                         </ResponsiveSelect>
                                                         {warehouseEditForm.errors.assigned_user_id && (
-                                                            <p className="field-error">
+                                                            <p className="field-error" role="alert">
                                                                 {t(warehouseEditForm.errors.assigned_user_id)}
                                                             </p>
                                                         )}
@@ -978,7 +978,7 @@ export default function InventoryPage({
                                                 </ConfirmDialog>
                                             </div>
                                             {countReviewForm.errors.decision && (
-                                                <p className="field-error">{t(countReviewForm.errors.decision)}</p>
+                                                <p className="field-error" role="alert">{t(countReviewForm.errors.decision)}</p>
                                             )}
                                         </div>
                                     )}
@@ -1074,7 +1074,7 @@ export default function InventoryPage({
                                     )}
                                 </div>
                                 {reviewForm.errors.decision && request.status === 'pending' && (
-                                    <p className="field-error mt-2">{t(reviewForm.errors.decision)}</p>
+                                    <p className="field-error mt-2" role="alert">{t(reviewForm.errors.decision)}</p>
                                 )}
                             </div>
                         ))}
@@ -1154,7 +1154,7 @@ export default function InventoryPage({
                                 placeholder="0.000"
                             />
                             {receiveForm.errors.quantity && (
-                                <p className="field-error">{t(receiveForm.errors.quantity)}</p>
+                                <p className="field-error" role="alert">{t(receiveForm.errors.quantity)}</p>
                             )}
                         </label>
                         <button type="submit" className="button-secondary" disabled={receiveForm.processing}>
@@ -1197,7 +1197,7 @@ export default function InventoryPage({
                                 ))}
                             </ResponsiveSelect>
                             {transferForm.errors.inventory_item_id && (
-                                <p className="field-error">{t(transferForm.errors.inventory_item_id)}</p>
+                                <p className="field-error" role="alert">{t(transferForm.errors.inventory_item_id)}</p>
                             )}
                         </label>
                         <label>
@@ -1215,7 +1215,7 @@ export default function InventoryPage({
                                 ))}
                             </ResponsiveSelect>
                             {transferForm.errors.source_warehouse_id && (
-                                <p className="field-error">{t(transferForm.errors.source_warehouse_id)}</p>
+                                <p className="field-error" role="alert">{t(transferForm.errors.source_warehouse_id)}</p>
                             )}
                         </label>
                         <label>
@@ -1239,7 +1239,7 @@ export default function InventoryPage({
                                     ))}
                             </ResponsiveSelect>
                             {transferForm.errors.destination_warehouse_id && (
-                                <p className="field-error">{t(transferForm.errors.destination_warehouse_id)}</p>
+                                <p className="field-error" role="alert">{t(transferForm.errors.destination_warehouse_id)}</p>
                             )}
                         </label>
                         <label>
@@ -1252,7 +1252,7 @@ export default function InventoryPage({
                                 placeholder="0.000"
                             />
                             {transferForm.errors.quantity && (
-                                <p className="field-error">{t(transferForm.errors.quantity)}</p>
+                                <p className="field-error" role="alert">{t(transferForm.errors.quantity)}</p>
                             )}
                         </label>
                         <label className="sm:col-span-2 lg:col-span-3">

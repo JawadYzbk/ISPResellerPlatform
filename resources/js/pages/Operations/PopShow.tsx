@@ -135,7 +135,7 @@ export default function PopShowPage({ pop, canManage, statuses, currencies }: Pr
                                 value={popForm.data.name}
                                 onChange={(event) => popForm.setData('name', event.target.value)}
                             />
-                            {popForm.errors.name && <p className="field-error">{t(popForm.errors.name)}</p>}
+                            {popForm.errors.name && <p className="field-error" role="alert">{t(popForm.errors.name)}</p>}
                         </label>
                         <label>
                             <span className="field-label">{t('Code')}</span>
@@ -144,7 +144,7 @@ export default function PopShowPage({ pop, canManage, statuses, currencies }: Pr
                                 value={popForm.data.code}
                                 onChange={(event) => popForm.setData('code', event.target.value)}
                             />
-                            {popForm.errors.code && <p className="field-error">{t(popForm.errors.code)}</p>}
+                            {popForm.errors.code && <p className="field-error" role="alert">{t(popForm.errors.code)}</p>}
                         </label>
                         <label>
                             <span className="field-label">{t('Address')}</span>
@@ -153,7 +153,7 @@ export default function PopShowPage({ pop, canManage, statuses, currencies }: Pr
                                 value={popForm.data.address}
                                 onChange={(event) => popForm.setData('address', event.target.value)}
                             />
-                            {popForm.errors.address && <p className="field-error">{t(popForm.errors.address)}</p>}
+                            {popForm.errors.address && <p className="field-error" role="alert">{t(popForm.errors.address)}</p>}
                         </label>
                         <label>
                             <span className="field-label">{t('Status')}</span>
@@ -168,7 +168,7 @@ export default function PopShowPage({ pop, canManage, statuses, currencies }: Pr
                                     </option>
                                 ))}
                             </ResponsiveSelect>
-                            {popForm.errors.status && <p className="field-error">{t(popForm.errors.status)}</p>}
+                            {popForm.errors.status && <p className="field-error" role="alert">{t(popForm.errors.status)}</p>}
                         </label>
                     </div>
                     <div className="flex justify-end">
@@ -222,7 +222,7 @@ export default function PopShowPage({ pop, canManage, statuses, currencies }: Pr
                                         placeholder={t('Transit provider')}
                                     />
                                     {linkForm.errors.provider_name && (
-                                        <p className="field-error">{t(linkForm.errors.provider_name)}</p>
+                                        <p className="field-error" role="alert">{t(linkForm.errors.provider_name)}</p>
                                     )}
                                 </label>
                                 <label>
@@ -236,7 +236,7 @@ export default function PopShowPage({ pop, canManage, statuses, currencies }: Pr
                                         placeholder="1000"
                                     />
                                     {linkForm.errors.capacity_mbps && (
-                                        <p className="field-error">{t(linkForm.errors.capacity_mbps)}</p>
+                                        <p className="field-error" role="alert">{t(linkForm.errors.capacity_mbps)}</p>
                                     )}
                                 </label>
                                 <label>
@@ -252,7 +252,7 @@ export default function PopShowPage({ pop, canManage, statuses, currencies }: Pr
                                         placeholder="125000"
                                     />
                                     {linkForm.errors.monthly_cost_amount && (
-                                        <p className="field-error">{t(linkForm.errors.monthly_cost_amount)}</p>
+                                        <p className="field-error" role="alert">{t(linkForm.errors.monthly_cost_amount)}</p>
                                     )}
                                 </label>
                                 <label>
@@ -265,7 +265,7 @@ export default function PopShowPage({ pop, canManage, statuses, currencies }: Pr
                                         onChange={(value) => linkForm.setData('currency', value)}
                                     />
                                     {linkForm.errors.currency && (
-                                        <p className="field-error">{t(linkForm.errors.currency)}</p>
+                                        <p className="field-error" role="alert">{t(linkForm.errors.currency)}</p>
                                     )}
                                 </label>
                                 <label>
@@ -277,7 +277,7 @@ export default function PopShowPage({ pop, canManage, statuses, currencies }: Pr
                                         onChange={(event) => linkForm.setData('contract_start', event.target.value)}
                                     />
                                     {linkForm.errors.contract_start && (
-                                        <p className="field-error">{t(linkForm.errors.contract_start)}</p>
+                                        <p className="field-error" role="alert">{t(linkForm.errors.contract_start)}</p>
                                     )}
                                 </label>
                                 <label>
@@ -289,7 +289,7 @@ export default function PopShowPage({ pop, canManage, statuses, currencies }: Pr
                                         onChange={(event) => linkForm.setData('contract_end', event.target.value)}
                                     />
                                     {linkForm.errors.contract_end && (
-                                        <p className="field-error">{t(linkForm.errors.contract_end)}</p>
+                                        <p className="field-error" role="alert">{t(linkForm.errors.contract_end)}</p>
                                     )}
                                 </label>
                             </div>
@@ -301,7 +301,7 @@ export default function PopShowPage({ pop, canManage, statuses, currencies }: Pr
                                     onChange={(event) => linkForm.setData('notes', event.target.value)}
                                     placeholder={t('Primary transit')}
                                 />
-                                {linkForm.errors.notes && <p className="field-error">{t(linkForm.errors.notes)}</p>}
+                                {linkForm.errors.notes && <p className="field-error" role="alert">{t(linkForm.errors.notes)}</p>}
                             </label>
                             <div className="flex justify-end">
                                 <button type="submit" className="button-primary" disabled={linkForm.processing}>
@@ -326,7 +326,7 @@ export default function PopShowPage({ pop, canManage, statuses, currencies }: Pr
                                                 required
                                             />
                                             {linkEditForm.errors.provider_name && (
-                                                <p className="field-error">{t(linkEditForm.errors.provider_name)}</p>
+                                                <p className="field-error" role="alert">{t(linkEditForm.errors.provider_name)}</p>
                                             )}
                                         </label>
                                         <label>
@@ -341,7 +341,7 @@ export default function PopShowPage({ pop, canManage, statuses, currencies }: Pr
                                                 }
                                             />
                                             {linkEditForm.errors.capacity_mbps && (
-                                                <p className="field-error">{t(linkEditForm.errors.capacity_mbps)}</p>
+                                                <p className="field-error" role="alert">{t(linkEditForm.errors.capacity_mbps)}</p>
                                             )}
                                         </label>
                                         <label>
@@ -357,7 +357,7 @@ export default function PopShowPage({ pop, canManage, statuses, currencies }: Pr
                                                 required
                                             />
                                             {linkEditForm.errors.monthly_cost_amount && (
-                                                <p className="field-error">{t(linkEditForm.errors.monthly_cost_amount)}</p>
+                                                <p className="field-error" role="alert">{t(linkEditForm.errors.monthly_cost_amount)}</p>
                                             )}
                                         </label>
                                         <label>
@@ -369,7 +369,7 @@ export default function PopShowPage({ pop, canManage, statuses, currencies }: Pr
                                                 onChange={(value) => linkEditForm.setData('currency', value)}
                                             />
                                             {linkEditForm.errors.currency && (
-                                                <p className="field-error">{t(linkEditForm.errors.currency)}</p>
+                                                <p className="field-error" role="alert">{t(linkEditForm.errors.currency)}</p>
                                             )}
                                         </label>
                                         <label>
@@ -384,7 +384,7 @@ export default function PopShowPage({ pop, canManage, statuses, currencies }: Pr
                                                 required
                                             />
                                             {linkEditForm.errors.contract_start && (
-                                                <p className="field-error">{t(linkEditForm.errors.contract_start)}</p>
+                                                <p className="field-error" role="alert">{t(linkEditForm.errors.contract_start)}</p>
                                             )}
                                         </label>
                                         <label>
@@ -398,7 +398,7 @@ export default function PopShowPage({ pop, canManage, statuses, currencies }: Pr
                                                 }
                                             />
                                             {linkEditForm.errors.contract_end && (
-                                                <p className="field-error">{t(linkEditForm.errors.contract_end)}</p>
+                                                <p className="field-error" role="alert">{t(linkEditForm.errors.contract_end)}</p>
                                             )}
                                         </label>
                                         <label className="md:col-span-2">
@@ -409,7 +409,7 @@ export default function PopShowPage({ pop, canManage, statuses, currencies }: Pr
                                                 onChange={(event) => linkEditForm.setData('notes', event.target.value)}
                                             />
                                             {linkEditForm.errors.notes && (
-                                                <p className="field-error">{t(linkEditForm.errors.notes)}</p>
+                                                <p className="field-error" role="alert">{t(linkEditForm.errors.notes)}</p>
                                             )}
                                         </label>
                                         <div className="flex gap-2 md:col-span-2">

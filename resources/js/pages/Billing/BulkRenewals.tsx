@@ -226,7 +226,7 @@ export default function BulkRenewalsPage({ asOf, timezone, filters, rows, summar
                         {allSelected ? t('Clear selection') : t('Select all ready rows')}
                     </button>
                 </div>
-                {form.errors.service_ids && <p className="field-error px-5 pt-4">{t(form.errors.service_ids)}</p>}
+                {form.errors.service_ids && <p className="field-error px-5 pt-4" role="alert">{t(form.errors.service_ids)}</p>}
                 <div className="overflow-x-auto">
                     <table className="w-full min-w-[1040px] text-start">
                         <thead>

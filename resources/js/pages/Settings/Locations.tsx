@@ -140,7 +140,7 @@ export default function Locations({ branches, zones, tenant }: Props) {
                                         onChange={(event) => branchForm.setData('name', event.target.value)}
                                         placeholder={t('Main office')}
                                     />
-                                    {branchForm.errors.name && <p className="field-error">{t(branchForm.errors.name)}</p>}
+                                    {branchForm.errors.name && <p className="field-error" role="alert">{t(branchForm.errors.name)}</p>}
                                 </label>
                                 <label>
                                     <span className="field-label">{t('Code')}</span>
@@ -152,7 +152,7 @@ export default function Locations({ branches, zones, tenant }: Props) {
                                         }
                                         placeholder="HQ"
                                     />
-                                    {branchForm.errors.code && <p className="field-error">{t(branchForm.errors.code)}</p>}
+                                    {branchForm.errors.code && <p className="field-error" role="alert">{t(branchForm.errors.code)}</p>}
                                 </label>
                                 <label>
                                     <span className="field-label">{t('Address')}</span>
@@ -163,7 +163,7 @@ export default function Locations({ branches, zones, tenant }: Props) {
                                         placeholder="12 Cedar Street"
                                     />
                                     {branchForm.errors.address && (
-                                        <p className="field-error">{t(branchForm.errors.address)}</p>
+                                        <p className="field-error" role="alert">{t(branchForm.errors.address)}</p>
                                     )}
                                 </label>
                                 <label>
@@ -175,7 +175,7 @@ export default function Locations({ branches, zones, tenant }: Props) {
                                         placeholder="+961 1 555 010"
                                     />
                                     {branchForm.errors.phone && (
-                                        <p className="field-error">{t(branchForm.errors.phone)}</p>
+                                        <p className="field-error" role="alert">{t(branchForm.errors.phone)}</p>
                                     )}
                                 </label>
                             </div>
@@ -188,7 +188,7 @@ export default function Locations({ branches, zones, tenant }: Props) {
                                 {t('locations.use_default_branch')}
                             </label>
                             {branchForm.errors.is_default && (
-                                <p className="field-error">{t(branchForm.errors.is_default)}</p>
+                                <p className="field-error" role="alert">{t(branchForm.errors.is_default)}</p>
                             )}
                             <button type="submit" className="button-primary" disabled={branchForm.processing}>
                                 <Save size={16} />{' '}
@@ -256,7 +256,7 @@ export default function Locations({ branches, zones, tenant }: Props) {
                                         onChange={(event) => zoneForm.setData('name', event.target.value)}
                                         placeholder={t('North district')}
                                     />
-                                    {zoneForm.errors.name && <p className="field-error">{t(zoneForm.errors.name)}</p>}
+                                    {zoneForm.errors.name && <p className="field-error" role="alert">{t(zoneForm.errors.name)}</p>}
                                 </label>
                                 <label>
                                     <span className="field-label">{t('Code')}</span>
@@ -266,7 +266,7 @@ export default function Locations({ branches, zones, tenant }: Props) {
                                         onChange={(event) => zoneForm.setData('code', event.target.value.toUpperCase())}
                                         placeholder="NORTH"
                                     />
-                                    {zoneForm.errors.code && <p className="field-error">{t(zoneForm.errors.code)}</p>}
+                                    {zoneForm.errors.code && <p className="field-error" role="alert">{t(zoneForm.errors.code)}</p>}
                                 </label>
                             </div>
                             <label>
@@ -285,7 +285,7 @@ export default function Locations({ branches, zones, tenant }: Props) {
                                         ))}
                                 </ResponsiveSelect>
                                 {zoneForm.errors.parent_id && (
-                                    <p className="field-error">{t(zoneForm.errors.parent_id)}</p>
+                                    <p className="field-error" role="alert">{t(zoneForm.errors.parent_id)}</p>
                                 )}
                             </label>
                             <button type="submit" className="button-primary" disabled={zoneForm.processing}>

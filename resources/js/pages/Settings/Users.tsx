@@ -180,7 +180,7 @@ export default function UsersPage({
                                                         ))}
                                                     </ResponsiveSelect>
                                                     {roleForm.errors.role && (
-                                                        <p className="field-error">{t(roleForm.errors.role)}</p>
+                                                        <p className="field-error" role="alert">{t(roleForm.errors.role)}</p>
                                                     )}
                                                 </div>
                                             ) : (
@@ -314,7 +314,7 @@ export default function UsersPage({
                                 value={form.data.email}
                                 onChange={(event) => form.setData('email', event.target.value)}
                             />
-                            {form.errors.email && <p className="field-error">{t(form.errors.email)}</p>}
+                            {form.errors.email && <p className="field-error" role="alert">{t(form.errors.email)}</p>}
                         </label>
                         <label>
                             <span className="field-label">{t('Role')}</span>
@@ -329,7 +329,7 @@ export default function UsersPage({
                                     </option>
                                 ))}
                             </ResponsiveSelect>
-                            {form.errors.role && <p className="field-error">{t(form.errors.role)}</p>}
+                            {form.errors.role && <p className="field-error" role="alert">{t(form.errors.role)}</p>}
                         </label>
                         <button type="submit" className="button-primary w-full" disabled={form.processing}>
                             <MailPlus size={16} /> {t('users.create_invite')}

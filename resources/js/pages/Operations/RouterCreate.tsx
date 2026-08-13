@@ -58,7 +58,7 @@ export default function RouterCreate({ pops }: Props) {
                                 value={form.data.name}
                                 onChange={(event) => form.setData('name', event.target.value)}
                             />
-                            {form.errors.name && <p className="field-error">{t(form.errors.name)}</p>}
+                            {form.errors.name && <p className="field-error" role="alert">{t(form.errors.name)}</p>}
                         </label>
                         <label>
                             <span className="field-label">{t('router_create.host')}</span>
@@ -67,7 +67,7 @@ export default function RouterCreate({ pops }: Props) {
                                 value={form.data.host}
                                 onChange={(event) => form.setData('host', event.target.value)}
                             />
-                            {form.errors.host && <p className="field-error">{t(form.errors.host)}</p>}
+                            {form.errors.host && <p className="field-error" role="alert">{t(form.errors.host)}</p>}
                         </label>
                         <label>
                             <span className="field-label">{t('router_create.api_port')}</span>
@@ -79,7 +79,7 @@ export default function RouterCreate({ pops }: Props) {
                                 value={form.data.api_port}
                                 onChange={(event) => form.setData('api_port', event.target.value)}
                             />
-                            {form.errors.api_port && <p className="field-error">{t(form.errors.api_port)}</p>}
+                            {form.errors.api_port && <p className="field-error" role="alert">{t(form.errors.api_port)}</p>}
                         </label>
                         <label>
                             <span className="field-label">POP</span>
@@ -95,7 +95,7 @@ export default function RouterCreate({ pops }: Props) {
                                     </option>
                                 ))}
                             </ResponsiveSelect>
-                            {form.errors.pop_id && <p className="field-error">{t(form.errors.pop_id)}</p>}
+                            {form.errors.pop_id && <p className="field-error" role="alert">{t(form.errors.pop_id)}</p>}
                         </label>
                         <label>
                             <span className="field-label">{t('router_create.username')}</span>
@@ -105,7 +105,7 @@ export default function RouterCreate({ pops }: Props) {
                                 value={form.data.username}
                                 onChange={(event) => form.setData('username', event.target.value)}
                             />
-                            {form.errors.username && <p className="field-error">{t(form.errors.username)}</p>}
+                            {form.errors.username && <p className="field-error" role="alert">{t(form.errors.username)}</p>}
                         </label>
                         <label>
                             <span className="field-label">{t('router_create.password')}</span>
@@ -116,7 +116,7 @@ export default function RouterCreate({ pops }: Props) {
                                 value={form.data.password}
                                 onChange={(event) => form.setData('password', event.target.value)}
                             />
-                            {form.errors.password && <p className="field-error">{t(form.errors.password)}</p>}
+                            {form.errors.password && <p className="field-error" role="alert">{t(form.errors.password)}</p>}
                         </label>
                         <label>
                             <span className="field-label">{t('router_create.radius_secret')}</span>
@@ -127,7 +127,7 @@ export default function RouterCreate({ pops }: Props) {
                                 value={form.data.radius_secret}
                                 onChange={(event) => form.setData('radius_secret', event.target.value)}
                             />
-                            {form.errors.radius_secret && <p className="field-error">{t(form.errors.radius_secret)}</p>}
+                            {form.errors.radius_secret && <p className="field-error" role="alert">{t(form.errors.radius_secret)}</p>}
                         </label>
                         <label>
                             <span className="field-label">{t('router_create.coa_port')}</span>
@@ -139,7 +139,7 @@ export default function RouterCreate({ pops }: Props) {
                                 value={form.data.coa_port}
                                 onChange={(event) => form.setData('coa_port', event.target.value)}
                             />
-                            {form.errors.coa_port && <p className="field-error">{t(form.errors.coa_port)}</p>}
+                            {form.errors.coa_port && <p className="field-error" role="alert">{t(form.errors.coa_port)}</p>}
                         </label>
                     </div>
                     <label className="flex items-center gap-3 text-sm font-medium">

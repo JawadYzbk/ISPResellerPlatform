@@ -289,7 +289,7 @@ export default function TicketShow({
                                         : t('Write the customer-facing update')
                                 }
                             />
-                            {form.errors.body && <p className="field-error">{t(form.errors.body)}</p>}
+                            {form.errors.body && <p className="field-error" role="alert">{t(form.errors.body)}</p>}
                             <div className="mt-4 flex justify-end">
                                 <button type="submit" className="button-primary" disabled={form.processing}>
                                     <Send size={16} /> {t('Send reply')}

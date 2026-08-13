@@ -273,7 +273,7 @@ export default function Expenses({
                                 value={amount}
                                 onChange={(event) => setAmount(event.target.value)}
                             />
-                            {form.errors.amount && <span className="field-error">{t(form.errors.amount)}</span>}
+                            {form.errors.amount && <span className="field-error" role="alert">{t(form.errors.amount)}</span>}
                         </label>
                         <label className="field-label">
                             {t('Date')}
@@ -312,7 +312,7 @@ export default function Expenses({
                             />
                         </label>
                         {(form.errors.description || form.errors.attachment) && (
-                            <p className="field-error md:col-span-2 xl:col-span-4">
+                            <p className="field-error md:col-span-2 xl:col-span-4" role="alert">
                                 {t(form.errors.description ?? form.errors.attachment ?? '')}
                             </p>
                         )}
@@ -558,7 +558,7 @@ export default function Expenses({
                                 onChange={(event) => setRecurringAmount(event.target.value)}
                             />
                             {recurringForm.errors.amount && (
-                                <span className="field-error">{t(recurringForm.errors.amount)}</span>
+                                <span className="field-error" role="alert">{t(recurringForm.errors.amount)}</span>
                             )}
                         </label>
                         <label className="field-label">

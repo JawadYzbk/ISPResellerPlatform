@@ -155,7 +155,7 @@ export default function CredentialsPage({
                                 ))}
                             </ResponsiveSelect>
                             {importForm.errors.supplier_id && (
-                                <p className="field-error">{t(importForm.errors.supplier_id)}</p>
+                                <p className="field-error" role="alert">{t(importForm.errors.supplier_id)}</p>
                             )}
                         </label>
                         <label>
@@ -174,7 +174,7 @@ export default function CredentialsPage({
                                 ))}
                             </ResponsiveSelect>
                             {importForm.errors.supplier_contract_id && (
-                                <p className="field-error">{t(importForm.errors.supplier_contract_id)}</p>
+                                <p className="field-error" role="alert">{t(importForm.errors.supplier_contract_id)}</p>
                             )}
                         </label>
                         <label>
@@ -186,7 +186,7 @@ export default function CredentialsPage({
                                 placeholder="SUP-2026-08"
                             />
                             {importForm.errors.reference && (
-                                <p className="field-error">{t(importForm.errors.reference)}</p>
+                                <p className="field-error" role="alert">{t(importForm.errors.reference)}</p>
                             )}
                         </label>
                         <label>
@@ -198,7 +198,7 @@ export default function CredentialsPage({
                                 onChange={(event) => importForm.setData('expires_at', event.target.value)}
                             />
                             {importForm.errors.expires_at && (
-                                <p className="field-error">{t(importForm.errors.expires_at)}</p>
+                                <p className="field-error" role="alert">{t(importForm.errors.expires_at)}</p>
                             )}
                         </label>
                         <label>
@@ -247,7 +247,7 @@ export default function CredentialsPage({
                                 accept=".csv,.txt"
                                 onChange={(event) => importForm.setData('file', event.target.files?.[0] ?? null)}
                             />
-                            {importForm.errors.file && <p className="field-error">{t(importForm.errors.file)}</p>}
+                            {importForm.errors.file && <p className="field-error" role="alert">{t(importForm.errors.file)}</p>}
                         </label>
                     </div>
                     <div className="flex justify-end">

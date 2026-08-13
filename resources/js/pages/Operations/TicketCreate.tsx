@@ -61,7 +61,7 @@ export default function TicketCreate({ customer, services }: Props) {
                             maxLength={160}
                             required
                         />
-                        {form.errors.subject && <p className="field-error">{t(form.errors.subject)}</p>}
+                        {form.errors.subject && <p className="field-error" role="alert">{t(form.errors.subject)}</p>}
                     </label>
                     <div className="grid gap-5 sm:grid-cols-3">
                         <label>
@@ -116,7 +116,7 @@ export default function TicketCreate({ customer, services }: Props) {
                             maxLength={10000}
                             required
                         />
-                        {form.errors.description && <p className="field-error">{t(form.errors.description)}</p>}
+                        {form.errors.description && <p className="field-error" role="alert">{t(form.errors.description)}</p>}
                     </label>
                     <div className="flex justify-end gap-3 border-t border-line pt-5">
                         <Link href={`/customers/${customer.public_id}`} className="button-secondary">

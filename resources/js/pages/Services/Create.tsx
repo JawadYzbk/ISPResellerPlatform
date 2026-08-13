@@ -113,7 +113,7 @@ export default function ServicesCreate({ customer, plans, routers }: Props) {
                                 </option>
                             ))}
                         </ResponsiveSelect>
-                        {form.errors.plan_id && <p className="field-error">{t(form.errors.plan_id)}</p>}
+                        {form.errors.plan_id && <p className="field-error" role="alert">{t(form.errors.plan_id)}</p>}
                         {selectedPlan && (
                             <p className="mt-1 text-xs text-muted">
                                 {t('customer.plan_currency')}: {selectedPlan.currency}
@@ -131,7 +131,7 @@ export default function ServicesCreate({ customer, plans, routers }: Props) {
                                 value={form.data.username}
                                 onChange={(event) => form.setData('username', event.target.value)}
                             />
-                            {form.errors.username && <p className="field-error">{t(form.errors.username)}</p>}
+                            {form.errors.username && <p className="field-error" role="alert">{t(form.errors.username)}</p>}
                         </div>
                         <div>
                             <label className="field-label" htmlFor="password">
@@ -154,7 +154,7 @@ export default function ServicesCreate({ customer, plans, routers }: Props) {
                                     <KeyRound size={16} />
                                 </button>
                             </div>
-                            {form.errors.password && <p className="field-error">{t(form.errors.password)}</p>}
+                            {form.errors.password && <p className="field-error" role="alert">{t(form.errors.password)}</p>}
                             <p className="mt-1 text-xs text-muted">{t('service.password_note')}</p>
                         </div>
                     </div>
@@ -176,7 +176,7 @@ export default function ServicesCreate({ customer, plans, routers }: Props) {
                             ))}
                         </ResponsiveSelect>
                         {form.errors.billing_anchor_day && (
-                            <p className="field-error">{t(form.errors.billing_anchor_day)}</p>
+                            <p className="field-error" role="alert">{t(form.errors.billing_anchor_day)}</p>
                         )}
                         <p className="mt-1 text-xs text-pretty text-muted">
                             {t('The first renewal invoice is prorated from its issue date to this day. Days 29–31 clamp to shorter months.')}
@@ -212,7 +212,7 @@ export default function ServicesCreate({ customer, plans, routers }: Props) {
                             ))}
                         </div>
                         {form.errors.provisioning_mode && (
-                            <p className="field-error">{t(form.errors.provisioning_mode)}</p>
+                            <p className="field-error" role="alert">{t(form.errors.provisioning_mode)}</p>
                         )}
                     </div>
                     {needsRouter && (
@@ -233,7 +233,7 @@ export default function ServicesCreate({ customer, plans, routers }: Props) {
                                     </option>
                                 ))}
                             </ResponsiveSelect>
-                            {form.errors.router_id && <p className="field-error">{t(form.errors.router_id)}</p>}
+                            {form.errors.router_id && <p className="field-error" role="alert">{t(form.errors.router_id)}</p>}
                         </div>
                     )}
                     <div className="flex items-start gap-3 rounded-xl bg-sand/60 p-4 text-sm text-muted">
