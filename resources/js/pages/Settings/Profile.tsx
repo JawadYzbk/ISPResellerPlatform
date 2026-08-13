@@ -1,6 +1,7 @@
 import ResponsiveSelect from '@/components/ui/responsive-select';
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import { ArrowLeft, KeyRound, Save, ShieldCheck } from 'lucide-react';
+import { useState } from 'react';
 
 import AppLayout from '@/layouts/AppLayout';
 import { createTranslator, roleLabel } from '@/lib/i18n';
@@ -18,13 +19,19 @@ type Props = { profile: Profile; workspaceLocale: 'en' | 'ar' | 'fr' };
 
 export default function ProfilePage({ profile, workspaceLocale }: Props) {
     const form = useForm<Profile>(profile);
-const page = usePage<PageProps & { errors?: Record<string, string> }>();
-const t = createTranslator(page.props.app.locale);
-const pageErrors = page.props.errors ?? {};
+    const page = usePage<PageProps & { errors?: Record<string, string> }>();
+    const t = createTranslator(page.props.app.locale);
+    const pageErrors = page.props.errors ?? {};
+    const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
     const submit = (event: React.FormEvent) => {
         event.preventDefault();
-        form.patch('/profile', { preserveState: true, preserveScroll: true });
+        form.patch('/profile', {
+            preserveState: true,
+            preserveScroll: true,
+            onError: (errors) => setValidationErrors(errors),
+            onSuccess: () => setValidationErrors({}),
+        });
     };
 
     return (
@@ -56,8 +63,10 @@ const pageErrors = page.props.errors ?? {};
                                     onChange={(event) => form.setData('name', event.target.value)}
                                     autoComplete="name"
                                 />
-                                {(form.errors.name ?? pageErrors.name) && (
-                                    <p className="field-error">{t(form.errors.name ?? pageErrors.name ?? '')}</p>
+                                {(form.errors.name ?? validationErrors.name ?? pageErrors.name) && (
+                                    <p className="field-error">
+                                        {t(form.errors.name ?? validationErrors.name ?? pageErrors.name ?? '')}
+                                    </p>
                                 )}
                             </label>
                             <label>
@@ -102,8 +111,10 @@ const pageErrors = page.props.errors ?? {};
                                     placeholder={t('Leave blank to use the workspace timezone')}
                                     autoComplete="off"
                                 />
-                                {(form.errors.timezone ?? pageErrors.timezone) && (
-                                    <p className="field-error">{t(form.errors.timezone ?? pageErrors.timezone ?? '')}</p>
+                                {(form.errors.timezone ?? validationErrors.timezone ?? pageErrors.timezone) && (
+                                    <p className="field-error">
+                                        {t(form.errors.timezone ?? validationErrors.timezone ?? pageErrors.timezone ?? '')}
+                                    </p>
                                 )}
                             </label>
                         </div>
