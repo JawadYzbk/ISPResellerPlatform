@@ -1,9 +1,10 @@
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, usePage } from '@inertiajs/react';
 import { AlertTriangle, ArrowLeft, CalendarClock, Router, Server, UserRound } from 'lucide-react';
 
 import StatusBadge, { type Status } from '@/components/StatusBadge';
 import AppLayout from '@/layouts/AppLayout';
 import { entriesOrEmpty, formatDate, keysOrEmpty } from '@/lib/format';
+import { createTranslator } from '@/lib/i18n';
 import type { PageProps } from '@/types';
 
 type Incident = {
@@ -31,6 +32,9 @@ const severityClass: Record<string, string> = {
 };
 
 export default function IncidentShow({ incident }: Props) {
+    const { props } = usePage<PageProps>();
+    const t = createTranslator(props.app.locale);
+
     return (
         <AppLayout>
             <Head title={incident.title} />
@@ -38,11 +42,13 @@ export default function IncidentShow({ incident }: Props) {
                 href="/operations/incidents"
                 className="mb-6 inline-flex items-center gap-2 text-sm font-semibold text-muted hover:text-brand"
             >
-                <ArrowLeft size={16} /> Back to incidents
+                <ArrowLeft size={16} /> {t('Back to incidents')}
             </Link>
             <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-start">
                 <div>
-                    <p className="eyebrow">Incident detail · {incident.public_id}</p>
+                    <p className="eyebrow">
+                        {t('incident_detail.eyebrow')} · {incident.public_id}
+                    </p>
                     <h1 className="page-title">{incident.title}</h1>
                     <p className="mt-2 text-sm capitalize text-muted">{incident.type.replaceAll('_', ' ')}</p>
                 </div>
@@ -60,21 +66,21 @@ export default function IncidentShow({ incident }: Props) {
                     <section className="card p-6">
                         <div className="flex items-center gap-2">
                             <AlertTriangle size={18} className="text-brand" />
-                            <h2 className="section-title">What happened</h2>
+                            <h2 className="section-title">{t('incident_detail.what_happened')}</h2>
                         </div>
                         <p className="mt-5 whitespace-pre-wrap text-sm leading-7 text-muted">
-                            {incident.description ?? 'No additional description was recorded.'}
+                            {incident.description ?? t('incident_detail.no_description')}
                         </p>
                     </section>
                     <section className="card overflow-hidden">
                         <div className="border-b border-line px-6 py-5">
-                            <h2 className="section-title">Timeline</h2>
+                            <h2 className="section-title">{t('Timeline')}</h2>
                         </div>
                         <div className="divide-y divide-line">
                             <div className="flex items-start gap-3 px-6 py-5">
                                 <CalendarClock size={17} className="mt-0.5 text-brand" />
                                 <div>
-                                    <p className="text-sm font-semibold">Incident opened</p>
+                                    <p className="text-sm font-semibold">{t('incident_detail.opened')}</p>
                                     <p className="mt-1 text-xs text-muted">{formatDate(incident.opened_at)}</p>
                                 </div>
                             </div>
@@ -82,17 +88,17 @@ export default function IncidentShow({ incident }: Props) {
                                 <div className="flex items-start gap-3 px-6 py-5">
                                     <StatusBadge status="resolved" />
                                     <div>
-                                        <p className="text-sm font-semibold">Incident resolved</p>
+                                        <p className="text-sm font-semibold">{t('incident_detail.resolved')}</p>
                                         <p className="mt-1 text-xs text-muted">
-                                            {formatDate(incident.resolved_at)} · resolved by automated health recovery
+                                            {formatDate(incident.resolved_at)} ·{' '}
+                                            {t('incident_detail.resolved_by_automation')}
                                         </p>
                                     </div>
                                 </div>
                             )}
                             {!incident.resolved_at && (
                                 <div className="px-6 py-5 text-sm text-muted">
-                                    This incident remains open. Recovery is tracked by the scheduled router health
-                                    check.
+                                    {t('incident_detail.open_description')}
                                 </div>
                             )}
                         </div>
@@ -100,13 +106,13 @@ export default function IncidentShow({ incident }: Props) {
                 </div>
                 <aside className="space-y-6">
                     <section className="card p-6">
-                        <h2 className="section-title">Affected scope</h2>
+                        <h2 className="section-title">{t('incident_detail.affected_scope')}</h2>
                         <div className="mt-5 space-y-4">
                             {incident.router && (
                                 <div className="flex items-start gap-3">
                                     <Router size={17} className="mt-0.5 text-brand" />
                                     <div>
-                                        <p className="text-xs text-muted">Router</p>
+                                        <p className="text-xs text-muted">{t('Router')}</p>
                                         <Link
                                             href={`/operations/routers/${incident.router.public_id}`}
                                             className="mt-1 block font-semibold hover:text-brand"
@@ -124,7 +130,7 @@ export default function IncidentShow({ incident }: Props) {
                                 <div className="flex items-start gap-3">
                                     <Server size={17} className="mt-0.5 text-brand" />
                                     <div>
-                                        <p className="text-xs text-muted">Service</p>
+                                        <p className="text-xs text-muted">{t('Service')}</p>
                                         <Link
                                             href={`/services/${incident.service.public_id}`}
                                             className="mt-1 block font-semibold hover:text-brand"
@@ -138,7 +144,7 @@ export default function IncidentShow({ incident }: Props) {
                                 <div className="flex items-start gap-3">
                                     <UserRound size={17} className="mt-0.5 text-brand" />
                                     <div>
-                                        <p className="text-xs text-muted">Customer</p>
+                                        <p className="text-xs text-muted">{t('Customer')}</p>
                                         <Link
                                             href={`/customers/${incident.customer.public_id}`}
                                             className="mt-1 block font-semibold hover:text-brand"
@@ -150,12 +156,12 @@ export default function IncidentShow({ incident }: Props) {
                                 </div>
                             )}
                             {!incident.router && !incident.service && !incident.customer && (
-                                <p className="text-sm text-muted">No related record was attached.</p>
+                                <p className="text-sm text-muted">{t('incident_detail.no_related_record')}</p>
                             )}
                         </div>
                     </section>
                     <section className="card p-6">
-                        <h2 className="section-title">Detection metadata</h2>
+                        <h2 className="section-title">{t('incident_detail.metadata')}</h2>
                         <dl className="mt-5 space-y-3 text-sm">
                             {entriesOrEmpty(incident.metadata).map(([key, value]) => (
                                 <div
@@ -167,7 +173,7 @@ export default function IncidentShow({ incident }: Props) {
                                 </div>
                             ))}
                             {keysOrEmpty(incident.metadata).length === 0 && (
-                                <p className="text-sm text-muted">No additional metadata recorded.</p>
+                                <p className="text-sm text-muted">{t('incident_detail.no_metadata')}</p>
                             )}
                         </dl>
                     </section>

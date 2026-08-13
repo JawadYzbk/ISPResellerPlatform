@@ -1,10 +1,11 @@
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import { ChevronLeft, ChevronRight, Radio, RefreshCw, WifiOff } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import ConfirmDialog from '@/components/ui/confirm-dialog';
 import AppLayout from '@/layouts/AppLayout';
 import { formatBytes, formatDate, formatDuration } from '@/lib/format';
+import { createTranslator } from '@/lib/i18n';
 import type { PageProps, Paginator } from '@/types';
 
 type Session = {
@@ -28,6 +29,8 @@ type Props = PageProps & {
 };
 
 export default function SessionsPage({ sessions, filters, canDisconnect = false }: Props) {
+    const { props } = usePage<PageProps>();
+    const t = createTranslator(props.app.locale);
     const [search, setSearch] = useState(filters.search ?? '');
 
     useEffect(() => {
@@ -51,32 +54,30 @@ export default function SessionsPage({ sessions, filters, canDisconnect = false 
 
     return (
         <AppLayout>
-            <Head title="Live sessions" />
+            <Head title={t('sessions.title')} />
             <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
                 <div>
-                    <p className="eyebrow">Network operations</p>
-                    <h1 className="page-title">Live sessions</h1>
-                    <p className="page-subtitle">
-                        See who is online, where the session is anchored, and when the NAS last checked in.
-                    </p>
+                    <p className="eyebrow">{t('sessions.eyebrow')}</p>
+                    <h1 className="page-title">{t('sessions.title')}</h1>
+                    <p className="page-subtitle">{t('sessions.subtitle')}</p>
                 </div>
                 <Link href="/operations/network-commands" className="button-secondary">
-                    Network command queue
+                    {t('sessions.command_queue')}
                 </Link>
             </div>
 
             <form onSubmit={applySearch} className="card mt-8 flex flex-col gap-4 p-5 sm:flex-row sm:items-end">
                 <label className="block flex-1">
-                    <span className="field-label">Search sessions</span>
+                    <span className="field-label">{t('sessions.search')}</span>
                     <input
                         className="field"
                         value={search}
                         onChange={(event) => setSearch(event.target.value)}
-                        placeholder="Username, customer, IP, NAS or session ID"
+                        placeholder={t('sessions.search_placeholder')}
                     />
                 </label>
                 <button type="submit" className="button-primary">
-                    Search
+                    {t('Search')}
                 </button>
             </form>
 
@@ -84,21 +85,23 @@ export default function SessionsPage({ sessions, filters, canDisconnect = false 
                 <div className="flex items-center justify-between border-b border-line px-5 py-4">
                     <div className="flex items-center gap-2">
                         <Radio size={17} className="text-emerald-600" />
-                        <p className="text-sm font-semibold">{sessions.total.toLocaleString()} active session(s)</p>
+                        <p className="text-sm font-semibold">
+                            {sessions.total.toLocaleString()} {t('sessions.active')}
+                        </p>
                     </div>
                     <span className="inline-flex items-center gap-1.5 text-xs text-muted">
-                        <RefreshCw size={13} /> Refreshes every 10 seconds
+                        <RefreshCw size={13} /> {t('sessions.refreshes')}
                     </span>
                 </div>
                 <div className="overflow-x-auto">
                     <table className="w-full min-w-[1120px] text-start">
                         <thead>
                             <tr className="border-b border-line bg-sand/50 text-xs font-semibold uppercase tracking-wider text-muted">
-                                <th className="px-5 py-3.5 text-start">Customer</th>
-                                <th className="px-5 py-3.5 text-start">Session</th>
-                                <th className="px-5 py-3.5 text-start">Network</th>
-                                <th className="px-5 py-3.5 text-start">Uptime</th>
-                                <th className="px-5 py-3.5 text-start">Traffic</th>
+                                <th className="px-5 py-3.5 text-start">{t('Customer')}</th>
+                                <th className="px-5 py-3.5 text-start">{t('Session')}</th>
+                                <th className="px-5 py-3.5 text-start">{t('Network')}</th>
+                                <th className="px-5 py-3.5 text-start">{t('sessions.uptime')}</th>
+                                <th className="px-5 py-3.5 text-start">{t('Traffic')}</th>
                                 <th className="px-5 py-3.5" />
                             </tr>
                         </thead>
@@ -114,7 +117,7 @@ export default function SessionsPage({ sessions, filters, canDisconnect = false 
                                                 {session.customer.name}
                                             </Link>
                                         ) : (
-                                            <span className="text-muted">Customer unavailable</span>
+                                            <span className="text-muted">{t('sessions.customer_unavailable')}</span>
                                         )}
                                         <p className="mt-1 text-xs text-muted">{session.customer?.code ?? '—'}</p>
                                     </td>
@@ -132,12 +135,12 @@ export default function SessionsPage({ sessions, filters, canDisconnect = false 
                                         <p className="mt-1 font-mono text-xs text-muted">{session.session_id}</p>
                                     </td>
                                     <td className="px-5 py-4 text-sm">
-                                        <p className="font-semibold">{session.framed_ip ?? 'No IP reported'}</p>
+                                        <p className="font-semibold">{session.framed_ip ?? t('sessions.no_ip')}</p>
                                         <p className="mt-1 text-xs text-muted">
-                                            {session.router ?? session.nasname ?? 'NAS unavailable'}
+                                            {session.router ?? session.nasname ?? t('sessions.nas_unavailable')}
                                         </p>
                                         <p className="mt-1 text-xs text-muted">
-                                            Last seen {formatDate(session.last_seen_at)}
+                                            {t('sessions.last_seen')} {formatDate(session.last_seen_at)}
                                         </p>
                                     </td>
                                     <td className="px-5 py-4 text-sm">
@@ -145,7 +148,7 @@ export default function SessionsPage({ sessions, filters, canDisconnect = false 
                                             {formatDuration(session.started_at, session.last_seen_at)}
                                         </p>
                                         <p className="mt-1 text-xs text-muted">
-                                            Started {formatDate(session.started_at)}
+                                            {t('sessions.started')} {formatDate(session.started_at)}
                                         </p>
                                     </td>
                                     <td className="px-5 py-4 text-sm text-muted">
@@ -155,9 +158,9 @@ export default function SessionsPage({ sessions, filters, canDisconnect = false 
                                     <td className="px-5 py-4 text-end">
                                         {canDisconnect && session.service && (
                                             <ConfirmDialog
-                                                title={`Disconnect ${session.username}'s current session?`}
-                                                description="The active network session will be disconnected immediately."
-                                                confirmLabel="Disconnect session"
+                                                title={t('sessions.disconnect_title')}
+                                                description={t('sessions.disconnect_description')}
+                                                confirmLabel={t('sessions.disconnect_session')}
                                                 destructive
                                                 onConfirm={() =>
                                                     router.post(
@@ -169,7 +172,7 @@ export default function SessionsPage({ sessions, filters, canDisconnect = false 
                                                     type="button"
                                                     className="inline-flex items-center gap-1.5 text-sm font-semibold text-coral"
                                                 >
-                                                    <WifiOff size={14} /> Disconnect
+                                                    <WifiOff size={14} /> {t('Disconnect')}
                                                 </button>
                                             </ConfirmDialog>
                                         )}
@@ -180,9 +183,9 @@ export default function SessionsPage({ sessions, filters, canDisconnect = false 
                                 <tr>
                                     <td colSpan={6} className="px-5 py-16 text-center">
                                         <Radio className="mx-auto text-muted" size={28} />
-                                        <p className="mt-3 font-semibold">No active sessions match this search</p>
+                                        <p className="mt-3 font-semibold">{t('sessions.no_matches')}</p>
                                         <p className="mt-1 text-sm text-muted">
-                                            The page will update automatically as accounting records arrive.
+                                            {t('sessions.no_matches_description')}
                                         </p>
                                     </td>
                                 </tr>
@@ -192,7 +195,7 @@ export default function SessionsPage({ sessions, filters, canDisconnect = false 
                 </div>
                 <div className="flex items-center justify-between border-t border-line px-5 py-4">
                     <p className="text-xs text-muted">
-                        Page {sessions.current_page} of {sessions.last_page}
+                        {t('Page')} {sessions.current_page} {t('of')} {sessions.last_page}
                     </p>
                     <div className="flex items-center gap-1">
                         {sessions.links.map((link, index) => {
