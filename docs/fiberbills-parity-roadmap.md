@@ -53,7 +53,7 @@ Sources:
 | Collector assignment to zones | Delivered | Scoped all-zone/restricted territories, descendant coverage, server-side sync/API enforcement and effective-dated reassignment history are implemented; temporary scheduled coverage remains part of route planning. |
 | Live collector GPS, check-ins, routes and nearby dues | Delivered for responsive web | Explicit consent-based field-day check-in/out, GPS accuracy evidence, manager route planning, territory-safe ordered stops, on-demand nearby sorting and location-backed visit outcomes are delivered without continuous background tracking. Native background execution remains deferred. |
 | Collector tasks, messaging and daily summaries | Delivered for responsive web | Managers can assign prioritized, due-dated, customer-linked tasks; collectors acknowledge/start/complete them in order; participant-only threads include unread state and private attachments; checkout persists route, collection, task, cash-shift and handover summaries. Native push/background behavior remains deferred. |
-| Collector performance | Partial | Route progress and visit outcomes are now visible to managers; extend finance totals with collection rate, cash variance and historical trends. |
+| Collector performance | Delivered for responsive web | Route progress and visit outcomes, finance collection rates, cash-shift variance and daily collection trends are visible to managers; native mobile supervision remains deferred. |
 | Collector wallet/cash custody | Delivered for responsive web | Physical custody combines cash-only collections, opening float, manager advances, approved field expenses, confirmed handovers and documented adjustments in an append-only multi-currency position. Pending requests do not affect balances, debits cannot overdraw custody, and checkout snapshots the handover position. |
 | Inventory and equipment assignment | Delivered | Keep serialized and bulk stock, warehouses, transfers, service assignment and movement audit. |
 | Stock assigned to collectors and field sales | Delivered for responsive web | Collector/vehicle custody locations, audited direct transfers, replenishment and return approvals, stale-safe physical counts, manager-posted variances, and paid customer field sales are implemented. Sales atomically issue an invoice, record payment, update cash custody for cash methods, decrement stock and append movement history. |
@@ -88,7 +88,7 @@ Sources:
 3. Collector/admin tasks and messaging. **Delivered for responsive web.**
 4. Collector cash custody, handover, expenses and reconciliation. **Delivered for responsive web.**
 5. Collector stock custody, replenishment, return, sale and variance. **Delivered for responsive web.**
-6. Daily route, collection and performance supervision.
+6. Daily route, collection and performance supervision. **Delivered for responsive web.**
 
 ### Phase 3: billing and finance breadth
 
