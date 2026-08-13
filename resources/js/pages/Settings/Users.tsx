@@ -51,6 +51,17 @@ export default function UsersPage({
     const form = useForm({ email: '', role: roles[0] ?? 'support_agent' });
     const roleForm = useForm({ role: roles[0] ?? 'support_agent' });
 
+    const fieldA11y = (id: string, error?: string) => ({
+        'aria-invalid': Boolean(error),
+        'aria-describedby': error ? `${id}-error` : undefined,
+    });
+    const fieldError = (id: string, error?: string) =>
+        error ? (
+            <p id={`${id}-error`} className="field-error" role="alert">
+                {t(error)}
+            </p>
+        ) : null;
+
     const applySearch = (event: React.FormEvent) => {
         event.preventDefault();
         router.get('/settings/users', { search: search || undefined }, { preserveState: true, replace: true });
@@ -167,7 +178,9 @@ export default function UsersPage({
                                             {editingUserId === member.id ? (
                                                 <div className="min-w-52 space-y-2">
                                                     <ResponsiveSelect
+                                                        id={`member-role-${member.id}`}
                                                         className="field py-2 text-xs"
+                                                        {...fieldA11y(`member-role-${member.id}`, roleForm.errors.role)}
                                                         value={roleForm.data.role}
                                                         onChange={(event) =>
                                                             roleForm.setData('role', event.target.value)
@@ -179,9 +192,7 @@ export default function UsersPage({
                                                             </option>
                                                         ))}
                                                     </ResponsiveSelect>
-                                                    {roleForm.errors.role && (
-                                                        <p className="field-error" role="alert">{t(roleForm.errors.role)}</p>
-                                                    )}
+                                                    {fieldError(`member-role-${member.id}`, roleForm.errors.role)}
                                                 </div>
                                             ) : (
                                                 enumLabel(member.role, t)
@@ -309,17 +320,21 @@ export default function UsersPage({
                         <label>
                             <span className="field-label">{t('Email')}</span>
                             <input
+                                id="invite-email"
                                 className="field"
                                 type="email"
+                                {...fieldA11y('invite-email', form.errors.email)}
                                 value={form.data.email}
                                 onChange={(event) => form.setData('email', event.target.value)}
                             />
-                            {form.errors.email && <p className="field-error" role="alert">{t(form.errors.email)}</p>}
+                            {fieldError('invite-email', form.errors.email)}
                         </label>
                         <label>
                             <span className="field-label">{t('Role')}</span>
                             <ResponsiveSelect
+                                id="invite-role"
                                 className="field"
+                                {...fieldA11y('invite-role', form.errors.role)}
                                 value={form.data.role}
                                 onChange={(event) => form.setData('role', event.target.value)}
                             >
@@ -329,7 +344,7 @@ export default function UsersPage({
                                     </option>
                                 ))}
                             </ResponsiveSelect>
-                            {form.errors.role && <p className="field-error" role="alert">{t(form.errors.role)}</p>}
+                            {fieldError('invite-role', form.errors.role)}
                         </label>
                         <button type="submit" className="button-primary w-full" disabled={form.processing}>
                             <MailPlus size={16} /> {t('users.create_invite')}

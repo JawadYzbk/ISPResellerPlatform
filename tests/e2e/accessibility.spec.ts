@@ -343,6 +343,35 @@ test('connects profile validation errors to their controls', async ({ page }) =>
     await expect(page.locator('#name-error')).toHaveAttribute('role', 'alert');
 });
 
+test('connects invitation validation errors to their controls', async ({ page }) => {
+    test.setTimeout(60_000);
+
+    await page.goto('/login');
+    await page.getByLabel('Email address').fill(email);
+    await page.getByRole('textbox', { name: 'Password' }).fill(password);
+    await Promise.all([
+        page.waitForURL(/\/(dashboard|customers|profile)$/),
+        page.getByRole('button', { name: 'Enter workspace' }).click(),
+    ]);
+
+    await page.goto('/security/reauthenticate');
+    await page.getByRole('textbox', { name: 'Password' }).fill(password);
+    await Promise.all([
+        page.waitForURL(/\/(dashboard|customers|profile)$/),
+        page.getByRole('button', { name: 'Confirm' }).click(),
+    ]);
+
+    await page.goto('/settings/users');
+    const inviteForm = page.locator('form').filter({ has: page.locator('#invite-email') });
+    await inviteForm.locator('#invite-email').fill('');
+    await inviteForm.locator('button[type="submit"]').click();
+
+    const emailField = page.locator('#invite-email');
+    await expect(emailField).toHaveAttribute('aria-invalid', 'true');
+    await expect(emailField).toHaveAttribute('aria-describedby', 'invite-email-error');
+    await expect(page.locator('#invite-email-error')).toHaveAttribute('role', 'alert');
+});
+
 test('connects service validation errors to their controls', async ({ page }) => {
     test.setTimeout(60_000);
 
