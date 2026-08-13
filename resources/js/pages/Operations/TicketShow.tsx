@@ -1,11 +1,12 @@
 import ResponsiveSelect from '@/components/ui/responsive-select';
-import { Head, Link, router, useForm } from '@inertiajs/react';
+import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
 import { ArrowLeft, ClipboardPaste, MessageSquare, Send } from 'lucide-react';
 import { useState } from 'react';
 
 import StatusBadge from '@/components/StatusBadge';
 import AppLayout from '@/layouts/AppLayout';
 import { formatDate } from '@/lib/format';
+import { createTranslator, roleLabel } from '@/lib/i18n';
 import type { PageProps } from '@/types';
 
 type TicketMessage = {
@@ -57,6 +58,8 @@ export default function TicketShow({
     canMutate = false,
     canClose = false,
 }: Props) {
+    const { props } = usePage<PageProps>();
+    const t = createTranslator(props.app.locale);
     const [status, setStatus] = useState(ticket.status);
     const [assigneeId, setAssigneeId] = useState(ticket.assignee?.id.toString() ?? '');
     const [visibility, setVisibility] = useState<'public' | 'internal'>('public');
@@ -98,11 +101,11 @@ export default function TicketShow({
                 href="/operations/tickets"
                 className="mb-6 inline-flex items-center gap-2 text-sm font-semibold text-muted hover:text-brand"
             >
-                <ArrowLeft size={16} /> Back to tickets
+                <ArrowLeft size={16} /> {t('Back to tickets')}
             </Link>
             <div className="flex flex-col justify-between gap-5 md:flex-row md:items-end">
                 <div>
-                    <p className="eyebrow">Support ticket</p>
+                    <p className="eyebrow">{t('Support ticket')}</p>
                     <div className="mt-2 flex flex-wrap items-center gap-3">
                         <h1 className="page-title">{ticket.number}</h1>
                         <StatusBadge status={ticket.status} />
@@ -119,28 +122,28 @@ export default function TicketShow({
             <div className="mt-8 grid gap-6 xl:grid-cols-[0.7fr_1.3fr]">
                 <aside className="space-y-6">
                     <div className="card p-6">
-                        <h2 className="section-title">Ticket details</h2>
+                        <h2 className="section-title">{t('Ticket details')}</h2>
                         <dl className="mt-5 space-y-4 text-sm">
                             <div>
-                                <dt className="text-xs text-muted">Priority</dt>
+                                <dt className="text-xs text-muted">{t('Priority')}</dt>
                                 <dd className="mt-1 font-semibold capitalize">{ticket.priority}</dd>
                             </div>
                             <div>
-                                <dt className="text-xs text-muted">SLA due</dt>
+                                <dt className="text-xs text-muted">{t('SLA due')}</dt>
                                 <dd className="mt-1 font-semibold">{formatDate(ticket.due_at)}</dd>
                             </div>
                             <div>
-                                <dt className="text-xs text-muted">Service</dt>
-                                <dd className="mt-1 font-semibold">{ticket.service?.username ?? 'Not linked'}</dd>
+                                <dt className="text-xs text-muted">{t('Service')}</dt>
+                                <dd className="mt-1 font-semibold">{ticket.service?.username ?? t('Not linked')}</dd>
                             </div>
                             <div>
-                                <dt className="text-xs text-muted">Assigned to</dt>
-                                <dd className="mt-1 font-semibold">{ticket.assignee?.name ?? 'Unassigned'}</dd>
+                                <dt className="text-xs text-muted">{t('Assigned to')}</dt>
+                                <dd className="mt-1 font-semibold">{ticket.assignee?.name ?? t('Unassigned')}</dd>
                             </div>
                             {ticket.satisfaction_rating !== null && (
                                 <div>
                                     <dt className="text-xs text-muted">Customer rating</dt>
-                                    <dd className="mt-1 font-semibold text-amber-700" aria-label="Customer rating">
+                                    <dd className="mt-1 font-semibold text-amber-700" aria-label={t('Customer rating')}>
                                         {'★'.repeat(ticket.satisfaction_rating)}
                                         <span className="ms-2 text-ink">{ticket.satisfaction_rating}/5</span>
                                     </dd>
@@ -150,28 +153,28 @@ export default function TicketShow({
                     </div>
                     {canAssign && (
                         <form onSubmit={submitAssignment} className="card space-y-4 p-6">
-                            <h2 className="section-title">Assignment</h2>
+                            <h2 className="section-title">{t('Assignment')}</h2>
                             <label>
-                                <span className="field-label">Responsible operator</span>
+                                <span className="field-label">{t('Responsible operator')}</span>
                                 <ResponsiveSelect
                                     className="field"
                                     value={assigneeId}
                                     onChange={(event) => setAssigneeId(event.target.value)}
                                 >
-                                    <option value="">Unassigned</option>
+                                    <option value="">{t('Unassigned')}</option>
                                     {assignees.map((assignee) => (
                                         <option key={assignee.id} value={assignee.id}>
-                                            {assignee.name} · {assignee.role.replace('_', ' ')}
+                                            {assignee.name} · {roleLabel(assignee.role, t)}
                                         </option>
                                     ))}
                                 </ResponsiveSelect>
                             </label>
-                            <button className="button-secondary w-full justify-center">Save assignment</button>
+                            <button className="button-secondary w-full justify-center">{t('Save assignment')}</button>
                         </form>
                     )}
                     {canMutate && ticket.status !== 'closed' && (
                         <form onSubmit={updateStatus} className="card space-y-4 p-6">
-                            <h2 className="section-title">Update status</h2>
+                            <h2 className="section-title">{t('Update status')}</h2>
                             <ResponsiveSelect
                                 className="field"
                                 value={status}
@@ -179,12 +182,12 @@ export default function TicketShow({
                             >
                                 {transitions[ticket.status].map((option) => (
                                     <option key={option} value={option} disabled={option === 'closed' && !canClose}>
-                                        {option.replace('_', ' ')}
+                                        {t(option.replace('_', ' '))}
                                     </option>
                                 ))}
                             </ResponsiveSelect>
                             <button className="button-primary" disabled={status === ticket.status}>
-                                Save status
+                                {t('Save status')}
                             </button>
                         </form>
                     )}
@@ -194,7 +197,7 @@ export default function TicketShow({
                     <div className="border-b border-line px-6 py-5">
                         <div className="flex items-center gap-2">
                             <MessageSquare size={17} className="text-brand" />
-                            <h2 className="section-title">Conversation</h2>
+                            <h2 className="section-title">{t('Conversation')}</h2>
                         </div>
                         <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-muted">{ticket.description}</p>
                     </div>
@@ -207,14 +210,14 @@ export default function TicketShow({
                                 <div className="flex items-center justify-between gap-3 text-xs text-muted">
                                     <span className="font-semibold capitalize">
                                         {message.author_type} ·{' '}
-                                        {message.visibility === 'internal' ? 'internal note' : 'public reply'}
+                                        {message.visibility === 'internal' ? t('Internal note') : t('Public reply')}
                                     </span>
                                     <time>{formatDate(message.created_at)}</time>
                                 </div>
                                 <p className="mt-3 whitespace-pre-wrap text-sm leading-6">{message.body}</p>
                             </article>
                         ))}
-                        {ticket.messages.length === 0 && <p className="text-sm text-muted">No replies yet.</p>}
+                        {ticket.messages.length === 0 && <p className="text-sm text-muted">{t('No replies yet.')}</p>}
                     </div>
                     {canMutate && ticket.status !== 'closed' && (
                         <form onSubmit={submitReply} className="border-t border-line bg-sand/20 p-6">
@@ -244,13 +247,13 @@ export default function TicketShow({
                                 <div className="mb-4 rounded-xl border border-line bg-white p-4">
                                     <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
                                         <label className="min-w-0 flex-1">
-                                            <span className="field-label">Saved response</span>
+                                            <span className="field-label">{t('Saved response')}</span>
                                             <ResponsiveSelect
                                                 className="field"
                                                 value={cannedResponseId}
                                                 onChange={(event) => setCannedResponseId(event.target.value)}
                                             >
-                                                <option value="">Choose a saved response</option>
+                                                <option value="">{t('Choose a saved response')}</option>
                                                 {cannedResponses.map((response) => (
                                                     <option key={response.public_id} value={response.public_id}>
                                                         {response.title} · {response.category}
@@ -264,14 +267,16 @@ export default function TicketShow({
                                             onClick={insertCannedResponse}
                                             disabled={!cannedResponseId}
                                         >
-                                            <ClipboardPaste size={15} /> Insert response
+                                            <ClipboardPaste size={15} /> {t('Insert response')}
                                         </button>
                                     </div>
-                                    <p className="mt-2 text-xs text-muted">Inserting replaces the current draft.</p>
+                                    <p className="mt-2 text-xs text-muted">
+                                        {t('Inserting replaces the current draft.')}
+                                    </p>
                                 </div>
                             )}
                             <label className="field-label" htmlFor="body">
-                                {visibility === 'internal' ? 'Internal note' : 'Public reply'}
+                                {visibility === 'internal' ? t('Internal note') : t('Public reply')}
                             </label>
                             <textarea
                                 id="body"
@@ -280,14 +285,14 @@ export default function TicketShow({
                                 onChange={(event) => form.setData('body', event.target.value)}
                                 placeholder={
                                     visibility === 'internal'
-                                        ? 'Add context for the next operator'
-                                        : 'Write the customer-facing update'
+                                        ? t('Add context for the next operator')
+                                        : t('Write the customer-facing update')
                                 }
                             />
                             {form.errors.body && <p className="field-error">{form.errors.body}</p>}
                             <div className="mt-4 flex justify-end">
                                 <button className="button-primary" disabled={form.processing}>
-                                    <Send size={16} /> Send reply
+                                    <Send size={16} /> {t('Send reply')}
                                 </button>
                             </div>
                         </form>
