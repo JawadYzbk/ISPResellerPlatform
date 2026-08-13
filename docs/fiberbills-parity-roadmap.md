@@ -39,7 +39,7 @@ Sources:
 | Subscriber history, plans, contacts, status and expiry | Delivered | Keep ISP Manager's richer service lifecycle, documents, tickets and timeline. |
 | Plan/speed, PPPoE credentials and bandwidth usage | Delivered/partial | Finish live-device acceptance and add an operator-friendly usage/FUP history. |
 | Zone organization | Delivered | Retain tenant, branch, zone, POP and reseller scoping. |
-| Box and building organization | Delivered for responsive web | Tenant-safe building/site and distribution-box/cabinet records, map placement, POP linkage, capacity validation, port occupancy and subscriber assignment are delivered; installation surveys and optical readings remain in the installation phase. |
+| Box and building organization | Delivered for responsive web | Tenant-safe building/site and distribution-box/cabinet records, map placement, POP linkage, capacity validation, port occupancy, subscriber assignment, installation surveys, ONU serial capture and activation acceptance are delivered; optical readings remain in the installation phase. |
 | Monthly auto-invoicing, grace and overdue handling | Delivered | Keep idempotent billing runs, ledger posting and network enforcement. |
 | Custom billing cycle per subscriber | Delivered for monthly prepaid billing | Each service can follow its plan duration or use a day-of-month anchor. Initial and transition periods use previewed half-up proration, days 29–31 clamp safely, open renewal invoices lock their quote, and paid renewal applies the scheduled anchor. |
 | Subscription, usage-based and one-time billing combinations | Partial | Add recurring invoice items and a metered-rating engine over usage/readings; retain operator-created invoice lines. |
@@ -62,7 +62,7 @@ Sources:
 | Customer portal and public invoice/payment access | Delivered for responsive web | Expiring, revocable branded invoice, statement, receipt and payment links are delivered with Stripe checkout, Whish QR collection, compact receipt downloads and hash-only token storage. Custom tenant domains and live gateway acceptance remain operational gates. |
 | Multi-company distributor operation | Delivered | Keep the stronger tenant and reseller hierarchy, wallets, price books, commissions and settlements. |
 | Network integrations | Exceeds reference in RouterOS/RADIUS; gap in optical access | Complete RouterOS/CoA lab acceptance, then add OLT/ONU installation inventory and a vendor-neutral optical driver boundary. |
-| Installations | Partial | Extend work orders into installation surveys, box/port/ONU assignment, optical readings and activation acceptance. |
+| Installations | Delivered/partial | Work orders now support tenant-safe surveys, building/box/port/ONU assignment, guarded completion and activation acceptance; OLT/ONU registry, optical readings and vendor-neutral optical drivers remain. |
 | Activity log, security and trusted devices | Delivered | Keep audit events, re-authentication, 2FA and session-device controls; expose any missing owner-facing audit filters. |
 | Backup/export controls | Backend delivered; UI partial | Add owner-visible backup health, last verified restore metadata and safe export controls without exposing secrets. |
 | Electricity/generator meter and odometer billing | Deferred vertical | Build after core ISP/Jebaya parity as a modular reading, approval, rating and billing capability. |
@@ -101,7 +101,7 @@ Sources:
 ### Phase 4: physical ISP topology
 
 1. Buildings/sites, boxes/cabinets, ports, capacity and map views. **Delivered for responsive web.**
-2. Installation survey and activation workflow.
+2. Installation survey and activation workflow. **Delivered for responsive web.**
 3. OLT/ONU registry, optical readings and vendor-neutral integration drivers.
 4. Usage/FUP and network-quality history tied to customers and topology.
 
