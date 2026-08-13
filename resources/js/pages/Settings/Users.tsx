@@ -1,11 +1,12 @@
 import ResponsiveSelect from '@/components/ui/responsive-select';
 import ConfirmDialog from '@/components/ui/confirm-dialog';
-import { Head, Link, router, useForm } from '@inertiajs/react';
+import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
 import { ChevronLeft, ChevronRight, Copy, Edit3, MailPlus, Save, Search, Users, X } from 'lucide-react';
 import { useState } from 'react';
 
 import AppLayout from '@/layouts/AppLayout';
 import { formatDate } from '@/lib/format';
+import { createTranslator } from '@/lib/i18n';
 import type { PageProps, Paginator } from '@/types';
 
 type UserRow = {
@@ -43,6 +44,8 @@ export default function UsersPage({
     filters,
     invitation,
 }: Props) {
+    const { props } = usePage<PageProps>();
+    const t = createTranslator(props.app.locale);
     const [search, setSearch] = useState(filters.search ?? '');
     const [editingUserId, setEditingUserId] = useState<number | null>(null);
     const form = useForm({ email: '', role: roles[0] ?? 'support_agent' });
@@ -80,20 +83,18 @@ export default function UsersPage({
 
     return (
         <AppLayout>
-            <Head title="Users and invitations" />
+            <Head title={t('Users and invitations')} />
             <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
                 <div>
-                    <p className="eyebrow">Administration</p>
-                    <h1 className="page-title">Users and invitations</h1>
-                    <p className="page-subtitle">
-                        Manage tenant operators without exposing passwords or invitation hashes.
-                    </p>
+                    <p className="eyebrow">{t('Administration')}</p>
+                    <h1 className="page-title">{t('Users and invitations')}</h1>
+                    <p className="page-subtitle">{t('users.subtitle')}</p>
                 </div>
                 <Link href="/settings/general" className="button-secondary">
-                    Workspace settings
+                    {t('Workspace settings')}
                 </Link>
                 <Link href="/settings/collector-territories" className="button-secondary">
-                    Collector territories
+                    {t('Collector territories')}
                 </Link>
             </div>
 
@@ -101,10 +102,10 @@ export default function UsersPage({
                 <div className="card mt-8 border-brand/30 bg-brand-soft p-5">
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                         <div>
-                            <p className="text-sm font-semibold">One-time invitation link created</p>
+                            <p className="text-sm font-semibold">{t('users.invitation_created')}</p>
                             <p className="mt-1 text-xs text-muted">
-                                Send this link to {invitation.email}. It expires {formatDate(invitation.expires_at)} and
-                                is not shown again.
+                                {t('users.send_link_to')} {invitation.email}. {t('users.expires')}{' '}
+                                {formatDate(invitation.expires_at)}. {t('users.not_shown_again')}
                             </p>
                             <code className="mt-3 block break-all rounded-lg bg-white px-3 py-2 text-xs text-ink">
                                 {inviteLink}
@@ -115,7 +116,7 @@ export default function UsersPage({
                             className="button-secondary shrink-0"
                             onClick={() => navigator.clipboard.writeText(inviteLink)}
                         >
-                            <Copy size={15} /> Copy link
+                            <Copy size={15} /> {t('users.copy_link')}
                         </button>
                     </div>
                 </div>
@@ -130,26 +131,28 @@ export default function UsersPage({
                                 className="field ps-10"
                                 value={search}
                                 onChange={(event) => setSearch(event.target.value)}
-                                placeholder="Search name, email, or role"
+                                placeholder={t('users.search_placeholder')}
                             />
                         </div>
                         <button type="submit" className="button-secondary">
-                            Search
+                            {t('Search')}
                         </button>
                     </form>
                     <div className="flex items-center gap-2 border-b border-line px-5 py-4">
                         <Users size={17} className="text-brand" />
-                        <p className="text-sm font-semibold">{users.total.toLocaleString()} user(s)</p>
+                        <p className="text-sm font-semibold">
+                            {users.total.toLocaleString()} {t('users.count')}
+                        </p>
                     </div>
                     <div className="overflow-x-auto">
                         <table className="w-full min-w-[760px] text-start">
                             <thead>
                                 <tr className="border-b border-line bg-sand/50 text-xs font-semibold uppercase tracking-wider text-muted">
-                                    <th className="px-5 py-3.5 text-start">Operator</th>
-                                    <th className="px-5 py-3.5 text-start">Role</th>
-                                    <th className="px-5 py-3.5 text-start">Locale</th>
-                                    <th className="px-5 py-3.5 text-start">Security</th>
-                                    {canManageRoles && <th className="px-5 py-3.5 text-end">Actions</th>}
+                                    <th className="px-5 py-3.5 text-start">{t('users.operator')}</th>
+                                    <th className="px-5 py-3.5 text-start">{t('Role')}</th>
+                                    <th className="px-5 py-3.5 text-start">{t('Locale')}</th>
+                                    <th className="px-5 py-3.5 text-start">{t('Security')}</th>
+                                    {canManageRoles && <th className="px-5 py-3.5 text-end">{t('Actions')}</th>}
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-line">
@@ -185,13 +188,21 @@ export default function UsersPage({
                                         </td>
                                         <td className="px-5 py-4 text-sm text-muted">
                                             {member.locale?.toUpperCase() ?? workspaceLocale.toUpperCase()} ·{' '}
-                                            {member.locale ? 'Personal language' : 'Workspace language'} ·{' '}
-                                            {member.timezone ?? 'Tenant time'}
+                                            {member.locale
+                                                ? t('users.personal_language')
+                                                : t('users.workspace_language')}{' '}
+                                            · {member.timezone ?? t('users.tenant_time')}
                                         </td>
                                         <td className="px-5 py-4 text-xs text-muted">
-                                            <p>{member.email_verified ? 'Email verified' : 'Email unverified'}</p>
+                                            <p>
+                                                {member.email_verified
+                                                    ? t('users.email_verified')
+                                                    : t('users.email_unverified')}
+                                            </p>
                                             <p className="mt-1">
-                                                {member.two_factor_enabled ? '2FA enabled' : '2FA not configured'}
+                                                {member.two_factor_enabled
+                                                    ? t('users.2fa_enabled')
+                                                    : t('users.2fa_not_configured')}
                                             </p>
                                         </td>
                                         {canManageRoles && (
@@ -199,9 +210,9 @@ export default function UsersPage({
                                                 {editingUserId === member.id ? (
                                                     <div className="flex justify-end gap-2">
                                                         <ConfirmDialog
-                                                            title="Change operator role?"
-                                                            description={`This will update ${member.name}'s workspace permissions.`}
-                                                            confirmLabel="Save role"
+                                                            title={t('users.change_role_title')}
+                                                            description={`${t('users.change_role_description')} ${member.name}.`}
+                                                            confirmLabel={t('users.save_role')}
                                                             onConfirm={() => saveRole(member)}
                                                         >
                                                             <button
@@ -209,7 +220,7 @@ export default function UsersPage({
                                                                 className="button-secondary px-3 py-2 text-xs"
                                                                 disabled={roleForm.processing}
                                                             >
-                                                                <Save size={14} /> Save
+                                                                <Save size={14} /> {t('Save')}
                                                             </button>
                                                         </ConfirmDialog>
                                                         <button
@@ -218,18 +229,18 @@ export default function UsersPage({
                                                             onClick={cancelRoleEdit}
                                                             disabled={roleForm.processing}
                                                         >
-                                                            <X size={14} /> Cancel
+                                                            <X size={14} /> {t('Cancel')}
                                                         </button>
                                                     </div>
                                                 ) : protectedRoles.includes(member.role) ? (
-                                                    <span className="text-xs text-muted">Protected</span>
+                                                    <span className="text-xs text-muted">{t('Protected')}</span>
                                                 ) : (
                                                     <button
                                                         type="button"
                                                         className="button-quiet px-2 py-2 text-xs"
                                                         onClick={() => startRoleEdit(member)}
                                                     >
-                                                        <Edit3 size={14} /> Edit role
+                                                        <Edit3 size={14} /> {t('users.edit_role')}
                                                     </button>
                                                 )}
                                             </td>
@@ -240,7 +251,7 @@ export default function UsersPage({
                                     <tr>
                                         <td colSpan={canManageRoles ? 5 : 4} className="px-5 py-14 text-center">
                                             <Users className="mx-auto text-muted" size={28} />
-                                            <p className="mt-3 font-semibold">No operators match this search</p>
+                                            <p className="mt-3 font-semibold">{t('users.no_matches')}</p>
                                         </td>
                                     </tr>
                                 )}
@@ -249,7 +260,7 @@ export default function UsersPage({
                     </div>
                     <div className="flex items-center justify-between border-t border-line px-5 py-4">
                         <p className="text-xs text-muted">
-                            Page {users.current_page} of {users.last_page}
+                            {t('Page')} {users.current_page} {t('of')} {users.last_page}
                         </p>
                         <div className="flex items-center gap-1">
                             {users.links.map((link, index) => {
@@ -291,14 +302,11 @@ export default function UsersPage({
                     <form onSubmit={invite} className="card space-y-5 p-6">
                         <div className="flex items-center gap-2">
                             <MailPlus size={18} className="text-brand" />
-                            <h2 className="section-title">Invite operator</h2>
+                            <h2 className="section-title">{t('users.invite_operator')}</h2>
                         </div>
-                        <p className="text-sm text-muted">
-                            The invitee sets their own name and password. Owner and platform roles require a separate
-                            break-glass process.
-                        </p>
+                        <p className="text-sm text-muted">{t('users.invite_description')}</p>
                         <label>
-                            <span className="field-label">Email</span>
+                            <span className="field-label">{t('Email')}</span>
                             <input
                                 className="field"
                                 type="email"
@@ -308,7 +316,7 @@ export default function UsersPage({
                             {form.errors.email && <p className="field-error">{form.errors.email}</p>}
                         </label>
                         <label>
-                            <span className="field-label">Role</span>
+                            <span className="field-label">{t('Role')}</span>
                             <ResponsiveSelect
                                 className="field"
                                 value={form.data.role}
@@ -323,11 +331,11 @@ export default function UsersPage({
                             {form.errors.role && <p className="field-error">{form.errors.role}</p>}
                         </label>
                         <button className="button-primary w-full" disabled={form.processing}>
-                            <MailPlus size={16} /> Create one-time invite
+                            <MailPlus size={16} /> {t('users.create_invite')}
                         </button>
                     </form>
                     <div className="card p-6">
-                        <h2 className="section-title">Pending invites</h2>
+                        <h2 className="section-title">{t('users.pending_invites')}</h2>
                         <div className="mt-4 divide-y divide-line">
                             {invitations.map((pending) => (
                                 <div
@@ -336,11 +344,14 @@ export default function UsersPage({
                                 >
                                     <p className="text-sm font-semibold">{pending.email}</p>
                                     <p className="mt-1 text-xs capitalize text-muted">
-                                        {pending.role.replaceAll('_', ' ')} · expires {formatDate(pending.expires_at)}
+                                        {pending.role.replaceAll('_', ' ')} · {t('users.expires')}{' '}
+                                        {formatDate(pending.expires_at)}
                                     </p>
                                 </div>
                             ))}
-                            {invitations.length === 0 && <p className="text-sm text-muted">No pending invitations.</p>}
+                            {invitations.length === 0 && (
+                                <p className="text-sm text-muted">{t('users.no_pending_invites')}</p>
+                            )}
                         </div>
                     </div>
                 </div>
