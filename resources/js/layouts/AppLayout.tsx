@@ -37,7 +37,7 @@ import {
     Wrench,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
-import { useEffect, useRef, useState, type PropsWithChildren } from 'react';
+import { useEffect, useRef, useState, type MouseEvent as ReactMouseEvent, type PropsWithChildren } from 'react';
 
 import RealtimeBridge from '@/components/RealtimeBridge';
 import OfflineBanner from '@/components/OfflineBanner';
@@ -72,13 +72,13 @@ export default function AppLayout({ children }: PropsWithChildren) {
     const [accountOpen, setAccountOpen] = useState(false);
     const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
     const searchInput = useRef<HTMLInputElement>(null);
+    const searchReturnFocus = useRef<HTMLButtonElement | null>(null);
     const accountMenu = useRef<HTMLDivElement>(null);
     const can = (permission: string | string[]) =>
         Array.isArray(permission)
             ? permission.some((item) => auth.permissions.includes(item))
             : auth.permissions.includes(permission);
-    const canUseCollectorDesk =
-        auth.user?.role === 'collector' && can('customers.view') && can('payments.collect');
+    const canUseCollectorDesk = auth.user?.role === 'collector' && can('customers.view') && can('payments.collect');
     const pathname = url.split('?')[0].replace(/\/+$/, '') || '/';
     const matchesPath = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
 
@@ -102,8 +102,21 @@ export default function AppLayout({ children }: PropsWithChildren) {
     }, [app.direction, app.locale]);
 
     useEffect(() => {
-        if (searchOpen) window.setTimeout(() => searchInput.current?.focus(), 0);
+        if (searchOpen) {
+            const timer = window.setTimeout(() => searchInput.current?.focus(), 0);
+
+            return () => window.clearTimeout(timer);
+        }
+
+        const trigger = searchReturnFocus.current;
+        searchReturnFocus.current = null;
+        trigger?.focus();
     }, [searchOpen]);
+
+    const openSearch = (event: ReactMouseEvent<HTMLButtonElement>) => {
+        searchReturnFocus.current = event.currentTarget;
+        setSearchOpen(true);
+    };
 
     useEffect(() => {
         const handleOutsideClick = (event: MouseEvent) => {
@@ -310,6 +323,12 @@ export default function AppLayout({ children }: PropsWithChildren) {
 
     return (
         <div className="min-h-dvh bg-canvas text-ink" dir={app.direction}>
+            <a
+                href="#main-content"
+                className="sr-only focus:not-sr-only focus:fixed focus:start-4 focus:top-4 focus:z-[110] focus:rounded-lg focus:bg-brand focus:px-4 focus:py-3 focus:text-sm focus:font-semibold focus:text-white focus:shadow-lg"
+            >
+                {t('Skip to main content')}
+            </a>
             <RealtimeBridge />
             <Toaster />
             <aside className="fixed inset-y-0 start-0 z-20 hidden w-64 flex-col border-e border-line bg-white lg:flex">
@@ -416,7 +435,7 @@ export default function AppLayout({ children }: PropsWithChildren) {
                             <>
                                 <button
                                     type="button"
-                                    onClick={() => setSearchOpen(true)}
+                                    onClick={openSearch}
                                     className="hidden rounded-lg border border-line bg-white p-2 text-muted hover:text-brand lg:block"
                                     title={t('Search customers')}
                                     aria-label={t('Search customers')}
@@ -425,8 +444,9 @@ export default function AppLayout({ children }: PropsWithChildren) {
                                 </button>
                                 <button
                                     type="button"
-                                    onClick={() => setSearchOpen(true)}
+                                    onClick={openSearch}
                                     className="hidden items-center gap-2 text-sm text-muted hover:text-ink sm:flex"
+                                    aria-label={t('Search workspace')}
                                 >
                                     <Search size={16} />
                                     <span>{t('Search customers, services…')}</span>
@@ -529,7 +549,9 @@ export default function AppLayout({ children }: PropsWithChildren) {
                                                                 type="submit"
                                                                 role="menuitem"
                                                                 className={`w-full rounded-md px-2 py-2 text-xs font-semibold ${app.locale === locale ? 'bg-brand-soft text-brand' : 'text-muted hover:bg-sand hover:text-ink'}`}
-                                                                aria-current={app.locale === locale ? 'true' : undefined}
+                                                                aria-current={
+                                                                    app.locale === locale ? 'true' : undefined
+                                                                }
                                                             >
                                                                 {t(label)}
                                                             </button>
@@ -624,7 +646,13 @@ export default function AppLayout({ children }: PropsWithChildren) {
                         </div>
                     </div>
                 )}
-                <main className="mx-auto max-w-[1440px] px-5 py-8 pb-24 lg:px-8 lg:pb-8">{children}</main>
+                <main
+                    id="main-content"
+                    tabIndex={-1}
+                    className="mx-auto max-w-[1440px] px-5 py-8 pb-24 outline-none lg:px-8 lg:pb-8"
+                >
+                    {children}
+                </main>
             </div>
             <nav
                 className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-white/95 px-2 pb-[env(safe-area-inset-bottom)] shadow-[0_-6px_20px_rgba(14,31,29,0.08)] backdrop-blur lg:hidden"

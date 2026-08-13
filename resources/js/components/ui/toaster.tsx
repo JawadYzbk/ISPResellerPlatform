@@ -2,7 +2,7 @@ import { router, usePage } from '@inertiajs/react';
 import { CheckCircle2, CircleAlert } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 
-import { Toast, ToastDescription, ToastProvider, ToastTitle, ToastViewport } from '@/components/ui/toast';
+import { Toast, ToastClose, ToastDescription, ToastProvider, ToastTitle, ToastViewport } from '@/components/ui/toast';
 import { toast as notify, useToast } from '@/components/ui/use-toast';
 import { createTranslator } from '@/lib/i18n';
 import type { PageProps } from '@/types';
@@ -34,8 +34,7 @@ const inferredSuccessTitle = (message: string): string => {
 };
 
 if (typeof window !== 'undefined') {
-    const translateCurrent = (key: string) =>
-        createTranslator(document.documentElement.lang?.slice(0, 2) ?? 'en')(key);
+    const translateCurrent = (key: string) => createTranslator(document.documentElement.lang?.slice(0, 2) ?? 'en')(key);
 
     router.on('error', (event) => {
         const message = firstErrorMessage(event.detail.errors as Record<string, unknown>);
@@ -134,6 +133,7 @@ export function Toaster() {
                             <ToastTitle>{title}</ToastTitle>
                             <ToastDescription>{description}</ToastDescription>
                         </div>
+                        <ToastClose />
                     </Toast>
                 );
             })}
