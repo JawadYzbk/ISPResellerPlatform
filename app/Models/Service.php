@@ -103,6 +103,12 @@ class Service extends Model
         return $this->hasMany(InvoiceLine::class);
     }
 
+    /** @return HasMany<ServiceAddon, $this> */
+    public function serviceAddons(): HasMany
+    {
+        return $this->hasMany(ServiceAddon::class);
+    }
+
     /** @return HasMany<CurrentSession, $this> */
     public function currentSessions(): HasMany
     {

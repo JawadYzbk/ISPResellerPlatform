@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Web;
 
+use App\Actions\AttachServiceAddon;
+use App\Actions\CancelServiceAddon;
 use App\Actions\CancelServiceBillingCycleChange;
 use App\Actions\CancelServicePlanChange;
 use App\Actions\ChangeServicePlan;
@@ -17,13 +19,16 @@ use App\Actions\TransitionService;
 use App\Enums\ServiceStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\CreateServiceRequest;
+use App\Models\Addon;
 use App\Models\CurrentSession;
 use App\Models\Customer;
 use App\Models\InventoryUnit;
 use App\Models\Plan;
 use App\Models\Router;
 use App\Models\Service;
+use App\Models\ServiceAddon;
 use App\Models\User;
+use Carbon\CarbonImmutable;
 use DomainException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -37,7 +42,7 @@ final class ServiceController extends Controller
     public function show(Service $service, GetTechnicianServiceDiagnostics $diagnostics): Response
     {
         $this->authorize('view', $service);
-        $service->load(['customer', 'plan', 'router', 'assignedInventoryUnits.item']);
+        $service->load(['customer', 'plan', 'router', 'assignedInventoryUnits.item', 'serviceAddons.addon']);
         $diagnosticData = $diagnostics->handle($service);
 
         return Inertia::render('Services/Show', [
@@ -64,6 +69,18 @@ final class ServiceController extends Controller
                     'assigned_at' => $unit->assigned_at?->toIso8601String(),
                     'item' => $unit->item?->only(['sku', 'name']),
                 ])->values()->all(),
+                'addons' => $service->serviceAddons->map(fn (ServiceAddon $serviceAddon): array => [
+                    'public_id' => $serviceAddon->public_id,
+                    'name' => $serviceAddon->addon?->name,
+                    'description' => $serviceAddon->addon?->description,
+                    'amount_minor' => $serviceAddon->addon?->amount_minor,
+                    'currency' => $serviceAddon->addon?->currency,
+                    'billing_period_days' => $serviceAddon->addon?->billing_period_days,
+                    'quantity' => $serviceAddon->quantity,
+                    'starts_at' => $serviceAddon->starts_at->toDateString(),
+                    'ends_at' => $serviceAddon->ends_at?->toDateString(),
+                    'status' => $serviceAddon->status,
+                ])->values()->all(),
                 'pending_plan_change' => $this->pendingPlanChange($service),
                 'pending_billing_cycle' => $this->pendingBillingCycle($service),
             ],
@@ -83,7 +100,63 @@ final class ServiceController extends Controller
                 ->where('id', '<>', $service->plan_id)
                 ->orderBy('name')
                 ->get(['id', 'public_id', 'name', 'download_kbps', 'upload_kbps', 'duration_days', 'amount_minor', 'currency']),
+            'availableAddons' => Addon::query()
+                ->where('status', 'active')
+                ->orderBy('name')
+                ->get(['public_id', 'name', 'description', 'amount_minor', 'currency', 'billing_period_days'])
+                ->values(),
         ]);
+    }
+
+    public function attachAddon(Request $request, Service $service, AttachServiceAddon $attach): RedirectResponse
+    {
+        $this->authorize('changePlan', $service);
+        $validated = $request->validate([
+            'addon_id' => ['required', 'string', 'max:26'],
+            'quantity' => ['required', 'integer', 'min:1', 'max:1000'],
+            'starts_at' => ['nullable', 'date_format:Y-m-d'],
+            'ends_at' => ['nullable', 'date_format:Y-m-d', 'after_or_equal:starts_at'],
+        ]);
+        $user = $request->user();
+        abort_unless($user instanceof User, 401);
+        $addon = Addon::query()->where('public_id', $validated['addon_id'])->firstOrFail();
+
+        try {
+            $attach->handle(
+                $service,
+                $addon,
+                (int) $validated['quantity'],
+                CarbonImmutable::createFromFormat('!Y-m-d', (string) ($validated['starts_at'] ?? now()->toDateString())),
+                filled($validated['ends_at'] ?? null)
+                    ? CarbonImmutable::createFromFormat('!Y-m-d', (string) $validated['ends_at'])
+                    : null,
+                $user,
+            );
+        } catch (DomainException $exception) {
+            throw ValidationException::withMessages(['addon_id' => $exception->getMessage()]);
+        }
+
+        return redirect()->route('services.show', $service->public_id)
+            ->with('success_title', 'Add-on added')
+            ->with('success', 'Recurring add-on attached to the service.');
+    }
+
+    public function cancelAddon(Request $request, Service $service, ServiceAddon $serviceAddon, CancelServiceAddon $cancel): RedirectResponse
+    {
+        $this->authorize('changePlan', $service);
+        abort_unless((int) $serviceAddon->service_id === (int) $service->id, 404);
+        $user = $request->user();
+        abort_unless($user instanceof User, 401);
+
+        try {
+            $cancel->handle($serviceAddon, $user);
+        } catch (DomainException $exception) {
+            throw ValidationException::withMessages(['addon' => $exception->getMessage()]);
+        }
+
+        return redirect()->route('services.show', $service->public_id)
+            ->with('success_title', 'Add-on cancelled')
+            ->with('success', 'The recurring add-on will no longer renew.');
     }
 
     public function changePlan(Request $request, Service $service, ChangeServicePlan $change): RedirectResponse

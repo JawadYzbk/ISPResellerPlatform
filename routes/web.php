@@ -193,6 +193,8 @@ Route::middleware(['auth', 'tenant', '2fa'])->group(function (): void {
     Route::post('/services/{service:public_id}/disconnect-session', [ServiceController::class, 'disconnectSession'])->name('services.disconnect-session');
     Route::post('/services/{service:public_id}/equipment/{unit}/return', [ServiceController::class, 'returnEquipment'])->middleware('recent-auth')->name('services.equipment.return');
     Route::post('/services/{service:public_id}/resync', [ServiceController::class, 'resync'])->name('services.resync');
+    Route::post('/services/{service:public_id}/addons', [ServiceController::class, 'attachAddon'])->middleware('recent-auth')->name('services.addons.attach');
+    Route::delete('/services/{service:public_id}/addons/{serviceAddon:public_id}', [ServiceController::class, 'cancelAddon'])->middleware('recent-auth')->name('services.addons.cancel');
     Route::get('/services/{service:public_id}/plan-change-preview', [ServiceController::class, 'planChangePreview'])->name('services.plan-change-preview');
     Route::post('/services/{service:public_id}/change-plan', [ServiceController::class, 'changePlan'])->name('services.change-plan');
     Route::delete('/services/{service:public_id}/change-plan', [ServiceController::class, 'cancelPlan'])->name('services.change-plan.cancel');
