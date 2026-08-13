@@ -65,6 +65,16 @@ export default function Imports({ types, routers, batches }: Props) {
         router_public_id: '',
         dry_run: true,
     });
+    const fieldA11y = (id: string, error?: string) => ({
+        'aria-invalid': Boolean(error),
+        'aria-describedby': error ? `${id}-error` : undefined,
+    });
+    const fieldError = (id: string, error?: string) =>
+        error ? (
+            <p id={`${id}-error`} className="field-error" role="alert">
+                {t(error)}
+            </p>
+        ) : null;
     const selectedType = useMemo(() => types.find((item) => item.value === form.data.type), [form.data.type, types]);
     const isRouterDiscovery = form.data.type === 'router_subscribers';
     const result = flash.importResult;
@@ -102,7 +112,9 @@ export default function Imports({ types, routers, batches }: Props) {
                     <label>
                         <span className="field-label">{t('imports.type')}</span>
                         <ResponsiveSelect
+                            id="import-type"
                             className="field"
+                            {...fieldA11y('import-type', form.errors.type)}
                             value={form.data.type}
                             onChange={(event) => form.setData('type', event.target.value)}
                         >
@@ -112,14 +124,16 @@ export default function Imports({ types, routers, batches }: Props) {
                                 </option>
                             ))}
                         </ResponsiveSelect>
-                        {form.errors.type && <p className="field-error" role="alert">{t(form.errors.type)}</p>}
+                        {fieldError('import-type', form.errors.type)}
                     </label>
 
                     {isRouterDiscovery ? (
                         <label>
                             <span className="field-label">{t('Router')}</span>
                             <ResponsiveSelect
+                                id="import-router"
                                 className="field"
+                                {...fieldA11y('import-router', form.errors.router_public_id)}
                                 value={form.data.router_public_id}
                                 onChange={(event) => form.setData('router_public_id', event.target.value)}
                             >
@@ -130,21 +144,21 @@ export default function Imports({ types, routers, batches }: Props) {
                                     </option>
                                 ))}
                             </ResponsiveSelect>
-                            {form.errors.router_public_id && (
-                                <p className="field-error" role="alert">{t(form.errors.router_public_id)}</p>
-                            )}
+                            {fieldError('import-router', form.errors.router_public_id)}
                             <p className="mt-2 text-xs leading-5 text-muted">{t('imports.discovery_description')}</p>
                         </label>
                     ) : (
                         <label>
                             <span className="field-label">{t('imports.file')}</span>
                             <input
+                                id="import-file"
                                 className="field file:me-3 file:rounded-md file:border-0 file:bg-brand-soft file:px-3 file:py-1.5 file:font-semibold file:text-brand"
                                 type="file"
                                 accept=".csv,.txt,.xlsx"
+                                {...fieldA11y('import-file', form.errors.file)}
                                 onChange={(event) => form.setData('file', event.target.files?.[0] ?? null)}
                             />
-                            {form.errors.file && <p className="field-error" role="alert">{t(form.errors.file)}</p>}
+                            {fieldError('import-file', form.errors.file)}
                             <p className="mt-2 text-xs leading-5 text-muted">
                                 {t('imports.required_columns')}: {selectedType?.columns ?? t('imports.choose_type')}
                             </p>
@@ -153,8 +167,10 @@ export default function Imports({ types, routers, batches }: Props) {
 
                     <label className="flex items-start gap-3 rounded-xl border border-line bg-sand/40 p-4">
                         <input
+                            id="import-dry-run"
                             className="mt-1"
                             type="checkbox"
+                            {...fieldA11y('import-dry-run', form.errors.dry_run)}
                             checked={form.data.dry_run}
                             onChange={(event) => form.setData('dry_run', event.target.checked)}
                         />
@@ -165,6 +181,7 @@ export default function Imports({ types, routers, batches }: Props) {
                             </span>
                         </span>
                     </label>
+                    {fieldError('import-dry-run', form.errors.dry_run)}
 
                     <button
                         type="submit"
