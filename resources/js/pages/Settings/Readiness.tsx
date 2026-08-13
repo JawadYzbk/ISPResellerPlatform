@@ -136,16 +136,23 @@ export default function Readiness({ overall, checks, providerChecks = null }: Pr
                             <p className="eyebrow">External services</p>
                             <h2 className="mt-1 text-base font-semibold">Provider connectivity</h2>
                             <p className="mt-1 text-sm text-muted">
-                                Read-only probes use server-side credentials and never create a payment or send a message.
+                                Read-only probes use server-side credentials and never create a payment or send a
+                                message.
                             </p>
                         </div>
                         <button
                             type="button"
                             className="button-secondary inline-flex items-center gap-2"
                             disabled={providerForm.processing}
-                            onClick={() => providerForm.post('/settings/readiness/provider-check', { preserveScroll: true })}
+                            onClick={() =>
+                                providerForm.post('/settings/readiness/provider-check', { preserveScroll: true })
+                            }
                         >
-                            {providerForm.processing ? <LoaderCircle size={16} className="animate-spin" /> : <RefreshCw size={16} />}
+                            {providerForm.processing ? (
+                                <LoaderCircle size={16} className="animate-spin" />
+                            ) : (
+                                <RefreshCw size={16} />
+                            )}
                             {providerForm.processing ? 'Checking…' : 'Run provider checks'}
                         </button>
                     </div>
@@ -175,7 +182,9 @@ export default function Readiness({ overall, checks, providerChecks = null }: Pr
                             ))}
                         </div>
                     ) : (
-                        <p className="px-5 py-5 text-sm text-muted">Run the probe after loading your provider configuration.</p>
+                        <p className="px-5 py-5 text-sm text-muted">
+                            Run the probe after loading your provider configuration.
+                        </p>
                     )}
                 </section>
             </div>
