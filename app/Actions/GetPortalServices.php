@@ -34,6 +34,10 @@ final readonly class GetPortalServices implements Action
                     'upload_kbps' => $service->plan->upload_kbps,
                     'currency' => $service->plan->currency,
                 ],
+                'usage' => [
+                    'used_bytes' => $service->current_period_bytes,
+                    'quota_bytes' => (int) ($service->plan->metadata['quota_bytes'] ?? 0),
+                ],
                 'router' => $service->router === null ? null : [
                     'name' => $service->router->name,
                     'pop' => $service->router->pop?->name,

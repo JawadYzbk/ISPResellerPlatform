@@ -1,7 +1,5 @@
 import ResponsiveSelect from '@/components/ui/responsive-select';
 import { Head, Link } from '@inertiajs/react';
-import { Elements, PaymentElement, useElements, useStripe } from '@stripe/react-stripe-js';
-import { loadStripe } from '@stripe/stripe-js';
 import { AlertTriangle, Check, CreditCard, LogOut, RefreshCw, Send, UserRound, Wifi } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 
@@ -662,20 +660,52 @@ function StripeCheckout({
     onSubmitted: () => void;
     onError: (message: string) => void;
 }) {
-    const stripePromise = useMemo(() => loadStripe(publishableKey), [publishableKey]);
+    const [stripeUi, setStripeUi] = useState<typeof import('@stripe/react-stripe-js') | null>(null);
+    const [stripePromise, setStripePromise] = useState<ReturnType<typeof import('@stripe/stripe-js').loadStripe> | null>(
+        null,
+    );
+
+    useEffect(() => {
+        let active = true;
+        Promise.all([import('@stripe/react-stripe-js'), import('@stripe/stripe-js')]).then(([ui, stripe]) => {
+            if (!active) return;
+            setStripeUi(ui);
+            setStripePromise(stripe.loadStripe(publishableKey));
+        });
+
+        return () => {
+            active = false;
+        };
+    }, [publishableKey]);
+
+    if (!stripeUi || !stripePromise) {
+        return <p className="mt-5 text-sm text-muted" role="status">{t('portal.dashboard.opening_checkout')}</p>;
+    }
+
+    const { Elements } = stripeUi;
 
     return (
         <div className="mt-5 rounded-2xl border border-line p-4">
             <Elements stripe={stripePromise} options={{ clientSecret }}>
-                <StripePaymentForm t={t} onSubmitted={onSubmitted} onError={onError} />
+                <StripePaymentForm stripeUi={stripeUi} t={t} onSubmitted={onSubmitted} onError={onError} />
             </Elements>
         </div>
     );
 }
 
-function StripePaymentForm({ t, onSubmitted, onError }: { t: (key: string) => string; onSubmitted: () => void; onError: (message: string) => void }) {
-    const stripe = useStripe();
-    const elements = useElements();
+function StripePaymentForm({
+    stripeUi,
+    t,
+    onSubmitted,
+    onError,
+}: {
+    stripeUi: typeof import('@stripe/react-stripe-js');
+    t: (key: string) => string;
+    onSubmitted: () => void;
+    onError: (message: string) => void;
+}) {
+    const stripe = stripeUi.useStripe();
+    const elements = stripeUi.useElements();
     const [busy, setBusy] = useState(false);
 
     const submit = async (event: React.FormEvent) => {
@@ -694,6 +724,8 @@ function StripePaymentForm({ t, onSubmitted, onError }: { t: (key: string) => st
         }
         setBusy(false);
     };
+
+    const { PaymentElement } = stripeUi;
 
     return (
         <form onSubmit={submit} className="space-y-4">

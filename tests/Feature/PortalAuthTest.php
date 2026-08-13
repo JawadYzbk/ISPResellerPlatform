@@ -3,6 +3,8 @@
 use App\Actions\RequestPortalOtp;
 use App\Actions\VerifyPortalOtp;
 use App\Models\Customer;
+use App\Models\Plan;
+use App\Models\Service;
 use App\Models\Tenant;
 use App\Support\Tenancy;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -34,4 +36,20 @@ it('hashes the OTP and issues a separate portal session after verification', fun
 
     $this->withToken($session['token'])->postJson('/api/v1/portal/southline/logout')->assertNoContent();
     $this->withToken($session['token'])->getJson('/api/v1/portal/southline/me')->assertUnauthorized();
+});
+
+it('includes safe usage defaults in the portal service payload', function (): void {
+    $tenant = Tenant::create(['name' => 'Southline', 'slug' => 'southline', 'base_currency' => 'USD', 'collection_currency' => 'USD']);
+    app(Tenancy::class)->set($tenant);
+    $customer = Customer::factory()->create(['phone' => '+96170456789']);
+    $plan = Plan::factory()->create(['metadata' => ['quota_bytes' => 50_000_000_000]]);
+    Service::factory()->create(['customer_id' => $customer->id, 'plan_id' => $plan->id, 'current_period_bytes' => 125_000]);
+    $otp = app(RequestPortalOtp::class)->handle($tenant, $customer->phone);
+    $session = app(VerifyPortalOtp::class)->handle($tenant, $otp['challenge']->public_id, $otp['code']);
+
+    $this->withToken($session['token'])
+        ->getJson('/api/v1/portal/southline/me')
+        ->assertOk()
+        ->assertJsonPath('services.0.usage.used_bytes', 125_000)
+        ->assertJsonPath('services.0.usage.quota_bytes', 50_000_000_000);
 });
