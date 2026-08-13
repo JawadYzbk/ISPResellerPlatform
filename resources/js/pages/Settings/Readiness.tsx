@@ -119,6 +119,7 @@ function formatBackupDate(value: string | null): string {
 export default function Readiness({ overall, checks, providerChecks = null, backupHealth }: Props) {
     const summary = statusCopy[overall];
     const providerForm = useForm({});
+    const backupForm = useForm({});
 
     return (
         <AppLayout>
@@ -193,6 +194,25 @@ export default function Readiness({ overall, checks, providerChecks = null, back
                         <span className={`text-xs font-semibold ${statusCopy[backupHealth.status].className}`}>
                             {backupHealth.status}
                         </span>
+                    </div>
+                    <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line bg-sand/30 px-5 py-4">
+                        <p className="max-w-2xl text-sm text-muted">
+                            Create a fresh encrypted archive after configuration changes. Restore operations stay
+                            server-controlled and follow the documented isolated restore runbook.
+                        </p>
+                        <button
+                            type="button"
+                            className="button-secondary inline-flex items-center gap-2"
+                            disabled={backupForm.processing}
+                            onClick={() => backupForm.post('/settings/readiness/backup', { preserveScroll: true })}
+                        >
+                            {backupForm.processing ? (
+                                <LoaderCircle size={16} className="animate-spin" />
+                            ) : (
+                                <Archive size={16} />
+                            )}
+                            {backupForm.processing ? 'Creating backup…' : 'Create backup now'}
+                        </button>
                     </div>
                     <div className="grid gap-3 border-b border-line px-5 py-4 text-sm sm:grid-cols-3">
                         <div>
