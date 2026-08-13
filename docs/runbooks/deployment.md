@@ -48,6 +48,8 @@ For collector Whish Pay collection, set `WHISH_ENABLED=true`, `WHISH_ENVIRONMENT
 
 The shared `bootstrap/cache` volume makes the cache commands visible to all PHP services. Do not expose PostgreSQL, Redis, or MinIO directly to the public internet. Put TLS termination and the public DNS name in front of the `web` service, and set `APP_URL`, `REVERB_HOST`, and `REVERB_ALLOWED_ORIGINS` to that public origin.
 
+PostgreSQL must use `UTF8` server encoding for Arabic and French customer-facing templates. Verify with `SHOW server_encoding;` before a pilot. A database created with `WIN1252` cannot be converted in place safely; take a backup, create a new database from `template0` with `ENCODING 'UTF8'`, restore or migrate into it, and verify the templates before switching the application. The notification-template screen stays usable on a non-UTF8 local database by provisioning ASCII templates and displaying an explicit warning, but translated text is intentionally blocked until the datastore is corrected.
+
 ## Application release
 
 Run from the release directory with the intended PHP, Composer, Node, and npm versions:
