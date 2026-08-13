@@ -1,7 +1,7 @@
 import CurrencyCombobox, { type CurrencyOption } from '@/components/ui/currency-combobox';
 import ResponsiveSelect from '@/components/ui/responsive-select';
 import { Head, Link, router, useForm } from '@inertiajs/react';
-import { Archive, ChevronLeft, ChevronRight, Edit3, Plus, Search, Tags } from 'lucide-react';
+import { Archive, ChevronLeft, ChevronRight, Edit3, Gauge, Plus, Search, Tags } from 'lucide-react';
 import { useState } from 'react';
 
 import StatusBadge from '@/components/StatusBadge';
@@ -44,22 +44,39 @@ type Promotion = {
     redemptions_count: number;
     is_active: boolean;
 };
+type UsageRate = {
+    public_id: string;
+    plan_id: string;
+    plan_name: string;
+    name: string;
+    metric: 'total_octets';
+    included_bytes: number;
+    unit_bytes: number;
+    amount_minor: number;
+    currency: string;
+    rounding: 'ceil' | 'floor' | 'half_up';
+    effective_from: string;
+    effective_to: string | null;
+    status: 'active' | 'inactive';
+};
 type AvailablePlan = { public_id: string; name: string };
 
 type Props = PageProps & {
     plans: Paginator<Plan>;
     filters: { status?: string; search?: string };
     addons: Addon[];
+    usageRates: UsageRate[];
     promotions: Promotion[];
     availablePlans: AvailablePlan[];
     currencies: CurrencyOption[];
 };
 
-export default function PlansIndex({ plans, filters, addons, promotions, availablePlans, currencies }: Props) {
+export default function PlansIndex({ plans, filters, addons, usageRates, promotions, availablePlans, currencies }: Props) {
     const [search, setSearch] = useState(filters.search ?? '');
     const [status, setStatus] = useState(filters.status ?? '');
     const [selectedPromoPlans, setSelectedPromoPlans] = useState<string[]>([]);
     const [editingAddonId, setEditingAddonId] = useState<string | null>(null);
+    const [editingUsageRateId, setEditingUsageRateId] = useState<string | null>(null);
     const [editingPromotionId, setEditingPromotionId] = useState<string | null>(null);
     const addonForm = useForm({
         name: '',
@@ -79,6 +96,18 @@ export default function PlansIndex({ plans, filters, addons, promotions, availab
         ends_at: '',
         max_redemptions: '',
         is_active: true,
+    });
+    const usageRateForm = useForm({
+        plan_public_id: availablePlans[0]?.public_id ?? '',
+        name: 'Data overage',
+        included_gb: '0',
+        unit_gb: '1',
+        amount: '',
+        currency: 'USD',
+        rounding: 'ceil',
+        effective_from: new Date().toISOString().slice(0, 10),
+        effective_to: '',
+        status: 'active',
     });
 
     const applyFilters = (event: React.FormEvent) => {
@@ -137,6 +166,27 @@ export default function PlansIndex({ plans, filters, addons, promotions, availab
         }
     };
 
+    const submitUsageRate = (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        const amountMinor = parseMoneyToMinor(usageRateForm.data.amount, usageRateForm.data.currency);
+        if (amountMinor === null) {
+            usageRateForm.setError('amount', 'Enter a valid non-negative amount.');
+            return;
+        }
+        usageRateForm.transform((data) => ({ ...data, amount_minor: amountMinor }));
+        const options = {
+            onSuccess: () => {
+                usageRateForm.reset();
+                setEditingUsageRateId(null);
+            },
+        };
+        if (editingUsageRateId) {
+            usageRateForm.put(`/plans/usage-rates/${editingUsageRateId}`, options);
+        } else {
+            usageRateForm.post('/plans/usage-rates', options);
+        }
+    };
+
     const editAddon = (addon: Addon) => {
         setEditingAddonId(addon.public_id);
         addonForm.setData({
@@ -147,6 +197,22 @@ export default function PlansIndex({ plans, filters, addons, promotions, availab
             currency: addon.currency,
             billing_period_days: addon.billing_period_days?.toString() ?? '',
             status: addon.status,
+        });
+    };
+
+    const editUsageRate = (rate: UsageRate) => {
+        setEditingUsageRateId(rate.public_id);
+        usageRateForm.setData({
+            plan_public_id: rate.plan_id,
+            name: rate.name,
+            included_gb: (rate.included_bytes / 1_000_000_000).toString(),
+            unit_gb: (rate.unit_bytes / 1_000_000_000).toString(),
+            amount: (rate.amount_minor / 10 ** currencyFractionDigits(rate.currency)).toString(),
+            currency: rate.currency,
+            rounding: rate.rounding,
+            effective_from: rate.effective_from,
+            effective_to: rate.effective_to ?? '',
+            status: rate.status,
         });
     };
 
@@ -520,6 +586,185 @@ export default function PlansIndex({ plans, filters, addons, promotions, availab
                     </div>
                 </section>
             </div>
+
+            <section className="card mt-6 p-6">
+                <div className="flex items-start justify-between gap-4">
+                    <div>
+                        <h2 className="section-title text-balance">Usage-based billing</h2>
+                        <p className="mt-1 text-sm text-muted text-pretty">
+                            Charge data overage on renewal after each plan's included allowance. Rates are effective-dated
+                            and usage is copied into the invoice snapshot.
+                        </p>
+                    </div>
+                    <Gauge size={18} className="text-brand" />
+                </div>
+                <form onSubmit={submitUsageRate} className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                    <label>
+                        <span className="field-label">Plan</span>
+                        <ResponsiveSelect
+                            className="field"
+                            value={usageRateForm.data.plan_public_id}
+                            onChange={(event) => usageRateForm.setData('plan_public_id', event.target.value)}
+                        >
+                            {availablePlans.map((plan) => (
+                                <option key={plan.public_id} value={plan.public_id}>
+                                    {plan.name}
+                                </option>
+                            ))}
+                        </ResponsiveSelect>
+                        {usageRateForm.errors.plan_public_id && (
+                            <p className="field-error">{usageRateForm.errors.plan_public_id}</p>
+                        )}
+                    </label>
+                    <label>
+                        <span className="field-label">Rate name</span>
+                        <input
+                            className="field"
+                            value={usageRateForm.data.name}
+                            onChange={(event) => usageRateForm.setData('name', event.target.value)}
+                            placeholder="Data overage"
+                        />
+                        {usageRateForm.errors.name && <p className="field-error">{usageRateForm.errors.name}</p>}
+                    </label>
+                    <label>
+                        <span className="field-label">Included GB</span>
+                        <input
+                            className="field"
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            value={usageRateForm.data.included_gb}
+                            onChange={(event) => usageRateForm.setData('included_gb', event.target.value)}
+                        />
+                        {usageRateForm.errors.included_gb && (
+                            <p className="field-error">{usageRateForm.errors.included_gb}</p>
+                        )}
+                    </label>
+                    <label>
+                        <span className="field-label">Price per GB</span>
+                        <input
+                            className="field"
+                            inputMode="decimal"
+                            value={usageRateForm.data.amount}
+                            onChange={(event) => usageRateForm.setData('amount', event.target.value)}
+                            placeholder="1.00"
+                        />
+                        {usageRateForm.errors.amount && <p className="field-error">{usageRateForm.errors.amount}</p>}
+                    </label>
+                    <label>
+                        <span className="field-label">Billing unit (GB)</span>
+                        <input
+                            className="field"
+                            type="number"
+                            min="0.01"
+                            step="0.01"
+                            value={usageRateForm.data.unit_gb}
+                            onChange={(event) => usageRateForm.setData('unit_gb', event.target.value)}
+                        />
+                        {usageRateForm.errors.unit_gb && <p className="field-error">{usageRateForm.errors.unit_gb}</p>}
+                    </label>
+                    <label>
+                        <span className="field-label">Currency</span>
+                        <CurrencyCombobox
+                            id="usage_rate_currency"
+                            className="field uppercase"
+                            value={usageRateForm.data.currency}
+                            currencies={currencies}
+                            onChange={(value) => usageRateForm.setData('currency', value)}
+                        />
+                        {usageRateForm.errors.currency && <p className="field-error">{usageRateForm.errors.currency}</p>}
+                    </label>
+                    <label>
+                        <span className="field-label">Rounding</span>
+                        <ResponsiveSelect
+                            className="field"
+                            value={usageRateForm.data.rounding}
+                            onChange={(event) => usageRateForm.setData('rounding', event.target.value)}
+                        >
+                            <option value="ceil">Round up</option>
+                            <option value="half_up">Half up</option>
+                            <option value="floor">Round down</option>
+                        </ResponsiveSelect>
+                    </label>
+                    <label>
+                        <span className="field-label">Effective from</span>
+                        <input
+                            className="field"
+                            type="date"
+                            value={usageRateForm.data.effective_from}
+                            onChange={(event) => usageRateForm.setData('effective_from', event.target.value)}
+                        />
+                        {usageRateForm.errors.effective_from && (
+                            <p className="field-error">{usageRateForm.errors.effective_from}</p>
+                        )}
+                    </label>
+                    <label>
+                        <span className="field-label">Effective to (optional)</span>
+                        <input
+                            className="field"
+                            type="date"
+                            value={usageRateForm.data.effective_to}
+                            onChange={(event) => usageRateForm.setData('effective_to', event.target.value)}
+                        />
+                        {usageRateForm.errors.effective_to && (
+                            <p className="field-error">{usageRateForm.errors.effective_to}</p>
+                        )}
+                    </label>
+                    <label>
+                        <span className="field-label">Status</span>
+                        <ResponsiveSelect
+                            className="field"
+                            value={usageRateForm.data.status}
+                            onChange={(event) => usageRateForm.setData('status', event.target.value)}
+                        >
+                            <option value="active">Active</option>
+                            <option value="inactive">Archived</option>
+                        </ResponsiveSelect>
+                    </label>
+                    <button type="submit" className="button-secondary self-end" disabled={usageRateForm.processing}>
+                        <Plus size={15} /> {editingUsageRateId ? 'Save usage rate' : 'Add usage rate'}
+                    </button>
+                </form>
+                <div className="mt-5 space-y-2 border-t border-line pt-5">
+                    {usageRates.map((rate) => (
+                        <div
+                            key={rate.public_id}
+                            className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-line px-3 py-2 text-sm"
+                        >
+                            <div>
+                                <p className="font-semibold">{rate.plan_name} · {rate.name}</p>
+                                <p className="text-xs text-muted">
+                                    {rate.included_bytes / 1_000_000_000} GB included · {formatMoney(rate.amount_minor, rate.currency)} / {rate.unit_bytes / 1_000_000_000} GB · {rate.rounding} · from {formatDate(rate.effective_from)} · {rate.status}
+                                </p>
+                            </div>
+                            <div className="flex items-center gap-3">
+                                <button
+                                    type="button"
+                                    className="button-quiet"
+                                    onClick={() => editUsageRate(rate)}
+                                    aria-label={`Edit ${rate.name}`}
+                                >
+                                    <Edit3 size={15} /> Edit
+                                </button>
+                                {rate.status === 'active' && (
+                                    <ConfirmDialog
+                                        title={`Archive ${rate.name}?`}
+                                        description="The rate will no longer be used for new renewal invoices. Existing invoice snapshots remain unchanged."
+                                        confirmLabel="Archive usage rate"
+                                        destructive
+                                        onConfirm={() => router.delete(`/plans/usage-rates/${rate.public_id}`)}
+                                    >
+                                        <button type="button" className="button-quiet text-danger" aria-label={`Archive ${rate.name}`}>
+                                            <Archive size={15} />
+                                        </button>
+                                    </ConfirmDialog>
+                                )}
+                            </div>
+                        </div>
+                    ))}
+                    {usageRates.length === 0 && <p className="text-sm text-muted">No usage rates configured.</p>}
+                </div>
+            </section>
 
             <div className="card mt-6 overflow-hidden">
                 <div className="flex items-center justify-between border-b border-line px-5 py-4">
