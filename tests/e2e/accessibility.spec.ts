@@ -14,7 +14,21 @@ test('keeps representative workspace controls named for assistive technology', a
         page.getByRole('button', { name: 'Enter workspace' }).click(),
     ]);
 
-    for (const path of ['/customers', '/customers/create', '/settings/general', '/operations/inventory', '/field']) {
+    for (const path of [
+        '/customers',
+        '/customers/create',
+        '/settings/general',
+        '/settings/notification-templates',
+        '/operations/inventory',
+        '/operations/optical',
+        '/operations/work-orders/calendar',
+        '/billing/invoices',
+        '/billing/payments',
+        '/reports/operations',
+        '/partners/commercial',
+        '/notifications',
+        '/field',
+    ]) {
         await page.goto(path);
 
         const unnamed = await page
