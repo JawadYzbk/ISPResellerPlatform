@@ -1,11 +1,13 @@
 import ResponsiveSelect from '@/components/ui/responsive-select';
 import CustomerLocationFields from '@/components/CustomerLocationFields';
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import { Building2, MapPinned, Plus } from 'lucide-react';
 
 import type { Status } from '@/components/StatusBadge';
 import StatusBadge from '@/components/StatusBadge';
 import AppLayout from '@/layouts/AppLayout';
+import { createTranslator } from '@/lib/i18n';
+import type { PageProps } from '@/types';
 
 type Building = {
     public_id: string;
@@ -52,6 +54,8 @@ const emptyForm: BuildingForm = {
 };
 
 export default function TopologyBuildingsPage({ buildings, canManage, statuses }: Props) {
+    const { props } = usePage<PageProps>();
+    const t = createTranslator(props.app.locale);
     const form = useForm<BuildingForm>(emptyForm);
 
     const submit = (event: React.FormEvent<HTMLFormElement>) => {
@@ -61,15 +65,12 @@ export default function TopologyBuildingsPage({ buildings, canManage, statuses }
 
     return (
         <AppLayout>
-            <Head title="Buildings and boxes" />
+            <Head title={t('topology_buildings.title')} />
 
             <div>
-                <p className="eyebrow">Network topology</p>
-                <h1 className="page-title">Buildings and distribution boxes</h1>
-                <p className="page-subtitle text-pretty">
-                    Map the physical network from subscriber buildings to ports, so installation and support work has a
-                    reliable place to start.
-                </p>
+                <p className="eyebrow">{t('topology_buildings.eyebrow')}</p>
+                <h1 className="page-title">{t('topology_buildings.title')}</h1>
+                <p className="page-subtitle text-pretty">{t('topology_buildings.subtitle')}</p>
             </div>
 
             {canManage && (
@@ -77,13 +78,13 @@ export default function TopologyBuildingsPage({ buildings, canManage, statuses }
                     <div className="flex items-center gap-2">
                         <Plus size={17} className="text-brand" />
                         <div>
-                            <h2 className="section-title">Add a building or site</h2>
-                            <p className="mt-1 text-sm text-muted">Use a stable code that field teams can recognize.</p>
+                            <h2 className="section-title">{t('topology_buildings.add')}</h2>
+                            <p className="mt-1 text-sm text-muted">{t('topology_buildings.add_description')}</p>
                         </div>
                     </div>
                     <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
                         <label>
-                            <span className="field-label">Name</span>
+                            <span className="field-label">{t('Name')}</span>
                             <input
                                 className="field"
                                 value={form.data.name}
@@ -93,7 +94,7 @@ export default function TopologyBuildingsPage({ buildings, canManage, statuses }
                             {form.errors.name && <p className="field-error">{form.errors.name}</p>}
                         </label>
                         <label>
-                            <span className="field-label">Code</span>
+                            <span className="field-label">{t('Code')}</span>
                             <input
                                 className="field uppercase"
                                 value={form.data.code}
@@ -103,7 +104,7 @@ export default function TopologyBuildingsPage({ buildings, canManage, statuses }
                             {form.errors.code && <p className="field-error">{form.errors.code}</p>}
                         </label>
                         <label className="md:col-span-2">
-                            <span className="field-label">Address</span>
+                            <span className="field-label">{t('Address')}</span>
                             <input
                                 className="field"
                                 value={form.data.address}
@@ -113,7 +114,7 @@ export default function TopologyBuildingsPage({ buildings, canManage, statuses }
                             {form.errors.address && <p className="field-error">{form.errors.address}</p>}
                         </label>
                         <label>
-                            <span className="field-label">Floors</span>
+                            <span className="field-label">{t('Floors')}</span>
                             <input
                                 type="number"
                                 min="0"
@@ -125,7 +126,7 @@ export default function TopologyBuildingsPage({ buildings, canManage, statuses }
                             {form.errors.floors && <p className="field-error">{form.errors.floors}</p>}
                         </label>
                         <label>
-                            <span className="field-label">Units</span>
+                            <span className="field-label">{t('Units')}</span>
                             <input
                                 type="number"
                                 min="0"
@@ -137,7 +138,7 @@ export default function TopologyBuildingsPage({ buildings, canManage, statuses }
                             {form.errors.unit_count && <p className="field-error">{form.errors.unit_count}</p>}
                         </label>
                         <label>
-                            <span className="field-label">Status</span>
+                            <span className="field-label">{t('Status')}</span>
                             <ResponsiveSelect
                                 className="field"
                                 value={form.data.status}
@@ -145,7 +146,7 @@ export default function TopologyBuildingsPage({ buildings, canManage, statuses }
                             >
                                 {statuses.map((status) => (
                                     <option key={status} value={status}>
-                                        {status.replace('_', ' ')}
+                                        {t(status.replace('_', ' '))}
                                     </option>
                                 ))}
                             </ResponsiveSelect>
@@ -157,11 +158,11 @@ export default function TopologyBuildingsPage({ buildings, canManage, statuses }
                         longitude={form.data.longitude}
                         onLatitudeChange={(value) => form.setData('latitude', value)}
                         onLongitudeChange={(value) => form.setData('longitude', value)}
-                        title="Building location"
-                        description="Optional GPS coordinates for dispatch, surveys, and map-based planning."
+                        title={t('topology_buildings.location')}
+                        description={t('topology_buildings.location_description')}
                     />
                     <label>
-                        <span className="field-label">Notes</span>
+                        <span className="field-label">{t('Notes')}</span>
                         <textarea
                             className="field min-h-20"
                             value={form.data.notes}
@@ -172,7 +173,7 @@ export default function TopologyBuildingsPage({ buildings, canManage, statuses }
                     </label>
                     <div className="flex justify-end">
                         <button type="submit" className="button-primary" disabled={form.processing}>
-                            <Plus size={16} /> Add building
+                            <Plus size={16} /> {t('topology_buildings.add')}
                         </button>
                     </div>
                 </form>
@@ -182,9 +183,11 @@ export default function TopologyBuildingsPage({ buildings, canManage, statuses }
                 <div className="flex items-center justify-between gap-4 border-b border-line px-5 py-4">
                     <div className="flex items-center gap-2">
                         <Building2 size={17} className="text-brand" />
-                        <h2 className="section-title">Sites</h2>
+                        <h2 className="section-title">{t('Sites')}</h2>
                     </div>
-                    <p className="text-sm tabular-nums text-muted">{buildings.length.toLocaleString()} total</p>
+                    <p className="text-sm tabular-nums text-muted">
+                        {buildings.length.toLocaleString()} {t('total')}
+                    </p>
                 </div>
                 <div className="grid gap-4 p-5 md:grid-cols-2 xl:grid-cols-3">
                     {buildings.map((building) => (
@@ -202,17 +205,17 @@ export default function TopologyBuildingsPage({ buildings, canManage, statuses }
                             </div>
                             <p className="mt-4 flex items-start gap-2 text-sm text-muted">
                                 <MapPinned size={16} className="mt-0.5 shrink-0 text-brand" />
-                                {building.address ?? 'No address recorded'}
+                                {building.address ?? t('topology_buildings.no_address')}
                             </p>
                             <div className="mt-5 grid grid-cols-2 gap-3 border-t border-line pt-4 text-sm">
                                 <div>
-                                    <p className="text-xs text-muted">Boxes</p>
+                                    <p className="text-xs text-muted">{t('Boxes')}</p>
                                     <p className="mt-1 font-semibold tabular-nums">
                                         {building.distribution_boxes_count}
                                     </p>
                                 </div>
                                 <div>
-                                    <p className="text-xs text-muted">Active services</p>
+                                    <p className="text-xs text-muted">{t('topology_buildings.active_services')}</p>
                                     <p className="mt-1 font-semibold tabular-nums">{building.active_services_count}</p>
                                 </div>
                             </div>
@@ -221,9 +224,9 @@ export default function TopologyBuildingsPage({ buildings, canManage, statuses }
                     {buildings.length === 0 && (
                         <div className="col-span-full px-5 py-14 text-center">
                             <Building2 className="mx-auto text-muted" size={30} />
-                            <p className="mt-3 font-semibold">No buildings yet</p>
+                            <p className="mt-3 font-semibold">{t('topology_buildings.no_buildings')}</p>
                             <p className="mt-1 text-sm text-muted">
-                                Add the first site to begin mapping subscriber access.
+                                {t('topology_buildings.no_buildings_description')}
                             </p>
                         </div>
                     )}
