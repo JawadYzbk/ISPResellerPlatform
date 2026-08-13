@@ -12,7 +12,9 @@ use App\Models\User;
 use App\Support\Tenancy;
 use Database\Seeders\CapabilitySeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 
 uses(RefreshDatabase::class);
 
@@ -121,4 +123,48 @@ it('does not approve a collector expense above available custody', function (): 
         ->toThrow(DomainException::class, 'exceeds this collector\'s available cash custody')
         ->and(OperationalExpense::query()->findOrFail($expense->id)->status)->toBe('pending')
         ->and(JournalLine::query()->count())->toBe(0);
+});
+
+it('provides a tenant-scoped expense workflow with secure receipt uploads', function (): void {
+    [$tenant, $manager, , $category] = operationalExpenseWorkspace();
+    Storage::fake('local');
+
+    $this->actingAs($manager)
+        ->post(route('operations.expenses.store'), [
+            'expense_category_id' => $category->id,
+            'payment_source' => 'cash',
+            'amount' => 75000,
+            'currency' => 'LBP',
+            'description' => 'Generator maintenance',
+            'attachment' => UploadedFile::fake()->image('receipt.jpg'),
+        ])
+        ->assertRedirect()
+        ->assertSessionHasNoErrors()
+        ->assertSessionHas('success', 'Expense submitted for approval.');
+
+    app(Tenancy::class)->set($tenant);
+    $expense = OperationalExpense::query()->with('attachments')->firstOrFail();
+    expect($expense->attachments)->toHaveCount(1);
+
+    $this->actingAs($manager)
+        ->get(route('operations.expenses'))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->component('Operations/Expenses')
+            ->where('expenses.0.description', 'Generator maintenance')
+            ->where('expenses.0.status', 'pending')
+            ->where('expenses.0.attachments.0.name', 'receipt.jpg'));
+
+    $manager->forceFill(['last_authenticated_at' => now()])->save();
+    $this->actingAs($manager)
+        ->patch(route('operations.expenses.review', $expense), ['decision' => 'posted'])
+        ->assertRedirect()
+        ->assertSessionHasNoErrors()
+        ->assertSessionHas('success', 'Expense approved and posted.');
+
+    app(Tenancy::class)->set($tenant);
+    $expense->refresh();
+    $this->actingAs($manager)
+        ->get(route('operations.media.download', $expense->attachments->firstOrFail()->public_id))
+        ->assertOk();
 });

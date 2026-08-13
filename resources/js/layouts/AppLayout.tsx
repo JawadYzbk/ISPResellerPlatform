@@ -2,6 +2,7 @@ import { Form, Link, usePage } from '@inertiajs/react';
 import {
     Activity,
     BarChart3,
+    Banknote,
     Bell,
     Building2,
     CalendarDays,
@@ -168,6 +169,7 @@ export default function AppLayout({ children }: PropsWithChildren) {
             icon: HandCoins,
             permission: 'reports.operations',
         },
+        { label: 'Expenses', href: '/operations/expenses', icon: Banknote, permission: 'expenses.view' },
         { label: 'FX rates', href: '/billing/exchange-rates', icon: Scale, permission: 'settings.manage' },
         { label: 'Tickets', href: '/operations/tickets', icon: MessageSquare, permission: 'tickets.view' },
         {

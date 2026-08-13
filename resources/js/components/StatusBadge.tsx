@@ -24,6 +24,7 @@ export type Status =
     | 'void'
     | 'posted'
     | 'reversed'
+    | 'rejected'
     | 'imported'
     | 'reserved'
     | 'invalid'
@@ -73,6 +74,7 @@ const styles: Record<Status, string> = {
     void: 'bg-slate-100 text-slate-500 ring-slate-500/20',
     posted: 'bg-emerald-50 text-emerald-700 ring-emerald-600/20',
     reversed: 'bg-rose-50 text-rose-700 ring-rose-600/20',
+    rejected: 'bg-rose-50 text-rose-700 ring-rose-600/20',
     imported: 'bg-slate-100 text-slate-600 ring-slate-500/20',
     reserved: 'bg-blue-50 text-blue-700 ring-blue-600/20',
     expired: 'bg-amber-50 text-amber-700 ring-amber-600/20',
