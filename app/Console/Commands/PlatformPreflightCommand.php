@@ -24,7 +24,7 @@ final class PlatformPreflightCommand extends Command
         'Redis credentials' => 'Set non-placeholder Redis credentials when Redis is used for cache, queue, or sessions.',
         'Asynchronous queue connection' => 'Use the database or Redis queue and run a supervised worker.',
         'Persistent cache store' => 'Use a persistent database or Redis cache store.',
-        'Sentry configuration' => 'Set SENTRY_LARAVEL_DSN and keep SENTRY_SEND_DEFAULT_PII=false.',
+        'Sentry configuration' => 'Set SENTRY_LARAVEL_DSN or SENTRY_DSN and keep SENTRY_SEND_DEFAULT_PII=false.',
         'Encrypted off-site backups' => 'Configure an encrypted non-local backup disk, password, and operations recipient.',
         'Private object storage' => 'Configure the private S3-compatible media disk and credentials.',
         'Monitoring alert routing' => 'Enable monitoring and configure its signed HTTP alert webhook.',
