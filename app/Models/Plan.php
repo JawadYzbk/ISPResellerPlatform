@@ -53,6 +53,12 @@ class Plan extends Model
         return $this->hasMany(PlanPrice::class);
     }
 
+    /** @return HasMany<PlanUsageRate, $this> */
+    public function usageRates(): HasMany
+    {
+        return $this->hasMany(PlanUsageRate::class);
+    }
+
     public function priceAt(?CarbonInterface $at = null): ?PlanPrice
     {
         $at ??= now();

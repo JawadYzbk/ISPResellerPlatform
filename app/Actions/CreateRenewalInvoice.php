@@ -8,7 +8,9 @@ use App\Enums\InvoiceStatus;
 use App\Enums\ServiceStatus;
 use App\Models\Customer;
 use App\Models\Invoice;
+use App\Models\PlanUsageRate;
 use App\Models\Service;
+use App\Models\UsageDaily;
 use App\Models\User;
 use Carbon\CarbonImmutable;
 use DomainException;
@@ -80,6 +82,7 @@ final readonly class CreateRenewalInvoice implements Action
                 priceContext: $cycleQuote === null ? [] : ['billing_cycle_quote' => $cycleQuote->toArray()],
             );
             $this->appendRecurringAddons($invoice, $service, $periods, $cycleQuote);
+            $this->appendUsageCharge($invoice, $service, $periods, $cycleQuote);
             $invoice->forceFill(['metadata' => array_filter([
                 'renewal_periods' => $periods,
                 'billing_cycle_quote' => $cycleQuote?->toArray(),
@@ -155,5 +158,83 @@ final readonly class CreateRenewalInvoice implements Action
         }
 
         return $this->previewCycle->handle($service, $anchorDay);
+    }
+
+    private function appendUsageCharge(Invoice $invoice, Service $service, int $periods, ?BillingCycleQuote $cycleQuote): void
+    {
+        $service->loadMissing('tenant');
+        $timezone = $service->tenant?->settingsData()->timezone ?? 'UTC';
+        $now = CarbonImmutable::now($timezone);
+        $expiresAt = $service->expires_at?->setTimezone($timezone);
+        $periodEnd = $expiresAt !== null && $expiresAt->lessThan($now) ? $expiresAt : $now;
+        $periodDays = max(1, (int) ($cycleQuote?->cycleDays ?? (($service->plan?->duration_days ?? 30) * $periods)));
+        $periodStart = $periodEnd->subDays($periodDays - 1)->startOfDay();
+        $rate = PlanUsageRate::query()
+            ->where('plan_id', $service->plan_id)
+            ->where('status', 'active')
+            ->whereDate('effective_from', '<=', $periodEnd->toDateString())
+            ->where(fn ($query) => $query->whereNull('effective_to')->orWhereDate('effective_to', '>', $periodEnd->toDateString()))
+            ->latest('effective_from')
+            ->first();
+        if (! $rate instanceof PlanUsageRate) {
+            return;
+        }
+        if ($rate->metric !== 'total_octets') {
+            throw new DomainException("Usage metric {$rate->metric} is not supported for renewal rating.");
+        }
+        if (strtoupper((string) $rate->currency) !== strtoupper((string) $invoice->currency)) {
+            throw new DomainException("Usage rate {$rate->name} uses {$rate->currency}; the renewal invoice uses {$invoice->currency}.");
+        }
+
+        $usedBytes = (int) UsageDaily::query()
+            ->where('service_id', $service->id)
+            ->whereDate('usage_date', '>=', $periodStart->toDateString())
+            ->whereDate('usage_date', '<=', $periodEnd->toDateString())
+            ->sum('total_octets');
+        $overageBytes = max(0, $usedBytes - $rate->included_bytes);
+        $units = $this->ratedUnits($overageBytes, $rate->unit_bytes, $rate->rounding);
+        if ($units < 1 || $rate->amount_minor < 1) {
+            return;
+        }
+        $lineTotal = $units * $rate->amount_minor;
+        $invoice->lines()->create([
+            'service_id' => $service->id,
+            'description' => $rate->name.' · usage charge',
+            'quantity' => $units,
+            'unit_amount' => $rate->amount_minor,
+            'total_amount' => $lineTotal,
+            'currency' => $rate->currency,
+            'price_snapshot' => [
+                'kind' => 'usage_overage',
+                'metric' => $rate->metric,
+                'rate_id' => $rate->id,
+                'rate_public_id' => $rate->public_id,
+                'period_start' => $periodStart->toDateString(),
+                'period_end' => $periodEnd->toDateString(),
+                'used_bytes' => $usedBytes,
+                'included_bytes' => $rate->included_bytes,
+                'overage_bytes' => $overageBytes,
+                'unit_bytes' => $rate->unit_bytes,
+                'rounding' => $rate->rounding,
+                'units' => $units,
+            ],
+        ]);
+        $invoice->forceFill([
+            'subtotal_amount' => $invoice->subtotal_amount + $lineTotal,
+            'total_amount' => $invoice->total_amount + $lineTotal,
+        ])->save();
+    }
+
+    private function ratedUnits(int $overageBytes, int $unitBytes, string $rounding): int
+    {
+        if ($overageBytes < 1 || $unitBytes < 1) {
+            return 0;
+        }
+
+        return match ($rounding) {
+            'floor' => intdiv($overageBytes, $unitBytes),
+            'half_up' => intdiv($overageBytes + intdiv($unitBytes, 2), $unitBytes),
+            default => intdiv($overageBytes + $unitBytes - 1, $unitBytes),
+        };
     }
 }

@@ -7,9 +7,11 @@ use App\Models\Addon;
 use App\Models\Customer;
 use App\Models\Invoice;
 use App\Models\Plan;
+use App\Models\PlanUsageRate;
 use App\Models\Service;
 use App\Models\ServiceAddon;
 use App\Models\Tenant;
+use App\Models\UsageDaily;
 use App\Models\User;
 use App\Support\Tenancy;
 use Database\Seeders\CapabilitySeeder;
@@ -165,4 +167,47 @@ it('keeps one-off catalog add-ons out of service renewals', function (): void {
         ->assertSessionHasErrors('addon_id');
 
     expect(ServiceAddon::count())->toBe(0);
+});
+
+it('rates usage overage on renewal using the effective plan rate', function (): void {
+    ['tenant' => $tenant, 'customer' => $customer, 'plan' => $plan, 'service' => $service, 'user' => $user] = serviceAddonFixture('westline');
+    UsageDaily::create([
+        'service_id' => $service->id,
+        'usage_date' => now()->toDateString(),
+        'input_octets' => 1000000000,
+        'output_octets' => 1500000000,
+        'total_octets' => 2500000000,
+        'rolled_up_at' => now(),
+    ]);
+
+    $this->actingAs($user)
+        ->post(route('plans.usage-rates.store'), [
+            'plan_public_id' => $plan->public_id,
+            'name' => 'Data overage',
+            'included_gb' => '1',
+            'unit_gb' => '1',
+            'amount_minor' => 250,
+            'currency' => 'USD',
+            'rounding' => 'ceil',
+            'effective_from' => now()->toDateString(),
+            'status' => 'active',
+        ])
+        ->assertRedirect(route('plans.index'));
+
+    app(Tenancy::class)->set($tenant);
+    expect(PlanUsageRate::query()->sole()->included_bytes)->toBe(1000000000)
+        ->and(PlanUsageRate::query()->sole()->unit_bytes)->toBe(1000000000)
+        ->and(PlanUsageRate::query()->sole()->amount_minor)->toBe(250);
+    expect(PlanUsageRate::query()->where('plan_id', $service->plan_id)->where('status', 'active')->whereDate('effective_from', '<=', now()->toDateString())->count())->toBe(1)
+        ->and(UsageDaily::query()->where('service_id', $service->id)->sum('total_octets'))->toBe(2500000000)
+        ->and(UsageDaily::query()->sole()->usage_date->toDateString())->toBe(now()->toDateString())
+        ->and(UsageDaily::query()->where('service_id', $service->id)->whereDate('usage_date', '>=', now()->subDays(29)->toDateString())->whereDate('usage_date', '<=', now()->toDateString())->sum('total_octets'))->toBe(2500000000);
+
+    $invoice = app(CreateRenewalInvoice::class)->handle($customer, $service, $user);
+    $usageLine = $invoice->lines()->where('price_snapshot->kind', 'usage_overage')->sole();
+
+    expect($invoice->total_amount)->toBe(4000)
+        ->and($usageLine->quantity)->toBe(2)
+        ->and($usageLine->total_amount)->toBe(500)
+        ->and($usageLine->price_snapshot['used_bytes'])->toBe(2500000000);
 });
