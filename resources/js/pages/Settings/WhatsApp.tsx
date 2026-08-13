@@ -210,7 +210,7 @@ export default function WhatsAppSettings({ setup }: Props) {
                     <div className="card p-5">
                         <p className="eyebrow">{t('Provider')}</p>
                         <p className="mt-3 text-lg font-semibold">
-                            {setup.mode === 'web' ? 'WhatsApp Web.js' : 'Cloud API'}
+                            {setup.mode === 'web' ? t('WhatsApp Web.js') : t('Cloud API')}
                         </p>
                         <p className="mt-1 text-sm text-muted">{setup.enabled ? t('Enabled') : t('Not enabled')}</p>
                     </div>

@@ -913,6 +913,7 @@ const inventoryFrench: Messages = {
 };
 
 const sharedArabic: Messages = {
+    'Cloud API': 'واجهة السحابة',
     'Uptime unavailable': 'مدة التشغيل غير متاحة',
     'Encrypted field storage is unavailable in this browser.': 'التخزين المشفّر للميدان غير متاح في هذا المتصفح.',
     'Encrypted field storage key is invalid.': 'مفتاح التخزين المشفّر للميدان غير صالح.',
@@ -1972,6 +1973,7 @@ const sharedArabic: Messages = {
 };
 
 const sharedFrench: Messages = {
+    'Cloud API': 'API cloud',
     'Uptime unavailable': 'Temps de fonctionnement indisponible',
     'Encrypted field storage is unavailable in this browser.': 'Le stockage terrain chiffré est indisponible dans ce navigateur.',
     'Encrypted field storage key is invalid.': 'La clé du stockage terrain chiffré est invalide.',
