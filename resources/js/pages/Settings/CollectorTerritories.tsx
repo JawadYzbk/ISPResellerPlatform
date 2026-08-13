@@ -57,7 +57,7 @@ function CollectorTerritoryCard({ collector, zones }: { collector: Collector; zo
                     </div>
                     <p className="mt-1 truncate text-sm text-muted">{collector.email}</p>
                 </div>
-                <button className="button-primary shrink-0" disabled={form.processing}>
+                <button type="submit" className="button-primary shrink-0" disabled={form.processing}>
                     <Save size={16} /> {form.processing ? t('Saving...') : t('territories.save')}
                 </button>
             </div>

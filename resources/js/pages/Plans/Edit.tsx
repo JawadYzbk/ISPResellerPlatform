@@ -149,7 +149,7 @@ export default function PlanEdit({ plan, currencies }: Props) {
                     <Link href="/plans" className="button-secondary">
                         {t('Cancel')}
                     </Link>
-                    <button className="button-primary" disabled={form.processing}>
+                <button type="submit" className="button-primary" disabled={form.processing}>
                         <Save size={16} /> {t('plan.save_plan')}
                     </button>
                 </div>

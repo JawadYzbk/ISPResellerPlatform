@@ -154,7 +154,7 @@ export default function RouterCreate({ pops }: Props) {
                         <Link href="/operations/routers" className="button-secondary">
                             {t('Cancel')}
                         </Link>
-                        <button className="button-primary" disabled={form.processing}>
+                        <button type="submit" className="button-primary" disabled={form.processing}>
                             <Save size={16} /> {t('router_create.register')}
                         </button>
                     </div>

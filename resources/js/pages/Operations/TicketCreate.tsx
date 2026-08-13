@@ -122,7 +122,7 @@ export default function TicketCreate({ customer, services }: Props) {
                         <Link href={`/customers/${customer.public_id}`} className="button-secondary">
                             {t('Cancel')}
                         </Link>
-                        <button className="button-primary" disabled={form.processing}>
+                        <button type="submit" className="button-primary" disabled={form.processing}>
                             <Save size={16} /> <TicketIcon size={16} /> {t('Open ticket')}
                         </button>
                     </div>

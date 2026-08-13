@@ -244,7 +244,7 @@ export default function ServicesCreate({ customer, plans, routers }: Props) {
                         <Link href={`/customers/${customer.public_id}`} className="button-secondary">
                             {t('Cancel')}
                         </Link>
-                        <button className="button-primary" disabled={form.processing || plans.length === 0}>
+                        <button type="submit" className="button-primary" disabled={form.processing || plans.length === 0}>
                             <Save size={16} /> {t('service.create_pending')}
                         </button>
                     </div>

@@ -250,6 +250,7 @@ export default function CollectorCustody({ filters, collectors, entries, currenc
                     )}
                     <div className="flex justify-end lg:col-span-3">
                         <button
+                            type="submit"
                             className="button-primary"
                             disabled={form.processing || !selectedCollector || form.data.description.trim() === ''}
                         >

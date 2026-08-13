@@ -112,6 +112,7 @@ export default function CustomerRenew({ customer, services }: Props) {
                             {t('Cancel')}
                         </Link>
                         <button
+                            type="submit"
                             className="button-primary"
                             disabled={form.processing || services.length === 0 || selectedService?.price === null}
                         >

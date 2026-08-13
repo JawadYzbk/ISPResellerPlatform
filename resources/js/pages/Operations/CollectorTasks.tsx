@@ -212,6 +212,7 @@ export default function CollectorTasks({ filters, collectors, customers, tasks, 
                     )}
                     <div className="flex justify-end lg:col-span-3">
                         <button
+                            type="submit"
                             className="button-primary"
                             disabled={createForm.processing || createForm.data.title.trim() === ''}
                         >
@@ -414,6 +415,7 @@ export default function CollectorTasks({ filters, collectors, customers, tasks, 
                                     )}
                                     <div className="mt-3 flex justify-end">
                                         <button
+                                            type="submit"
                                             className="button-primary"
                                             disabled={messageForm.processing || messageForm.data.body.trim() === ''}
                                         >

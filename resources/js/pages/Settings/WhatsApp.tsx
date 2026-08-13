@@ -333,7 +333,7 @@ export default function WhatsAppSettings({ setup }: Props) {
                                 </ResponsiveSelect>
                                 {createForm.errors.job && <p className="field-error">{t(createForm.errors.job)}</p>}
                             </label>
-                            <button className="button-primary" disabled={createForm.processing}>
+                            <button type="submit" className="button-primary" disabled={createForm.processing}>
                                 <Plus size={16} /> {t('Add account')}
                             </button>
                         </form>
@@ -517,7 +517,7 @@ export default function WhatsAppSettings({ setup }: Props) {
                                 </ResponsiveSelect>
                             </label>
                         )}
-                        <button className="button-primary" disabled={testForm.processing || !ready}>
+                        <button type="submit" className="button-primary" disabled={testForm.processing || !ready}>
                             {t('Send test message')}
                         </button>
                     </form>

@@ -385,7 +385,7 @@ export default function PaymentCreate({ customer, invoices, defaultCurrency, pay
                                 <QrCode size={16} /> {t('Create Whish QR')}
                             </button>
                         )}
-                        <button className="button-primary" disabled={form.processing}>
+                        <button type="submit" className="button-primary" disabled={form.processing}>
                             <Save size={16} /> {t('Record payment')}
                         </button>
                     </div>

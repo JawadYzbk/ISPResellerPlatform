@@ -190,7 +190,7 @@ export default function IpPoolsPage({ pools, selectedPoolId, addresses, routers,
                         </label>
                     </div>
                     <div className="flex justify-end">
-                        <button className="button-primary" disabled={poolForm.processing}>
+                        <button type="submit" className="button-primary" disabled={poolForm.processing}>
                             <Plus size={16} /> {t('ip_pools.add')}
                         </button>
                     </div>
@@ -377,7 +377,7 @@ export default function IpPoolsPage({ pools, selectedPoolId, addresses, routers,
                                     <option value="conflict">{t('Conflict')}</option>
                                 </ResponsiveSelect>
                             </label>
-                            <button className="button-primary" disabled={addressForm.processing}>
+                            <button type="submit" className="button-primary" disabled={addressForm.processing}>
                                 <Plus size={16} /> {t('ip_pools.record')}
                             </button>
                         </form>

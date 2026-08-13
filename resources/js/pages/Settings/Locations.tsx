@@ -190,7 +190,7 @@ export default function Locations({ branches, zones, tenant }: Props) {
                             {branchForm.errors.is_default && (
                                 <p className="field-error">{t(branchForm.errors.is_default)}</p>
                             )}
-                            <button className="button-primary" disabled={branchForm.processing}>
+                            <button type="submit" className="button-primary" disabled={branchForm.processing}>
                                 <Save size={16} />{' '}
                                 {editingBranchId ? t('locations.save_branch') : t('locations.create_branch')}
                             </button>
@@ -288,7 +288,7 @@ export default function Locations({ branches, zones, tenant }: Props) {
                                     <p className="field-error">{t(zoneForm.errors.parent_id)}</p>
                                 )}
                             </label>
-                            <button className="button-primary" disabled={zoneForm.processing}>
+                            <button type="submit" className="button-primary" disabled={zoneForm.processing}>
                                 <Save size={16} />{' '}
                                 {editingZoneId ? t('locations.save_zone') : t('locations.create_zone')}
                             </button>

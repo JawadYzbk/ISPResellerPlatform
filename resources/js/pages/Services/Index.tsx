@@ -153,6 +153,8 @@ export default function ServicesIndex({ services, filters }: Props) {
                                 <Link
                                     key={index}
                                     href={link.url}
+                                    aria-label={isPrevious ? t('Previous page') : isNext ? t('Next page') : undefined}
+                                    aria-current={link.active ? 'page' : undefined}
                                     className={`grid size-8 place-items-center rounded-lg text-xs ${link.active ? 'bg-brand text-white' : 'text-muted hover:bg-sand'}`}
                                 >
                                     {isPrevious ? (

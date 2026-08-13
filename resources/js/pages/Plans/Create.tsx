@@ -192,7 +192,7 @@ export default function PlanCreate({ currencies }: { currencies: CurrencyOption[
                     <Link href="/plans" className="button-secondary">
                         {t('Cancel')}
                     </Link>
-                    <button className="button-primary" disabled={form.processing}>
+                <button type="submit" className="button-primary" disabled={form.processing}>
                         <Save size={16} /> {t('plan.create_plan')}
                     </button>
                 </div>

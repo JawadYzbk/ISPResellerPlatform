@@ -221,7 +221,7 @@ export default function RouterShowPage({ router: device, pops, canEdit }: Props)
                             {t('router_create.verify_tls')}
                         </label>
                         <div className="flex justify-end border-t border-line pt-5">
-                            <button className="button-primary" disabled={form.processing}>
+                            <button type="submit" className="button-primary" disabled={form.processing}>
                                 <Save size={16} /> {t('router_show.save')}
                             </button>
                         </div>

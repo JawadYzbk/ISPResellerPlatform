@@ -318,6 +318,7 @@ export default function Expenses({
                         )}
                         <div className="flex justify-end md:col-span-2 xl:col-span-4">
                             <button
+                                type="submit"
                                 className="button-primary"
                                 disabled={
                                     form.processing || !form.data.description.trim() || !form.data.expense_category_id
@@ -588,6 +589,7 @@ export default function Expenses({
                         </label>
                         <div className="flex items-end justify-end">
                             <button
+                                type="submit"
                                 className="button-primary"
                                 disabled={recurringForm.processing || !recurringForm.data.description.trim()}
                             >
@@ -678,7 +680,7 @@ export default function Expenses({
                                 value={categoryForm.data.code}
                                 onChange={(event) => categoryForm.setData('code', event.target.value)}
                             />
-                            <button className="button-secondary">{t('Add category')}</button>
+                            <button type="submit" className="button-secondary">{t('Add category')}</button>
                         </form>
                         <div className="mt-4 flex flex-wrap gap-2">
                             {categories.map((item) => (
@@ -737,7 +739,7 @@ export default function Expenses({
                                 onChange={(event) => vendorForm.setData('tax_number', event.target.value)}
                             />
                             <div className="flex justify-end sm:col-span-2">
-                                <button className="button-secondary">{t('Add vendor')}</button>
+                                <button type="submit" className="button-secondary">{t('Add vendor')}</button>
                             </div>
                         </form>
                         <p className="mt-4 text-xs text-muted tabular-nums">

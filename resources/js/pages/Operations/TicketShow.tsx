@@ -169,7 +169,7 @@ export default function TicketShow({
                                     ))}
                                 </ResponsiveSelect>
                             </label>
-                            <button className="button-secondary w-full justify-center">{t('Save assignment')}</button>
+                            <button type="submit" className="button-secondary w-full justify-center">{t('Save assignment')}</button>
                         </form>
                     )}
                     {canMutate && ticket.status !== 'closed' && (
@@ -186,7 +186,7 @@ export default function TicketShow({
                                     </option>
                                 ))}
                             </ResponsiveSelect>
-                            <button className="button-primary" disabled={status === ticket.status}>
+                            <button type="submit" className="button-primary" disabled={status === ticket.status}>
                                 {t('Save status')}
                             </button>
                         </form>
@@ -291,7 +291,7 @@ export default function TicketShow({
                             />
                             {form.errors.body && <p className="field-error">{t(form.errors.body)}</p>}
                             <div className="mt-4 flex justify-end">
-                                <button className="button-primary" disabled={form.processing}>
+                                <button type="submit" className="button-primary" disabled={form.processing}>
                                     <Send size={16} /> {t('Send reply')}
                                 </button>
                             </div>

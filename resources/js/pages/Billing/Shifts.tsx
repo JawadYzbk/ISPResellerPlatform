@@ -184,7 +184,7 @@ export default function ShiftsPage({ shifts, currentShift, currencies, canViewRe
                             <p className="field-error mt-2">{t(form.errors.declared_totals)}</p>
                         )}
                         <div className="mt-5 flex justify-end">
-                            <button className="button-primary" disabled={form.processing}>
+                            <button type="submit" className="button-primary" disabled={form.processing}>
                                 <CheckCircle2 size={16} /> {t('shifts.close_reconcile')}
                             </button>
                         </div>

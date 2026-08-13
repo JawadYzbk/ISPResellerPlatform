@@ -157,7 +157,7 @@ export default function TicketResponses({ responses }: Props) {
                             {t('ticket_responses.keep_available')}
                         </label>
                     )}
-                    <button className="button-primary w-full justify-center" disabled={form.processing}>
+                    <button type="submit" className="button-primary w-full justify-center" disabled={form.processing}>
                         <Save size={16} /> {editingId ? t('ticket_responses.save') : t('ticket_responses.create')}
                     </button>
                 </form>

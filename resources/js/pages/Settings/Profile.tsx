@@ -157,7 +157,7 @@ export default function ProfilePage({ profile, workspaceLocale, defaultViews }: 
                                 {t('Workspace settings')}
                             </Link>
                         </div>
-                        <button id="save-profile" className="button-primary" disabled={form.processing}>
+                        <button id="save-profile" type="submit" className="button-primary" disabled={form.processing}>
                             <Save size={16} /> {t('Save profile')}
                         </button>
                     </div>

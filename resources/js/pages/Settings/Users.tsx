@@ -132,6 +132,7 @@ export default function UsersPage({
                                 value={search}
                                 onChange={(event) => setSearch(event.target.value)}
                                 placeholder={t('users.search_placeholder')}
+                                aria-label={t('users.search_placeholder')}
                             />
                         </div>
                         <button type="submit" className="button-secondary">
@@ -330,7 +331,7 @@ export default function UsersPage({
                             </ResponsiveSelect>
                             {form.errors.role && <p className="field-error">{t(form.errors.role)}</p>}
                         </label>
-                        <button className="button-primary w-full" disabled={form.processing}>
+                        <button type="submit" className="button-primary w-full" disabled={form.processing}>
                             <MailPlus size={16} /> {t('users.create_invite')}
                         </button>
                     </form>
