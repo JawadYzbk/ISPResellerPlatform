@@ -54,6 +54,17 @@ async function auditPage(page: Page, path: string): Promise<void> {
     await expect(page.locator('main h1:visible'), `${path} should expose a page heading`).toHaveCount(1);
 }
 
+async function findDetailPath(page: Page, indexPath: string, pattern: RegExp): Promise<string | null> {
+    await page.goto(indexPath);
+    await expect(page.locator('main h1:visible'), `${indexPath} should render its page heading`).toHaveCount(1);
+    const href = await page.locator('a[href]').evaluateAll(
+        (links, source) => links.map((link) => link.getAttribute('href') ?? '').find((href) => source.test(href)),
+        pattern,
+    );
+
+    return href ?? null;
+}
+
 test('keeps representative workspace controls named for assistive technology', async ({ page }) => {
     test.setTimeout(120_000);
 
@@ -64,6 +75,29 @@ test('keeps representative workspace controls named for assistive technology', a
         page.waitForURL(/\/(dashboard|customers|profile)$/),
         page.getByRole('button', { name: 'Enter workspace' }).click(),
     ]);
+
+    const detailPaths: string[] = [];
+    const customerPath = await findDetailPath(page, '/customers', /^\/customers\/(?!create$)[^/]+$/);
+    if (customerPath) {
+        detailPaths.push(customerPath);
+    }
+
+    for (const [indexPath, pattern] of [
+        ['/services', /^\/services\/[^/]+$/],
+        ['/billing/invoices', /^\/billing\/invoices\/[^/]+$/],
+        ['/billing/payments', /^\/billing\/payments\/[^/]+$/],
+        ['/operations/tickets', /^\/operations\/tickets\/[^/]+$/],
+        ['/operations/work-orders', /^\/operations\/work-orders\/[^/]+$/],
+        ['/operations/routers', /^\/operations\/routers\/[^/]+$/],
+        ['/operations/pops', /^\/operations\/pops\/[^/]+$/],
+        ['/operations/topology/buildings', /^\/operations\/topology\/buildings\/[^/]+$/],
+        ['/plans', /^\/plans\/[^/]+\/edit$/],
+    ] as const) {
+        const detailPath = await findDetailPath(page, indexPath, pattern);
+        if (detailPath) {
+            detailPaths.push(detailPath);
+        }
+    }
 
     for (const path of [
         '/dashboard',
@@ -91,6 +125,7 @@ test('keeps representative workspace controls named for assistive technology', a
         '/partners/commercial',
         '/notifications',
         '/profile',
+        ...detailPaths,
     ]) {
         await auditPage(page, path);
     }
