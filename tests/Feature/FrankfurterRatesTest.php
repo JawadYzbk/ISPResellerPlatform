@@ -9,6 +9,11 @@ use Illuminate\Support\Facades\Http;
 
 uses(RefreshDatabase::class);
 
+it('keeps Frankfurter connection attempts shorter than full request timeouts', function (): void {
+    expect(config('services.frankfurter.connect_timeout'))->toBe(2)
+        ->and(config('services.frankfurter.timeout'))->toBeGreaterThan(config('services.frankfurter.connect_timeout'));
+});
+
 it('imports exact Frankfurter ratios for USD and LBP and remains idempotent', function (): void {
     config([
         'services.frankfurter.enabled' => true,
