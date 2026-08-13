@@ -14,9 +14,12 @@ use App\Actions\IssueInvoice;
 use App\Actions\ListCreditNotes;
 use App\Actions\ListInvoices;
 use App\Actions\ListPayments;
+use App\Actions\PreviewBulkRenewals;
 use App\Actions\ReversePayment;
+use App\Actions\RunBulkRenewals;
 use App\Actions\SearchBillingCustomers;
 use App\Http\Controllers\Controller;
+use App\Models\BillingRun;
 use App\Models\CreditNote;
 use App\Models\Currency;
 use App\Models\Customer;
@@ -89,6 +92,73 @@ final class BillingController extends Controller
             'filters' => $request->only(['status', 'search']),
             'canIssue' => $user->can('billing.invoices.issue'),
         ]);
+    }
+
+    public function bulkRenewals(Request $request, PreviewBulkRenewals $preview): Response
+    {
+        $user = $request->user();
+        abort_unless($user instanceof User && $user->can('billing.invoices.issue'), 403);
+        $validated = $request->validate([
+            'as_of' => ['nullable', 'date_format:Y-m-d'],
+            'search' => ['nullable', 'string', 'max:100'],
+        ]);
+        $tenant = Tenant::query()->find($user->tenant_id);
+        $timezone = $tenant?->settingsData()->timezone ?? 'UTC';
+        $asOf = CarbonImmutable::createFromFormat(
+            '!Y-m-d',
+            (string) ($validated['as_of'] ?? CarbonImmutable::now($timezone)->toDateString()),
+            $timezone,
+        )->endOfDay();
+        $previewData = $preview->handle($asOf, $validated['search'] ?? null);
+        $lastRun = BillingRun::query()
+            ->where('run_type', 'bulk_renewal')
+            ->latest('id')
+            ->first();
+
+        return Inertia::render('Billing/BulkRenewals', [
+            'asOf' => $asOf->toDateString(),
+            'timezone' => $timezone,
+            'filters' => [
+                'as_of' => $validated['as_of'] ?? $asOf->toDateString(),
+                'search' => $validated['search'] ?? '',
+            ],
+            ...$previewData,
+            'lastRun' => $lastRun === null ? null : $this->bulkRunPayload($lastRun),
+        ]);
+    }
+
+    public function storeBulkRenewals(Request $request, RunBulkRenewals $run): RedirectResponse
+    {
+        $user = $request->user();
+        abort_unless($user instanceof User && $user->can('billing.invoices.issue'), 403);
+        $validated = $request->validate([
+            'service_ids' => ['required', 'array', 'min:1', 'max:500'],
+            'service_ids.*' => ['required', 'string', 'max:26'],
+            'idempotency_key' => ['required', 'uuid'],
+        ]);
+
+        try {
+            $billingRun = $run->handle(
+                array_map('strval', $validated['service_ids']),
+                $user,
+                (string) $validated['idempotency_key'],
+            );
+        } catch (DomainException $exception) {
+            throw ValidationException::withMessages(['service_ids' => $exception->getMessage()]);
+        }
+
+        $hasFailures = $billingRun->failed_count > 0;
+
+        return redirect()
+            ->route('billing.bulk-renewals')
+            ->with('success_title', $hasFailures ? 'Billing completed with errors' : 'Bulk billing completed')
+            ->with(
+                'success',
+                $hasFailures
+                    ? "{$billingRun->processed_count} renewal(s) processed; {$billingRun->failed_count} need review."
+                    : "{$billingRun->processed_count} renewal(s) processed successfully.",
+            )
+            ->with('bulkRun', $this->bulkRunPayload($billingRun));
     }
 
     public function createInvoice(Request $request, GetCurrencyCatalog $currencyCatalog, SearchBillingCustomers $searchCustomers): Response
@@ -456,5 +526,19 @@ final class BillingController extends Controller
         $validated = $request->validate(['width' => ['nullable', 'integer', 'in:58,80']]);
 
         return $generate->handle($payment, (int) ($validated['width'] ?? 80));
+    }
+
+    /** @return array<string, mixed> */
+    private function bulkRunPayload(BillingRun $run): array
+    {
+        return [
+            'id' => $run->id,
+            'status' => $run->status,
+            'processed_count' => $run->processed_count,
+            'failed_count' => $run->failed_count,
+            'completed_at' => $run->completed_at?->toIso8601String(),
+            'idempotency_key' => $run->metadata['idempotency_key'] ?? null,
+            'rows' => $run->metadata['rows'] ?? [],
+        ];
     }
 }

@@ -249,6 +249,8 @@ Route::middleware(['auth', 'tenant', '2fa'])->group(function (): void {
     Route::patch('/operations/ip-pools/{pool}', [IpPoolOperationsController::class, 'updatePool'])->middleware('recent-auth')->name('operations.ip-pools.update');
     Route::post('/operations/ip-pools/{pool}/addresses', [IpPoolOperationsController::class, 'storeAddress'])->middleware('recent-auth')->name('operations.ip-pools.addresses.store');
     Route::get('/billing/invoices', [BillingController::class, 'invoices'])->name('billing.invoices');
+    Route::get('/billing/bulk-renewals', [BillingController::class, 'bulkRenewals'])->name('billing.bulk-renewals');
+    Route::post('/billing/bulk-renewals', [BillingController::class, 'storeBulkRenewals'])->middleware('recent-auth')->name('billing.bulk-renewals.store');
     Route::get('/billing/invoices/create', [BillingController::class, 'createInvoice'])->name('billing.invoices.create');
     Route::get('/billing/invoices/customers', [BillingController::class, 'invoiceCustomers'])->name('billing.invoices.customers');
     Route::post('/billing/invoices', [BillingController::class, 'storeInvoice'])->name('billing.invoices.store');
