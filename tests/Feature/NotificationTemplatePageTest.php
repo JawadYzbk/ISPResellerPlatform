@@ -54,3 +54,24 @@ it('shows and updates WhatsApp templates for every supported locale', function (
         ])
         ->assertSessionHasErrors('body');
 });
+
+it('upgrades a legacy disabled locale placeholder after UTF-8 storage is available', function (): void {
+    $tenant = Tenant::factory()->create(['slug' => 'template-upgrade']);
+    app(Tenancy::class)->run($tenant, function (): void {
+        MessageTemplate::create([
+            'key' => 'customer.welcome',
+            'channel' => 'whatsapp',
+            'locale' => 'ar',
+            'subject' => null,
+            'body' => 'Welcome {{ customer_name }}. Your customer code is {{ customer_code }}.',
+            'variables' => ['customer_name', 'customer_code'],
+            'is_active' => false,
+        ]);
+    });
+
+    app(\App\Support\MessageTemplateProvisioner::class)->provision($tenant, templateKey: 'customer.welcome', channel: 'whatsapp', locale: 'ar');
+
+    $template = app(Tenancy::class)->run($tenant, fn (): MessageTemplate => MessageTemplate::query()->where('key', 'customer.welcome')->where('channel', 'whatsapp')->where('locale', 'ar')->firstOrFail());
+    expect($template->is_active)->toBeTrue()
+        ->and($template->body)->not->toBe('Welcome {{ customer_name }}. Your customer code is {{ customer_code }}.');
+});
