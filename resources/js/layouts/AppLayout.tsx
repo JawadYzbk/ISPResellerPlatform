@@ -39,7 +39,14 @@ import {
     X,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
-import { useEffect, useRef, useState, type MouseEvent as ReactMouseEvent, type PropsWithChildren } from 'react';
+import {
+    useEffect,
+    useRef,
+    useState,
+    type KeyboardEvent as ReactKeyboardEvent,
+    type MouseEvent as ReactMouseEvent,
+    type PropsWithChildren,
+} from 'react';
 
 import RealtimeBridge from '@/components/RealtimeBridge';
 import OfflineBanner from '@/components/OfflineBanner';
@@ -61,6 +68,28 @@ type NavigationGroup = {
 
 type SearchResult = { type: string; label: string; detail: string; href: string; localized?: boolean };
 
+const trapTabKey = (event: ReactKeyboardEvent<HTMLElement>, container: HTMLElement | null) => {
+    if (event.key !== 'Tab' || !container) return;
+
+    const focusable = Array.from(
+        container.querySelectorAll<HTMLElement>(
+            'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+        ),
+    );
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+
+    if (!first || !last) return;
+
+    if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+    }
+};
+
 export default function AppLayout({ children }: PropsWithChildren) {
     const page = usePage<PageProps>();
     const { auth, app } = page.props;
@@ -75,6 +104,7 @@ export default function AppLayout({ children }: PropsWithChildren) {
     const [mobileNavOpen, setMobileNavOpen] = useState(false);
     const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
     const searchInput = useRef<HTMLInputElement>(null);
+    const searchDialog = useRef<HTMLDivElement>(null);
     const searchReturnFocus = useRef<HTMLButtonElement | null>(null);
     const accountMenu = useRef<HTMLDivElement>(null);
     const mobileNavTrigger = useRef<HTMLButtonElement>(null);
@@ -453,7 +483,7 @@ export default function AppLayout({ children }: PropsWithChildren) {
 
             {mobileNavOpen && (
                 <div
-                    className="fixed inset-0 z-40 bg-ink/25 lg:hidden"
+                    className="fixed inset-0 z-40 flex bg-ink/25 lg:hidden"
                     role="presentation"
                     onMouseDown={(event) => event.target === event.currentTarget && setMobileNavOpen(false)}
                 >
@@ -461,6 +491,7 @@ export default function AppLayout({ children }: PropsWithChildren) {
                         id="mobile-navigation"
                         className="flex h-full w-[min(22rem,calc(100%-2rem))] flex-col border-e border-line bg-white shadow-2xl"
                         aria-label={t('Mobile navigation')}
+                        onKeyDown={(event) => trapTabKey(event, event.currentTarget)}
                         onClick={(event) => {
                             if ((event.target as HTMLElement).closest('a')) setMobileNavOpen(false);
                         }}
@@ -651,10 +682,12 @@ export default function AppLayout({ children }: PropsWithChildren) {
                         onMouseDown={(event) => event.target === event.currentTarget && setSearchOpen(false)}
                     >
                         <div
+                            ref={searchDialog}
                             className="mx-auto max-w-2xl overflow-hidden rounded-2xl border border-line bg-white shadow-2xl"
                             role="dialog"
                             aria-modal="true"
                             aria-label={t('Global search')}
+                            onKeyDown={(event) => trapTabKey(event, event.currentTarget)}
                         >
                             <div className="flex items-center gap-3 border-b border-line px-5 py-4">
                                 <Search size={19} className="text-brand" />
