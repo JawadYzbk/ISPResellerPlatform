@@ -1,9 +1,10 @@
 import ResponsiveSelect from '@/components/ui/responsive-select';
-import { Head, useForm } from '@inertiajs/react';
+import { Head, useForm, usePage } from '@inertiajs/react';
 import { Activity, Gauge, Network, Pencil, Plus, Save, Signal, Thermometer, X } from 'lucide-react';
 import { useState } from 'react';
 
 import AppLayout from '@/layouts/AppLayout';
+import { createTranslator } from '@/lib/i18n';
 import type { PageProps } from '@/types';
 
 type Pop = { id: number; name: string; code: string };
@@ -127,16 +128,18 @@ function DeviceFields({
     pops,
     deviceTypes,
     deviceStatuses,
+    t,
 }: {
     form: ReturnType<typeof useForm<FormData>>;
     pops: Pop[];
     deviceTypes: string[];
     deviceStatuses: string[];
+    t: (key: string) => string;
 }) {
     return (
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
             <label>
-                <span className="field-label">Name</span>
+                <span className="field-label">{t('Name')}</span>
                 <input
                     className="field"
                     value={form.data.name}
@@ -146,7 +149,7 @@ function DeviceFields({
                 <ErrorText message={form.errors.name} />
             </label>
             <label>
-                <span className="field-label">Code</span>
+                <span className="field-label">{t('Code')}</span>
                 <input
                     className="field uppercase"
                     value={form.data.code}
@@ -156,7 +159,7 @@ function DeviceFields({
                 <ErrorText message={form.errors.code} />
             </label>
             <label>
-                <span className="field-label">Type</span>
+                <span className="field-label">{t('Type')}</span>
                 <ResponsiveSelect
                     className="field"
                     value={form.data.device_type}
@@ -164,14 +167,14 @@ function DeviceFields({
                 >
                     {deviceTypes.map((type) => (
                         <option key={type} value={type}>
-                            {deviceTypeLabels[type] ?? type}
+                            {t(deviceTypeLabels[type] ?? type)}
                         </option>
                     ))}
                 </ResponsiveSelect>
                 <ErrorText message={form.errors.device_type} />
             </label>
             <label>
-                <span className="field-label">Status</span>
+                <span className="field-label">{t('Status')}</span>
                 <ResponsiveSelect
                     className="field"
                     value={form.data.status}
@@ -179,20 +182,20 @@ function DeviceFields({
                 >
                     {deviceStatuses.map((status) => (
                         <option key={status} value={status}>
-                            {statusLabels[status] ?? status}
+                            {t(statusLabels[status] ?? status)}
                         </option>
                     ))}
                 </ResponsiveSelect>
                 <ErrorText message={form.errors.status} />
             </label>
             <label>
-                <span className="field-label">POP</span>
+                <span className="field-label">{t('POP')}</span>
                 <ResponsiveSelect
                     className="field"
                     value={form.data.pop_id}
                     onChange={(event) => form.setData('pop_id', event.target.value)}
                 >
-                    <option value="">No POP assigned</option>
+                    <option value="">{t('No POP assigned')}</option>
                     {pops.map((pop) => (
                         <option key={pop.id} value={pop.id}>
                             {pop.name} · {pop.code}
@@ -202,7 +205,7 @@ function DeviceFields({
                 <ErrorText message={form.errors.pop_id} />
             </label>
             <label>
-                <span className="field-label">Vendor</span>
+                <span className="field-label">{t('Vendor')}</span>
                 <input
                     className="field"
                     value={form.data.vendor}
@@ -212,7 +215,7 @@ function DeviceFields({
                 <ErrorText message={form.errors.vendor} />
             </label>
             <label>
-                <span className="field-label">Model</span>
+                <span className="field-label">{t('Model')}</span>
                 <input
                     className="field"
                     value={form.data.model}
@@ -222,7 +225,7 @@ function DeviceFields({
                 <ErrorText message={form.errors.model} />
             </label>
             <label>
-                <span className="field-label">Management host</span>
+                <span className="field-label">{t('Management host')}</span>
                 <input
                     className="field"
                     value={form.data.host}
@@ -232,7 +235,7 @@ function DeviceFields({
                 <ErrorText message={form.errors.host} />
             </label>
             <label>
-                <span className="field-label">Management port</span>
+                <span className="field-label">{t('Management port')}</span>
                 <input
                     className="field"
                     type="number"
@@ -245,7 +248,7 @@ function DeviceFields({
                 <ErrorText message={form.errors.management_port} />
             </label>
             <label className="md:col-span-2 xl:col-span-3">
-                <span className="field-label">Notes</span>
+                <span className="field-label">{t('Notes')}</span>
                 <textarea
                     className="field min-h-24 resize-y"
                     value={form.data.notes}
@@ -266,6 +269,8 @@ export default function OpticalOperationsPage({
     deviceTypes,
     deviceStatuses,
 }: Props) {
+    const page = usePage<PageProps>();
+    const t = createTranslator(page.props.app.locale);
     const [editingDevice, setEditingDevice] = useState<string | null>(null);
     const createForm = useForm<FormData>(emptyDevice);
     const editForm = useForm<FormData>(emptyDevice);
@@ -316,13 +321,15 @@ export default function OpticalOperationsPage({
 
     return (
         <AppLayout>
-            <Head title="Optical access" />
+            <Head title={t('Optical access')} />
 
             <div>
-                <p className="eyebrow">Network inventory</p>
-                <h1 className="page-title">Optical access</h1>
+                <p className="eyebrow">{t('Network inventory')}</p>
+                <h1 className="page-title">{t('Optical access')}</h1>
                 <p className="page-subtitle">
-                    Register OLTs, ONUs, and splitters, then keep signal readings connected to the customer service.
+                    {t(
+                        'Register OLTs, ONUs, and splitters, then keep signal readings connected to the customer service.',
+                    )}
                 </p>
             </div>
 
@@ -332,10 +339,11 @@ export default function OpticalOperationsPage({
                         <Network size={18} />
                     </div>
                     <div>
-                        <h2 className="section-title">Optical inventory</h2>
+                        <h2 className="section-title">{t('Optical inventory')}</h2>
                         <p className="mt-1 text-sm text-muted">
-                            Manual readings are available now. Vendor drivers can later feed the same reading history
-                            without exposing device credentials to the browser.
+                            {t(
+                                'Manual readings are available now. Vendor drivers can later feed the same reading history without exposing device credentials to the browser.',
+                            )}
                         </p>
                     </div>
                 </div>
@@ -345,17 +353,18 @@ export default function OpticalOperationsPage({
                 <form onSubmit={submitCreate} className="card mt-6 space-y-5 p-6">
                     <div className="flex items-center gap-2">
                         <Plus size={17} className="text-brand" />
-                        <h2 className="section-title">Add optical device</h2>
+                        <h2 className="section-title">{t('Add optical device')}</h2>
                     </div>
                     <DeviceFields
                         form={createForm}
                         pops={pops}
                         deviceTypes={deviceTypes}
                         deviceStatuses={deviceStatuses}
+                        t={t}
                     />
                     <div className="flex justify-end">
                         <button type="submit" className="button-primary" disabled={createForm.processing}>
-                            <Plus size={16} /> Add device
+                            <Plus size={16} /> {t('Add device')}
                         </button>
                     </div>
                 </form>
@@ -366,17 +375,19 @@ export default function OpticalOperationsPage({
                     <div className="flex items-center justify-between border-b border-line px-5 py-4">
                         <div className="flex items-center gap-2">
                             <Signal size={17} className="text-brand" />
-                            <h2 className="text-sm font-semibold">Registered devices</h2>
+                            <h2 className="text-sm font-semibold">{t('Registered devices')}</h2>
                         </div>
-                        <span className="text-xs text-muted">{devices.length} device(s)</span>
+                        <span className="text-xs text-muted">
+                            {devices.length} {t('device(s)')}
+                        </span>
                     </div>
 
                     {devices.length === 0 ? (
                         <div className="px-5 py-12 text-center">
                             <Network size={24} className="mx-auto text-muted" />
-                            <p className="mt-3 text-sm font-semibold">No optical devices registered</p>
+                            <p className="mt-3 text-sm font-semibold">{t('No optical devices registered')}</p>
                             <p className="mt-1 text-sm text-muted">
-                                Add an OLT or ONU to begin recording signal history.
+                                {t('Add an OLT or ONU to begin recording signal history.')}
                             </p>
                         </div>
                     ) : (
@@ -392,13 +403,13 @@ export default function OpticalOperationsPage({
                                                 <h3 className="text-sm font-semibold">{device.name}</h3>
                                                 <p className="mt-1 text-xs text-muted">
                                                     {device.code} ·{' '}
-                                                    {deviceTypeLabels[device.device_type] ?? device.device_type}
+                                                    {t(deviceTypeLabels[device.device_type] ?? device.device_type)}
                                                 </p>
                                             </div>
                                         </div>
                                         <div className="flex items-center gap-2">
                                             <span className="rounded-full bg-sand px-2.5 py-1 text-xs font-semibold text-muted">
-                                                {statusLabels[device.status] ?? device.status}
+                                                {t(statusLabels[device.status] ?? device.status)}
                                             </span>
                                             {canManage && editingDevice !== device.public_id && (
                                                 <button
@@ -406,7 +417,7 @@ export default function OpticalOperationsPage({
                                                     className="button-secondary"
                                                     onClick={() => startEditing(device)}
                                                 >
-                                                    <Pencil size={14} /> Edit
+                                                    <Pencil size={14} /> {t('Edit')}
                                                 </button>
                                             )}
                                         </div>
@@ -414,26 +425,26 @@ export default function OpticalOperationsPage({
 
                                     <div className="mt-4 grid gap-3 text-sm sm:grid-cols-3">
                                         <div>
-                                            <p className="field-label">Location</p>
+                                            <p className="field-label">{t('Location')}</p>
                                             <p>
                                                 {device.pop
                                                     ? `${device.pop.name} · ${device.pop.code}`
-                                                    : 'No POP assigned'}
+                                                    : t('No POP assigned')}
                                             </p>
                                         </div>
                                         <div>
-                                            <p className="field-label">Device</p>
+                                            <p className="field-label">{t('Device')}</p>
                                             <p>
                                                 {[device.vendor, device.model].filter(Boolean).join(' · ') ||
-                                                    'No model set'}
+                                                    t('No model set')}
                                             </p>
                                         </div>
                                         <div>
-                                            <p className="field-label">Management</p>
+                                            <p className="field-label">{t('Management')}</p>
                                             <p>
                                                 {device.host
                                                     ? `${device.host}${device.management_port ? `:${device.management_port}` : ''}`
-                                                    : 'Not configured'}
+                                                    : t('Not configured')}
                                             </p>
                                         </div>
                                     </div>
@@ -443,39 +454,41 @@ export default function OpticalOperationsPage({
                                             <div className="flex items-center gap-2">
                                                 <Activity size={16} className="text-brand" />
                                                 <p className="text-xs font-semibold uppercase tracking-wider text-muted">
-                                                    Latest reading
+                                                    {t('Latest reading')}
                                                 </p>
                                             </div>
-                                            <span className="text-xs text-muted">{device.readings_count} total</span>
+                                            <span className="text-xs text-muted">
+                                                {device.readings_count} {t('total')}
+                                            </span>
                                         </div>
                                         {device.latest_reading ? (
                                             <div className="mt-3 grid gap-3 text-sm sm:grid-cols-4">
                                                 <div>
-                                                    <p className="field-label">ONU serial</p>
+                                                    <p className="field-label">{t('ONU serial')}</p>
                                                     <p>{device.latest_reading.onu_serial || '—'}</p>
                                                 </div>
                                                 <div>
-                                                    <p className="field-label">RX power</p>
+                                                    <p className="field-label">{t('RX power')}</p>
                                                     <p>{readingValue(device.latest_reading.rx_dbm, ' dBm')}</p>
                                                 </div>
                                                 <div>
-                                                    <p className="field-label">TX power</p>
+                                                    <p className="field-label">{t('TX power')}</p>
                                                     <p>{readingValue(device.latest_reading.tx_dbm, ' dBm')}</p>
                                                 </div>
                                                 <div>
-                                                    <p className="field-label">Temperature</p>
+                                                    <p className="field-label">{t('Temperature')}</p>
                                                     <p>{readingValue(device.latest_reading.temperature_c, ' °C')}</p>
                                                 </div>
                                                 <div className="sm:col-span-4 text-xs text-muted">
                                                     {device.latest_reading.service
                                                         ? `Service ${device.latest_reading.service.username}${device.latest_reading.service.customer ? ` · ${device.latest_reading.service.customer}` : ''}`
-                                                        : 'Not linked to a service'}{' '}
+                                                        : t('Not linked to a service')}{' '}
                                                     · {formatDate(device.latest_reading.recorded_at)}
                                                 </div>
                                             </div>
                                         ) : (
                                             <p className="mt-3 text-sm text-muted">
-                                                No optical reading has been recorded yet.
+                                                {t('No optical reading has been recorded yet.')}
                                             </p>
                                         )}
                                     </div>
@@ -490,6 +503,7 @@ export default function OpticalOperationsPage({
                                                 pops={pops}
                                                 deviceTypes={deviceTypes}
                                                 deviceStatuses={deviceStatuses}
+                                                t={t}
                                             />
                                             <div className="flex justify-end gap-2">
                                                 <button
@@ -497,14 +511,14 @@ export default function OpticalOperationsPage({
                                                     className="button-secondary"
                                                     onClick={cancelEditing}
                                                 >
-                                                    <X size={15} /> Cancel
+                                                    <X size={15} /> {t('Cancel')}
                                                 </button>
                                                 <button
                                                     type="submit"
                                                     className="button-primary"
                                                     disabled={editForm.processing}
                                                 >
-                                                    <Save size={15} /> Save changes
+                                                    <Save size={15} /> {t('Save changes')}
                                                 </button>
                                             </div>
                                         </form>
@@ -522,21 +536,21 @@ export default function OpticalOperationsPage({
                                 <Gauge size={18} />
                             </div>
                             <div>
-                                <h2 className="section-title">Record optical reading</h2>
+                                <h2 className="section-title">{t('Record optical reading')}</h2>
                                 <p className="mt-1 text-sm text-muted">
-                                    Capture manual measurements against a live service.
+                                    {t('Capture manual measurements against a live service.')}
                                 </p>
                             </div>
                         </div>
 
                         <label>
-                            <span className="field-label">Device</span>
+                            <span className="field-label">{t('Device')}</span>
                             <ResponsiveSelect
                                 className="field"
                                 value={readingForm.data.optical_device_id}
                                 onChange={(event) => readingForm.setData('optical_device_id', event.target.value)}
                             >
-                                <option value="">Choose a device</option>
+                                <option value="">{t('Choose a device')}</option>
                                 {devices.map((device) => (
                                     <option key={device.public_id} value={device.public_id}>
                                         {device.name} · {device.code}
@@ -546,24 +560,24 @@ export default function OpticalOperationsPage({
                             <ErrorText message={readingForm.errors.optical_device_id} />
                         </label>
                         <label>
-                            <span className="field-label">Service</span>
+                            <span className="field-label">{t('Service')}</span>
                             <ResponsiveSelect
                                 className="field"
                                 value={readingForm.data.service_id}
                                 onChange={(event) => readingForm.setData('service_id', event.target.value)}
                             >
-                                <option value="">No service selected</option>
+                                <option value="">{t('No service selected')}</option>
                                 {services.map((service) => (
                                     <option key={service.public_id} value={service.public_id}>
                                         {service.username} ·{' '}
-                                        {service.customer?.name ?? service.customer?.code ?? 'Customer'}
+                                        {service.customer?.name ?? service.customer?.code ?? t('Customer')}
                                     </option>
                                 ))}
                             </ResponsiveSelect>
                             <ErrorText message={readingForm.errors.service_id} />
                         </label>
                         <label>
-                            <span className="field-label">ONU serial</span>
+                            <span className="field-label">{t('ONU serial')}</span>
                             <input
                                 className="field"
                                 value={readingForm.data.onu_serial}
@@ -574,7 +588,7 @@ export default function OpticalOperationsPage({
                         </label>
                         <div className="grid gap-4 sm:grid-cols-2">
                             <label>
-                                <span className="field-label">RX power (dBm)</span>
+                                <span className="field-label">{t('RX power (dBm)')}</span>
                                 <input
                                     className="field"
                                     type="number"
@@ -588,7 +602,7 @@ export default function OpticalOperationsPage({
                                 <ErrorText message={readingForm.errors.rx_dbm} />
                             </label>
                             <label>
-                                <span className="field-label">TX power (dBm)</span>
+                                <span className="field-label">{t('TX power (dBm)')}</span>
                                 <input
                                     className="field"
                                     type="number"
@@ -604,7 +618,7 @@ export default function OpticalOperationsPage({
                         </div>
                         <label>
                             <span className="field-label">
-                                <Thermometer size={14} className="me-1 inline" /> Temperature (°C)
+                                <Thermometer size={14} className="me-1 inline" /> {t('Temperature (°C)')}
                             </span>
                             <input
                                 className="field"
@@ -619,7 +633,7 @@ export default function OpticalOperationsPage({
                             <ErrorText message={readingForm.errors.temperature_c} />
                         </label>
                         <label>
-                            <span className="field-label">Recorded at</span>
+                            <span className="field-label">{t('Recorded at')}</span>
                             <input
                                 className="field"
                                 type="datetime-local"
@@ -633,7 +647,7 @@ export default function OpticalOperationsPage({
                             className="button-primary w-full"
                             disabled={readingForm.processing || devices.length === 0}
                         >
-                            <Save size={16} /> Record reading
+                            <Save size={16} /> {t('Record reading')}
                         </button>
                     </form>
                 )}

@@ -1,8 +1,10 @@
-import { Head, useForm } from '@inertiajs/react';
+import { Head, useForm, usePage } from '@inertiajs/react';
 import { AlertTriangle, Check, Copy, MessageSquare, Save } from 'lucide-react';
 import { useState } from 'react';
 
 import AppLayout from '@/layouts/AppLayout';
+import { createTranslator } from '@/lib/i18n';
+import type { PageProps } from '@/types';
 
 type Template = {
     id: number;
@@ -28,16 +30,16 @@ type Props = {
     storageWarning?: string | null;
 };
 
-const localeLabels: Record<string, string> = { en: 'English', ar: 'العربية', fr: 'Français' };
-
 function TemplateCard({
     definition,
     templates,
     locales,
+    t,
 }: {
     definition: CatalogItem;
     templates: Template[];
     locales: string[];
+    t: (key: string) => string;
 }) {
     const initial = templates.find((template) => template.locale === locales[0]) ?? templates[0];
     const [locale, setLocale] = useState(initial?.locale ?? locales[0] ?? 'en');
@@ -71,18 +73,18 @@ function TemplateCard({
         <form onSubmit={submit} className="card overflow-hidden">
             <div className="flex flex-col gap-3 border-b border-line px-5 py-4 sm:flex-row sm:items-start sm:justify-between">
                 <div>
-                    <h2 className="font-semibold text-ink">{definition.label}</h2>
+                    <h2 className="font-semibold text-ink">{t(definition.label)}</h2>
                     <p className="mt-1 font-mono text-xs text-muted">{definition.key}</p>
                 </div>
                 <span className="inline-flex items-center gap-1.5 self-start rounded-full bg-brand/10 px-2.5 py-1 text-xs font-semibold text-brand">
-                    <MessageSquare size={13} /> WhatsApp
+                    <MessageSquare size={13} /> {t('WhatsApp')}
                 </span>
             </div>
             <div className="space-y-5 p-5">
                 <div
                     className="flex flex-wrap gap-1 rounded-lg bg-sand p-1"
                     role="tablist"
-                    aria-label={`${definition.label} languages`}
+                    aria-label={t(definition.label) + ' ' + t('languages')}
                 >
                     {locales.map((option) => (
                         <button
@@ -93,12 +95,12 @@ function TemplateCard({
                             onClick={() => selectLocale(option)}
                             className={`rounded-md px-3 py-1.5 text-xs font-semibold transition ${locale === option ? 'bg-white text-brand shadow-sm' : 'text-muted hover:text-ink'}`}
                         >
-                            {localeLabels[option] ?? option.toUpperCase()}
+                            {t(option === 'en' ? 'English' : option === 'ar' ? 'Arabic' : 'French')}
                         </button>
                     ))}
                 </div>
                 <label>
-                    <span className="field-label">Message body</span>
+                    <span className="field-label">{t('Message body')}</span>
                     <textarea
                         dir="auto"
                         className="field min-h-36 resize-y font-mono text-sm leading-6"
@@ -109,8 +111,8 @@ function TemplateCard({
                 </label>
                 <div className="rounded-xl border border-line bg-sand/40 p-4">
                     <div className="flex items-center justify-between gap-3">
-                        <p className="text-sm font-semibold">Available variables</p>
-                        <p className="text-xs text-muted">Copied variables keep their braces.</p>
+                        <p className="text-sm font-semibold">{t('Available variables')}</p>
+                        <p className="text-xs text-muted">{t('Copied variables keep their braces.')}</p>
                     </div>
                     <div className="mt-3 flex flex-wrap gap-2">
                         {definition.variables.map((variable) => (
@@ -127,17 +129,18 @@ function TemplateCard({
                         ))}
                     </div>
                     <p className="mt-3 text-xs text-muted text-pretty">
-                        Only these variables are accepted. At send time the customer, service, payment, or incident data
-                        replaces each token.
+                        {t(
+                            'Only these variables are accepted. At send time the customer, service, payment, or incident data replaces each token.',
+                        )}
                     </p>
                 </div>
                 <div className="flex items-center justify-between gap-4 border-t border-line pt-4">
                     <p className="text-xs text-muted">
-                        Editing {localeLabels[locale] ?? locale} ·{' '}
-                        {selected.is_active ? 'Active for delivery' : 'Disabled'}
+                        {t('Editing')} {t(locale === 'en' ? 'English' : locale === 'ar' ? 'Arabic' : 'French')} ·{' '}
+                        {selected.is_active ? t('Active for delivery') : t('Disabled')}
                     </p>
                     <button type="submit" className="button-primary" disabled={form.processing}>
-                        <Save size={15} /> Save template
+                        <Save size={15} /> {t('Save template')}
                     </button>
                 </div>
             </div>
@@ -146,15 +149,19 @@ function TemplateCard({
 }
 
 export default function NotificationTemplatesPage({ templates, catalog, locales, storageWarning }: Props) {
+    const page = usePage<PageProps>();
+    const t = createTranslator(page.props.app.locale);
+
     return (
         <AppLayout>
-            <Head title="WhatsApp message templates" />
+            <Head title={t('WhatsApp message templates')} />
             <div>
-                <p className="eyebrow">Automation</p>
-                <h1 className="page-title">WhatsApp message templates</h1>
+                <p className="eyebrow">{t('Automation')}</p>
+                <h1 className="page-title">{t('WhatsApp message templates')}</h1>
                 <p className="page-subtitle text-pretty">
-                    Customize every automated WhatsApp message by language. Variables are validated before saving and
-                    replaced from the sending record at delivery time.
+                    {t(
+                        'Customize every automated WhatsApp message by language. Variables are validated before saving and replaced from the sending record at delivery time.',
+                    )}
                 </p>
             </div>
             {storageWarning && (
@@ -170,6 +177,7 @@ export default function NotificationTemplatesPage({ templates, catalog, locales,
                         definition={definition}
                         templates={templates.filter((template) => template.key === definition.key)}
                         locales={locales}
+                        t={t}
                     />
                 ))}
             </div>
