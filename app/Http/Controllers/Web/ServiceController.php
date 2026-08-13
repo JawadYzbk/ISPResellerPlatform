@@ -27,6 +27,7 @@ use App\Models\Plan;
 use App\Models\Router;
 use App\Models\Service;
 use App\Models\ServiceAddon;
+use App\Models\UsageDaily;
 use App\Models\User;
 use Carbon\CarbonImmutable;
 use DomainException;
@@ -62,6 +63,8 @@ final class ServiceController extends Controller
                 'usage' => [
                     'used_bytes' => $service->current_period_bytes,
                     'quota_bytes' => (int) ($service->plan?->metadata['quota_bytes'] ?? 0),
+                    'fup_action' => $service->fup_applied_at === null ? null : (string) ($service->plan?->metadata['fup_action'] ?? 'throttle'),
+                    'fup_applied_at' => $service->fup_applied_at?->toIso8601String(),
                 ],
                 'equipment' => $service->assignedInventoryUnits->map(fn ($unit): array => [
                     'id' => $unit->id,
@@ -86,6 +89,20 @@ final class ServiceController extends Controller
             ],
             'liveSession' => $diagnosticData['live_session'],
             'usageLast24h' => $diagnosticData['usage_last_24h'],
+            'usageHistory' => UsageDaily::query()
+                ->where('service_id', $service->id)
+                ->latest('usage_date')
+                ->limit(31)
+                ->get(['usage_date', 'input_octets', 'output_octets', 'total_octets'])
+                ->reverse()
+                ->values()
+                ->map(fn (UsageDaily $usage): array => [
+                    'usage_date' => $usage->usage_date->toDateString(),
+                    'input_octets' => $usage->input_octets,
+                    'output_octets' => $usage->output_octets,
+                    'total_octets' => $usage->total_octets,
+                ])
+                ->all(),
             'routerHealth' => $diagnosticData['router_health'],
             'recentCommands' => $diagnosticData['recent_commands'],
             'canActivate' => request()->user()?->can('services.activate') === true,

@@ -57,6 +57,7 @@ it('renders service diagnostics, current session, usage, and command history', f
             ->where('service.username', $service->username)
             ->where('liveSession.acct_session_id', 'detail-session-001')
             ->where('usageLast24h.0.total_octets', 300)
+            ->where('usageHistory.0.total_octets', 300)
             ->where('recentCommands.0.action', 'activate')
             ->where('canDisconnectSession', true)
         );

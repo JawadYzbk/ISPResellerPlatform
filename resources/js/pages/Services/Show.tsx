@@ -30,7 +30,12 @@ type ServiceDetails = {
         currency: string;
     } | null;
     router: { public_id: string; name: string; status: Status } | null;
-    usage: { used_bytes: number; quota_bytes: number };
+    usage: {
+        used_bytes: number;
+        quota_bytes: number;
+        fup_action: string | null;
+        fup_applied_at: string | null;
+    };
     equipment: { serial_number: string; assigned_at: string | null; item: { sku: string; name: string } | null }[];
     addons: {
         public_id: string;
@@ -100,6 +105,7 @@ type Props = PageProps & {
     service: ServiceDetails;
     liveSession: LiveSession;
     usageLast24h: { usage_date: string; input_octets: number; output_octets: number; total_octets: number }[];
+    usageHistory: { usage_date: string; input_octets: number; output_octets: number; total_octets: number }[];
     routerHealth: { status: string; latency_ms: number | null; observed_at: string }[];
     recentCommands: {
         id: string;
@@ -131,6 +137,7 @@ export default function ServiceShow({
     service,
     liveSession,
     usageLast24h,
+    usageHistory,
     routerHealth,
     recentCommands,
     canActivate = false,
@@ -479,6 +486,53 @@ export default function ServiceShow({
                             ))}
                             {usageLast24h.length === 0 && (
                                 <p className="px-6 py-8 text-sm text-muted">No daily usage has been rolled up yet.</p>
+                            )}
+                        </div>
+                    </div>
+
+                    <div className="card overflow-hidden">
+                        <div className="border-b border-line px-6 py-5">
+                            <div className="flex items-center justify-between gap-3">
+                                <div className="flex items-center gap-2">
+                                    <Network size={18} className="text-brand" />
+                                    <h2 className="section-title">Usage history</h2>
+                                </div>
+                                {service.usage.fup_action && (
+                                    <span className="status-badge text-amber-700">
+                                        FUP {service.usage.fup_action}
+                                    </span>
+                                )}
+                            </div>
+                            <p className="mt-1 text-sm text-muted">
+                                Daily RADIUS or session totals for the latest 31 days.
+                                {service.usage.fup_applied_at
+                                    ? ` FUP applied ${formatDate(service.usage.fup_applied_at)}.`
+                                    : ' No FUP action is currently applied.'}
+                            </p>
+                        </div>
+                        <div className="overflow-x-auto">
+                            <table className="w-full min-w-[520px] text-start text-sm">
+                                <thead className="bg-sand/50 text-xs uppercase tracking-wider text-muted">
+                                    <tr>
+                                        <th className="px-6 py-3 text-start">Date</th>
+                                        <th className="px-6 py-3 text-end">Download</th>
+                                        <th className="px-6 py-3 text-end">Upload</th>
+                                        <th className="px-6 py-3 text-end">Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-line">
+                                    {usageHistory.map((row) => (
+                                        <tr key={row.usage_date}>
+                                            <td className="px-6 py-3 text-muted">{formatDate(row.usage_date)}</td>
+                                            <td className="px-6 py-3 text-end tabular-nums">{formatBytes(row.input_octets)}</td>
+                                            <td className="px-6 py-3 text-end tabular-nums">{formatBytes(row.output_octets)}</td>
+                                            <td className="px-6 py-3 text-end font-semibold tabular-nums">{formatBytes(row.total_octets)}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                            {usageHistory.length === 0 && (
+                                <p className="px-6 py-8 text-sm text-muted">No daily usage history is available yet.</p>
                             )}
                         </div>
                     </div>
