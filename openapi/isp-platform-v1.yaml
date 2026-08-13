@@ -1561,6 +1561,76 @@ paths:
         '401': { description: Invalid portal session }
         '404': { description: Invoice not found for this customer }
         '503': { description: No payment gateway is configured }
+  /public-billing/{token}/stripe-intent:
+    post:
+      security: []
+      summary: Create a Stripe intent from an active public invoice payment link
+      parameters:
+        - in: path
+          name: token
+          required: true
+          schema: { type: string, minLength: 64, maxLength: 64 }
+        - in: header
+          name: X-Idempotency-Key
+          required: true
+          schema: { type: string, maxLength: 120 }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [amount]
+              properties:
+                amount: { type: integer, minimum: 1, description: Amount in invoice minor currency units }
+      responses:
+        '201': { description: Stripe intent and browser-safe confirmation payload }
+        '404': { description: Link is invalid, expired, revoked, or not payment-enabled }
+        '422': { description: Missing idempotency key or amount exceeds the invoice balance }
+  /public-billing/{token}/whish:
+    post:
+      security: []
+      summary: Create a Whish QR attempt from an active public invoice payment link
+      parameters:
+        - in: path
+          name: token
+          required: true
+          schema: { type: string, minLength: 64, maxLength: 64 }
+        - in: header
+          name: X-Idempotency-Key
+          required: true
+          schema: { type: string, maxLength: 120 }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [amount]
+              properties:
+                amount: { type: integer, minimum: 1, description: Amount in invoice minor currency units }
+      responses:
+        '201': { description: Pending Whish attempt, collection URL and QR data URI }
+        '404': { description: Link is invalid, expired, revoked, or not payment-enabled }
+        '422': { description: Missing idempotency key, unsupported currency, or amount exceeds the invoice balance }
+        '502': { description: Whish did not return a usable collection URL }
+  /public-billing/{token}/whish/{attempt}:
+    get:
+      security: []
+      summary: Verify and poll a Whish attempt created from a public payment link
+      parameters:
+        - in: path
+          name: token
+          required: true
+          schema: { type: string, minLength: 64, maxLength: 64 }
+        - in: path
+          name: attempt
+          required: true
+          schema: { type: string, description: Payment attempt public ULID }
+      responses:
+        '200': { description: Verified terminal or pending Whish attempt status }
+        '404': { description: Link or matching payment attempt not found }
+        '422': { description: Whish status could not be verified or settled }
   /collector/payments/batch:
     post:
       summary: Record collector payments in a partial-success batch
