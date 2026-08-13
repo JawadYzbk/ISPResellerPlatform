@@ -72,7 +72,7 @@ it('passes the notification template check after localized defaults are provisio
 
     app(MessageTemplateProvisioner::class)->provision($tenant);
 
-    expect(app(Tenancy::class)->run($tenant, fn (): int => MessageTemplate::query()->count()))->toBe(27);
+    expect(app(Tenancy::class)->run($tenant, fn (): int => MessageTemplate::query()->count()))->toBe(81);
 
     $this->artisan('platform:tenant-readiness', ['tenant' => $tenant->slug])
         ->assertExitCode(Command::FAILURE)

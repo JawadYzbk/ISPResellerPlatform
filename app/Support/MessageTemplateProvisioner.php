@@ -148,6 +148,26 @@ final class MessageTemplateProvisioner
         return self::CHANNELS;
     }
 
+    /** @return list<string> */
+    public function supportedLocales(): array
+    {
+        return self::SUPPORTED_LOCALES;
+    }
+
+    /** @return list<array{key: string, label: string, variables: list<string>}> */
+    public function catalog(): array
+    {
+        return array_map(
+            static fn (string $key, array $definition): array => [
+                'key' => $key,
+                'label' => ucwords(str_replace(['.', '_'], ' ', $key)),
+                'variables' => $definition['variables'],
+            ],
+            array_keys(self::DEFAULT_TEMPLATES),
+            array_values(self::DEFAULT_TEMPLATES),
+        );
+    }
+
     public function resolveLocale(Tenant $tenant): string
     {
         $requestedLocale = strtolower((string) ($tenant->locale ?: 'en'));
@@ -157,36 +177,38 @@ final class MessageTemplateProvisioner
 
     public function provision(Tenant $tenant, ?string $templateKey = null, ?string $channel = null, ?string $locale = null): void
     {
-        app(Tenancy::class)->run($tenant, function () use ($tenant, $templateKey, $channel, $locale): void {
+        app(Tenancy::class)->run($tenant, function () use ($templateKey, $channel, $locale): void {
             $tenantId = app(Tenancy::class)->requireId();
             $timestamp = now();
             $templates = [];
-            $resolvedLocale = $locale === null
-                ? $this->resolveLocale($tenant)
-                : (in_array(strtolower($locale), self::SUPPORTED_LOCALES, true) ? strtolower($locale) : 'en');
+            $locales = $locale === null
+                ? self::SUPPORTED_LOCALES
+                : [(in_array(strtolower($locale), self::SUPPORTED_LOCALES, true) ? strtolower($locale) : 'en')];
             $definitions = $templateKey === null
                 ? self::DEFAULT_TEMPLATES
                 : (array_key_exists($templateKey, self::DEFAULT_TEMPLATES) ? [$templateKey => self::DEFAULT_TEMPLATES[$templateKey]] : []);
             $channels = $channel === null ? self::CHANNELS : [$channel];
 
-            if ($definitions === [] || array_diff($channels, self::CHANNELS) !== []) {
+            if ($definitions === [] || array_diff($channels, self::CHANNELS) !== [] || $locales === []) {
                 return;
             }
 
             foreach ($definitions as $key => $definition) {
-                foreach ($channels as $channel) {
-                    $templates[] = [
-                        'tenant_id' => $tenantId,
-                        'key' => $key,
-                        'channel' => $channel,
-                        'locale' => $resolvedLocale,
-                        'subject' => $channel === 'email' ? $definition['subjects'][$resolvedLocale] : null,
-                        'body' => $definition['bodies'][$resolvedLocale],
-                        'variables' => json_encode($definition['variables'], JSON_THROW_ON_ERROR),
-                        'is_active' => true,
-                        'created_at' => $timestamp,
-                        'updated_at' => $timestamp,
-                    ];
+                foreach ($locales as $resolvedLocale) {
+                    foreach ($channels as $channel) {
+                        $templates[] = [
+                            'tenant_id' => $tenantId,
+                            'key' => $key,
+                            'channel' => $channel,
+                            'locale' => $resolvedLocale,
+                            'subject' => $channel === 'email' ? $definition['subjects'][$resolvedLocale] : null,
+                            'body' => $definition['bodies'][$resolvedLocale],
+                            'variables' => json_encode($definition['variables'], JSON_THROW_ON_ERROR),
+                            'is_active' => true,
+                            'created_at' => $timestamp,
+                            'updated_at' => $timestamp,
+                        ];
+                    }
                 }
             }
 
