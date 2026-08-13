@@ -31,34 +31,34 @@
     <table class="header">
         <tr>
             <td><h1>{{ $tenant->name }}</h1><p class="muted">{{ $tenant->slug }}</p></td>
-            <td class="header-right"><h1>Receipt</h1><p>{{ $payment->number }}</p><p class="muted">{{ ucfirst($payment->status->value) }}</p></td>
+            <td class="header-right"><h1>{{ $formatter::label('Receipt', $settings->locale) }}</h1><p>{{ $payment->number }}</p><p class="muted">{{ $formatter::label($payment->status->value, $settings->locale) }}</p></td>
         </tr>
     </table>
 
     <table class="meta">
-        <tr><td><h2>Received from</h2><p>{{ $payment->customer->full_name }}</p><p class="muted">{{ $payment->customer->code }}</p></td><td class="header-right"><h2>Received at</h2><p>{{ $formatter::date($payment->received_at, $settings->timezone) }}</p></td></tr>
-        <tr><td><h2>Method</h2><p>{{ ucfirst($payment->method) }}</p></td><td class="header-right"><h2>Collector</h2><p>{{ $payment->actor?->name ?? '—' }}</p></td></tr>
+        <tr><td><h2>{{ $formatter::label('Received from', $settings->locale) }}</h2><p>{{ $payment->customer->full_name }}</p><p class="muted">{{ $payment->customer->code }}</p></td><td class="header-right"><h2>{{ $formatter::label('Received at', $settings->locale) }}</h2><p>{{ $formatter::date($payment->received_at, $settings->timezone) }}</p></td></tr>
+        <tr><td><h2>{{ $formatter::label('Method', $settings->locale) }}</h2><p>{{ $formatter::label($payment->method, $settings->locale) }}</p></td><td class="header-right"><h2>{{ $formatter::label('Collector', $settings->locale) }}</h2><p>{{ $payment->actor?->name ?? '—' }}</p></td></tr>
     </table>
 
-    <table class="amount"><tr><td><h2>Amount received</h2><p class="muted">{{ $payment->invoice?->number ?? 'Unallocated payment' }}</p></td><td class="value">{{ $formatter::money($payment->amount, $payment->currency) }}</td></tr></table>
+    <table class="amount"><tr><td><h2>{{ $formatter::label('Amount received', $settings->locale) }}</h2><p class="muted">{{ $payment->invoice?->number ?? $formatter::label('Unallocated payment', $settings->locale) }}</p></td><td class="value">{{ $formatter::money($payment->amount, $payment->currency, $settings->locale) }}</td></tr></table>
 
     @if($payment->ledger_amount !== null && ($payment->ledger_currency !== $payment->currency || $payment->fx_rate_overridden || $payment->reference))
         <table class="meta">
-            <tr><td><h2>Ledger equivalent</h2><p>{{ $formatter::money($payment->ledger_amount, $payment->ledger_currency) }}</p></td><td class="header-right"><h2>Base equivalent</h2><p>{{ $formatter::money($payment->base_amount ?? $payment->ledger_amount, data_get($payment->metadata, 'base_currency', $payment->ledger_currency)) }}</p></td></tr>
-            @if($payment->reference || $payment->fx_rate_overridden)<tr><td><h2>Reference</h2><p>{{ $payment->reference ?? '—' }}</p></td><td class="header-right"><h2>FX rate</h2><p>{{ $payment->fx_rate_overridden ? $payment->fx_rate_numerator.'/'.$payment->fx_rate_denominator.' · '.$payment->fx_override_reason : 'Current rate' }}</p></td></tr>@endif
+            <tr><td><h2>{{ $formatter::label('Ledger equivalent', $settings->locale) }}</h2><p>{{ $formatter::money($payment->ledger_amount, $payment->ledger_currency, $settings->locale) }}</p></td><td class="header-right"><h2>{{ $formatter::label('Base equivalent', $settings->locale) }}</h2><p>{{ $formatter::money($payment->base_amount ?? $payment->ledger_amount, data_get($payment->metadata, 'base_currency', $payment->ledger_currency), $settings->locale) }}</p></td></tr>
+            @if($payment->reference || $payment->fx_rate_overridden)<tr><td><h2>{{ $formatter::label('Reference', $settings->locale) }}</h2><p>{{ $payment->reference ?? '—' }}</p></td><td class="header-right"><h2>{{ $formatter::label('FX rate', $settings->locale) }}</h2><p>{{ $payment->fx_rate_overridden ? $payment->fx_rate_numerator.'/'.$payment->fx_rate_denominator.' · '.$payment->fx_override_reason : $formatter::label('Current rate', $settings->locale) }}</p></td></tr>@endif
         </table>
     @elseif($payment->reference)
         <p class="muted">Reference: {{ $payment->reference }}</p>
     @endif
 
     @if($payment->allocations->isNotEmpty())
-        <h2>Invoice allocations</h2>
+        <h2>{{ $formatter::label('Invoice allocations', $settings->locale) }}</h2>
         <table class="allocations">
-            <thead><tr><th>Invoice</th><th class="number">Amount</th></tr></thead>
-            <tbody>@foreach($payment->allocations as $allocation)<tr><td>{{ $allocation->invoice->number }}</td><td class="number">{{ $formatter::money($allocation->amount, $allocation->currency) }}</td></tr>@endforeach</tbody>
+            <thead><tr><th>{{ $formatter::label('Invoice', $settings->locale) }}</th><th class="number">{{ $formatter::label('Amount', $settings->locale) }}</th></tr></thead>
+            <tbody>@foreach($payment->allocations as $allocation)<tr><td>{{ $allocation->invoice->number }}</td><td class="number">{{ $formatter::money($allocation->amount, $allocation->currency, $settings->locale) }}</td></tr>@endforeach</tbody>
         </table>
     @endif
 
-    <p class="footer">Generated {{ $formatter::date(now(), $settings->timezone) }} · {{ $tenant->name }}</p>
+    <p class="footer">{{ $formatter::label('Generated', $settings->locale) }} {{ $formatter::date(now(), $settings->timezone) }} · {{ $tenant->name }}</p>
 </body>
 </html>

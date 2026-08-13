@@ -35,33 +35,33 @@
     <table class="header">
         <tr>
             <td><h1>{{ $tenant->name }}</h1><p class="muted">{{ $tenant->slug }}</p></td>
-            <td class="header-right"><h1>Invoice</h1><p>{{ $invoice->number }}</p><p class="muted">{{ ucfirst($invoice->status->value) }}</p></td>
+            <td class="header-right"><h1>{{ $formatter::label('Invoice', $settings->locale) }}</h1><p>{{ $invoice->number }}</p><p class="muted">{{ $formatter::label($invoice->status->value, $settings->locale) }}</p></td>
         </tr>
     </table>
 
     <table class="meta">
         <tr>
-            <td><h2>Bill to</h2><p>{{ $invoice->customer->full_name }}</p><p class="muted">{{ $invoice->customer->code }}</p><p class="muted">{{ $invoice->customer->email ?? $invoice->customer->phone }}</p></td>
-            <td class="header-right"><h2>Dates</h2><p>Issued: {{ $formatter::date($invoice->issued_at, $settings->timezone) }}</p><p>Due: {{ $formatter::date($invoice->due_at, $settings->timezone) }}</p></td>
+            <td><h2>{{ $formatter::label('Bill to', $settings->locale) }}</h2><p>{{ $invoice->customer->full_name }}</p><p class="muted">{{ $invoice->customer->code }}</p><p class="muted">{{ $invoice->customer->email ?? $invoice->customer->phone }}</p></td>
+            <td class="header-right"><h2>{{ $formatter::label('Dates', $settings->locale) }}</h2><p>{{ $formatter::label('Issued', $settings->locale) }}: {{ $formatter::date($invoice->issued_at, $settings->timezone) }}</p><p>{{ $formatter::label('Due', $settings->locale) }}: {{ $formatter::date($invoice->due_at, $settings->timezone) }}</p></td>
         </tr>
     </table>
 
     <table class="lines">
-        <thead><tr><th>Description</th><th class="number">Qty</th><th class="number">Unit</th><th class="number">Amount</th></tr></thead>
+        <thead><tr><th>{{ $formatter::label('Description', $settings->locale) }}</th><th class="number">{{ $formatter::label('Qty', $settings->locale) }}</th><th class="number">{{ $formatter::label('Unit', $settings->locale) }}</th><th class="number">{{ $formatter::label('Amount', $settings->locale) }}</th></tr></thead>
         <tbody>
         @foreach($invoice->lines as $line)
-            <tr><td>{{ $line->description }}</td><td class="number">{{ $line->quantity }}</td><td class="number">{{ $formatter::money($line->unit_amount, $line->currency) }}</td><td class="number">{{ $formatter::money($line->total_amount, $line->currency) }}</td></tr>
+            <tr><td>{{ $line->description }}</td><td class="number">{{ $line->quantity }}</td><td class="number">{{ $formatter::money($line->unit_amount, $line->currency, $settings->locale) }}</td><td class="number">{{ $formatter::money($line->total_amount, $line->currency, $settings->locale) }}</td></tr>
         @endforeach
         </tbody>
     </table>
 
     <table class="summary">
-        <tr><td class="label">Subtotal</td><td class="value">{{ $formatter::money($invoice->subtotal_amount, $invoice->currency) }}</td></tr>
-        <tr><td class="label">Tax</td><td class="value">{{ $formatter::money($invoice->tax_amount, $invoice->currency) }}</td></tr>
-        <tr class="total"><td class="label">Total</td><td class="value">{{ $formatter::money($invoice->total_amount, $invoice->currency) }}</td></tr>
-        <tr><td class="label">Paid</td><td class="value">{{ $formatter::money($allocated, $invoice->currency) }}</td></tr>
-        <tr><td class="label">Credits</td><td class="value">{{ $formatter::money($credited, $invoice->currency) }}</td></tr>
-        <tr><td class="label">Outstanding</td><td class="value">{{ $formatter::money($outstanding, $invoice->currency) }}</td></tr>
+        <tr><td class="label">{{ $formatter::label('Subtotal', $settings->locale) }}</td><td class="value">{{ $formatter::money($invoice->subtotal_amount, $invoice->currency, $settings->locale) }}</td></tr>
+        <tr><td class="label">{{ $formatter::label('Tax', $settings->locale) }}</td><td class="value">{{ $formatter::money($invoice->tax_amount, $invoice->currency, $settings->locale) }}</td></tr>
+        <tr class="total"><td class="label">{{ $formatter::label('Total', $settings->locale) }}</td><td class="value">{{ $formatter::money($invoice->total_amount, $invoice->currency, $settings->locale) }}</td></tr>
+        <tr><td class="label">{{ $formatter::label('Paid', $settings->locale) }}</td><td class="value">{{ $formatter::money($allocated, $invoice->currency, $settings->locale) }}</td></tr>
+        <tr><td class="label">{{ $formatter::label('Credits', $settings->locale) }}</td><td class="value">{{ $formatter::money($credited, $invoice->currency, $settings->locale) }}</td></tr>
+        <tr><td class="label">{{ $formatter::label('Outstanding', $settings->locale) }}</td><td class="value">{{ $formatter::money($outstanding, $invoice->currency, $settings->locale) }}</td></tr>
     </table>
 
     <p class="footer">Generated {{ $formatter::date(now(), $settings->timezone) }} · {{ $tenant->name }}</p>

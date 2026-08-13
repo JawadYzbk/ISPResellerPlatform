@@ -28,41 +28,41 @@
             <img class="logo" src="{{ $logoDataUri }}" alt="">
         @endif
         <h1 class="tenant">{{ $tenant->name }}</h1>
-        <p class="muted">Payment receipt</p>
-        <p class="status">{{ $payment->status->value }}</p>
+        <p class="muted">{{ $formatter::label('Payment receipt', $settings->locale) }}</p>
+        <p class="status">{{ $formatter::label($payment->status->value, $settings->locale) }}</p>
     </div>
 
     <div class="rule"></div>
-    <div class="row"><span class="label">Receipt</span><span class="value">{{ $payment->number }}</span></div>
-    <div class="row"><span class="label">Date</span><span class="value">{{ $formatter::date($payment->received_at, $settings->timezone) }}</span></div>
-    <div class="row"><span class="label">Customer</span><span class="value">{{ $payment->customer->full_name }}</span></div>
-    <div class="row"><span class="label">Account</span><span class="value">{{ $payment->customer->code }}</span></div>
-    <div class="row"><span class="label">Method</span><span class="value">{{ ucfirst(str_replace('_', ' ', $payment->method)) }}</span></div>
+    <div class="row"><span class="label">{{ $formatter::label('Receipt number', $settings->locale) }}</span><span class="value">{{ $payment->number }}</span></div>
+    <div class="row"><span class="label">{{ $formatter::label('Date', $settings->locale) }}</span><span class="value">{{ $formatter::date($payment->received_at, $settings->timezone) }}</span></div>
+    <div class="row"><span class="label">{{ $formatter::label('Customer', $settings->locale) }}</span><span class="value">{{ $payment->customer->full_name }}</span></div>
+    <div class="row"><span class="label">{{ $formatter::label('Account', $settings->locale) }}</span><span class="value">{{ $payment->customer->code }}</span></div>
+    <div class="row"><span class="label">{{ $formatter::label('Method', $settings->locale) }}</span><span class="value">{{ $formatter::label($payment->method, $settings->locale) }}</span></div>
     @if ($payment->reference)
-        <div class="row"><span class="label">Reference</span><span class="value">{{ $payment->reference }}</span></div>
+        <div class="row"><span class="label">{{ $formatter::label('Reference', $settings->locale) }}</span><span class="value">{{ $payment->reference }}</span></div>
     @endif
 
     <div class="rule"></div>
-    <p class="center muted">Amount received</p>
-    <p class="amount">{{ $formatter::money($payment->amount, $payment->currency) }}</p>
+    <p class="center muted">{{ $formatter::label('Amount received', $settings->locale) }}</p>
+    <p class="amount">{{ $formatter::money($payment->amount, $payment->currency, $settings->locale) }}</p>
 
     @if ($payment->allocations->isNotEmpty())
         <div class="rule"></div>
-        <p class="center muted" style="margin-bottom: 5px;">Applied to</p>
+        <p class="center muted" style="margin-bottom: 5px;">{{ $formatter::label('Applied to', $settings->locale) }}</p>
         @foreach ($payment->allocations as $allocation)
             <div class="allocation row">
                 <span class="label">{{ $allocation->invoice->number }}</span>
-                <span class="value">{{ $formatter::money($allocation->amount, $allocation->currency) }}</span>
+                <span class="value">{{ $formatter::money($allocation->amount, $allocation->currency, $settings->locale) }}</span>
             </div>
         @endforeach
     @endif
 
     <div class="rule"></div>
     <div class="footer">
-        <p>Thank you.</p>
-        <p class="muted">Keep this receipt for your records.</p>
+        <p>{{ $formatter::label('Thank you.', $settings->locale) }}</p>
+        <p class="muted">{{ $formatter::label('Keep this receipt for your records.', $settings->locale) }}</p>
         @if ($payment->status->value === 'reversed')
-            <p style="font-weight: bold; margin-top: 6px;">REVERSED — NOT VALID FOR PAYMENT</p>
+            <p style="font-weight: bold; margin-top: 6px;">{{ $formatter::label('REVERSED — NOT VALID FOR PAYMENT', $settings->locale) }}</p>
         @endif
     </div>
 </body>
