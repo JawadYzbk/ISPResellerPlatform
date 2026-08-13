@@ -1,7 +1,9 @@
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, usePage } from '@inertiajs/react';
 import { AlertTriangle, ArrowLeft, CheckCircle2, ExternalLink, XCircle } from 'lucide-react';
 
 import AppLayout from '@/layouts/AppLayout';
+import { createTranslator } from '@/lib/i18n';
+import type { PageProps } from '@/types';
 
 type Status = 'PASS' | 'WARN' | 'FAIL';
 type Check = { name: string; status: Status; detail: string };
@@ -65,38 +67,37 @@ function StatusIcon({ status }: { status: Status }) {
 }
 
 export default function Setup({ checks }: Props) {
+    const { props } = usePage<PageProps>();
+    const t = createTranslator(props.app.locale);
     const failed = checks.filter((check) => check.status === 'FAIL').length;
     const passed = checks.filter((check) => check.status === 'PASS').length;
 
     return (
         <AppLayout>
-            <Head title="First-time setup" />
+            <Head title={t('First-time setup')} />
             <Link
                 href="/settings/general"
                 className="mb-6 inline-flex items-center gap-2 text-sm font-semibold text-muted hover:text-brand"
             >
-                <ArrowLeft size={16} /> Workspace settings
+                <ArrowLeft size={16} /> {t('Workspace settings')}
             </Link>
             <div className="max-w-5xl">
-                <p className="eyebrow">Workspace launch</p>
-                <h1 className="page-title">First-time setup</h1>
-                <p className="page-subtitle">
-                    Set up the workspace in the order operators need it. Nothing is considered ready until the live
-                    tenant checks below pass.
-                </p>
+                <p className="eyebrow">{t('setup.workspace_launch')}</p>
+                <h1 className="page-title">{t('First-time setup')}</h1>
+                <p className="page-subtitle">{t('setup.subtitle')}</p>
 
                 <div className="mt-6 grid gap-4 sm:grid-cols-3">
                     <div className="card p-5">
-                        <p className="eyebrow">Checks passing</p>
+                        <p className="eyebrow">{t('setup.checks_passing')}</p>
                         <p className="mt-2 text-2xl font-semibold text-emerald-700">{passed}</p>
                     </div>
                     <div className="card p-5">
-                        <p className="eyebrow">Action required</p>
+                        <p className="eyebrow">{t('Action required')}</p>
                         <p className="mt-2 text-2xl font-semibold text-coral">{failed}</p>
                     </div>
                     <div className="card p-5">
-                        <p className="eyebrow">Launch rule</p>
-                        <p className="mt-2 text-sm font-semibold">Resolve failed checks before pilot</p>
+                        <p className="eyebrow">{t('setup.launch_rule')}</p>
+                        <p className="mt-2 text-sm font-semibold">{t('setup.resolve_before_pilot')}</p>
                     </div>
                 </div>
 
@@ -112,10 +113,12 @@ export default function Setup({ checks }: Props) {
                                     {step.number}
                                 </span>
                                 <div>
-                                    <h2 className="text-base font-semibold group-hover:text-brand">{step.title}</h2>
-                                    <p className="mt-1 text-sm text-muted">{step.detail}</p>
+                                    <h2 className="text-base font-semibold group-hover:text-brand">
+                                        {t(`setup.step.${step.number}.title`)}
+                                    </h2>
+                                    <p className="mt-1 text-sm text-muted">{t(`setup.step.${step.number}.detail`)}</p>
                                     <span className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-brand">
-                                        Open setup <ExternalLink size={13} />
+                                        {t('setup.open_setup')} <ExternalLink size={13} />
                                     </span>
                                 </div>
                             </div>
@@ -125,25 +128,23 @@ export default function Setup({ checks }: Props) {
 
                 <section className="card mt-6 overflow-hidden">
                     <div className="border-b border-line px-5 py-5">
-                        <p className="eyebrow">Live readiness</p>
-                        <h2 className="mt-1 text-base font-semibold">Tenant launch checks</h2>
-                        <p className="mt-1 text-sm text-muted">
-                            These are the same checks used by the release handoff command.
-                        </p>
+                        <p className="eyebrow">{t('setup.live_readiness')}</p>
+                        <h2 className="mt-1 text-base font-semibold">{t('setup.tenant_launch_checks')}</h2>
+                        <p className="mt-1 text-sm text-muted">{t('setup.checks_description')}</p>
                     </div>
                     <div className="divide-y divide-line">
                         {checks.map((check) => (
                             <div key={check.name} className="flex items-start gap-3 px-5 py-4">
                                 <StatusIcon status={check.status} />
                                 <div className="min-w-0 flex-1">
-                                    <p className="text-sm font-semibold">{check.name}</p>
-                                    <p className="mt-1 text-sm text-muted">{check.detail}</p>
+                                    <p className="text-sm font-semibold">{t(check.name)}</p>
+                                    <p className="mt-1 text-sm text-muted">{t(check.detail)}</p>
                                     {links[check.name] && check.status !== 'PASS' ? (
                                         <Link
                                             href={links[check.name]}
                                             className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-brand"
                                         >
-                                            Fix this check <ExternalLink size={13} />
+                                            {t('setup.fix_check')} <ExternalLink size={13} />
                                         </Link>
                                     ) : null}
                                 </div>
