@@ -119,11 +119,22 @@ function formatDate(value: string | null, t: (key: string) => string): string {
     return new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value));
 }
 
-function ErrorText({ message }: { message?: string }) {
+function fieldA11y(id: string, error?: string) {
+    return {
+        'aria-invalid': Boolean(error),
+        'aria-describedby': error ? `${id}-error` : undefined,
+    };
+}
+
+function ErrorText({ id, message }: { id?: string; message?: string }) {
     const page = usePage<PageProps>();
     const t = createTranslator(page.props.app.locale);
 
-    return message ? <p className="field-error" role="alert">{t(message)}</p> : null;
+    return message ? (
+        <p id={id ? `${id}-error` : undefined} className="field-error" role="alert">
+            {t(message)}
+        </p>
+    ) : null;
 }
 
 function DeviceFields({
@@ -131,40 +142,50 @@ function DeviceFields({
     pops,
     deviceTypes,
     deviceStatuses,
+    fieldPrefix,
     t,
 }: {
     form: ReturnType<typeof useForm<FormData>>;
     pops: Pop[];
     deviceTypes: string[];
     deviceStatuses: string[];
+    fieldPrefix: string;
     t: (key: string) => string;
 }) {
+    const fieldId = (name: keyof FormData) => `${fieldPrefix}-${name}`;
+
     return (
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
             <label>
                 <span className="field-label">{t('Name')}</span>
                 <input
+                    id={fieldId('name')}
                     className="field"
+                    {...fieldA11y(fieldId('name'), form.errors.name)}
                     value={form.data.name}
                     onChange={(event) => form.setData('name', event.target.value)}
                     placeholder={t('Core OLT')}
                 />
-                <ErrorText message={form.errors.name} />
+                <ErrorText id={fieldId('name')} message={form.errors.name} />
             </label>
             <label>
                 <span className="field-label">{t('Code')}</span>
                 <input
+                    id={fieldId('code')}
                     className="field uppercase"
+                    {...fieldA11y(fieldId('code'), form.errors.code)}
                     value={form.data.code}
                     onChange={(event) => form.setData('code', event.target.value)}
                     placeholder="OLT-CENTRAL-01"
                 />
-                <ErrorText message={form.errors.code} />
+                <ErrorText id={fieldId('code')} message={form.errors.code} />
             </label>
             <label>
                 <span className="field-label">{t('Type')}</span>
                 <ResponsiveSelect
+                    id={fieldId('device_type')}
                     className="field"
+                    {...fieldA11y(fieldId('device_type'), form.errors.device_type)}
                     value={form.data.device_type}
                     onChange={(event) => form.setData('device_type', event.target.value)}
                 >
@@ -174,12 +195,14 @@ function DeviceFields({
                         </option>
                     ))}
                 </ResponsiveSelect>
-                <ErrorText message={form.errors.device_type} />
+                <ErrorText id={fieldId('device_type')} message={form.errors.device_type} />
             </label>
             <label>
                 <span className="field-label">{t('Status')}</span>
                 <ResponsiveSelect
+                    id={fieldId('status')}
                     className="field"
+                    {...fieldA11y(fieldId('status'), form.errors.status)}
                     value={form.data.status}
                     onChange={(event) => form.setData('status', event.target.value)}
                 >
@@ -189,12 +212,14 @@ function DeviceFields({
                         </option>
                     ))}
                 </ResponsiveSelect>
-                <ErrorText message={form.errors.status} />
+                <ErrorText id={fieldId('status')} message={form.errors.status} />
             </label>
             <label>
                 <span className="field-label">{t('POP')}</span>
                 <ResponsiveSelect
+                    id={fieldId('pop_id')}
                     className="field"
+                    {...fieldA11y(fieldId('pop_id'), form.errors.pop_id)}
                     value={form.data.pop_id}
                     onChange={(event) => form.setData('pop_id', event.target.value)}
                 >
@@ -205,60 +230,70 @@ function DeviceFields({
                         </option>
                     ))}
                 </ResponsiveSelect>
-                <ErrorText message={form.errors.pop_id} />
+                <ErrorText id={fieldId('pop_id')} message={form.errors.pop_id} />
             </label>
             <label>
                 <span className="field-label">{t('Vendor')}</span>
                 <input
+                    id={fieldId('vendor')}
                     className="field"
+                    {...fieldA11y(fieldId('vendor'), form.errors.vendor)}
                     value={form.data.vendor}
                     onChange={(event) => form.setData('vendor', event.target.value)}
                     placeholder="Huawei, ZTE, Nokia"
                 />
-                <ErrorText message={form.errors.vendor} />
+                <ErrorText id={fieldId('vendor')} message={form.errors.vendor} />
             </label>
             <label>
                 <span className="field-label">{t('Model')}</span>
                 <input
+                    id={fieldId('model')}
                     className="field"
+                    {...fieldA11y(fieldId('model'), form.errors.model)}
                     value={form.data.model}
                     onChange={(event) => form.setData('model', event.target.value)}
                     placeholder="MA5800"
                 />
-                <ErrorText message={form.errors.model} />
+                <ErrorText id={fieldId('model')} message={form.errors.model} />
             </label>
             <label>
                 <span className="field-label">{t('Management host')}</span>
                 <input
+                    id={fieldId('host')}
                     className="field"
+                    {...fieldA11y(fieldId('host'), form.errors.host)}
                     value={form.data.host}
                     onChange={(event) => form.setData('host', event.target.value)}
                     placeholder="10.0.0.10"
                 />
-                <ErrorText message={form.errors.host} />
+                <ErrorText id={fieldId('host')} message={form.errors.host} />
             </label>
             <label>
                 <span className="field-label">{t('Management port')}</span>
                 <input
+                    id={fieldId('management_port')}
                     className="field"
                     type="number"
                     min="1"
                     max="65535"
+                    {...fieldA11y(fieldId('management_port'), form.errors.management_port)}
                     value={form.data.management_port}
                     onChange={(event) => form.setData('management_port', event.target.value)}
                     placeholder="161"
                 />
-                <ErrorText message={form.errors.management_port} />
+                <ErrorText id={fieldId('management_port')} message={form.errors.management_port} />
             </label>
             <label className="md:col-span-2 xl:col-span-3">
                 <span className="field-label">{t('Notes')}</span>
                 <textarea
+                    id={fieldId('notes')}
                     className="field min-h-24 resize-y"
+                    {...fieldA11y(fieldId('notes'), form.errors.notes)}
                     value={form.data.notes}
                     onChange={(event) => form.setData('notes', event.target.value)}
                                 placeholder={t('Rack, cabinet, vendor access notes')}
                 />
-                <ErrorText message={form.errors.notes} />
+                <ErrorText id={fieldId('notes')} message={form.errors.notes} />
             </label>
         </div>
     );
@@ -363,6 +398,7 @@ export default function OpticalOperationsPage({
                         pops={pops}
                         deviceTypes={deviceTypes}
                         deviceStatuses={deviceStatuses}
+                        fieldPrefix="optical-create"
                         t={t}
                     />
                     <div className="flex justify-end">
@@ -506,6 +542,7 @@ export default function OpticalOperationsPage({
                                                 pops={pops}
                                                 deviceTypes={deviceTypes}
                                                 deviceStatuses={deviceStatuses}
+                                                fieldPrefix="optical-edit"
                                                 t={t}
                                             />
                                             <div className="flex justify-end gap-2">
@@ -549,7 +586,9 @@ export default function OpticalOperationsPage({
                         <label>
                             <span className="field-label">{t('Device')}</span>
                             <ResponsiveSelect
+                                id="optical-reading-device"
                                 className="field"
+                                {...fieldA11y('optical-reading-device', readingForm.errors.optical_device_id)}
                                 value={readingForm.data.optical_device_id}
                                 onChange={(event) => readingForm.setData('optical_device_id', event.target.value)}
                             >
@@ -560,12 +599,14 @@ export default function OpticalOperationsPage({
                                     </option>
                                 ))}
                             </ResponsiveSelect>
-                            <ErrorText message={readingForm.errors.optical_device_id} />
+                            <ErrorText id="optical-reading-device" message={readingForm.errors.optical_device_id} />
                         </label>
                         <label>
                             <span className="field-label">{t('Service')}</span>
                             <ResponsiveSelect
+                                id="optical-reading-service"
                                 className="field"
+                                {...fieldA11y('optical-reading-service', readingForm.errors.service_id)}
                                 value={readingForm.data.service_id}
                                 onChange={(event) => readingForm.setData('service_id', event.target.value)}
                             >
@@ -577,46 +618,52 @@ export default function OpticalOperationsPage({
                                     </option>
                                 ))}
                             </ResponsiveSelect>
-                            <ErrorText message={readingForm.errors.service_id} />
+                            <ErrorText id="optical-reading-service" message={readingForm.errors.service_id} />
                         </label>
                         <label>
                             <span className="field-label">{t('ONU serial')}</span>
                             <input
+                                id="optical-reading-onu-serial"
                                 className="field"
+                                {...fieldA11y('optical-reading-onu-serial', readingForm.errors.onu_serial)}
                                 value={readingForm.data.onu_serial}
                                 onChange={(event) => readingForm.setData('onu_serial', event.target.value)}
                                 placeholder="HWTC12345678"
                             />
-                            <ErrorText message={readingForm.errors.onu_serial} />
+                            <ErrorText id="optical-reading-onu-serial" message={readingForm.errors.onu_serial} />
                         </label>
                         <div className="grid gap-4 sm:grid-cols-2">
                             <label>
                                 <span className="field-label">{t('RX power (dBm)')}</span>
                                 <input
+                                    id="optical-reading-rx"
                                     className="field"
                                     type="number"
                                     step="0.01"
                                     min="-60"
                                     max="10"
+                                    {...fieldA11y('optical-reading-rx', readingForm.errors.rx_dbm)}
                                     value={readingForm.data.rx_dbm}
                                     onChange={(event) => readingForm.setData('rx_dbm', event.target.value)}
                                     placeholder="-18.50"
                                 />
-                                <ErrorText message={readingForm.errors.rx_dbm} />
+                                <ErrorText id="optical-reading-rx" message={readingForm.errors.rx_dbm} />
                             </label>
                             <label>
                                 <span className="field-label">{t('TX power (dBm)')}</span>
                                 <input
+                                    id="optical-reading-tx"
                                     className="field"
                                     type="number"
                                     step="0.01"
                                     min="-20"
                                     max="20"
+                                    {...fieldA11y('optical-reading-tx', readingForm.errors.tx_dbm)}
                                     value={readingForm.data.tx_dbm}
                                     onChange={(event) => readingForm.setData('tx_dbm', event.target.value)}
                                     placeholder="2.20"
                                 />
-                                <ErrorText message={readingForm.errors.tx_dbm} />
+                                <ErrorText id="optical-reading-tx" message={readingForm.errors.tx_dbm} />
                             </label>
                         </div>
                         <label>
@@ -624,26 +671,30 @@ export default function OpticalOperationsPage({
                                 <Thermometer size={14} className="me-1 inline" /> {t('Temperature (°C)')}
                             </span>
                             <input
+                                id="optical-reading-temperature"
                                 className="field"
                                 type="number"
                                 step="0.01"
                                 min="-50"
                                 max="150"
+                                {...fieldA11y('optical-reading-temperature', readingForm.errors.temperature_c)}
                                 value={readingForm.data.temperature_c}
                                 onChange={(event) => readingForm.setData('temperature_c', event.target.value)}
                                 placeholder="42.00"
                             />
-                            <ErrorText message={readingForm.errors.temperature_c} />
+                            <ErrorText id="optical-reading-temperature" message={readingForm.errors.temperature_c} />
                         </label>
                         <label>
                             <span className="field-label">{t('Recorded at')}</span>
                             <input
+                                id="optical-reading-recorded-at"
                                 className="field"
                                 type="datetime-local"
+                                {...fieldA11y('optical-reading-recorded-at', readingForm.errors.recorded_at)}
                                 value={readingForm.data.recorded_at}
                                 onChange={(event) => readingForm.setData('recorded_at', event.target.value)}
                             />
-                            <ErrorText message={readingForm.errors.recorded_at} />
+                            <ErrorText id="optical-reading-recorded-at" message={readingForm.errors.recorded_at} />
                         </label>
                         <button
                             type="submit"
