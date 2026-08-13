@@ -342,7 +342,9 @@ export default function GeneralSettings({
                                             onChange={(event) => form.setData('logo', event.target.files?.[0] ?? null)}
                                         />
                                         <p className="mt-1 text-xs text-muted">
-                                            {t('JPG, PNG, or WebP up to 2 MB. It appears in the staff shell and customer portal.')}
+                                            {t(
+                                                'JPG, PNG, or WebP up to 2 MB. It appears in the staff shell and customer portal.',
+                                            )}
                                         </p>
                                         {form.errors.logo && <p className="field-error">{t(form.errors.logo)}</p>}
                                     </div>
@@ -523,8 +525,13 @@ export default function GeneralSettings({
                         </label>
                     </section>
                     <div className="flex justify-end border-t border-line pt-5">
-                        <button id="save-workspace-settings" className="button-primary" disabled={form.processing}>
-                            <Save size={16} /> {t('Save settings')}
+                        <button
+                            type="submit"
+                            id="save-workspace-settings"
+                            className="button-primary"
+                            disabled={form.processing}
+                        >
+                            <Save size={16} aria-hidden="true" /> {t('Save settings')}
                         </button>
                     </div>
                 </form>
