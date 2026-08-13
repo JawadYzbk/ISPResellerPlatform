@@ -85,7 +85,7 @@ $env:PUPPETEER_EXECUTABLE_PATH = 'C:\Program Files\Google\Chrome\Application\chr
 npm run dev:whatsapp
 ```
 
-Use the installed Chromium or Chrome executable available on your machine. Keep the bridge terminal running while pairing or sending WhatsApp messages; stop it when the local session is no longer needed. The default `composer run dev` command does not start this optional process.
+Use the installed Chromium or Chrome executable available on your machine. The local command keeps the private session under `integrations/whatsapp-web/.wwebjs_auth`, which is ignored by Git. Keep the bridge terminal running while pairing or sending WhatsApp messages; stop it when the local session is no longer needed. The default `composer run dev` command does not start this optional process.
 
 Open [http://localhost:8000](http://localhost:8000). Demo account: `admin@example.com` / `password`.
 

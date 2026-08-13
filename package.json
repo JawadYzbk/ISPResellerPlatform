@@ -5,7 +5,7 @@
     "scripts": {
         "build": "vite build",
         "dev": "vite",
-        "dev:whatsapp": "node --env-file=.env integrations/whatsapp-web/src/index.js",
+        "dev:whatsapp": "node --env-file=.env scripts/start-whatsapp-local.mjs",
         "lint": "eslint resources/js tests/e2e playwright.config.ts --max-warnings=0",
         "typecheck": "tsc --noEmit",
     "format": "prettier --write resources/js resources/css scripts playwright.config.ts tests/e2e",
