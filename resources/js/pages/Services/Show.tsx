@@ -1,12 +1,13 @@
 import ResponsiveSelect from '@/components/ui/responsive-select';
-import { Head, Link, router, useForm } from '@inertiajs/react';
+import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
 import { ArrowLeft, CalendarDays, CircleAlert, Network, Plus, RefreshCw, Wifi, WifiOff, X } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { StatusBadge, type Status } from '@/components/StatusBadge';
 import AppLayout from '@/layouts/AppLayout';
 import ConfirmDialog from '@/components/ui/confirm-dialog';
 import { formatBytes, formatDate, formatDuration, formatMoney } from '@/lib/format';
+import { createTranslator } from '@/lib/i18n';
 import type { PageProps } from '@/types';
 
 type ServiceDetails = {
@@ -150,6 +151,8 @@ export default function ServiceShow({
     plans,
     availableAddons,
 }: Props) {
+   const page = usePage<PageProps>();
+    const t = useMemo(() => createTranslator(page.props.app.locale), [page.props.app.locale]);
     const planForm = useForm({ plan_id: plans[0]?.id.toString() ?? '', effective: 'next_cycle' });
     const [planPreview, setPlanPreview] = useState<PlanPreview | null>(null);
     const [planPreviewError, setPlanPreviewError] = useState<string | null>(null);
@@ -193,7 +196,7 @@ export default function ServiceShow({
                 const payload = (await response.json()) as PlanPreview | { message?: string };
                 if (!response.ok || !('effective' in payload)) {
                     throw new Error(
-                        'message' in payload && payload.message ? payload.message : 'The plan quote is unavailable.',
+                        'message' in payload && payload.message ? payload.message : t('The plan quote is unavailable.'),
                     );
                 }
                 setPlanPreviewError(null);
@@ -202,11 +205,11 @@ export default function ServiceShow({
             .catch((error: unknown) => {
                 if (error instanceof DOMException && error.name === 'AbortError') return;
                 setPlanPreview(null);
-                setPlanPreviewError(error instanceof Error ? error.message : 'The plan quote is unavailable.');
+                setPlanPreviewError(error instanceof Error ? error.message : t('The plan quote is unavailable.'));
             });
 
         return () => controller.abort();
-    }, [canChangePlan, planForm.data.effective, planForm.data.plan_id, service.public_id]);
+    }, [canChangePlan, planForm.data.effective, planForm.data.plan_id, service.public_id, t]);
 
     useEffect(() => {
         if (!canChangeBillingCycle || !cycleForm.data.anchor_day) return;
@@ -225,7 +228,7 @@ export default function ServiceShow({
                     throw new Error(
                         'message' in payload && payload.message
                             ? payload.message
-                            : 'The billing-cycle quote is unavailable.',
+                            : t('The billing-cycle quote is unavailable.'),
                     );
                 }
                 setCyclePreviewError(null);
@@ -235,12 +238,12 @@ export default function ServiceShow({
                 if (error instanceof DOMException && error.name === 'AbortError') return;
                 setCyclePreview(null);
                 setCyclePreviewError(
-                    error instanceof Error ? error.message : 'The billing-cycle quote is unavailable.',
+                    error instanceof Error ? error.message : t('The billing-cycle quote is unavailable.'),
                 );
             });
 
         return () => controller.abort();
-    }, [canChangeBillingCycle, cycleForm.data.anchor_day, service.public_id]);
+    }, [canChangeBillingCycle, cycleForm.data.anchor_day, service.public_id, t]);
 
     useEffect(() => {
         const reloadWhenVisible = () => {
@@ -265,11 +268,11 @@ export default function ServiceShow({
                 href="/services"
                 className="mb-6 inline-flex items-center gap-2 text-sm font-semibold text-muted hover:text-brand"
             >
-                <ArrowLeft size={16} /> Back to services
+                <ArrowLeft size={16} /> {t('Back to services')}
             </Link>
             <div className="flex flex-col justify-between gap-5 md:flex-row md:items-end">
                 <div>
-                    <p className="eyebrow">Subscriber service</p>
+                    <p className="eyebrow">{t('Subscriber service')}</p>
                     <div className="mt-2 flex flex-wrap items-center gap-3">
                         <h1 className="page-title">{service.username}</h1>
                         <StatusBadge status={service.status} />
@@ -287,30 +290,30 @@ export default function ServiceShow({
                 <div className="flex flex-wrap gap-2">
                     {service.status === 'active' && canSuspend && (
                         <ConfirmDialog
-                            title="Suspend this service?"
-                            description="The service will be suspended and its network access will be restricted."
-                            confirmLabel="Suspend service"
+                            title={t('Suspend this service?')}
+                            description={t('The service will be suspended and its network access will be restricted.')}
+                            confirmLabel={t('Suspend service')}
                             destructive
                             onConfirm={() =>
                                 router.post(`/services/${service.public_id}/suspend`, { reason: 'manual_operator' })
                             }
                         >
                             <button type="button" className="button-secondary text-coral">
-                                Suspend
+                                {t('Suspend')}
                             </button>
                         </ConfirmDialog>
                     )}
                     {service.status === 'active' && canPause && (
                         <ConfirmDialog
-                            title="Pause this service?"
-                            description="The service will pause without closing the account or removing its plan."
-                            confirmLabel="Pause service"
+                            title={t('Pause this service?')}
+                            description={t('The service will pause without closing the account or removing its plan.')}
+                            confirmLabel={t('Pause service')}
                             onConfirm={() =>
                                 router.post(`/services/${service.public_id}/pause`, { reason: 'customer_requested' })
                             }
                         >
                             <button type="button" className="button-secondary text-violet-700">
-                                Pause
+                                {t('Pause')}
                             </button>
                         </ConfirmDialog>
                     )}
@@ -318,29 +321,31 @@ export default function ServiceShow({
                         (service.status === 'paused' && canActivate)) && (
                         <ConfirmDialog
                             title={
-                                service.status === 'paused' ? 'Resume this service from pause?' : 'Resume this service?'
+                                service.status === 'paused'
+                                    ? t('Resume this service from pause?')
+                                    : t('Resume this service?')
                             }
-                            description="The service will be active again and network provisioning will resume."
-                            confirmLabel="Resume service"
+                            description={t('The service will be active again and network provisioning will resume.')}
+                            confirmLabel={t('Resume service')}
                             onConfirm={() => router.post(`/services/${service.public_id}/resume`)}
                         >
                             <button type="button" className="button-primary">
-                                Resume
+                                {t('Resume')}
                             </button>
                         </ConfirmDialog>
                     )}
                     {canTerminate && service.status !== 'terminated' && (
                         <ConfirmDialog
-                            title="Terminate this service?"
-                            description="Equipment will be marked for recovery and this service cannot be reactivated."
-                            confirmLabel="Terminate service"
+                            title={t('Terminate this service?')}
+                            description={t('Equipment will be marked for recovery and this service cannot be reactivated.')}
+                            confirmLabel={t('Terminate service')}
                             destructive
                             onConfirm={() =>
                                 router.post(`/services/${service.public_id}/terminate`, { reason: 'manual_operator' })
                             }
                         >
                             <button type="button" className="button-secondary text-coral">
-                                Terminate
+                                {t('Terminate')}
                             </button>
                         </ConfirmDialog>
                     )}
@@ -350,7 +355,7 @@ export default function ServiceShow({
                             className="button-secondary"
                             onClick={() => router.post(`/services/${service.public_id}/resync`)}
                         >
-                            <RefreshCw size={16} /> Re-sync
+                            <RefreshCw size={16} /> {t('Re-sync')}
                         </button>
                     )}
                 </div>
@@ -360,23 +365,23 @@ export default function ServiceShow({
                 <div className="space-y-6">
                     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                         <div className="card p-5">
-                            <p className="text-xs text-muted">Plan</p>
-                            <p className="mt-2 font-semibold">{service.plan?.name ?? 'No plan'}</p>
+                            <p className="text-xs text-muted">{t('Plan')}</p>
+                            <p className="mt-2 font-semibold">{service.plan?.name ?? t('No plan')}</p>
                             <p className="mt-1 text-xs text-muted">
                                 {service.plan
                                     ? `${service.plan.download_kbps / 1000} / ${service.plan.upload_kbps / 1000} Mbps`
-                                    : 'Unassigned'}
+                                    : t('Unassigned')}
                             </p>
                         </div>
                         <div className="card p-5">
-                            <p className="text-xs text-muted">Router</p>
-                            <p className="mt-2 font-semibold">{service.router?.name ?? 'No router'}</p>
+                            <p className="text-xs text-muted">{t('Router')}</p>
+                            <p className="mt-2 font-semibold">{service.router?.name ?? t('No router')}</p>
                             <p className="mt-1 text-xs capitalize text-muted">
-                                {service.router?.status ?? 'Unassigned'}
+                                {service.router?.status ? t(service.router.status) : t('Unassigned')}
                             </p>
                         </div>
                         <div className="card p-5">
-                            <p className="text-xs text-muted">Expires</p>
+                            <p className="text-xs text-muted">{t('Expires')}</p>
                             <p className="mt-2 flex items-center gap-1.5 font-semibold">
                                 <CalendarDays size={14} className="text-muted" /> {formatDate(service.expires_at)}
                             </p>
@@ -385,11 +390,11 @@ export default function ServiceShow({
                             </p>
                         </div>
                         <div className="card p-5">
-                            <p className="text-xs text-muted">Quota</p>
+                            <p className="text-xs text-muted">{t('Quota')}</p>
                             <p className="mt-2 font-semibold">
                                 {service.usage.quota_bytes > 0
                                     ? `${formatBytes(service.usage.used_bytes)} / ${formatBytes(service.usage.quota_bytes)}`
-                                    : 'Unlimited'}
+                                    : t('Unlimited')}
                             </p>
                             {service.usage.quota_bytes > 0 && (
                                 <div className="mt-2 h-2 overflow-hidden rounded-full bg-sand">
@@ -408,31 +413,31 @@ export default function ServiceShow({
                         <div className="border-b border-line px-6 py-5">
                             <div className="flex items-center gap-2">
                                 <Wifi size={18} className="text-brand" />
-                                <h2 className="section-title">Current session</h2>
+                                <h2 className="section-title">{t('Current session')}</h2>
                             </div>
                             <p className="mt-1 text-sm text-muted">
-                                Live accounting state from the latest interim update.
+                                {t('Live accounting state from the latest interim update.')}
                             </p>
                         </div>
                         <div className="p-6">
                             {liveSession ? (
                                 <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
                                     <div>
-                                        <p className="text-xs text-muted">Status</p>
-                                        <p className="mt-1 font-semibold text-emerald-700">Online</p>
+                                        <p className="text-xs text-muted">{t('Status')}</p>
+                                        <p className="mt-1 font-semibold text-emerald-700">{t('Online')}</p>
                                         <p className="mt-1 text-xs text-muted">
-                                            Uptime {formatDuration(liveSession.started_at, liveSession.last_seen_at)}
+                                            {t('Uptime')} {formatDuration(liveSession.started_at, liveSession.last_seen_at)}
                                         </p>
                                     </div>
                                     <div>
-                                        <p className="text-xs text-muted">Address</p>
-                                        <p className="mt-1 font-semibold">{liveSession.framed_ip ?? 'Not reported'}</p>
+                                        <p className="text-xs text-muted">{t('Address')}</p>
+                                        <p className="mt-1 font-semibold">{liveSession.framed_ip ?? t('Not reported')}</p>
                                         <p className="mt-1 text-xs text-muted">
-                                            NAS {liveSession.nasname ?? 'Not reported'}
+                                            NAS {liveSession.nasname ?? t('Not reported')}
                                         </p>
                                     </div>
                                     <div>
-                                        <p className="text-xs text-muted">Traffic</p>
+                                        <p className="text-xs text-muted">{t('Traffic')}</p>
                                         <p className="mt-1 font-semibold">↓ {formatBytes(liveSession.input_octets)}</p>
                                         <p className="mt-1 text-xs text-muted">
                                             ↑ {formatBytes(liveSession.output_octets)}
@@ -441,9 +446,9 @@ export default function ServiceShow({
                                     <div className="flex items-end justify-start sm:justify-end">
                                         {canDisconnectSession && (
                                             <ConfirmDialog
-                                                title="Disconnect the current network session?"
-                                                description="The active network session will be disconnected immediately."
-                                                confirmLabel="Disconnect session"
+                                                title={t('Disconnect the current network session?')}
+                                                description={t('The active network session will be disconnected immediately.')}
+                                                confirmLabel={t('Disconnect session')}
                                                 destructive
                                                 onConfirm={() =>
                                                     router.post(`/services/${service.public_id}/disconnect-session`)
@@ -453,7 +458,7 @@ export default function ServiceShow({
                                                     type="button"
                                                     className="inline-flex items-center gap-1.5 text-sm font-semibold text-coral"
                                                 >
-                                                    <WifiOff size={14} /> Disconnect
+                                                    <WifiOff size={14} /> {t('Disconnect')}
                                                 </button>
                                             </ConfirmDialog>
                                         )}
@@ -461,7 +466,7 @@ export default function ServiceShow({
                                 </div>
                             ) : (
                                 <div className="flex items-center gap-3 text-sm text-muted">
-                                    <WifiOff size={18} /> No active session is currently reported.
+                                    <WifiOff size={18} /> {t('No active session is currently reported.')}
                                 </div>
                             )}
                         </div>
@@ -471,7 +476,7 @@ export default function ServiceShow({
                         <div className="border-b border-line px-6 py-5">
                             <div className="flex items-center gap-2">
                                 <Network size={18} className="text-brand" />
-                                <h2 className="section-title">Usage, last 24 hours</h2>
+                                <h2 className="section-title">{t('Usage, last 24 hours')}</h2>
                             </div>
                         </div>
                         <div className="divide-y divide-line">
@@ -485,7 +490,7 @@ export default function ServiceShow({
                                 </div>
                             ))}
                             {usageLast24h.length === 0 && (
-                                <p className="px-6 py-8 text-sm text-muted">No daily usage has been rolled up yet.</p>
+                                <p className="px-6 py-8 text-sm text-muted">{t('No daily usage has been rolled up yet.')}</p>
                             )}
                         </div>
                     </div>
@@ -495,7 +500,7 @@ export default function ServiceShow({
                             <div className="flex items-center justify-between gap-3">
                                 <div className="flex items-center gap-2">
                                     <Network size={18} className="text-brand" />
-                                    <h2 className="section-title">Usage history</h2>
+                                    <h2 className="section-title">{t('Usage history')}</h2>
                                 </div>
                                 {service.usage.fup_action && (
                                     <span className="status-badge text-amber-700">
@@ -504,20 +509,20 @@ export default function ServiceShow({
                                 )}
                             </div>
                             <p className="mt-1 text-sm text-muted">
-                                Daily RADIUS or session totals for the latest 31 days.
-                                {service.usage.fup_applied_at
-                                    ? ` FUP applied ${formatDate(service.usage.fup_applied_at)}.`
-                                    : ' No FUP action is currently applied.'}
+                                {t('Daily RADIUS or session totals for the latest 31 days.')}
+                               {service.usage.fup_applied_at
+                                    ? ` ${t('FUP applied')} ${formatDate(service.usage.fup_applied_at)}.`
+                                    : ` ${t('No FUP action is currently applied.')}`}
                             </p>
                         </div>
                         <div className="overflow-x-auto">
                             <table className="w-full min-w-[520px] text-start text-sm">
                                 <thead className="bg-sand/50 text-xs uppercase tracking-wider text-muted">
                                     <tr>
-                                        <th className="px-6 py-3 text-start">Date</th>
-                                        <th className="px-6 py-3 text-end">Download</th>
-                                        <th className="px-6 py-3 text-end">Upload</th>
-                                        <th className="px-6 py-3 text-end">Total</th>
+                                        <th className="px-6 py-3 text-start">{t('Date')}</th>
+                                        <th className="px-6 py-3 text-end">{t('Download')}</th>
+                                        <th className="px-6 py-3 text-end">{t('Upload')}</th>
+                                        <th className="px-6 py-3 text-end">{t('Total')}</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-line">
@@ -532,7 +537,7 @@ export default function ServiceShow({
                                 </tbody>
                             </table>
                             {usageHistory.length === 0 && (
-                                <p className="px-6 py-8 text-sm text-muted">No daily usage history is available yet.</p>
+                                <p className="px-6 py-8 text-sm text-muted">{t('No daily usage history is available yet.')}</p>
                             )}
                         </div>
                     </div>
@@ -543,7 +548,7 @@ export default function ServiceShow({
                         <div className="border-b border-line px-6 py-5">
                             <div className="flex items-center gap-2">
                                 <RefreshCw size={18} className="text-brand" />
-                                <h2 className="section-title">Recent commands</h2>
+                                <h2 className="section-title">{t('Recent commands')}</h2>
                             </div>
                         </div>
                         <div className="divide-y divide-line">
@@ -554,7 +559,7 @@ export default function ServiceShow({
                                         <StatusBadge status={command.status} />
                                     </div>
                                     <p className="mt-1 text-xs text-muted">
-                                        {command.attempts} attempt(s) · {formatDate(command.completed_at)}
+                                        {command.attempts} {t('attempt(s)')} · {formatDate(command.completed_at)}
                                     </p>
                                     {command.last_error && (
                                         <p className="mt-2 flex items-start gap-1.5 text-xs text-coral">
@@ -564,7 +569,7 @@ export default function ServiceShow({
                                 </div>
                             ))}
                             {recentCommands.length === 0 && (
-                                <p className="px-6 py-8 text-sm text-muted">No network commands have been queued.</p>
+                                <p className="px-6 py-8 text-sm text-muted">{t('No network commands have been queued.')}</p>
                             )}
                         </div>
                     </div>
@@ -572,20 +577,20 @@ export default function ServiceShow({
                         <div className="card border-brand/20 bg-brand-soft/20 p-6">
                             <div className="flex items-start justify-between gap-4">
                                 <div>
-                                    <p className="eyebrow">Scheduled plan change</p>
+                                    <p className="eyebrow">{t('Scheduled plan change')}</p>
                                     <h2 className="mt-1 text-base font-semibold">
-                                        {service.pending_plan_change.plan.name} at next renewal
+                                        {service.pending_plan_change.plan.name} {t('at next renewal')}
                                     </h2>
                                     <p className="mt-1 text-sm text-muted">
-                                        Applies {formatDate(service.pending_plan_change.apply_at)} · Requested{' '}
+                                        {t('Applies')} {formatDate(service.pending_plan_change.apply_at)} · {t('Requested')}{' '}
                                         {formatDate(service.pending_plan_change.requested_at)}
                                     </p>
                                 </div>
                                 {canChangePlan && (
                                     <ConfirmDialog
-                                        title="Cancel this scheduled plan change?"
-                                        description="The customer will keep the current plan at the next renewal. No ledger entry will be posted."
-                                        confirmLabel="Cancel scheduled change"
+                                        title={t('Cancel this scheduled plan change?')}
+                                        description={t('The customer will keep the current plan at the next renewal. No ledger entry will be posted.')}
+                                        confirmLabel={t('Cancel scheduled change')}
                                         destructive
                                         onConfirm={() => router.delete(`/services/${service.public_id}/change-plan`)}
                                     >
@@ -593,7 +598,7 @@ export default function ServiceShow({
                                             type="button"
                                             className="button-secondary inline-flex items-center gap-1.5 text-coral"
                                         >
-                                            <X size={15} /> Cancel
+                                            <X size={15} /> {t('Cancel')}
                                         </button>
                                     </ConfirmDialog>
                                 )}
@@ -604,25 +609,25 @@ export default function ServiceShow({
                         <div className="card border-brand/20 bg-brand-soft/20 p-6">
                             <div className="flex items-start justify-between gap-4">
                                 <div>
-                                    <p className="eyebrow">Scheduled billing cycle</p>
+                                    <p className="eyebrow">{t('Scheduled billing cycle')}</p>
                                     <h2 className="mt-1 text-base font-semibold text-balance">
-                                        Move to day {service.pending_billing_cycle.anchor_day}
+                                        {t('Move to day')} {service.pending_billing_cycle.anchor_day}
                                     </h2>
                                     <p className="mt-1 text-sm text-pretty text-muted">
-                                        The transition invoice is{' '}
+                                        {t('The transition invoice is')}{' '}
                                         {formatMoney(
                                             service.pending_billing_cycle.prorated_amount,
                                             service.pending_billing_cycle.currency,
                                         )}{' '}
-                                        for {service.pending_billing_cycle.billable_days} days, through{' '}
+                                        {t('for')} {service.pending_billing_cycle.billable_days} {t('days')}, {t('through')}{' '}
                                         {formatDate(service.pending_billing_cycle.ends_at)}.
                                     </p>
                                 </div>
                                 {canChangeBillingCycle && (
                                     <ConfirmDialog
-                                        title="Cancel this scheduled billing-cycle change?"
-                                        description="The current anchor stays in place. Cancellation is blocked after its renewal invoice is created."
-                                        confirmLabel="Cancel scheduled change"
+                                        title={t('Cancel this scheduled billing-cycle change?')}
+                                        description={t('The current anchor stays in place. Cancellation is blocked after its renewal invoice is created.')}
+                                        confirmLabel={t('Cancel scheduled change')}
                                         destructive
                                         onConfirm={() =>
                                             router.delete(`/services/${service.public_id}/billing-cycle`, {
@@ -631,7 +636,7 @@ export default function ServiceShow({
                                         }
                                     >
                                         <button type="button" className="button-secondary text-coral">
-                                            <X size={15} /> Cancel
+                                            <X size={15} /> {t('Cancel')}
                                         </button>
                                     </ConfirmDialog>
                                 )}
@@ -640,15 +645,15 @@ export default function ServiceShow({
                     )}
                     {canChangeBillingCycle && service.status !== 'terminated' && (
                         <div className="card p-6">
-                            <h2 className="section-title text-balance">Billing cycle</h2>
-                            <p className="mt-1 text-sm text-pretty text-muted">
-                                {service.billing_anchor_day
-                                    ? `Invoices currently renew on day ${service.billing_anchor_day} of each month.`
-                                    : 'This service currently follows the plan duration.'}
+                            <h2 className="section-title text-balance">{t('Billing cycle')}</h2>
+                           <p className="mt-1 text-sm text-pretty text-muted">
+                               {service.billing_anchor_day
+                                    ? `${t('Invoices currently renew on day')} ${service.billing_anchor_day} ${t('of each month.')}`
+                                   : t('This service currently follows the plan duration.')}
                             </p>
                             <form onSubmit={(event) => event.preventDefault()} className="mt-5 space-y-4">
                                 <label>
-                                    <span className="field-label">Monthly anchor day</span>
+                                    <span className="field-label">{t('Monthly anchor day')}</span>
                                     <ResponsiveSelect
                                         className="field"
                                         value={cycleForm.data.anchor_day}
@@ -656,7 +661,7 @@ export default function ServiceShow({
                                     >
                                         {Array.from({ length: 31 }, (_, index) => index + 1).map((day) => (
                                             <option key={day} value={day}>
-                                                Day {day}
+                                                {t('Day')} {day}
                                             </option>
                                         ))}
                                     </ResponsiveSelect>
@@ -668,23 +673,23 @@ export default function ServiceShow({
                                 {cyclePreview && (
                                     <div className="rounded-xl border border-line bg-sand/60 p-4">
                                         <div className="flex items-center justify-between gap-3">
-                                            <p className="text-sm font-semibold">Transition quote</p>
+                                            <p className="text-sm font-semibold">{t('Transition quote')}</p>
                                             <p className="text-sm font-semibold text-brand tabular-nums">
                                                 {formatMoney(cyclePreview.prorated_amount, cyclePreview.currency)}
                                             </p>
                                         </div>
-                                        <p className="mt-2 text-xs text-pretty text-muted">
-                                            {cyclePreview.billable_days} of {cyclePreview.cycle_days} days ·{' '}
-                                            {formatDate(cyclePreview.starts_at)} through{' '}
-                                            {formatDate(cyclePreview.ends_at)}. The normal monthly price is{' '}
+                                       <p className="mt-2 text-xs text-pretty text-muted">
+                                            {cyclePreview.billable_days} {t('of')} {cyclePreview.cycle_days} {t('days')} ·{' '}
+                                            {formatDate(cyclePreview.starts_at)} {t('through')}{' '}
+                                            {formatDate(cyclePreview.ends_at)}. {t('The normal monthly price is')}{' '}
                                             {formatMoney(cyclePreview.full_amount, cyclePreview.currency)}.
                                         </p>
                                     </div>
                                 )}
                                 <ConfirmDialog
-                                    title="Schedule this billing-cycle change?"
-                                    description="The displayed prorated amount will be used for the transition invoice. Once that invoice exists, settle or void it before changing the schedule."
-                                    confirmLabel={service.expires_at ? 'Schedule change' : 'Set billing anchor'}
+                                    title={t('Schedule this billing-cycle change?')}
+                                    description={t('The displayed prorated amount will be used for the transition invoice. Once that invoice exists, settle or void it before changing the schedule.')}
+                                    confirmLabel={service.expires_at ? t('Schedule change') : t('Set billing anchor')}
                                     onConfirm={() => {
                                         cycleForm.transform((data) => ({ anchor_day: Number(data.anchor_day) }));
                                         cycleForm.post(`/services/${service.public_id}/billing-cycle`, {
@@ -703,7 +708,7 @@ export default function ServiceShow({
                                         }
                                     >
                                         <CalendarDays size={16} />
-                                        {service.expires_at ? 'Schedule billing cycle' : 'Set billing anchor'}
+                                        {service.expires_at ? t('Schedule billing cycle') : t('Set billing anchor')}
                                     </button>
                                 </ConfirmDialog>
                             </form>
@@ -711,13 +716,13 @@ export default function ServiceShow({
                     )}
                     {canChangePlan && service.status !== 'terminated' && plans.length > 0 && (
                         <div className="card p-6">
-                            <h2 className="section-title">Change plan</h2>
+                            <h2 className="section-title">{t('Change plan')}</h2>
                             <p className="mt-1 text-sm text-muted">
-                                Schedule the next cycle or apply a prorated change now.
+                                {t('Schedule the next cycle or apply a prorated change now.')}
                             </p>
                             <form onSubmit={(event) => event.preventDefault()} className="mt-5 space-y-4">
                                 <label>
-                                    <span className="field-label">New plan</span>
+                                    <span className="field-label">{t('New plan')}</span>
                                     <ResponsiveSelect
                                         className="field"
                                         value={planForm.data.plan_id}
@@ -734,20 +739,19 @@ export default function ServiceShow({
                                     )}
                                 </label>
                                 <label>
-                                    <span className="field-label">Effective</span>
+                                    <span className="field-label">{t('Effective')}</span>
                                     <ResponsiveSelect
                                         className="field"
                                         value={planForm.data.effective}
                                         onChange={(event) => setPlanSelection('effective', event.target.value)}
                                     >
-                                        <option value="next_cycle">At next renewal</option>
-                                        <option value="immediate">Immediately with proration</option>
+                                        <option value="next_cycle">{t('At next renewal')}</option>
+                                        <option value="immediate">{t('Immediately with proration')}</option>
                                     </ResponsiveSelect>
                                 </label>
                                 {planForm.data.effective === 'immediate' && (
                                     <p className="rounded-lg bg-sand px-3 py-2 text-xs text-muted">
-                                        The unused part of the current plan is credited and the remainder of the new
-                                        plan is charged in the customer ledger currency.
+                                        {t('The unused part of the current plan is credited and the remainder of the new plan is charged in the customer ledger currency.')}
                                     </p>
                                 )}
                                 {planPreviewError && <p className="field-error">{planPreviewError}</p>}
@@ -756,19 +760,19 @@ export default function ServiceShow({
                                         <div className="flex items-center justify-between gap-3">
                                             <span className="font-semibold">
                                                 {planPreview.effective === 'immediate'
-                                                    ? 'Immediate quote'
-                                                    : 'Scheduled change'}
+                                                    ? t('Immediate quote')
+                                                    : t('Scheduled change')}
                                             </span>
-                                            <span className="text-xs font-semibold text-brand">
-                                                {planPreview.effective === 'immediate'
-                                                    ? 'Now'
-                                                    : `At ${formatDate(planPreview.apply_at)}`}
-                                            </span>
+                                           <span className="text-xs font-semibold text-brand">
+                                               {planPreview.effective === 'immediate'
+                                                    ? t('Now')
+                                                    : `${t('At')} ${formatDate(planPreview.apply_at)}`}
+                                           </span>
                                         </div>
                                         {planPreview.effective === 'immediate' ? (
                                             <div className="mt-3 grid gap-3 sm:grid-cols-3">
                                                 <div>
-                                                    <p className="text-xs text-muted">Unused credit</p>
+                                                    <p className="text-xs text-muted">{t('Unused credit')}</p>
                                                     <p className="mt-1 font-semibold text-emerald-700">
                                                         {formatMoney(
                                                             planPreview.old_credit_amount,
@@ -777,7 +781,7 @@ export default function ServiceShow({
                                                     </p>
                                                 </div>
                                                 <div>
-                                                    <p className="text-xs text-muted">New plan charge</p>
+                                                    <p className="text-xs text-muted">{t('New plan charge')}</p>
                                                     <p className="mt-1 font-semibold">
                                                         {formatMoney(
                                                             planPreview.new_charge_amount,
@@ -786,7 +790,7 @@ export default function ServiceShow({
                                                     </p>
                                                 </div>
                                                 <div>
-                                                    <p className="text-xs text-muted">Net ledger impact</p>
+                                                    <p className="text-xs text-muted">{t('Net ledger impact')}</p>
                                                     <p className="mt-1 font-semibold">
                                                         {formatMoney(planPreview.net_amount, planPreview.currency)}
                                                     </p>
@@ -794,8 +798,7 @@ export default function ServiceShow({
                                             </div>
                                         ) : (
                                             <p className="mt-2 text-xs text-muted">
-                                                No charge is posted until renewal. The new plan will be applied when
-                                                this service expires.
+                                                {t('No charge is posted until renewal. The new plan will be applied when this service expires.')}
                                             </p>
                                         )}
                                     </div>
@@ -803,16 +806,16 @@ export default function ServiceShow({
                                 <ConfirmDialog
                                     title={
                                         planForm.data.effective === 'immediate'
-                                            ? 'Apply this plan change now?'
-                                            : 'Schedule this plan change?'
+                                            ? t('Apply this plan change now?')
+                                            : t('Schedule this plan change?')
                                     }
                                     description={
                                         planForm.data.effective === 'immediate'
-                                            ? 'The current plan credit and new plan charge will be posted to the customer ledger immediately.'
-                                            : 'The current plan remains active until renewal, then the selected plan will be applied.'
+                                            ? t('The current plan credit and new plan charge will be posted to the customer ledger immediately.')
+                                            : t('The current plan remains active until renewal, then the selected plan will be applied.')
                                     }
                                     confirmLabel={
-                                        planForm.data.effective === 'immediate' ? 'Apply now' : 'Schedule change'
+                                        planForm.data.effective === 'immediate' ? t('Apply now') : t('Schedule change')
                                     }
                                     onConfirm={submitPlanChange}
                                 >
@@ -822,10 +825,10 @@ export default function ServiceShow({
                                         disabled={planForm.processing || !planPreview}
                                     >
                                         {planForm.processing
-                                            ? 'Applying…'
+                                            ? t('Applying…')
                                             : planForm.data.effective === 'immediate'
-                                              ? 'Apply plan change'
-                                              : 'Schedule plan change'}
+                                              ? t('Apply plan change')
+                                              : t('Schedule plan change')}
                                     </button>
                                 </ConfirmDialog>
                             </form>
@@ -835,10 +838,9 @@ export default function ServiceShow({
                         <div className="card p-6">
                             <div className="flex items-start justify-between gap-4">
                                 <div>
-                                    <h2 className="section-title text-balance">Recurring add-ons</h2>
+                                    <h2 className="section-title text-balance">{t('Recurring add-ons')}</h2>
                                     <p className="mt-1 text-sm text-muted text-pretty">
-                                        Attach optional recurring charges to this service. They are copied to the next
-                                        renewal invoice with a fixed price snapshot.
+                                        {t('Attach optional recurring charges to this service. They are copied to the next renewal invoice with a fixed price snapshot.')}
                                     </p>
                                 </div>
                                 <Plus className="text-brand" size={18} />
@@ -850,25 +852,25 @@ export default function ServiceShow({
                                         className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-line bg-sand/40 p-4"
                                     >
                                         <div>
-                                            <p className="font-semibold">{addon.name ?? 'Recurring add-on'}</p>
+                                            <p className="font-semibold">{addon.name ?? t('Recurring add-on')}</p>
                                             <p className="mt-1 text-xs text-muted">
                                                 {addon.quantity} × {addon.amount_minor === null
-                                                    ? 'Price unavailable'
+                                                    ? t('Price unavailable')
                                                     : formatMoney(addon.amount_minor, addon.currency ?? '')}
-                                                {addon.billing_period_days
-                                                    ? ` every ${addon.billing_period_days} days`
-                                                    : ''}
-                                                {' · '}Starts {formatDate(addon.starts_at)}
-                                                {addon.ends_at ? ` · Ends ${formatDate(addon.ends_at)}` : ''}
+                                               {addon.billing_period_days
+                                                    ? ` ${t('every')} ${addon.billing_period_days} ${t('days')}`
+                                                   : ''}
+                                               {' · '}{t('Starts')} {formatDate(addon.starts_at)}
+                                                {addon.ends_at ? ` · ${t('Ends')} ${formatDate(addon.ends_at)}` : ''}
                                             </p>
                                         </div>
                                         <div className="flex items-center gap-3">
                                             <span className="status-badge">{addon.status}</span>
                                             {addon.status === 'active' && (
                                                 <ConfirmDialog
-                                                    title="Cancel this add-on?"
-                                                    description="The add-on will stop being included in future renewal invoices. Existing invoices are unchanged."
-                                                    confirmLabel="Cancel add-on"
+                                                    title={t('Cancel this add-on?')}
+                                                    description={t('The add-on will stop being included in future renewal invoices. Existing invoices are unchanged.')}
+                                                    confirmLabel={t('Cancel add-on')}
                                                     onConfirm={() =>
                                                         router.delete(
                                                             `/services/${service.public_id}/addons/${addon.public_id}`,
@@ -878,7 +880,7 @@ export default function ServiceShow({
                                                 >
                                                     <button type="button" className="button-quiet text-danger">
                                                         <X size={15} />
-                                                        Cancel
+                                                        {t('Cancel')}
                                                     </button>
                                                 </ConfirmDialog>
                                             )}
@@ -887,7 +889,7 @@ export default function ServiceShow({
                                 ))}
                                 {service.addons.length === 0 && (
                                     <p className="rounded-lg bg-sand px-3 py-2 text-sm text-muted">
-                                        No recurring add-ons are attached to this service.
+                                        {t('No recurring add-ons are attached to this service.')}
                                     </p>
                                 )}
                             </div>
@@ -903,7 +905,7 @@ export default function ServiceShow({
                                     }}
                                 >
                                     <label className="sm:col-span-2">
-                                        <span className="field-label">Add-on</span>
+                                        <span className="field-label">{t('Add-on')}</span>
                                         <ResponsiveSelect
                                             className="field"
                                             value={addonForm.data.addon_id}
@@ -923,7 +925,7 @@ export default function ServiceShow({
                                         )}
                                     </label>
                                     <label>
-                                        <span className="field-label">Quantity</span>
+                                        <span className="field-label">{t('Quantity')}</span>
                                         <input
                                             className="field"
                                             type="number"
@@ -937,7 +939,7 @@ export default function ServiceShow({
                                         )}
                                     </label>
                                     <label>
-                                        <span className="field-label">Starts</span>
+                                        <span className="field-label">{t('Starts')}</span>
                                         <input
                                             className="field"
                                             type="date"
@@ -949,7 +951,7 @@ export default function ServiceShow({
                                         )}
                                     </label>
                                     <label>
-                                        <span className="field-label">Ends (optional)</span>
+                                        <span className="field-label">{t('Ends')} ({t('optional')})</span>
                                         <input
                                             className="field"
                                             type="date"
@@ -963,35 +965,35 @@ export default function ServiceShow({
                                     <div className="flex items-end justify-end sm:col-span-2">
                                         <button type="submit" className="button-primary" disabled={addonForm.processing}>
                                             <Plus size={16} />
-                                            {addonForm.processing ? 'Adding…' : 'Add recurring add-on'}
+                                            {addonForm.processing ? t('Adding…') : t('Add recurring add-on')}
                                         </button>
                                     </div>
                                 </form>
                             ) : (
                                 <p className="mt-5 border-t border-line pt-5 text-sm text-muted">
-                                    Create an active add-on in Plans before attaching one to a service.
+                                    {t('Create an active add-on in Plans before attaching one to a service.')}
                                 </p>
                             )}
                         </div>
                     )}
                     <div className="card p-6">
-                        <h2 className="section-title">Assigned equipment</h2>
+                        <h2 className="section-title">{t('Assigned equipment')}</h2>
                         <div className="mt-4 space-y-4">
                             {service.equipment.map((unit) => (
                                 <div key={unit.serial_number}>
-                                    <p className="text-sm font-semibold">{unit.item?.name ?? 'Serialized equipment'}</p>
+                                    <p className="text-sm font-semibold">{unit.item?.name ?? t('Serialized equipment')}</p>
                                     <p className="mt-1 text-xs text-muted">
-                                        {unit.serial_number} · Assigned {formatDate(unit.assigned_at)}
+                                        {unit.serial_number} · {t('Assigned')} {formatDate(unit.assigned_at)}
                                     </p>
                                 </div>
                             ))}
                             {service.equipment.length === 0 && (
-                                <p className="text-sm text-muted">No equipment is assigned to this service.</p>
+                                <p className="text-sm text-muted">{t('No equipment is assigned to this service.')}</p>
                             )}
                         </div>
                     </div>
                     <div className="card p-6">
-                        <h2 className="section-title">Router health</h2>
+                        <h2 className="section-title">{t('Router health')}</h2>
                         <div className="mt-4 space-y-3">
                             {routerHealth.map((metric, index) => (
                                 <div
@@ -1005,7 +1007,7 @@ export default function ServiceShow({
                                 </div>
                             ))}
                             {routerHealth.length === 0 && (
-                                <p className="text-sm text-muted">No router observations available.</p>
+                                <p className="text-sm text-muted">{t('No router observations available.')}</p>
                             )}
                         </div>
                     </div>
