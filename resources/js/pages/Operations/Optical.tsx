@@ -147,7 +147,7 @@ function DeviceFields({
                     className="field"
                     value={form.data.name}
                     onChange={(event) => form.setData('name', event.target.value)}
-                    placeholder="Core OLT"
+                    placeholder={t('Core OLT')}
                 />
                 <ErrorText message={form.errors.name} />
             </label>

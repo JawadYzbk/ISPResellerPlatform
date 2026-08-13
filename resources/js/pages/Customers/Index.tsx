@@ -415,7 +415,7 @@ export default function CustomersIndex({ customers, filters, zones, savedViews, 
                                         <td className="px-5 py-4">
                                             <input
                                                 type="checkbox"
-                                                aria-label={`Select ${customer.first_name} ${customer.last_name}`}
+                                                aria-label={`${t('Select')} ${customer.first_name} ${customer.last_name}`}
                                                 checked={selectedCustomerIds.includes(customer.public_id)}
                                                 onChange={() => toggleCustomer(customer.public_id)}
                                             />

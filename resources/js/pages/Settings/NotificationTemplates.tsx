@@ -121,7 +121,7 @@ function TemplateCard({
                                 type="button"
                                 onClick={() => void copyVariable(variable)}
                                 className="inline-flex items-center gap-1.5 rounded-md border border-line bg-white px-2.5 py-1.5 font-mono text-xs text-ink hover:border-brand/40 hover:text-brand"
-                                title={`Copy {{ ${variable} }}`}
+                                title={t('Copy variable')}
                             >
                                 {copiedVariable === variable ? <Check size={13} /> : <Copy size={13} />}
                                 {`{{ ${variable} }}`}

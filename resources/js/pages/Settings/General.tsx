@@ -327,7 +327,7 @@ export default function GeneralSettings({
                                         {tenant.logo_url ? (
                                             <img
                                                 src={tenant.logo_url}
-                                                alt={`${tenant.name} logo`}
+                                                alt={`${tenant.name} ${t('Workspace logo')}`}
                                                 className="size-full object-cover"
                                             />
                                         ) : (

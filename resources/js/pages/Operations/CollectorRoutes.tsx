@@ -262,7 +262,7 @@ export default function CollectorRoutes({ date, collectors, customers, routes }:
                                     className="button-quiet px-2"
                                     onClick={() => move(index, -1)}
                                     disabled={index === 0}
-                                    aria-label={`Move ${customer.name} earlier`}
+                                    aria-label={t(`Move ${customer.name} earlier`)}
                                 >
                                     <ArrowUp size={15} />
                                 </button>
@@ -271,7 +271,7 @@ export default function CollectorRoutes({ date, collectors, customers, routes }:
                                     className="button-quiet px-2"
                                     onClick={() => move(index, 1)}
                                     disabled={index === selectedCustomers.length - 1}
-                                    aria-label={`Move ${customer.name} later`}
+                                    aria-label={t(`Move ${customer.name} later`)}
                                 >
                                     <ArrowDown size={15} />
                                 </button>
