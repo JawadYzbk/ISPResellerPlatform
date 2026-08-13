@@ -73,6 +73,12 @@ class User extends Authenticatable
         return $this->collectorZoneAssignments()->whereNull('ended_at');
     }
 
+    /** @return HasMany<CollectorFieldDay, $this> */
+    public function collectorFieldDays(): HasMany
+    {
+        return $this->hasMany(CollectorFieldDay::class);
+    }
+
     public function isPlatformOperator(): bool
     {
         return $this->tenant_id === null && $this->role === 'platform_operator';

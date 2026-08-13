@@ -51,7 +51,7 @@ Sources:
 | Lebanon multi-currency collection | Exceeds reference | Keep USD/LBP/AED support, FX snapshots, Frankfurter import, manual rates, Whish, Stripe and configurable rounding including nearest LBP 5,000. |
 | Collector due/overdue customer list and offline collection | Delivered/partial | Keep encrypted offline web queue and add route-oriented daily execution. |
 | Collector assignment to zones | Delivered | Scoped all-zone/restricted territories, descendant coverage, server-side sync/API enforcement and effective-dated reassignment history are implemented; temporary scheduled coverage remains part of route planning. |
-| Live collector GPS, check-ins, routes and nearby dues | Gap | Add consent-aware shifts, check-in/out, route stops, proximity queues, live/last-known map and exception handling. |
+| Live collector GPS, check-ins, routes and nearby dues | Partial | Explicit consent-based field-day check-in/out, GPS accuracy evidence and manager supervision are delivered without continuous background tracking; route stops, proximity queues and visit outcomes remain. |
 | Collector tasks, messaging and daily summaries | Gap | Add role-scoped tasks, admin/collector conversation threads, read states, attachments and shift summaries. |
 | Collector performance | Partial | Extend finance totals with visits, route completion, collection rate, exceptions, cash variance and trend reporting. |
 | Collector wallet/cash custody | Partial | Connect cash shifts, advances, handover, expenses and settlement into one auditable collector custody view. |

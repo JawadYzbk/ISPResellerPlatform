@@ -8,6 +8,7 @@ use App\Actions\GetCollectorSyncSnapshot;
 use App\Actions\GetCurrencyCatalog;
 use App\Actions\PushCollectorSync;
 use App\Http\Controllers\Controller;
+use App\Models\CollectorFieldDay;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Support\Tenancy;
@@ -38,6 +39,7 @@ final class FieldController extends Controller
             'snapshot' => $snapshot->handle($tenant, $user, null, null),
             'shift' => $shift->handle($user),
             'summary' => $summary->handle($user, now()->toDateString()),
+            'fieldDay' => $this->fieldDay($user),
             'currencies' => $currencyCatalog->handle(),
             'defaultCurrency' => $tenant->collection_currency,
             'storageKey' => 'field:'.$tenant->public_id.':'.$user->id,
@@ -86,5 +88,28 @@ final class FieldController extends Controller
     private function tenant(): Tenant
     {
         return Tenant::query()->findOrFail(app(Tenancy::class)->requireId());
+    }
+
+    /** @return array<string, mixed>|null */
+    private function fieldDay(User $user): ?array
+    {
+        $fieldDay = CollectorFieldDay::query()
+            ->where('user_id', $user->id)
+            ->whereNull('checked_out_at')
+            ->latest('checked_in_at')
+            ->first();
+
+        return $fieldDay instanceof CollectorFieldDay ? [
+            'id' => $fieldDay->public_id,
+            'status' => 'active',
+            'checked_in_at' => $fieldDay->checked_in_at?->toIso8601String(),
+            'checked_out_at' => null,
+            'check_in' => [
+                'latitude' => (float) $fieldDay->check_in_latitude,
+                'longitude' => (float) $fieldDay->check_in_longitude,
+                'accuracy_meters' => $fieldDay->check_in_accuracy_meters,
+            ],
+            'check_out' => null,
+        ] : null;
     }
 }

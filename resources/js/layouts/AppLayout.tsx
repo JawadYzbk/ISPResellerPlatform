@@ -17,6 +17,7 @@ import {
     LayoutDashboard,
     LogOut,
     MessageSquare,
+    MapPinned,
     Network,
     Package,
     Radio,
@@ -141,6 +142,12 @@ export default function AppLayout({ children }: PropsWithChildren) {
         { label: 'Credit notes', href: '/billing/credit-notes', icon: FilePlus2, permission: 'billing.invoices.view' },
         { label: 'Payments', href: '/billing/payments', icon: CreditCard, permission: 'payments.collect' },
         { label: 'Cash shifts', href: '/billing/shifts', icon: WalletCards, permission: 'payments.collect' },
+        {
+            label: 'Collector check-ins',
+            href: '/operations/collector-check-ins',
+            icon: MapPinned,
+            permission: 'reports.operations',
+        },
         { label: 'FX rates', href: '/billing/exchange-rates', icon: Scale, permission: 'settings.manage' },
         { label: 'Tickets', href: '/operations/tickets', icon: MessageSquare, permission: 'tickets.view' },
         {

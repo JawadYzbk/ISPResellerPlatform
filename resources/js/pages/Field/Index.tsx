@@ -2,7 +2,18 @@ import CurrencyCombobox, { type CurrencyOption } from '@/components/ui/currency-
 import ConfirmDialog from '@/components/ui/confirm-dialog';
 import ResponsiveSelect from '@/components/ui/responsive-select';
 import { Head, Link } from '@inertiajs/react';
-import { CheckCircle2, CloudOff, CreditCard, RefreshCw, Search, UserRound, Wifi } from 'lucide-react';
+import {
+    CheckCircle2,
+    CloudOff,
+    CreditCard,
+    LogIn,
+    LogOut,
+    MapPin,
+    RefreshCw,
+    Search,
+    UserRound,
+    Wifi,
+} from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import AppLayout from '@/layouts/AppLayout';
@@ -47,6 +58,15 @@ type CollectorSummary = {
     totals: Record<string, number>;
 };
 
+type FieldDay = {
+    id: string;
+    status: 'active' | 'completed';
+    checked_in_at: string;
+    checked_out_at: string | null;
+    check_in: { latitude: number; longitude: number; accuracy_meters: number | null };
+    check_out: { latitude: number; longitude: number; accuracy_meters: number | null } | null;
+} | null;
+
 type SyncResult = {
     index: number;
     status: 'created' | 'replayed' | 'rejected' | 'error';
@@ -57,6 +77,7 @@ type Props = {
     snapshot: FieldSnapshot;
     shift: CollectorShift;
     summary: CollectorSummary;
+    fieldDay: FieldDay;
     currencies: CurrencyOption[];
     defaultCurrency: string;
     storageKey: string;
@@ -75,6 +96,7 @@ export default function FieldIndex({
     snapshot,
     shift,
     summary,
+    fieldDay: initialFieldDay,
     currencies,
     defaultCurrency,
     storageKey,
@@ -94,6 +116,8 @@ export default function FieldIndex({
     const [message, setMessage] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [hydrated, setHydrated] = useState(false);
+    const [fieldDay, setFieldDay] = useState<FieldDay>(initialFieldDay);
+    const [locationBusy, setLocationBusy] = useState(false);
 
     const selectedCustomer = customers.find((customer) => customer.id === selectedCustomerId) ?? null;
     const selectedCurrency = currencyOptions.find((item) => item.code === currency);
@@ -329,6 +353,63 @@ export default function FieldIndex({
         setError(null);
     };
 
+    const updateFieldDay = async (action: 'check-in' | 'check-out') => {
+        if (!online) {
+            setError('Connect to the internet before recording a field check-in.');
+            return;
+        }
+        if (!('geolocation' in navigator)) {
+            setError('Location capture is not available in this browser.');
+            return;
+        }
+
+        setLocationBusy(true);
+        setError(null);
+        setMessage(null);
+        try {
+            const position = await new Promise<GeolocationPosition>((resolve, reject) =>
+                navigator.geolocation.getCurrentPosition(resolve, reject, {
+                    enableHighAccuracy: true,
+                    timeout: 15000,
+                    maximumAge: 0,
+                }),
+            );
+            const response = await fetch(`/field/${action}`, {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: {
+                    Accept: 'application/json',
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken(),
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+                body: JSON.stringify({
+                    latitude: position.coords.latitude,
+                    longitude: position.coords.longitude,
+                    accuracy_meters: Math.round(position.coords.accuracy),
+                }),
+            });
+            const body = (await response.json()) as { message?: string; data?: Exclude<FieldDay, null> };
+            if (!response.ok || !body.data) throw new Error(body.message ?? 'The field check-in could not be saved.');
+
+            setFieldDay(action === 'check-out' ? null : body.data);
+            setMessage(body.message ?? (action === 'check-in' ? 'Field day started.' : 'Field day ended.'));
+        } catch (caught) {
+            if (typeof caught === 'object' && caught !== null && 'code' in caught) {
+                const locationError = caught as GeolocationPositionError;
+                setError(
+                    locationError.code === locationError.PERMISSION_DENIED
+                        ? 'Location permission is required for field check-in.'
+                        : 'A reliable location could not be captured. Move to an open area and try again.',
+                );
+            } else {
+                setError(caught instanceof Error ? caught.message : 'The field check-in could not be saved.');
+            }
+        } finally {
+            setLocationBusy(false);
+        }
+    };
+
     return (
         <AppLayout>
             <Head title="Field collection" />
@@ -349,7 +430,16 @@ export default function FieldIndex({
                     </div>
                 </div>
 
-                <div className="mt-6 grid gap-4 sm:grid-cols-3">
+                <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                    <div className="card p-4">
+                        <p className="eyebrow">Field day</p>
+                        <p className="mt-2 text-lg font-semibold">{fieldDay ? 'Checked in' : 'Not started'}</p>
+                        <p className="mt-1 text-xs text-muted">
+                            {fieldDay
+                                ? 'Location recorded for this field session.'
+                                : 'Start when you begin your route.'}
+                        </p>
+                    </div>
                     <div className="card p-4">
                         <p className="eyebrow">Shift</p>
                         <p className="mt-2 text-lg font-semibold">{shift ? 'Open' : 'Not open'}</p>
@@ -402,6 +492,28 @@ export default function FieldIndex({
                         </div>
                     </div>
                 </div>
+
+                <section className="card mt-6 flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="flex items-start gap-3">
+                        <MapPin className="mt-0.5 shrink-0 text-brand" size={19} />
+                        <div>
+                            <h2 className="text-sm font-semibold">Field attendance</h2>
+                            <p className="mt-1 text-pretty text-xs text-muted">
+                                Your browser shares location only when you press this button. There is no continuous
+                                background tracking.
+                            </p>
+                        </div>
+                    </div>
+                    <button
+                        type="button"
+                        className={fieldDay ? 'button-secondary shrink-0' : 'button-primary shrink-0'}
+                        disabled={locationBusy || !online}
+                        onClick={() => void updateFieldDay(fieldDay ? 'check-out' : 'check-in')}
+                    >
+                        {fieldDay ? <LogOut size={16} /> : <LogIn size={16} />}
+                        {locationBusy ? 'Capturing location…' : fieldDay ? 'Finish field day' : 'Start field day'}
+                    </button>
+                </section>
 
                 {!shift && (
                     <div className="mt-6 flex flex-col gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900 sm:flex-row sm:items-center sm:justify-between">
