@@ -229,7 +229,9 @@ final class MessageTemplateProvisioner
                 }
             }
 
-            DB::table('message_templates')->insertOrIgnore($templates);
+            if ($templates !== []) {
+                DB::table('message_templates')->insertOrIgnore($templates);
+            }
         });
     }
 
