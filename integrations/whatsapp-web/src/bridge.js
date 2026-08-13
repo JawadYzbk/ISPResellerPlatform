@@ -169,6 +169,8 @@ export class WhatsAppBridge {
     accountId = null,
     webhookUrl = '',
     webhookSecret = '',
+    minIntervalMs = 0,
+    jitterMs = 0,
     fetcher = fetch,
     logger = console,
     beforeStart = async () => {},
@@ -178,11 +180,15 @@ export class WhatsAppBridge {
     this.accountId = accountId;
     this.webhookUrl = webhookUrl;
     this.webhookSecret = webhookSecret;
+    this.minIntervalMs = Math.max(0, minIntervalMs);
+    this.jitterMs = Math.max(0, jitterMs);
     this.fetcher = fetcher;
     this.logger = logger;
     this.beforeStart = beforeStart;
     this.state = { status: 'starting', qr: null, lastError: null, readyAt: null };
     this.pending = new Map();
+    this.sendQueue = Promise.resolve();
+    this.nextSendAt = 0;
     this.stopRequested = false;
     this.disconnectPromise = null;
   }
@@ -327,6 +333,13 @@ export class WhatsAppBridge {
       throw new TypeError('idempotency_key and body are required.');
     }
 
+    const operation = this.sendQueue.then(() => this.sendSerialized({ idempotencyKey, to, body }));
+    this.sendQueue = operation.catch(() => undefined);
+
+    return operation;
+  }
+
+  async sendSerialized({ idempotencyKey, to, body }) {
     const payloadHash = createHash('sha256').update(JSON.stringify({ to, body })).digest('hex');
     const existing = this.store.get(idempotencyKey);
     if (existing) {
@@ -340,6 +353,7 @@ export class WhatsAppBridge {
       throw new BridgeNotReadyError(`WhatsApp is not ready (status: ${this.state.status}).`);
     }
 
+    await this.waitForPacing();
     const chatId = normalizeRecipient(to);
     if (!this.pending.has(idempotencyKey)) {
       this.pending.set(idempotencyKey, this.dispatch({ idempotencyKey, chatId, body, payloadHash }));
@@ -350,6 +364,16 @@ export class WhatsAppBridge {
     } finally {
       this.pending.delete(idempotencyKey);
     }
+  }
+
+  async waitForPacing() {
+    const delay = Math.max(0, this.nextSendAt - Date.now());
+    if (delay > 0) {
+      await sleep(delay);
+    }
+
+    const jitter = this.jitterMs > 0 ? Math.floor(Math.random() * (this.jitterMs + 1)) : 0;
+    this.nextSendAt = Date.now() + this.minIntervalMs + jitter;
   }
 
   async dispatch({ idempotencyKey, chatId, body, payloadHash }) {
@@ -363,6 +387,8 @@ export class WhatsAppBridge {
       idempotency_key: idempotencyKey,
       provider_message_id: providerMessageId,
       payload_hash: payloadHash,
+      sent_at: new Date().toISOString(),
+      account_id: this.accountId,
     };
     await this.store.set(idempotencyKey, result);
     this.pending.set(providerMessageId, idempotencyKey);
@@ -433,6 +459,8 @@ export class WhatsAppBridgeManager {
     removePath = rm,
     cleanupRetries = SESSION_CLEANUP_RETRIES,
     cleanupRetryDelayMs = SESSION_CLEANUP_RETRY_DELAY_MS,
+    minIntervalMs = 0,
+    jitterMs = 0,
   }) {
     this.clientFactory = clientFactory;
     this.sessionPath = sessionPath;
@@ -442,6 +470,8 @@ export class WhatsAppBridgeManager {
     this.removePath = removePath;
     this.cleanupRetries = cleanupRetries;
     this.cleanupRetryDelayMs = cleanupRetryDelayMs;
+    this.minIntervalMs = Math.max(0, minIntervalMs);
+    this.jitterMs = Math.max(0, jitterMs);
     this.bridges = new Map();
     this.starting = new Map();
     this.removing = new Set();
@@ -467,6 +497,8 @@ export class WhatsAppBridgeManager {
         store: new JsonIdempotencyStore(join(this.sessionPath, `account-${accountId}`)),
         webhookUrl: this.webhookUrl,
         webhookSecret: this.webhookSecret,
+        minIntervalMs: this.minIntervalMs,
+        jitterMs: this.jitterMs,
         logger: this.logger,
         beforeStart: async () => {
           const removed = await clearStaleChromiumProfileLocks(profilePath);

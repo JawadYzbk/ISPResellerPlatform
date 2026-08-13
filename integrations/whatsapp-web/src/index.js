@@ -15,6 +15,8 @@ const config = {
   headless: process.env.WHATSAPP_WEB_HEADLESS !== 'false',
   executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || '',
   memoryWarningMb: Math.max(0, Number.parseInt(process.env.WHATSAPP_WEB_MEMORY_WARNING_MB || '2048', 10)),
+  minIntervalMs: Math.max(0, Number.parseInt(process.env.WHATSAPP_MIN_INTERVAL_SECONDS || '8', 10) * 1000),
+  jitterMs: Math.max(0, Number.parseInt(process.env.WHATSAPP_JITTER_SECONDS || '4', 10) * 1000),
 };
 
 if (!config.token) {
@@ -28,6 +30,8 @@ const manager = new WhatsAppBridgeManager({
   sessionPath: config.sessionPath,
   webhookUrl: config.webhookUrl,
   webhookSecret: config.webhookSecret,
+  minIntervalMs: config.minIntervalMs,
+  jitterMs: config.jitterMs,
   clientFactory: (accountId) =>
     new Client({
       authStrategy: new LocalAuth({ clientId: accountId, dataPath: config.sessionPath }),

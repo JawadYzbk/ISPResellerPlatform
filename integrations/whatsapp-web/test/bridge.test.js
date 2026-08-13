@@ -59,6 +59,41 @@ test('sends once and replays a durable idempotency result', async () => {
   }
 });
 
+test('serializes different outbound messages for one account', async () => {
+  const directory = await mkdtemp(join(tmpdir(), 'isp-whatsapp-'));
+  try {
+    const client = new FakeClient();
+    let inFlight = 0;
+    let peakInFlight = 0;
+    client.sendMessage = async (to, body) => {
+      inFlight++;
+      peakInFlight = Math.max(peakInFlight, inFlight);
+      await new Promise((resolve) => setTimeout(resolve, 5));
+      client.sent.push({ to, body });
+      inFlight--;
+      return { id: { _serialized: `wamid-${client.sent.length}` } };
+    };
+    const bridge = new WhatsAppBridge({
+      client,
+      store: new JsonIdempotencyStore(directory),
+      minIntervalMs: 0,
+      jitterMs: 0,
+    });
+    await bridge.start();
+    client.emit('ready');
+
+    await Promise.all([
+      bridge.send({ idempotencyKey: 'message-a', to: '+961 70 123 456', body: 'A' }),
+      bridge.send({ idempotencyKey: 'message-b', to: '+961 70 123 456', body: 'B' }),
+    ]);
+
+    assert.equal(peakInFlight, 1);
+    assert.equal(client.sent.length, 2);
+  } finally {
+    await rm(directory, { recursive: true, force: true });
+  }
+});
+
 test('signatures, recipients and readiness are enforced', async () => {
   const body = '{"ok":true}';
   assert.equal(hasValidSignature(body, signPayload(body, 'secret'), 'secret'), true);
