@@ -20,6 +20,12 @@ final readonly class MessageDeliveryResult
     }
 
     /** @param array<string, mixed> $metadata */
+    public static function deferred(string $provider, string $message, int $retryAfter, array $metadata = []): self
+    {
+        return new self('deferred', $provider, null, $message, [...$metadata, 'retry_after' => max(1, $retryAfter)]);
+    }
+
+    /** @param array<string, mixed> $metadata */
     public function withMetadata(array $metadata): self
     {
         return new self($this->status, $this->provider, $this->providerMessageId, $this->message, [...$this->metadata, ...$metadata]);

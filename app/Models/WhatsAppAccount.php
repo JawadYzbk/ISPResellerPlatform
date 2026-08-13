@@ -12,6 +12,8 @@ use Illuminate\Support\Str;
 
 /**
  * @property Carbon|null $last_ready_at
+ * @property Carbon|null $next_send_at
+ * @property Carbon|null $cooldown_until
  */
 class WhatsAppAccount extends Model
 {
@@ -42,6 +44,9 @@ class WhatsAppAccount extends Model
         return [
             'is_active' => 'boolean',
             'last_ready_at' => 'datetime',
+            'next_send_at' => 'datetime',
+            'cooldown_until' => 'datetime',
+            'failure_streak' => 'integer',
             'metadata' => 'array',
         ];
     }

@@ -6,6 +6,7 @@ use App\Domain\Communications\MessageProviderManager;
 use App\Enums\MessageStatus;
 use App\Models\Message;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Support\Facades\Cache;
 use RuntimeException;
 
 final class DeliverMessage extends TenantAwareJob implements ShouldQueue
@@ -19,6 +20,20 @@ final class DeliverMessage extends TenantAwareJob implements ShouldQueue
 
     public function handle(MessageProviderManager $providers): void
     {
+        $lock = Cache::lock('message-delivery:'.$this->tenantId.':'.$this->messageId, 120);
+        if (! $lock->get()) {
+            return;
+        }
+
+        try {
+            $this->deliver($providers);
+        } finally {
+            $lock->release();
+        }
+    }
+
+    private function deliver(MessageProviderManager $providers): void
+    {
         $message = Message::query()->lockForUpdate()->findOrFail($this->messageId);
         if (in_array($message->status, [MessageStatus::Delivered, MessageStatus::Sent], true)) {
             return;
@@ -26,6 +41,17 @@ final class DeliverMessage extends TenantAwareJob implements ShouldQueue
 
         $message->increment('delivery_attempts');
         $result = $providers->send($message->refresh());
+        if ($result->status === 'deferred') {
+            $message->decrement('delivery_attempts');
+            $message->forceFill([
+                'status' => MessageStatus::Queued,
+                'failure_reason' => null,
+                'metadata' => [...($message->metadata ?? []), ...$result->metadata],
+            ])->save();
+            $this->release((int) ($result->metadata['retry_after'] ?? 60));
+
+            return;
+        }
         $message->forceFill([
             'status' => $result->status === 'sent' ? MessageStatus::Sent : MessageStatus::Failed,
             'provider' => $result->provider,

@@ -40,6 +40,9 @@ final readonly class MessageProviderManager
                     ...($channel === $message->channel ? [] : ['fallback_from' => $message->channel]),
                 ]);
             }
+            if ($result->status === 'deferred') {
+                return $result->withMetadata(['attempted_channels' => $attempted]);
+            }
             $lastFailure = $result;
         }
 

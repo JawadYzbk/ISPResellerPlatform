@@ -11,6 +11,7 @@ final readonly class WhatsAppWebMessageProvider implements MessageProvider
     public function __construct(
         private WhatsAppBridgeClient $bridge,
         private WhatsAppAccountResolver $accounts,
+        private WhatsAppDeliveryGuard $guard,
     ) {}
 
     public function send(Message $message): MessageDeliveryResult
@@ -26,11 +27,24 @@ final readonly class WhatsAppWebMessageProvider implements MessageProvider
 
         $message->forceFill(['whatsapp_account_id' => $account->id])->save();
 
+        $decision = $this->guard->claim($account);
+        if (! $decision->allowed) {
+            return MessageDeliveryResult::deferred('whatsapp_web', $decision->reason, $decision->retryAfter, [
+                'whatsapp_account_id' => $account->id,
+                'whatsapp_account_public_id' => $account->public_id,
+                'whatsapp_safety_reason' => $decision->reason,
+            ]);
+        }
+
         try {
             $response = $this->bridge->send($account, $message->idempotency_key, $message->recipient, $message->body);
         } catch (Throwable $exception) {
+            $this->guard->recordFailure($account);
+
             return MessageDeliveryResult::failed('whatsapp_web', 'provider_unreachable: '.$exception->getMessage());
         }
+
+        $this->guard->recordSuccess($account);
 
         $id = $response['provider_message_id'] ?? null;
 
@@ -39,6 +53,7 @@ final readonly class WhatsAppWebMessageProvider implements MessageProvider
             'whatsapp_account_public_id' => $account->public_id,
             'whatsapp_bridge_id' => $account->bridge_id,
             'whatsapp_job' => $account->job,
+            'whatsapp_replayed' => ($response['replayed'] ?? false) === true,
         ]);
     }
 }

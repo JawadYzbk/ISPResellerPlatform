@@ -46,6 +46,16 @@ return [
             'client_id' => env('WHATSAPP_WEB_CLIENT_ID', 'isp-manager'),
             'webhook_url' => env('WHATSAPP_WEBHOOK_URL'),
         ],
+        'safety' => [
+            'enabled' => env('WHATSAPP_SAFETY_ENABLED', true),
+            'min_interval_seconds' => max(1, (int) env('WHATSAPP_MIN_INTERVAL_SECONDS', 8)),
+            'jitter_seconds' => max(0, (int) env('WHATSAPP_JITTER_SECONDS', 4)),
+            'hourly_limit' => max(1, (int) env('WHATSAPP_HOURLY_LIMIT', 60)),
+            'daily_limit' => max(1, (int) env('WHATSAPP_DAILY_LIMIT', 500)),
+            'duplicate_window_seconds' => max(0, (int) env('WHATSAPP_DUPLICATE_WINDOW_SECONDS', 120)),
+            'failure_cooldown_seconds' => max(1, (int) env('WHATSAPP_FAILURE_COOLDOWN_SECONDS', 30)),
+            'max_failure_cooldown_seconds' => max(1, (int) env('WHATSAPP_MAX_FAILURE_COOLDOWN_SECONDS', 900)),
+        ],
     ],
 
     'payments' => [
