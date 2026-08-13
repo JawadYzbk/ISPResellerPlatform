@@ -1,11 +1,12 @@
 import ResponsiveSelect from '@/components/ui/responsive-select';
-import { Head, Link, router, useForm } from '@inertiajs/react';
+import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
 import { ChevronLeft, ChevronRight, Network, Plus, Search } from 'lucide-react';
 import { useState } from 'react';
 
 import type { Status } from '@/components/StatusBadge';
 import StatusBadge from '@/components/StatusBadge';
 import AppLayout from '@/layouts/AppLayout';
+import { createTranslator } from '@/lib/i18n';
 import type { PageProps, Paginator } from '@/types';
 
 type Pop = {
@@ -26,6 +27,8 @@ type Props = PageProps & {
 };
 
 export default function PopsPage({ pops, filters, canManage, statuses }: Props) {
+    const { props } = usePage<PageProps>();
+    const t = createTranslator(props.app.locale);
     const [search, setSearch] = useState(filters.search ?? '');
     const [status, setStatus] = useState(filters.status ?? '');
     const popForm = useForm({ name: '', code: '', address: '', status: 'active' });
@@ -46,35 +49,33 @@ export default function PopsPage({ pops, filters, canManage, statuses }: Props) 
 
     return (
         <AppLayout>
-            <Head title="POPs" />
+            <Head title={t('pops.title')} />
 
             <div>
-                <p className="eyebrow">Network inventory</p>
-                <h1 className="page-title">Points of presence</h1>
-                <p className="page-subtitle">
-                    Keep router locations, transit capacity, and provider contracts visible together.
-                </p>
+                <p className="eyebrow">{t('pops.eyebrow')}</p>
+                <h1 className="page-title">{t('pops.title')}</h1>
+                <p className="page-subtitle">{t('pops.subtitle')}</p>
             </div>
 
             {canManage && (
                 <form onSubmit={submitPop} className="card mt-8 space-y-5 p-6">
                     <div className="flex items-center gap-2">
                         <Plus size={17} className="text-brand" />
-                        <h2 className="section-title">Add a POP</h2>
+                        <h2 className="section-title">{t('pops.add')}</h2>
                     </div>
                     <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
                         <label>
-                            <span className="field-label">Name</span>
+                            <span className="field-label">{t('Name')}</span>
                             <input
                                 className="field"
                                 value={popForm.data.name}
                                 onChange={(event) => popForm.setData('name', event.target.value)}
-                                placeholder="Central tower"
+                                placeholder={t('pops.name_placeholder')}
                             />
                             {popForm.errors.name && <p className="field-error">{popForm.errors.name}</p>}
                         </label>
                         <label>
-                            <span className="field-label">Code</span>
+                            <span className="field-label">{t('Code')}</span>
                             <input
                                 className="field uppercase"
                                 value={popForm.data.code}
@@ -84,17 +85,17 @@ export default function PopsPage({ pops, filters, canManage, statuses }: Props) 
                             {popForm.errors.code && <p className="field-error">{popForm.errors.code}</p>}
                         </label>
                         <label>
-                            <span className="field-label">Address</span>
+                            <span className="field-label">{t('Address')}</span>
                             <input
                                 className="field"
                                 value={popForm.data.address}
                                 onChange={(event) => popForm.setData('address', event.target.value)}
-                                placeholder="Main street"
+                                placeholder={t('pops.address_placeholder')}
                             />
                             {popForm.errors.address && <p className="field-error">{popForm.errors.address}</p>}
                         </label>
                         <label>
-                            <span className="field-label">Status</span>
+                            <span className="field-label">{t('Status')}</span>
                             <ResponsiveSelect
                                 className="field"
                                 value={popForm.data.status}
@@ -102,7 +103,7 @@ export default function PopsPage({ pops, filters, canManage, statuses }: Props) 
                             >
                                 {statuses.map((option) => (
                                     <option key={option} value={option}>
-                                        {option.replace('_', ' ')}
+                                        {t(option.replace('_', ' '))}
                                     </option>
                                 ))}
                             </ResponsiveSelect>
@@ -111,7 +112,7 @@ export default function PopsPage({ pops, filters, canManage, statuses }: Props) 
                     </div>
                     <div className="flex justify-end">
                         <button type="submit" className="button-primary" disabled={popForm.processing}>
-                            <Plus size={16} /> Add POP
+                            <Plus size={16} /> {t('pops.add')}
                         </button>
                     </div>
                 </form>
@@ -119,51 +120,53 @@ export default function PopsPage({ pops, filters, canManage, statuses }: Props) 
 
             <form onSubmit={applyFilters} className="card mt-8 flex flex-col gap-4 p-5 sm:flex-row sm:items-end">
                 <label className="block sm:min-w-72">
-                    <span className="field-label">Search POP</span>
+                    <span className="field-label">{t('pops.search')}</span>
                     <div className="relative">
                         <Search size={17} className="pointer-events-none absolute start-3 top-3 text-muted" />
                         <input
                             className="field ps-10"
                             value={search}
                             onChange={(event) => setSearch(event.target.value)}
-                            placeholder="Name or code"
+                            placeholder={t('pops.search_placeholder')}
                         />
                     </div>
                 </label>
                 <label className="block sm:min-w-48">
-                    <span className="field-label">Status</span>
+                    <span className="field-label">{t('Status')}</span>
                     <ResponsiveSelect
                         className="field"
                         value={status}
                         onChange={(event) => setStatus(event.target.value)}
                     >
-                        <option value="">All statuses</option>
+                        <option value="">{t('pops.all_statuses')}</option>
                         {statuses.map((option) => (
                             <option key={option} value={option}>
-                                {option.replace('_', ' ')}
+                                {t(option.replace('_', ' '))}
                             </option>
                         ))}
                     </ResponsiveSelect>
                 </label>
                 <button type="submit" className="button-primary">
-                    Apply filters
+                    {t('Apply filters')}
                 </button>
             </form>
 
             <div className="card mt-6 overflow-hidden">
                 <div className="flex items-center gap-2 border-b border-line px-5 py-4">
                     <Network size={17} className="text-brand" />
-                    <p className="text-sm font-semibold">{pops.total.toLocaleString()} POP(s)</p>
+                    <p className="text-sm font-semibold">
+                        {pops.total.toLocaleString()} {t('pops.count')}
+                    </p>
                 </div>
                 <div className="overflow-x-auto">
                     <table className="w-full min-w-[820px] text-start">
                         <thead>
                             <tr className="border-b border-line bg-sand/50 text-xs font-semibold uppercase tracking-wider text-muted">
                                 <th className="px-5 py-3.5 text-start">POP</th>
-                                <th className="px-5 py-3.5 text-start">Address</th>
-                                <th className="px-5 py-3.5 text-start">Status</th>
-                                <th className="px-5 py-3.5 text-start">Routers</th>
-                                <th className="px-5 py-3.5 text-start">Upstream links</th>
+                                <th className="px-5 py-3.5 text-start">{t('Address')}</th>
+                                <th className="px-5 py-3.5 text-start">{t('Status')}</th>
+                                <th className="px-5 py-3.5 text-start">{t('Routers')}</th>
+                                <th className="px-5 py-3.5 text-start">{t('pops.upstream_links')}</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-line">
@@ -179,7 +182,7 @@ export default function PopsPage({ pops, filters, canManage, statuses }: Props) 
                                         <p className="mt-1 text-xs text-muted">{pop.code}</p>
                                     </td>
                                     <td className="px-5 py-4 text-sm text-muted">
-                                        {pop.address ?? 'No address recorded'}
+                                        {pop.address ?? t('pops.no_address')}
                                     </td>
                                     <td className="px-5 py-4">
                                         <StatusBadge status={pop.status} />
@@ -192,7 +195,7 @@ export default function PopsPage({ pops, filters, canManage, statuses }: Props) 
                                 <tr>
                                     <td colSpan={5} className="px-5 py-16 text-center">
                                         <Network className="mx-auto text-muted" size={28} />
-                                        <p className="mt-3 font-semibold">No POPs match these filters</p>
+                                        <p className="mt-3 font-semibold">{t('pops.no_matches')}</p>
                                     </td>
                                 </tr>
                             )}
@@ -201,7 +204,7 @@ export default function PopsPage({ pops, filters, canManage, statuses }: Props) 
                 </div>
                 <div className="flex items-center justify-between border-t border-line px-5 py-4">
                     <p className="text-xs text-muted">
-                        Page {pops.current_page} of {pops.last_page}
+                        {t('Page')} {pops.current_page} {t('of')} {pops.last_page}
                     </p>
                     <div className="flex items-center gap-1">
                         {pops.links.map((link, index) => {

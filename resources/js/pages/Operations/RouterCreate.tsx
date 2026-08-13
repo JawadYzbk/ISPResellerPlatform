@@ -1,14 +1,18 @@
 import ResponsiveSelect from '@/components/ui/responsive-select';
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import { ArrowLeft, Router as RouterIcon, Save } from 'lucide-react';
 
 import AppLayout from '@/layouts/AppLayout';
+import { createTranslator } from '@/lib/i18n';
+import type { PageProps } from '@/types';
 
 type Pop = { id: number; name: string; code: string };
 
 type Props = { pops: Pop[] };
 
 export default function RouterCreate({ pops }: Props) {
+    const { props } = usePage<PageProps>();
+    const t = createTranslator(props.app.locale);
     const form = useForm({
         name: '',
         host: '',
@@ -34,24 +38,21 @@ export default function RouterCreate({ pops }: Props) {
 
     return (
         <AppLayout>
-            <Head title="Add router" />
+            <Head title={t('router_create.add')} />
             <Link
                 href="/operations/routers"
                 className="mb-6 inline-flex items-center gap-2 text-sm font-semibold text-muted hover:text-brand"
             >
-                <ArrowLeft size={16} /> Back to routers
+                <ArrowLeft size={16} /> {t('Back to routers')}
             </Link>
             <div className="max-w-3xl">
-                <p className="eyebrow">Network operations</p>
-                <h1 className="page-title">Register router</h1>
-                <p className="page-subtitle">
-                    Store the connection boundary for a router. Secrets are encrypted at rest and never returned by the
-                    operations list.
-                </p>
+                <p className="eyebrow">{t('routers.eyebrow')}</p>
+                <h1 className="page-title">{t('router_create.register')}</h1>
+                <p className="page-subtitle">{t('router_create.subtitle')}</p>
                 <form onSubmit={submit} className="card mt-8 space-y-6 p-6">
                     <div className="grid gap-5 sm:grid-cols-2">
                         <label>
-                            <span className="field-label">Router name</span>
+                            <span className="field-label">{t('router_create.name')}</span>
                             <input
                                 className="field"
                                 value={form.data.name}
@@ -60,7 +61,7 @@ export default function RouterCreate({ pops }: Props) {
                             {form.errors.name && <p className="field-error">{form.errors.name}</p>}
                         </label>
                         <label>
-                            <span className="field-label">Host or IP</span>
+                            <span className="field-label">{t('router_create.host')}</span>
                             <input
                                 className="field"
                                 value={form.data.host}
@@ -69,7 +70,7 @@ export default function RouterCreate({ pops }: Props) {
                             {form.errors.host && <p className="field-error">{form.errors.host}</p>}
                         </label>
                         <label>
-                            <span className="field-label">API port</span>
+                            <span className="field-label">{t('router_create.api_port')}</span>
                             <input
                                 className="field"
                                 type="number"
@@ -87,7 +88,7 @@ export default function RouterCreate({ pops }: Props) {
                                 value={form.data.pop_id}
                                 onChange={(event) => form.setData('pop_id', event.target.value)}
                             >
-                                <option value="">No POP assigned</option>
+                                <option value="">{t('No POP assigned')}</option>
                                 {pops.map((pop) => (
                                     <option key={pop.id} value={pop.id}>
                                         {pop.name} ({pop.code})
@@ -97,7 +98,7 @@ export default function RouterCreate({ pops }: Props) {
                             {form.errors.pop_id && <p className="field-error">{form.errors.pop_id}</p>}
                         </label>
                         <label>
-                            <span className="field-label">API username</span>
+                            <span className="field-label">{t('router_create.username')}</span>
                             <input
                                 className="field"
                                 autoComplete="off"
@@ -107,7 +108,7 @@ export default function RouterCreate({ pops }: Props) {
                             {form.errors.username && <p className="field-error">{form.errors.username}</p>}
                         </label>
                         <label>
-                            <span className="field-label">API password</span>
+                            <span className="field-label">{t('router_create.password')}</span>
                             <input
                                 className="field"
                                 type="password"
@@ -118,7 +119,7 @@ export default function RouterCreate({ pops }: Props) {
                             {form.errors.password && <p className="field-error">{form.errors.password}</p>}
                         </label>
                         <label>
-                            <span className="field-label">RADIUS shared secret (optional)</span>
+                            <span className="field-label">{t('router_create.radius_secret')}</span>
                             <input
                                 className="field"
                                 type="password"
@@ -129,7 +130,7 @@ export default function RouterCreate({ pops }: Props) {
                             {form.errors.radius_secret && <p className="field-error">{form.errors.radius_secret}</p>}
                         </label>
                         <label>
-                            <span className="field-label">CoA port</span>
+                            <span className="field-label">{t('router_create.coa_port')}</span>
                             <input
                                 className="field"
                                 type="number"
@@ -147,19 +148,18 @@ export default function RouterCreate({ pops }: Props) {
                             checked={form.data.tls_verify}
                             onChange={(event) => form.setData('tls_verify', event.target.checked)}
                         />
-                        Verify TLS certificates for router API requests
+                        {t('router_create.verify_tls')}
                     </label>
                     <div className="flex justify-end gap-3 border-t border-line pt-5">
                         <Link href="/operations/routers" className="button-secondary">
-                            Cancel
+                            {t('Cancel')}
                         </Link>
                         <button className="button-primary" disabled={form.processing}>
-                            <Save size={16} /> Register router
+                            <Save size={16} /> {t('router_create.register')}
                         </button>
                     </div>
                     <p className="flex items-center gap-2 text-xs text-muted">
-                        <RouterIcon size={14} /> Connection health can be checked after registration from the router
-                        queue.
+                        <RouterIcon size={14} /> {t('router_create.health_note')}
                     </p>
                 </form>
             </div>

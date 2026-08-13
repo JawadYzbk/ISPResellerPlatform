@@ -1,11 +1,12 @@
 import ResponsiveSelect from '@/components/ui/responsive-select';
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import { ChevronLeft, ChevronRight, RefreshCw, Router as RouterIcon, ShieldCheck } from 'lucide-react';
 import { useState } from 'react';
 
 import StatusBadge from '@/components/StatusBadge';
 import AppLayout from '@/layouts/AppLayout';
 import { formatDate } from '@/lib/format';
+import { createTranslator } from '@/lib/i18n';
 import type { PageProps, Paginator } from '@/types';
 
 type RouterRow = {
@@ -29,6 +30,8 @@ type Props = PageProps & {
 };
 
 export default function RoutersPage({ routers, filters, canCheckHealth = false, canCreate = false }: Props) {
+    const { props } = usePage<PageProps>();
+    const t = createTranslator(props.app.locale);
     const [status, setStatus] = useState(filters.status ?? '');
 
     const applyFilters = (event: React.FormEvent) => {
@@ -38,22 +41,20 @@ export default function RoutersPage({ routers, filters, canCheckHealth = false, 
 
     return (
         <AppLayout>
-            <Head title="Routers" />
+            <Head title={t('routers.title')} />
             <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
                 <div>
-                    <p className="eyebrow">Network operations</p>
-                    <h1 className="page-title">Routers</h1>
-                    <p className="page-subtitle">
-                        Inspect device reachability and the services assigned to each router.
-                    </p>
+                    <p className="eyebrow">{t('routers.eyebrow')}</p>
+                    <h1 className="page-title">{t('routers.title')}</h1>
+                    <p className="page-subtitle">{t('routers.subtitle')}</p>
                 </div>
                 <div className="flex flex-wrap gap-2">
                     <Link href="/operations/network-commands" className="button-secondary">
-                        Command queue
+                        {t('routers.command_queue')}
                     </Link>
                     {canCreate && (
                         <Link href="/operations/routers/create" className="button-primary">
-                            Add router
+                            {t('routers.add')}
                         </Link>
                     )}
                 </div>
@@ -61,20 +62,20 @@ export default function RoutersPage({ routers, filters, canCheckHealth = false, 
 
             <form onSubmit={applyFilters} className="card mt-8 flex flex-col gap-4 p-5 sm:flex-row sm:items-end">
                 <label className="block sm:min-w-52">
-                    <span className="field-label">Router status</span>
+                    <span className="field-label">{t('routers.status')}</span>
                     <ResponsiveSelect
                         className="field"
                         value={status}
                         onChange={(event) => setStatus(event.target.value)}
                     >
-                        <option value="">All statuses</option>
-                        <option value="online">Online</option>
-                        <option value="offline">Offline</option>
-                        <option value="unknown">Unknown</option>
+                        <option value="">{t('routers.all_statuses')}</option>
+                        <option value="online">{t('Online')}</option>
+                        <option value="offline">{t('Offline')}</option>
+                        <option value="unknown">{t('Unknown')}</option>
                     </ResponsiveSelect>
                 </label>
                 <button type="submit" className="button-primary">
-                    Apply filters
+                    {t('Apply filters')}
                 </button>
             </form>
 
@@ -82,19 +83,21 @@ export default function RoutersPage({ routers, filters, canCheckHealth = false, 
                 <div className="flex items-center justify-between border-b border-line px-5 py-4">
                     <div className="flex items-center gap-2">
                         <RouterIcon size={17} className="text-brand" />
-                        <p className="text-sm font-semibold">{routers.total.toLocaleString()} router(s)</p>
+                        <p className="text-sm font-semibold">
+                            {routers.total.toLocaleString()} {t('routers.count')}
+                        </p>
                     </div>
-                    <p className="text-xs text-muted">Credentials are never rendered in the operations surface.</p>
+                    <p className="text-xs text-muted">{t('routers.credentials_note')}</p>
                 </div>
                 <div className="overflow-x-auto">
                     <table className="w-full min-w-[980px] text-start">
                         <thead>
                             <tr className="border-b border-line bg-sand/50 text-xs font-semibold uppercase tracking-wider text-muted">
-                                <th className="px-5 py-3.5 text-start">Router</th>
-                                <th className="px-5 py-3.5 text-start">Location</th>
-                                <th className="px-5 py-3.5 text-start">Status</th>
-                                <th className="px-5 py-3.5 text-start">Services</th>
-                                <th className="px-5 py-3.5 text-start">Last seen</th>
+                                <th className="px-5 py-3.5 text-start">{t('Router')}</th>
+                                <th className="px-5 py-3.5 text-start">{t('Location')}</th>
+                                <th className="px-5 py-3.5 text-start">{t('Status')}</th>
+                                <th className="px-5 py-3.5 text-start">{t('Services')}</th>
+                                <th className="px-5 py-3.5 text-start">{t('Last seen')}</th>
                                 <th className="px-5 py-3.5" />
                             </tr>
                         </thead>
@@ -120,12 +123,12 @@ export default function RoutersPage({ routers, filters, canCheckHealth = false, 
                                             <StatusBadge status={device.status} />
                                             {!device.tls_verify && (
                                                 <span className="text-xs font-semibold text-amber-700">
-                                                    TLS verify off
+                                                    {t('routers.tls_off')}
                                                 </span>
                                             )}
                                             {device.consecutive_failures > 0 && (
                                                 <span className="text-xs text-muted">
-                                                    {device.consecutive_failures} failed check(s)
+                                                    {device.consecutive_failures} {t('routers.failed_checks')}
                                                 </span>
                                             )}
                                         </div>
@@ -141,7 +144,7 @@ export default function RoutersPage({ routers, filters, canCheckHealth = false, 
                                                     router.post(`/operations/routers/${device.public_id}/health`)
                                                 }
                                             >
-                                                <RefreshCw size={14} /> Check health
+                                                <RefreshCw size={14} /> {t('routers.check_health')}
                                             </button>
                                         )}
                                     </td>
@@ -151,7 +154,7 @@ export default function RoutersPage({ routers, filters, canCheckHealth = false, 
                                 <tr>
                                     <td colSpan={6} className="px-5 py-16 text-center">
                                         <ShieldCheck className="mx-auto text-muted" size={28} />
-                                        <p className="mt-3 font-semibold">No routers match this filter</p>
+                                        <p className="mt-3 font-semibold">{t('routers.no_matches')}</p>
                                     </td>
                                 </tr>
                             )}
@@ -160,7 +163,7 @@ export default function RoutersPage({ routers, filters, canCheckHealth = false, 
                 </div>
                 <div className="flex items-center justify-between border-t border-line px-5 py-4">
                     <p className="text-xs text-muted">
-                        Page {routers.current_page} of {routers.last_page}
+                        {t('Page')} {routers.current_page} {t('of')} {routers.last_page}
                     </p>
                     <div className="flex items-center gap-1">
                         {routers.links.map((link, index) => {
