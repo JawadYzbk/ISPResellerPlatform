@@ -10,9 +10,11 @@ use App\Actions\PushCollectorSync;
 use App\Http\Controllers\Controller;
 use App\Models\CollectorFieldDay;
 use App\Models\CollectorRoute;
+use App\Models\CollectorTask;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Support\CollectorRoutePresenter;
+use App\Support\CollectorTaskPresenter;
 use App\Support\Tenancy;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -29,6 +31,7 @@ final class FieldController extends Controller
         GetCollectorSyncSnapshot $snapshot,
         GetCurrencyCatalog $currencyCatalog,
         CollectorRoutePresenter $routePresenter,
+        CollectorTaskPresenter $taskPresenter,
     ): Response {
         $user = $this->collector($request);
         $tenant = $this->tenant();
@@ -44,6 +47,16 @@ final class FieldController extends Controller
             'summary' => $summary->handle($user, now()->toDateString()),
             'fieldDay' => $this->fieldDay($user),
             'route' => $this->route($user, $tenant, $routePresenter),
+            'tasks' => CollectorTask::query()
+                ->where('collector_id', $user->id)
+                ->whereNotIn('status', ['completed', 'cancelled'])
+                ->with(['collector:id,name,email', 'createdBy:id,name', 'customer:id,public_id,code,first_name,last_name,phone,address', 'messages.author:id,name,role', 'reads'])
+                ->orderByRaw("case priority when 'urgent' then 1 when 'high' then 2 when 'normal' then 3 else 4 end")
+                ->orderBy('due_at')
+                ->limit(50)
+                ->get()
+                ->map(fn (CollectorTask $task): array => $taskPresenter->make($task, $user))
+                ->values(),
             'currencies' => $currencyCatalog->handle(),
             'defaultCurrency' => $tenant->collection_currency,
             'storageKey' => 'field:'.$tenant->public_id.':'.$user->id,

@@ -4,6 +4,7 @@ import ResponsiveSelect from '@/components/ui/responsive-select';
 import { Head, Link } from '@inertiajs/react';
 import {
     CheckCircle2,
+    ClipboardCheck,
     CloudOff,
     CreditCard,
     LogIn,
@@ -11,6 +12,7 @@ import {
     ListOrdered,
     LocateFixed,
     MapPin,
+    MessageSquare,
     RefreshCw,
     Search,
     UserRound,
@@ -99,6 +101,23 @@ type FieldRoute = {
     stops: FieldRouteStop[];
 } | null;
 
+type FieldTask = {
+    id: string;
+    title: string;
+    description: string | null;
+    priority: 'low' | 'normal' | 'high' | 'urgent';
+    status: 'assigned' | 'acknowledged' | 'in_progress' | 'completed' | 'cancelled';
+    due_at: string | null;
+    unread: boolean;
+    customer: { id: string; code: string; name: string; phone: string | null; address: string | null } | null;
+    messages: {
+        id: string;
+        body: string;
+        created_at: string;
+        author: { id: number; name: string; role: string; is_viewer: boolean };
+    }[];
+};
+
 type SyncResult = {
     index: number;
     status: 'created' | 'replayed' | 'rejected' | 'error';
@@ -111,6 +130,7 @@ type Props = {
     summary: CollectorSummary;
     fieldDay: FieldDay;
     route: FieldRoute;
+    tasks: FieldTask[];
     currencies: CurrencyOption[];
     defaultCurrency: string;
     storageKey: string;
@@ -146,6 +166,7 @@ export default function FieldIndex({
     summary,
     fieldDay: initialFieldDay,
     route: initialRoute,
+    tasks: initialTasks,
     currencies,
     defaultCurrency,
     storageKey,
@@ -174,6 +195,12 @@ export default function FieldIndex({
     const [visitOutcome, setVisitOutcome] = useState<FieldRouteStop['outcome']>('no_answer');
     const [visitNote, setVisitNote] = useState('');
     const [visitBusy, setVisitBusy] = useState(false);
+    const [tasks, setTasks] = useState(initialTasks);
+    const [selectedTaskId, setSelectedTaskId] = useState(
+        initialTasks.find((task) => task.unread)?.id ?? initialTasks[0]?.id ?? '',
+    );
+    const [taskReply, setTaskReply] = useState('');
+    const [taskBusy, setTaskBusy] = useState(false);
 
     const selectedCustomer = customers.find((customer) => customer.id === selectedCustomerId) ?? null;
     const selectedCurrency = currencyOptions.find((item) => item.code === currency);
@@ -195,6 +222,7 @@ export default function FieldIndex({
             ? stops.sort((left, right) => distanceMeters(routeOrigin, left) - distanceMeters(routeOrigin, right))
             : stops.sort((left, right) => left.position - right.position);
     }, [collectorRoute, nearbyOrder, routeOrigin]);
+    const selectedTask = tasks.find((task) => task.id === selectedTaskId) ?? null;
 
     const persist = useCallback(
         async (
@@ -544,6 +572,76 @@ export default function FieldIndex({
         }
     };
 
+    const replaceTask = (updated: FieldTask) => {
+        setTasks((current) => current.map((task) => (task.id === updated.id ? updated : task)));
+    };
+
+    const openTask = async (task: FieldTask) => {
+        setSelectedTaskId(task.id);
+        if (!task.unread || !online) return;
+        try {
+            const response = await fetch(`/field/tasks/${task.id}/read`, {
+                method: 'POST',
+                headers: { Accept: 'application/json', 'X-CSRF-TOKEN': csrfToken() },
+            });
+            if (response.ok) replaceTask({ ...task, unread: false });
+        } catch {
+            // The task remains readable even if the acknowledgement cannot be synchronized.
+        }
+    };
+
+    const updateTaskStatus = async (task: FieldTask) => {
+        const nextStatus =
+            task.status === 'assigned' ? 'acknowledged' : task.status === 'acknowledged' ? 'in_progress' : 'completed';
+        setTaskBusy(true);
+        setError(null);
+        try {
+            const response = await fetch(`/field/tasks/${task.id}/status`, {
+                method: 'PATCH',
+                headers: {
+                    Accept: 'application/json',
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken(),
+                },
+                body: JSON.stringify({ status: nextStatus }),
+            });
+            const body = (await response.json()) as { message?: string; data?: FieldTask };
+            if (!response.ok || !body.data) throw new Error(body.message ?? 'The task could not be updated.');
+            replaceTask(body.data);
+            setMessage(body.message ?? 'Task updated.');
+        } catch (caught) {
+            setError(caught instanceof Error ? caught.message : 'The task could not be updated.');
+        } finally {
+            setTaskBusy(false);
+        }
+    };
+
+    const sendTaskReply = async (task: FieldTask) => {
+        if (taskReply.trim() === '') return;
+        setTaskBusy(true);
+        setError(null);
+        try {
+            const response = await fetch(`/field/tasks/${task.id}/messages`, {
+                method: 'POST',
+                headers: {
+                    Accept: 'application/json',
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken(),
+                },
+                body: JSON.stringify({ body: taskReply }),
+            });
+            const body = (await response.json()) as { message?: string; data?: FieldTask };
+            if (!response.ok || !body.data) throw new Error(body.message ?? 'The message could not be sent.');
+            replaceTask(body.data);
+            setTaskReply('');
+            setMessage(body.message ?? 'Message sent.');
+        } catch (caught) {
+            setError(caught instanceof Error ? caught.message : 'The message could not be sent.');
+        } finally {
+            setTaskBusy(false);
+        }
+    };
+
     return (
         <AppLayout>
             <Head title="Field collection" />
@@ -647,6 +745,160 @@ export default function FieldIndex({
                         {fieldDay ? <LogOut size={16} /> : <LogIn size={16} />}
                         {locationBusy ? 'Capturing location…' : fieldDay ? 'Finish field day' : 'Start field day'}
                     </button>
+                </section>
+
+                <section className="card mt-6 overflow-hidden">
+                    <div className="flex items-start justify-between gap-4 border-b border-line p-5">
+                        <div className="flex items-start gap-3">
+                            <ClipboardCheck className="mt-0.5 shrink-0 text-brand" size={19} />
+                            <div>
+                                <h2 className="text-balance text-xl font-semibold">Assigned tasks</h2>
+                                <p className="mt-1 text-pretty text-sm text-muted">
+                                    Acknowledge field work and keep questions with the assignment.
+                                </p>
+                            </div>
+                        </div>
+                        <span className="rounded-full bg-brand-soft px-3 py-1 text-xs font-semibold text-brand tabular-nums">
+                            {tasks.length} open
+                        </span>
+                    </div>
+                    {tasks.length > 0 ? (
+                        <div className="grid md:grid-cols-[minmax(14rem,0.8fr)_minmax(0,1.2fr)]">
+                            <div className="divide-y divide-line border-b border-line md:border-e md:border-b-0">
+                                {tasks.map((task) => (
+                                    <button
+                                        key={task.id}
+                                        type="button"
+                                        className={`block w-full p-4 text-start ${selectedTaskId === task.id ? 'bg-brand-soft/60' : 'hover:bg-sand/40'}`}
+                                        onClick={() => void openTask(task)}
+                                    >
+                                        <div className="flex items-start gap-2">
+                                            <span className="min-w-0 flex-1 line-clamp-2 text-sm font-semibold">
+                                                {task.title}
+                                            </span>
+                                            {task.unread && (
+                                                <span
+                                                    className="mt-1.5 size-2 shrink-0 rounded-full bg-brand"
+                                                    aria-label="Unread messages"
+                                                />
+                                            )}
+                                        </div>
+                                        <p className="mt-2 text-xs capitalize text-muted">
+                                            {task.priority} · {task.status.replaceAll('_', ' ')}
+                                        </p>
+                                    </button>
+                                ))}
+                            </div>
+                            {selectedTask && (
+                                <div className="min-w-0 p-5">
+                                    <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-start">
+                                        <div>
+                                            <p className="eyebrow">{selectedTask.priority} priority</p>
+                                            <h3 className="mt-1 text-balance text-lg font-semibold">
+                                                {selectedTask.title}
+                                            </h3>
+                                        </div>
+                                        <button
+                                            type="button"
+                                            className="button-primary shrink-0"
+                                            disabled={
+                                                !online ||
+                                                taskBusy ||
+                                                selectedTask.status === 'completed' ||
+                                                selectedTask.status === 'cancelled'
+                                            }
+                                            onClick={() => void updateTaskStatus(selectedTask)}
+                                        >
+                                            {selectedTask.status === 'assigned'
+                                                ? 'Acknowledge'
+                                                : selectedTask.status === 'acknowledged'
+                                                  ? 'Start task'
+                                                  : selectedTask.status === 'in_progress'
+                                                    ? 'Complete task'
+                                                    : 'Completed'}
+                                        </button>
+                                    </div>
+                                    {selectedTask.description && (
+                                        <p className="mt-4 whitespace-pre-wrap text-pretty text-sm text-muted">
+                                            {selectedTask.description}
+                                        </p>
+                                    )}
+                                    {selectedTask.customer && (
+                                        <Link
+                                            href={`/customers/${selectedTask.customer.id}`}
+                                            className="mt-4 block rounded-xl border border-line p-4"
+                                        >
+                                            <p className="text-sm font-semibold text-brand">
+                                                {selectedTask.customer.name} · {selectedTask.customer.code}
+                                            </p>
+                                            <p className="mt-1 text-xs text-muted">
+                                                {selectedTask.customer.address ??
+                                                    selectedTask.customer.phone ??
+                                                    'Open customer details'}
+                                            </p>
+                                        </Link>
+                                    )}
+                                    <div className="mt-5 border-t border-line pt-5">
+                                        <div className="flex items-center gap-2">
+                                            <MessageSquare size={17} className="text-brand" />
+                                            <h4 className="text-sm font-semibold">Conversation</h4>
+                                        </div>
+                                        <div className="mt-3 max-h-72 space-y-3 overflow-y-auto">
+                                            {selectedTask.messages.map((taskMessage) => (
+                                                <div
+                                                    key={taskMessage.id}
+                                                    className={`max-w-[90%] rounded-xl border border-line p-3 ${taskMessage.author.is_viewer ? 'ms-auto bg-brand-soft/60' : 'bg-sand/40'}`}
+                                                >
+                                                    <p className="text-xs font-semibold">{taskMessage.author.name}</p>
+                                                    <p className="mt-1 whitespace-pre-wrap text-pretty text-sm">
+                                                        {taskMessage.body}
+                                                    </p>
+                                                </div>
+                                            ))}
+                                            {selectedTask.messages.length === 0 && (
+                                                <p className="rounded-xl border border-dashed border-line p-5 text-center text-sm text-muted">
+                                                    No messages yet.
+                                                </p>
+                                            )}
+                                        </div>
+                                        <form
+                                            className="mt-4"
+                                            onSubmit={(event) => {
+                                                event.preventDefault();
+                                                void sendTaskReply(selectedTask);
+                                            }}
+                                        >
+                                            <label className="field-label">
+                                                Reply
+                                                <textarea
+                                                    className="field mt-1 min-h-20"
+                                                    value={taskReply}
+                                                    maxLength={5000}
+                                                    onChange={(event) => setTaskReply(event.target.value)}
+                                                />
+                                            </label>
+                                            <div className="mt-3 flex justify-end">
+                                                <button
+                                                    className="button-secondary"
+                                                    disabled={!online || taskBusy || taskReply.trim() === ''}
+                                                >
+                                                    Send reply
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    ) : (
+                        <div className="p-10 text-center">
+                            <CheckCircle2 className="mx-auto text-emerald-600" size={28} />
+                            <p className="mt-3 font-semibold">No open tasks</p>
+                            <p className="mt-1 text-pretty text-sm text-muted">
+                                New assignments from your manager will appear here.
+                            </p>
+                        </div>
+                    )}
                 </section>
 
                 <section className="card mt-6 overflow-hidden">
