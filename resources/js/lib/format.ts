@@ -44,18 +44,20 @@ export function parseMoneyToMinor(value: string, currency: string): number | nul
     return amount > 0n && amount <= safeMaximum ? Number(amount) : null;
 }
 
-export function formatDuration(startedAt: string | null, endedAt: string | null): string {
-    if (!startedAt || !endedAt) return 'Uptime unavailable';
+type Translate = (key: string) => string;
+
+export function formatDuration(startedAt: string | null, endedAt: string | null, translate: Translate = (key) => key): string {
+    if (!startedAt || !endedAt) return translate('Uptime unavailable');
 
     const minutes = Math.max(0, Math.floor((new Date(endedAt).getTime() - new Date(startedAt).getTime()) / 60000));
     const days = Math.floor(minutes / 1440);
     const hours = Math.floor((minutes % 1440) / 60);
     const remainingMinutes = minutes % 60;
 
-    if (days > 0) return `${days}d ${hours}h`;
-    if (hours > 0) return `${hours}h ${remainingMinutes}m`;
+    if (days > 0) return translate(`${days}d ${hours}h`);
+    if (hours > 0) return translate(`${hours}h ${remainingMinutes}m`);
 
-    return `${remainingMinutes}m`;
+    return translate(`${remainingMinutes}m`);
 }
 
 export function formatBytes(bytes: number): string {
@@ -71,14 +73,17 @@ export function formatBytes(bytes: number): string {
     return `${value.toFixed(value >= 10 ? 0 : 1)} ${units[unit]}`;
 }
 
-export function formatExpiryCountdown(value: string | null): string {
-    if (!value) return 'No expiry date';
+export function formatExpiryCountdown(value: string | null, translate: Translate = (key) => key): string {
+    if (!value) return translate('No expiry date');
     const days = Math.ceil((new Date(value).getTime() - Date.now()) / 86_400_000);
-    if (days < 0) return `Expired ${Math.abs(days)} day${Math.abs(days) === 1 ? '' : 's'} ago`;
-    if (days === 0) return 'Expires today';
-    if (days === 1) return 'Expires tomorrow';
+    if (days < 0) {
+        const count = Math.abs(days);
+        return translate(`Expired ${count} ${count === 1 ? 'day' : 'days'} ago`);
+    }
+    if (days === 0) return translate('Expires today');
+    if (days === 1) return translate('Expires tomorrow');
 
-    return `Expires in ${days} days`;
+    return translate(`Expires in ${days} days`);
 }
 
 export function entriesOrEmpty<T>(value: Record<string, T> | null | undefined): [string, T][] {
