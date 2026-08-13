@@ -31,6 +31,16 @@ export default function Locations({ branches, zones, tenant }: Props) {
     const [editingZoneId, setEditingZoneId] = useState<number | null>(null);
     const branchForm = useForm<BranchForm>(emptyBranch);
     const zoneForm = useForm<ZoneForm>(emptyZone);
+    const fieldA11y = (id: string, error?: string) => ({
+        'aria-invalid': Boolean(error),
+        'aria-describedby': error ? `${id}-error` : undefined,
+    });
+    const fieldError = (id: string, error?: string) =>
+        error ? (
+            <p id={`${id}-error`} className="field-error" role="alert">
+                {t(error)}
+            </p>
+        ) : null;
 
     const resetBranch = () => {
         setEditingBranchId(null);
@@ -135,61 +145,65 @@ export default function Locations({ branches, zones, tenant }: Props) {
                                 <label>
                                     <span className="field-label">{t('Name')}</span>
                                     <input
+                                        id="branch-name"
                                         className="field"
+                                        {...fieldA11y('branch-name', branchForm.errors.name)}
                                         value={branchForm.data.name}
                                         onChange={(event) => branchForm.setData('name', event.target.value)}
                                         placeholder={t('Main office')}
                                     />
-                                    {branchForm.errors.name && <p className="field-error" role="alert">{t(branchForm.errors.name)}</p>}
+                                    {fieldError('branch-name', branchForm.errors.name)}
                                 </label>
                                 <label>
                                     <span className="field-label">{t('Code')}</span>
                                     <input
+                                        id="branch-code"
                                         className="field uppercase"
+                                        {...fieldA11y('branch-code', branchForm.errors.code)}
                                         value={branchForm.data.code}
                                         onChange={(event) =>
                                             branchForm.setData('code', event.target.value.toUpperCase())
                                         }
                                         placeholder="HQ"
                                     />
-                                    {branchForm.errors.code && <p className="field-error" role="alert">{t(branchForm.errors.code)}</p>}
+                                    {fieldError('branch-code', branchForm.errors.code)}
                                 </label>
                                 <label>
                                     <span className="field-label">{t('Address')}</span>
                                     <input
+                                        id="branch-address"
                                         className="field"
+                                        {...fieldA11y('branch-address', branchForm.errors.address)}
                                         value={branchForm.data.address}
                                         onChange={(event) => branchForm.setData('address', event.target.value)}
                                         placeholder="12 Cedar Street"
                                     />
-                                    {branchForm.errors.address && (
-                                        <p className="field-error" role="alert">{t(branchForm.errors.address)}</p>
-                                    )}
+                                    {fieldError('branch-address', branchForm.errors.address)}
                                 </label>
                                 <label>
                                     <span className="field-label">{t('Phone')}</span>
                                     <input
+                                        id="branch-phone"
                                         className="field"
+                                        {...fieldA11y('branch-phone', branchForm.errors.phone)}
                                         value={branchForm.data.phone}
                                         onChange={(event) => branchForm.setData('phone', event.target.value)}
                                         placeholder="+961 1 555 010"
                                     />
-                                    {branchForm.errors.phone && (
-                                        <p className="field-error" role="alert">{t(branchForm.errors.phone)}</p>
-                                    )}
+                                    {fieldError('branch-phone', branchForm.errors.phone)}
                                 </label>
                             </div>
                             <label className="flex items-center gap-3 text-sm font-medium">
                                 <input
+                                    id="branch-is-default"
                                     type="checkbox"
+                                    {...fieldA11y('branch-is-default', branchForm.errors.is_default)}
                                     checked={branchForm.data.is_default}
                                     onChange={(event) => branchForm.setData('is_default', event.target.checked)}
                                 />
                                 {t('locations.use_default_branch')}
                             </label>
-                            {branchForm.errors.is_default && (
-                                <p className="field-error" role="alert">{t(branchForm.errors.is_default)}</p>
-                            )}
+                            {fieldError('branch-is-default', branchForm.errors.is_default)}
                             <button type="submit" className="button-primary" disabled={branchForm.processing}>
                                 <Save size={16} />{' '}
                                 {editingBranchId ? t('locations.save_branch') : t('locations.create_branch')}
@@ -251,27 +265,33 @@ export default function Locations({ branches, zones, tenant }: Props) {
                                 <label>
                                     <span className="field-label">{t('Name')}</span>
                                     <input
+                                        id="zone-name"
                                         className="field"
+                                        {...fieldA11y('zone-name', zoneForm.errors.name)}
                                         value={zoneForm.data.name}
                                         onChange={(event) => zoneForm.setData('name', event.target.value)}
                                         placeholder={t('North district')}
                                     />
-                                    {zoneForm.errors.name && <p className="field-error" role="alert">{t(zoneForm.errors.name)}</p>}
+                                    {fieldError('zone-name', zoneForm.errors.name)}
                                 </label>
                                 <label>
                                     <span className="field-label">{t('Code')}</span>
                                     <input
+                                        id="zone-code"
                                         className="field uppercase"
+                                        {...fieldA11y('zone-code', zoneForm.errors.code)}
                                         value={zoneForm.data.code}
                                         onChange={(event) => zoneForm.setData('code', event.target.value.toUpperCase())}
                                         placeholder="NORTH"
                                     />
-                                    {zoneForm.errors.code && <p className="field-error" role="alert">{t(zoneForm.errors.code)}</p>}
+                                    {fieldError('zone-code', zoneForm.errors.code)}
                                 </label>
                             </div>
                             <label>
                                 <span className="field-label">{t('locations.parent_zone_optional')}</span>
                                 <ResponsiveSelect
+                                    id="zone-parent"
+                                    {...fieldA11y('zone-parent', zoneForm.errors.parent_id)}
                                     value={zoneForm.data.parent_id}
                                     onChange={(event) => zoneForm.setData('parent_id', event.target.value)}
                                 >
@@ -284,9 +304,7 @@ export default function Locations({ branches, zones, tenant }: Props) {
                                             </option>
                                         ))}
                                 </ResponsiveSelect>
-                                {zoneForm.errors.parent_id && (
-                                    <p className="field-error" role="alert">{t(zoneForm.errors.parent_id)}</p>
-                                )}
+                                {fieldError('zone-parent', zoneForm.errors.parent_id)}
                             </label>
                             <button type="submit" className="button-primary" disabled={zoneForm.processing}>
                                 <Save size={16} />{' '}

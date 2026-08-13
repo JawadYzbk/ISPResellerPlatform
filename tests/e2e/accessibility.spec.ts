@@ -436,6 +436,34 @@ test('connects POP creation errors to their controls', async ({ page }) => {
     await expect(page.locator('#pop-name-error')).toHaveAttribute('role', 'alert');
 });
 
+test('connects workspace location errors to their controls', async ({ page }) => {
+    test.setTimeout(60_000);
+
+    await page.goto('/login');
+    await page.getByLabel('Email address').fill(email);
+    await page.getByRole('textbox', { name: 'Password' }).fill(password);
+    await Promise.all([
+        page.waitForURL(/\/(dashboard|customers|profile)$/),
+        page.getByRole('button', { name: 'Enter workspace' }).click(),
+    ]);
+
+    await page.goto('/security/reauthenticate');
+    await page.getByRole('textbox', { name: 'Password' }).fill(password);
+    await Promise.all([
+        page.waitForURL(/\/(dashboard|customers|profile)$/),
+        page.getByRole('button', { name: 'Confirm' }).click(),
+    ]);
+
+    await page.goto('/settings/locations');
+    await page.locator('#branch-code').fill('ACCESSIBILITY-BRANCH');
+    await page.locator('form').filter({ has: page.locator('#branch-name') }).locator('button[type="submit"]').click();
+
+    const name = page.locator('#branch-name');
+    await expect(name).toHaveAttribute('aria-invalid', 'true');
+    await expect(name).toHaveAttribute('aria-describedby', 'branch-name-error');
+    await expect(page.locator('#branch-name-error')).toHaveAttribute('role', 'alert');
+});
+
 test('connects service validation errors to their controls', async ({ page }) => {
     test.setTimeout(60_000);
 
