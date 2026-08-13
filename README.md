@@ -78,6 +78,15 @@ composer run dev
 
 `composer run dev` starts the PHP server, queue listener, scheduler, log tail and Vite together.
 
+WhatsApp Web.js is optional during local development. To pair accounts without Docker, configure the local bridge values in `.env` (`WHATSAPP_PROVIDER=web`, `WHATSAPP_WEB_ENABLED=true`, `WHATSAPP_WEB_ENDPOINT=http://127.0.0.1:3001`, and a private `WHATSAPP_WEB_TOKEN`), then run the bridge in a second terminal:
+
+```powershell
+$env:PUPPETEER_EXECUTABLE_PATH = 'C:\Program Files\Google\Chrome\Application\chrome.exe'
+npm run dev:whatsapp
+```
+
+Use the installed Chromium or Chrome executable available on your machine. Keep the bridge terminal running while pairing or sending WhatsApp messages; stop it when the local session is no longer needed. The default `composer run dev` command does not start this optional process.
+
 Open [http://localhost:8000](http://localhost:8000). Demo account: `admin@example.com` / `password`.
 
 The demo seeder also creates one account for each tenant staff role so the role-specific views can be inspected locally. Every account below uses the development-only password `password`:
