@@ -52,6 +52,11 @@ type NavigationItem = {
     permission?: string | string[];
 };
 
+type NavigationGroup = {
+    label: string;
+    items: NavigationItem[];
+};
+
 type SearchResult = { type: string; label: string; detail: string; href: string };
 
 export default function AppLayout({ children }: PropsWithChildren) {
@@ -65,6 +70,7 @@ export default function AppLayout({ children }: PropsWithChildren) {
     const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
     const [searching, setSearching] = useState(false);
     const [accountOpen, setAccountOpen] = useState(false);
+    const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
     const searchInput = useRef<HTMLInputElement>(null);
     const accountMenu = useRef<HTMLDivElement>(null);
     const can = (permission: string | string[]) =>
@@ -139,79 +145,77 @@ export default function AppLayout({ children }: PropsWithChildren) {
         };
     }, [isPlatformOperator, search, searchOpen]);
 
-    const workspaceNav: NavigationItem[] = [
-        { label: 'Overview', href: '/dashboard', icon: LayoutDashboard },
-        { label: 'Customers', href: '/customers', icon: Users, permission: 'customers.view' },
-        { label: 'Plans', href: '/plans', icon: Tags, permission: 'plans.manage' },
-        { label: 'Services', href: '/services', icon: Wifi, permission: 'services.view' },
-        { label: 'Billing', href: '/billing/invoices', icon: ReceiptText, permission: 'billing.invoices.view' },
-        { label: 'Credit notes', href: '/billing/credit-notes', icon: FilePlus2, permission: 'billing.invoices.view' },
-        { label: 'Payments', href: '/billing/payments', icon: CreditCard, permission: 'payments.collect' },
-        { label: 'Cash shifts', href: '/billing/shifts', icon: WalletCards, permission: 'payments.collect' },
+    const workspaceGroups: NavigationGroup[] = [
         {
-            label: 'Collector check-ins',
-            href: '/operations/collector-check-ins',
-            icon: MapPinned,
-            permission: 'reports.operations',
-        },
-        {
-            label: 'Collector routes',
-            href: '/operations/collector-routes',
-            icon: Navigation,
-            permission: 'reports.operations',
-        },
-        {
-            label: 'Collector tasks',
-            href: '/operations/collector-tasks',
-            icon: ClipboardCheck,
-            permission: 'reports.operations',
-        },
-        {
-            label: 'Collector custody',
-            href: '/operations/collector-custody',
-            icon: HandCoins,
-            permission: 'reports.operations',
-        },
-        { label: 'Expenses', href: '/operations/expenses', icon: Banknote, permission: 'expenses.view' },
-        { label: 'FX rates', href: '/billing/exchange-rates', icon: Scale, permission: 'settings.manage' },
-        { label: 'Tickets', href: '/operations/tickets', icon: MessageSquare, permission: 'tickets.view' },
-        {
-            label: 'Work orders',
-            href: '/operations/work-orders',
-            icon: ClipboardList,
-            permission: 'workorders.complete',
-        },
-        {
-            label: 'Work-order calendar',
-            href: '/operations/work-orders/calendar',
-            icon: CalendarDays,
-            permission: 'workorders.complete',
-        },
-        { label: 'Inventory', href: '/operations/inventory', icon: Package, permission: 'inventory.view' },
-        {
-            label: 'Imports',
-            href: '/operations/imports',
-            icon: FileUp,
-            permission: [
-                'customers.create',
-                'plans.manage',
-                'services.create',
-                'inventory.receive',
-                'billing.adjustments.create',
-                'network.view',
+            label: 'Workspace',
+            items: [
+                { label: 'Overview', href: '/dashboard', icon: LayoutDashboard },
+                { label: 'Customers', href: '/customers', icon: Users, permission: 'customers.view' },
+                { label: 'Plans', href: '/plans', icon: Tags, permission: 'plans.manage' },
+                { label: 'Services', href: '/services', icon: Wifi, permission: 'services.view' },
             ],
         },
-        { label: 'Credentials', href: '/operations/credentials', icon: KeyRound, permission: 'suppliers.view' },
-        { label: 'Suppliers', href: '/operations/suppliers', icon: Store, permission: 'suppliers.view' },
-        { label: 'Partners', href: '/partners/commercial', icon: Store, permission: 'wallets.view' },
-        { label: 'Reports', href: '/reports/operations', icon: BarChart3, permission: 'reports.operations' },
-        { label: 'Live sessions', href: '/operations/sessions', icon: Radio, permission: 'network.view' },
-        { label: 'Incidents', href: '/operations/incidents', icon: CircleAlert, permission: 'network.view' },
-        { label: 'Network queue', href: '/operations/network-commands', icon: Wrench, permission: 'network.view' },
-        { label: 'Routers', href: '/operations/routers', icon: Router, permission: 'network.view' },
-        { label: 'POPs', href: '/operations/pops', icon: Network, permission: 'network.view' },
-        { label: 'IP pools', href: '/operations/ip-pools', icon: Network, permission: 'network.view' },
-        { label: 'Settings', href: '/settings', icon: Wrench, permission: 'settings.manage' },
+        {
+            label: 'Billing',
+            items: [
+                { label: 'Billing', href: '/billing/invoices', icon: ReceiptText, permission: 'billing.invoices.view' },
+                { label: 'Credit notes', href: '/billing/credit-notes', icon: FilePlus2, permission: 'billing.invoices.view' },
+                { label: 'Payments', href: '/billing/payments', icon: CreditCard, permission: 'payments.collect' },
+                { label: 'Cash shifts', href: '/billing/shifts', icon: WalletCards, permission: 'payments.collect' },
+                { label: 'FX rates', href: '/billing/exchange-rates', icon: Scale, permission: 'settings.manage' },
+                { label: 'Expenses', href: '/operations/expenses', icon: Banknote, permission: 'expenses.view' },
+            ],
+        },
+        {
+            label: 'Field operations',
+            items: [
+                { label: 'Collector check-ins', href: '/operations/collector-check-ins', icon: MapPinned, permission: 'reports.operations' },
+                { label: 'Collector routes', href: '/operations/collector-routes', icon: Navigation, permission: 'reports.operations' },
+                { label: 'Collector tasks', href: '/operations/collector-tasks', icon: ClipboardCheck, permission: 'reports.operations' },
+                { label: 'Collector custody', href: '/operations/collector-custody', icon: HandCoins, permission: 'reports.operations' },
+            ],
+        },
+        {
+            label: 'Support & work',
+            items: [
+                { label: 'Tickets', href: '/operations/tickets', icon: MessageSquare, permission: 'tickets.view' },
+                { label: 'Work orders', href: '/operations/work-orders', icon: ClipboardList, permission: 'workorders.complete' },
+                { label: 'Work-order calendar', href: '/operations/work-orders/calendar', icon: CalendarDays, permission: 'workorders.complete' },
+            ],
+        },
+        {
+            label: 'Network',
+            items: [
+                { label: 'Buildings & boxes', href: '/operations/topology/buildings', icon: Building2, permission: 'network.view' },
+                { label: 'Live sessions', href: '/operations/sessions', icon: Radio, permission: 'network.view' },
+                { label: 'Incidents', href: '/operations/incidents', icon: CircleAlert, permission: 'network.view' },
+                { label: 'Network queue', href: '/operations/network-commands', icon: Wrench, permission: 'network.view' },
+                { label: 'Routers', href: '/operations/routers', icon: Router, permission: 'network.view' },
+                { label: 'POPs', href: '/operations/pops', icon: Network, permission: 'network.view' },
+                { label: 'IP pools', href: '/operations/ip-pools', icon: Network, permission: 'network.view' },
+            ],
+        },
+        {
+            label: 'Inventory & partners',
+            items: [
+                { label: 'Inventory', href: '/operations/inventory', icon: Package, permission: 'inventory.view' },
+                { label: 'Imports', href: '/operations/imports', icon: FileUp, permission: ['customers.create', 'plans.manage', 'services.create', 'inventory.receive', 'billing.adjustments.create', 'network.view'] },
+                { label: 'Credentials', href: '/operations/credentials', icon: KeyRound, permission: 'suppliers.view' },
+                { label: 'Suppliers', href: '/operations/suppliers', icon: Store, permission: 'suppliers.view' },
+                { label: 'Partners', href: '/partners/commercial', icon: Store, permission: 'wallets.view' },
+            ],
+        },
+        {
+            label: 'Insights',
+            items: [{ label: 'Reports', href: '/reports/operations', icon: BarChart3, permission: 'reports.operations' }],
+        },
+        {
+            label: 'Settings',
+            items: [
+                { label: 'Settings', href: '/settings', icon: Wrench, permission: 'settings.manage' },
+                { label: 'Notification templates', href: '/settings/notification-templates', icon: MessageSquare, permission: 'settings.manage' },
+            ],
+        },
     ];
     const fieldNav: NavigationItem[] = [
         { label: 'Operations', href: '/dashboard', icon: LayoutDashboard },
@@ -222,14 +226,18 @@ export default function AppLayout({ children }: PropsWithChildren) {
         { label: 'Work', href: '/operations/work-orders', icon: ClipboardList, permission: 'workorders.complete' },
     ].filter((item) => item.permission === undefined || can(item.permission));
     const collectorMode = matchesPath('/field');
-    const nav: NavigationItem[] = isPlatformOperator
-        ? [{ label: 'Tenants', href: '/admin/tenants', icon: Building2 }]
+    const navGroups: NavigationGroup[] = isPlatformOperator
+        ? [{ label: 'Platform', items: [{ label: 'Tenants', href: '/admin/tenants', icon: Building2 }] }]
         : collectorMode
-          ? fieldNav
-          : workspaceNav.filter((item) => item.permission === undefined || can(item.permission));
+          ? [{ label: 'Collector desk', items: fieldNav }]
+          : workspaceGroups
+              .map((group) => ({ ...group, items: group.items.filter((item) => item.permission === undefined || can(item.permission)) }))
+              .filter((group) => group.items.length > 0);
+    const nav = navGroups.flatMap((group) => group.items);
     const activeNavHref = nav
         .filter((item) => matchesPath(item.href))
         .sort((left, right) => right.href.length - left.href.length)[0]?.href;
+    const activeGroupLabel = navGroups.find((group) => group.items.some((item) => item.href === activeNavHref))?.label;
 
     return (
         <div className="min-h-dvh bg-canvas text-ink" dir={app.direction}>
@@ -280,20 +288,43 @@ export default function AppLayout({ children }: PropsWithChildren) {
                             </span>
                         </Link>
                     )}
-                    <nav className="space-y-1">
-                        {nav.map(({ label, href, icon: Icon }) => {
-                            const active = href === activeNavHref;
+                    <nav className="space-y-2" aria-label={t('Workspace navigation')}>
+                        {navGroups.map((group) => {
+                            const isOpen = openGroups[group.label] ?? (group.label === 'Workspace' || group.label === 'Collector desk' || group.label === activeGroupLabel);
 
                             return (
-                                <Link
-                                    key={href}
-                                    href={href}
-                                    className={`group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition ${active ? 'bg-brand-soft text-brand' : 'text-muted hover:bg-sand hover:text-ink'}`}
-                                    aria-current={active ? 'page' : undefined}
-                                >
-                                    <Icon size={18} strokeWidth={active ? 2.2 : 1.8} />
-                                    <span>{t(label)}</span>
-                                </Link>
+                                <div key={group.label}>
+                                    {navGroups.length > 1 && (
+                                        <button
+                                            type="button"
+                                            className="flex w-full items-center justify-between rounded-md px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-muted hover:bg-sand hover:text-ink"
+                                            aria-expanded={isOpen}
+                                            onClick={() => setOpenGroups((current) => ({ ...current, [group.label]: !isOpen }))}
+                                        >
+                                            <span>{t(group.label)}</span>
+                                            <ChevronDown size={14} className={`transition-transform ${isOpen ? '' : '-rotate-90'}`} />
+                                        </button>
+                                    )}
+                                    {isOpen && (
+                                        <div className="mt-1 space-y-0.5">
+                                            {group.items.map(({ label, href, icon: Icon }) => {
+                                                const active = href === activeNavHref;
+
+                                                return (
+                                                    <Link
+                                                        key={href}
+                                                        href={href}
+                                                        className={`group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition ${active ? 'bg-brand-soft text-brand' : 'text-muted hover:bg-sand hover:text-ink'}`}
+                                                        aria-current={active ? 'page' : undefined}
+                                                    >
+                                                        <Icon size={17} strokeWidth={active ? 2.2 : 1.8} />
+                                                        <span>{t(label)}</span>
+                                                    </Link>
+                                                );
+                                            })}
+                                        </div>
+                                    )}
+                                </div>
                             );
                         })}
                     </nav>
