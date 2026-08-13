@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers\Web;
 
+use App\Actions\CancelServicePlanChange;
 use App\Actions\ChangeServicePlan;
 use App\Actions\CreateService;
 use App\Actions\EnqueueNetworkCommand;
 use App\Actions\GetTechnicianServiceDiagnostics;
 use App\Actions\ListServices;
+use App\Actions\PreviewServicePlanChange;
 use App\Actions\ReturnInventoryUnit;
 use App\Actions\TransitionService;
 use App\Enums\ServiceStatus;
@@ -20,6 +22,7 @@ use App\Models\Router;
 use App\Models\Service;
 use App\Models\User;
 use DomainException;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
@@ -57,6 +60,7 @@ final class ServiceController extends Controller
                     'assigned_at' => $unit->assigned_at?->toIso8601String(),
                     'item' => $unit->item?->only(['sku', 'name']),
                 ])->values()->all(),
+                'pending_plan_change' => $this->pendingPlanChange($service),
             ],
             'liveSession' => $diagnosticData['live_session'],
             'usageLast24h' => $diagnosticData['usage_last_24h'],
@@ -96,6 +100,37 @@ final class ServiceController extends Controller
         return $this->redirectToCustomer($service, $validated['effective'] === 'immediate'
             ? 'Service plan changed and network synchronization queued.'
             : 'Service plan change scheduled for the next renewal.');
+    }
+
+    public function planChangePreview(Request $request, Service $service, PreviewServicePlanChange $preview): JsonResponse
+    {
+        $this->authorize('changePlan', $service);
+        $validated = $request->validate([
+            'plan_id' => ['required', 'integer', 'exists:plans,id'],
+            'effective' => ['required', 'string', 'in:immediate,next_cycle'],
+        ]);
+        $plan = Plan::query()->whereKey((int) $validated['plan_id'])->where('status', 'active')->firstOrFail();
+
+        try {
+            return response()->json($preview->handle($service, $plan, (string) $validated['effective']));
+        } catch (DomainException $exception) {
+            return response()->json(['message' => $exception->getMessage()], 422);
+        }
+    }
+
+    public function cancelPlan(Request $request, Service $service, CancelServicePlanChange $cancel): RedirectResponse
+    {
+        $this->authorize('changePlan', $service);
+        $user = $request->user();
+        abort_unless($user instanceof User, 401);
+
+        try {
+            $cancel->handle($service, $user);
+        } catch (DomainException $exception) {
+            throw ValidationException::withMessages(['plan_id' => $exception->getMessage()]);
+        }
+
+        return $this->redirectToCustomer($service, 'Scheduled service plan change cancelled.');
     }
 
     public function create(Customer $customer): Response
@@ -233,6 +268,26 @@ final class ServiceController extends Controller
     private function redirectToCustomer(Service $service, string $message): RedirectResponse
     {
         return redirect()->route('customers.show', $service->customer->public_id)->with('success', $message);
+    }
+
+    /** @return array<string, mixed>|null */
+    private function pendingPlanChange(Service $service): ?array
+    {
+        $pending = $service->metadata['pending_plan_change'] ?? null;
+        if (! is_array($pending) || ! isset($pending['plan_id'])) {
+            return null;
+        }
+
+        $plan = Plan::query()->whereKey((int) $pending['plan_id'])->first();
+        if (! $plan instanceof Plan || $plan->tenant_id !== $service->tenant_id) {
+            return null;
+        }
+
+        return [
+            'plan' => $plan->only(['public_id', 'name', 'download_kbps', 'upload_kbps', 'duration_days']),
+            'requested_at' => $pending['requested_at'] ?? null,
+            'apply_at' => $service->expires_at?->toIso8601String(),
+        ];
     }
 
     public function index(Request $request, ListServices $listServices): Response

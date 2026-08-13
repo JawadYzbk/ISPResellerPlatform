@@ -1,12 +1,12 @@
 import ResponsiveSelect from '@/components/ui/responsive-select';
 import { Head, Link, router, useForm } from '@inertiajs/react';
-import { ArrowLeft, CalendarDays, CircleAlert, Network, RefreshCw, Wifi, WifiOff } from 'lucide-react';
-import { useEffect } from 'react';
+import { ArrowLeft, CalendarDays, CircleAlert, Network, RefreshCw, Wifi, WifiOff, X } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 import { StatusBadge, type Status } from '@/components/StatusBadge';
 import AppLayout from '@/layouts/AppLayout';
 import ConfirmDialog from '@/components/ui/confirm-dialog';
-import { formatBytes, formatDate, formatDuration } from '@/lib/format';
+import { formatBytes, formatDate, formatDuration, formatMoney } from '@/lib/format';
 import type { PageProps } from '@/types';
 
 type ServiceDetails = {
@@ -31,6 +31,11 @@ type ServiceDetails = {
     router: { public_id: string; name: string; status: Status } | null;
     usage: { used_bytes: number; quota_bytes: number };
     equipment: { serial_number: string; assigned_at: string | null; item: { sku: string; name: string } | null }[];
+    pending_plan_change: {
+        plan: { public_id: string; name: string; download_kbps: number; upload_kbps: number; duration_days: number };
+        requested_at: string | null;
+        apply_at: string | null;
+    } | null;
 };
 
 type PlanOption = {
@@ -54,6 +59,16 @@ type LiveSession = {
     input_octets: number;
     output_octets: number;
 } | null;
+
+type PlanPreview = {
+    effective: 'immediate' | 'next_cycle';
+    apply_at: string | null;
+    currency: string;
+    old_credit_amount: number;
+    new_charge_amount: number;
+    net_amount: number;
+    remaining_seconds: number;
+};
 
 type Props = PageProps & {
     service: ServiceDetails;
@@ -92,12 +107,51 @@ export default function ServiceShow({
     plans,
 }: Props) {
     const planForm = useForm({ plan_id: plans[0]?.id.toString() ?? '', effective: 'next_cycle' });
+    const [planPreview, setPlanPreview] = useState<PlanPreview | null>(null);
+    const [planPreviewError, setPlanPreviewError] = useState<string | null>(null);
 
-    const submitPlanChange = (event: React.FormEvent<HTMLFormElement>) => {
-        event.preventDefault();
+    const setPlanSelection = (field: 'plan_id' | 'effective', value: string) => {
+        setPlanPreview(null);
+        setPlanPreviewError(null);
+        planForm.setData(field, value);
+    };
+
+    const submitPlanChange = () => {
         planForm.transform((data) => ({ ...data, plan_id: Number(data.plan_id) }));
         planForm.post(`/services/${service.public_id}/change-plan`);
     };
+
+    useEffect(() => {
+        if (!canChangePlan || !planForm.data.plan_id || !planForm.data.effective) {
+            return;
+        }
+
+        const controller = new AbortController();
+        fetch(
+            `/services/${service.public_id}/plan-change-preview?plan_id=${encodeURIComponent(planForm.data.plan_id)}&effective=${encodeURIComponent(planForm.data.effective)}`,
+            {
+                headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                signal: controller.signal,
+            },
+        )
+            .then(async (response) => {
+                const payload = (await response.json()) as PlanPreview | { message?: string };
+                if (!response.ok || !('effective' in payload)) {
+                    throw new Error(
+                        'message' in payload && payload.message ? payload.message : 'The plan quote is unavailable.',
+                    );
+                }
+                setPlanPreviewError(null);
+                setPlanPreview(payload);
+            })
+            .catch((error: unknown) => {
+                if (error instanceof DOMException && error.name === 'AbortError') return;
+                setPlanPreview(null);
+                setPlanPreviewError(error instanceof Error ? error.message : 'The plan quote is unavailable.');
+            });
+
+        return () => controller.abort();
+    }, [canChangePlan, planForm.data.effective, planForm.data.plan_id, service.public_id]);
 
     useEffect(() => {
         const reloadWhenVisible = () => {
@@ -378,19 +432,51 @@ export default function ServiceShow({
                             )}
                         </div>
                     </div>
+                    {service.pending_plan_change && (
+                        <div className="card border-brand/20 bg-brand-soft/20 p-6">
+                            <div className="flex items-start justify-between gap-4">
+                                <div>
+                                    <p className="eyebrow">Scheduled plan change</p>
+                                    <h2 className="mt-1 text-base font-semibold">
+                                        {service.pending_plan_change.plan.name} at next renewal
+                                    </h2>
+                                    <p className="mt-1 text-sm text-muted">
+                                        Applies {formatDate(service.pending_plan_change.apply_at)} · Requested{' '}
+                                        {formatDate(service.pending_plan_change.requested_at)}
+                                    </p>
+                                </div>
+                                {canChangePlan && (
+                                    <ConfirmDialog
+                                        title="Cancel this scheduled plan change?"
+                                        description="The customer will keep the current plan at the next renewal. No ledger entry will be posted."
+                                        confirmLabel="Cancel scheduled change"
+                                        destructive
+                                        onConfirm={() => router.delete(`/services/${service.public_id}/change-plan`)}
+                                    >
+                                        <button
+                                            type="button"
+                                            className="button-secondary inline-flex items-center gap-1.5 text-coral"
+                                        >
+                                            <X size={15} /> Cancel
+                                        </button>
+                                    </ConfirmDialog>
+                                )}
+                            </div>
+                        </div>
+                    )}
                     {canChangePlan && service.status !== 'terminated' && plans.length > 0 && (
                         <div className="card p-6">
                             <h2 className="section-title">Change plan</h2>
                             <p className="mt-1 text-sm text-muted">
                                 Schedule the next cycle or apply a prorated change now.
                             </p>
-                            <form onSubmit={submitPlanChange} className="mt-5 space-y-4">
+                            <form onSubmit={(event) => event.preventDefault()} className="mt-5 space-y-4">
                                 <label>
                                     <span className="field-label">New plan</span>
                                     <ResponsiveSelect
                                         className="field"
                                         value={planForm.data.plan_id}
-                                        onChange={(event) => planForm.setData('plan_id', event.target.value)}
+                                        onChange={(event) => setPlanSelection('plan_id', event.target.value)}
                                     >
                                         {plans.map((plan) => (
                                             <option key={plan.id} value={plan.id}>
@@ -407,7 +493,7 @@ export default function ServiceShow({
                                     <ResponsiveSelect
                                         className="field"
                                         value={planForm.data.effective}
-                                        onChange={(event) => planForm.setData('effective', event.target.value)}
+                                        onChange={(event) => setPlanSelection('effective', event.target.value)}
                                     >
                                         <option value="next_cycle">At next renewal</option>
                                         <option value="immediate">Immediately with proration</option>
@@ -419,13 +505,84 @@ export default function ServiceShow({
                                         plan is charged in the customer ledger currency.
                                     </p>
                                 )}
-                                <button
-                                    type="submit"
-                                    className="button-secondary w-full"
-                                    disabled={planForm.processing}
+                                {planPreviewError && <p className="field-error">{planPreviewError}</p>}
+                                {planPreview && (
+                                    <div className="rounded-xl border border-line bg-sand/60 p-4 text-sm">
+                                        <div className="flex items-center justify-between gap-3">
+                                            <span className="font-semibold">
+                                                {planPreview.effective === 'immediate'
+                                                    ? 'Immediate quote'
+                                                    : 'Scheduled change'}
+                                            </span>
+                                            <span className="text-xs font-semibold text-brand">
+                                                {planPreview.effective === 'immediate'
+                                                    ? 'Now'
+                                                    : `At ${formatDate(planPreview.apply_at)}`}
+                                            </span>
+                                        </div>
+                                        {planPreview.effective === 'immediate' ? (
+                                            <div className="mt-3 grid gap-3 sm:grid-cols-3">
+                                                <div>
+                                                    <p className="text-xs text-muted">Unused credit</p>
+                                                    <p className="mt-1 font-semibold text-emerald-700">
+                                                        {formatMoney(
+                                                            planPreview.old_credit_amount,
+                                                            planPreview.currency,
+                                                        )}
+                                                    </p>
+                                                </div>
+                                                <div>
+                                                    <p className="text-xs text-muted">New plan charge</p>
+                                                    <p className="mt-1 font-semibold">
+                                                        {formatMoney(
+                                                            planPreview.new_charge_amount,
+                                                            planPreview.currency,
+                                                        )}
+                                                    </p>
+                                                </div>
+                                                <div>
+                                                    <p className="text-xs text-muted">Net ledger impact</p>
+                                                    <p className="mt-1 font-semibold">
+                                                        {formatMoney(planPreview.net_amount, planPreview.currency)}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <p className="mt-2 text-xs text-muted">
+                                                No charge is posted until renewal. The new plan will be applied when
+                                                this service expires.
+                                            </p>
+                                        )}
+                                    </div>
+                                )}
+                                <ConfirmDialog
+                                    title={
+                                        planForm.data.effective === 'immediate'
+                                            ? 'Apply this plan change now?'
+                                            : 'Schedule this plan change?'
+                                    }
+                                    description={
+                                        planForm.data.effective === 'immediate'
+                                            ? 'The current plan credit and new plan charge will be posted to the customer ledger immediately.'
+                                            : 'The current plan remains active until renewal, then the selected plan will be applied.'
+                                    }
+                                    confirmLabel={
+                                        planForm.data.effective === 'immediate' ? 'Apply now' : 'Schedule change'
+                                    }
+                                    onConfirm={submitPlanChange}
                                 >
-                                    Apply plan change
-                                </button>
+                                    <button
+                                        type="button"
+                                        className="button-secondary w-full"
+                                        disabled={planForm.processing || !planPreview}
+                                    >
+                                        {planForm.processing
+                                            ? 'Applying…'
+                                            : planForm.data.effective === 'immediate'
+                                              ? 'Apply plan change'
+                                              : 'Schedule plan change'}
+                                    </button>
+                                </ConfirmDialog>
                             </form>
                         </div>
                     )}
