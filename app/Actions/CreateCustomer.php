@@ -35,7 +35,7 @@ final readonly class CreateCustomer implements Action
             ]);
 
             if (($data['create_service'] ?? false) === true) {
-                $service = $this->createService->handle($customer, array_intersect_key($data, array_flip(['plan_id', 'username', 'password', 'provisioning_mode', 'router_id'])), $actor);
+                $service = $this->createService->handle($customer, array_intersect_key($data, array_flip(['plan_id', 'username', 'password', 'provisioning_mode', 'router_id', 'billing_anchor_day'])), $actor);
                 $workOrder = WorkOrder::create([
                     'number' => $this->numbers->next('work_order', 'WO'),
                     'type' => 'installation',

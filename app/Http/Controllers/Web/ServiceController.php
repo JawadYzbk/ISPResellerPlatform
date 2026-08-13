@@ -2,14 +2,17 @@
 
 namespace App\Http\Controllers\Web;
 
+use App\Actions\CancelServiceBillingCycleChange;
 use App\Actions\CancelServicePlanChange;
 use App\Actions\ChangeServicePlan;
 use App\Actions\CreateService;
 use App\Actions\EnqueueNetworkCommand;
 use App\Actions\GetTechnicianServiceDiagnostics;
 use App\Actions\ListServices;
+use App\Actions\PreviewServiceBillingCycle;
 use App\Actions\PreviewServicePlanChange;
 use App\Actions\ReturnInventoryUnit;
+use App\Actions\ScheduleServiceBillingCycle;
 use App\Actions\TransitionService;
 use App\Enums\ServiceStatus;
 use App\Http\Controllers\Controller;
@@ -45,6 +48,7 @@ final class ServiceController extends Controller
                 'network_state' => $service->network_state->value,
                 'provisioning_mode' => $service->provisioning_mode->value,
                 'expires_at' => $service->expires_at?->toIso8601String(),
+                'billing_anchor_day' => $service->billing_anchor_day,
                 'suspension_reason' => $service->suspension_reason,
                 'paused_until' => $service->paused_until?->toIso8601String(),
                 'customer' => $service->customer?->only(['public_id', 'code', 'first_name', 'last_name']),
@@ -61,6 +65,7 @@ final class ServiceController extends Controller
                     'item' => $unit->item?->only(['sku', 'name']),
                 ])->values()->all(),
                 'pending_plan_change' => $this->pendingPlanChange($service),
+                'pending_billing_cycle' => $this->pendingBillingCycle($service),
             ],
             'liveSession' => $diagnosticData['live_session'],
             'usageLast24h' => $diagnosticData['usage_last_24h'],
@@ -71,6 +76,7 @@ final class ServiceController extends Controller
             'canPause' => request()->user()?->can('services.pause') === true,
             'canTerminate' => request()->user()?->can('services.terminate') === true,
             'canChangePlan' => request()->user()?->can('services.change_plan') === true,
+            'canChangeBillingCycle' => request()->user()?->can('services.change_plan') === true,
             'canDisconnectSession' => request()->user()?->can('network.disconnect') === true,
             'plans' => Plan::query()
                 ->where('status', 'active')
@@ -131,6 +137,51 @@ final class ServiceController extends Controller
         }
 
         return $this->redirectToCustomer($service, 'Scheduled service plan change cancelled.');
+    }
+
+    public function billingCyclePreview(Request $request, Service $service, PreviewServiceBillingCycle $preview): JsonResponse
+    {
+        $this->authorize('changePlan', $service);
+        $validated = $request->validate(['anchor_day' => ['required', 'integer', 'between:1,31']]);
+
+        try {
+            return response()->json($preview->handle($service, (int) $validated['anchor_day'])->toArray());
+        } catch (DomainException $exception) {
+            return response()->json(['message' => $exception->getMessage()], 422);
+        }
+    }
+
+    public function scheduleBillingCycle(Request $request, Service $service, ScheduleServiceBillingCycle $schedule): RedirectResponse
+    {
+        $this->authorize('changePlan', $service);
+        $validated = $request->validate(['anchor_day' => ['required', 'integer', 'between:1,31']]);
+        $user = $request->user();
+        abort_unless($user instanceof User, 401);
+
+        try {
+            $updated = $schedule->handle($service, (int) $validated['anchor_day'], $user);
+        } catch (DomainException $exception) {
+            throw ValidationException::withMessages(['anchor_day' => $exception->getMessage()]);
+        }
+
+        return redirect()->route('services.show', $updated->public_id)->with('success', $updated->expires_at === null
+            ? 'Service billing anchor updated.'
+            : 'Service billing-cycle change scheduled for the next renewal.');
+    }
+
+    public function cancelBillingCycle(Request $request, Service $service, CancelServiceBillingCycleChange $cancel): RedirectResponse
+    {
+        $this->authorize('changePlan', $service);
+        $user = $request->user();
+        abort_unless($user instanceof User, 401);
+
+        try {
+            $cancel->handle($service, $user);
+        } catch (DomainException $exception) {
+            throw ValidationException::withMessages(['anchor_day' => $exception->getMessage()]);
+        }
+
+        return redirect()->route('services.show', $service->public_id)->with('success', 'Scheduled billing-cycle change cancelled.');
     }
 
     public function create(Customer $customer): Response
@@ -287,6 +338,27 @@ final class ServiceController extends Controller
             'plan' => $plan->only(['public_id', 'name', 'download_kbps', 'upload_kbps', 'duration_days']),
             'requested_at' => $pending['requested_at'] ?? null,
             'apply_at' => $service->expires_at?->toIso8601String(),
+        ];
+    }
+
+    /** @return array<string, mixed>|null */
+    private function pendingBillingCycle(Service $service): ?array
+    {
+        $pending = $service->metadata['pending_billing_cycle'] ?? null;
+        if (! is_array($pending) || ! isset($pending['anchor_day'], $pending['ends_at'], $pending['prorated_amount'], $pending['currency'])) {
+            return null;
+        }
+
+        return [
+            'anchor_day' => (int) $pending['anchor_day'],
+            'starts_at' => $pending['starts_at'] ?? null,
+            'ends_at' => $pending['ends_at'],
+            'billable_days' => (int) ($pending['billable_days'] ?? 0),
+            'cycle_days' => (int) ($pending['cycle_days'] ?? 0),
+            'full_amount' => (int) ($pending['full_amount'] ?? 0),
+            'prorated_amount' => (int) $pending['prorated_amount'],
+            'currency' => (string) $pending['currency'],
+            'requested_at' => $pending['requested_at'] ?? null,
         ];
     }
 

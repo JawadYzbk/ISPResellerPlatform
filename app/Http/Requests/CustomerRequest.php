@@ -45,6 +45,7 @@ final class CustomerRequest extends FormRequest
             ],
             'password' => ['nullable', 'string', 'min:12', 'max:128', Rule::requiredIf(fn (): bool => $this->boolean('create_service'))],
             'provisioning_mode' => ['nullable', Rule::enum(ProvisioningMode::class), Rule::requiredIf(fn (): bool => $this->boolean('create_service'))],
+            'billing_anchor_day' => ['nullable', 'integer', 'between:1,31'],
             'router_id' => [
                 'nullable',
                 'integer',

@@ -25,6 +25,7 @@ final class CreateServiceApiRequest extends FormRequest
             'username' => ['required', 'string', 'max:64', 'regex:/^[A-Za-z0-9._@:-]+$/', Rule::unique('services', 'username')->where(fn ($query) => $query->where('tenant_id', $tenantId))],
             'password' => ['required', 'string', 'min:12', 'max:128'],
             'provisioning_mode' => ['required', Rule::enum(ProvisioningMode::class)],
+            'billing_anchor_day' => ['nullable', 'integer', 'between:1,31'],
             'router_id' => [
                 'nullable',
                 'string',

@@ -55,6 +55,7 @@ it('registers a pending service and installation work order atomically', functio
         'username' => 'rami.home',
         'password' => 'correct-horse-battery',
         'provisioning_mode' => 'manual',
+        'billing_anchor_day' => 10,
     ])->assertRedirect();
 
     app(Tenancy::class)->set($tenant);
@@ -65,6 +66,7 @@ it('registers a pending service and installation work order atomically', functio
 
     expect($service->customer_id)->toBe($customer->id)
         ->and($service->status->value)->toBe('pending')
+        ->and($service->billing_anchor_day)->toBe(10)
         ->and($workOrder->number)->toBe('WO-00001')
         ->and($workOrder->type)->toBe('installation')
         ->and($workOrder->status->value)->toBe('pending')

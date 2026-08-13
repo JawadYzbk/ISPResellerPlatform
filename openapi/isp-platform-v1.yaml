@@ -854,6 +854,7 @@ paths:
                 password: { type: string, format: password, minLength: 12, maxLength: 128 }
                 provisioning_mode: { type: string, enum: [manual, upstream_credential, mikrotik, radius, external] }
                 router_id: { type: string, description: Router public ULID, nullable: true }
+                billing_anchor_day: { type: integer, minimum: 1, maximum: 31, nullable: true, description: Optional monthly renewal day; short months clamp to their final day }
       responses:
         '201': { description: Created pending service resource }
         '401': { description: Unauthenticated }

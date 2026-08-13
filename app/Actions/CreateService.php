@@ -43,6 +43,7 @@ final readonly class CreateService implements Action
                 'status' => ServiceStatus::Pending,
                 'provisioning_mode' => $data['provisioning_mode'],
                 'network_state' => NetworkState::PendingSync,
+                'billing_anchor_day' => $data['billing_anchor_day'] ?? null,
             ]);
 
             ServiceEvent::create([
@@ -50,7 +51,10 @@ final readonly class CreateService implements Action
                 'actor_id' => $actor?->id,
                 'event_type' => 'created',
                 'to_status' => ServiceStatus::Pending->value,
-                'metadata' => ['provisioning_mode' => $service->provisioning_mode->value],
+                'metadata' => [
+                    'provisioning_mode' => $service->provisioning_mode->value,
+                    'billing_anchor_day' => $service->billing_anchor_day,
+                ],
             ]);
 
             return $service->load('plan');

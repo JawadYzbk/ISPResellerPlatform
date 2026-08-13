@@ -19,11 +19,15 @@ final class ServiceApiResource
             'network_state' => $service->network_state->value,
             'provisioning_mode' => $service->provisioning_mode->value,
             'expires_at' => $service->expires_at?->toIso8601String(),
+            'billing_anchor_day' => $service->billing_anchor_day,
             'activated_at' => $service->activated_at?->toIso8601String(),
             'suspension_reason' => $service->suspension_reason,
             'paused_until' => $service->paused_until?->toIso8601String(),
             'current_period_bytes' => $service->current_period_bytes,
             'fup_applied_at' => $service->fup_applied_at?->toIso8601String(),
+            'pending_billing_cycle' => is_array(($service->metadata ?? [])['pending_billing_cycle'] ?? null)
+                ? ($service->metadata ?? [])['pending_billing_cycle']
+                : null,
             'customer' => $service->customer === null ? null : [
                 'id' => $service->customer->public_id,
                 'code' => $service->customer->code,

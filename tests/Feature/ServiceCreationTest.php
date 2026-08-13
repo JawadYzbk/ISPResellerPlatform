@@ -52,6 +52,7 @@ it('creates a pending tenant-scoped service and records its creation event', fun
         'password' => 'a-secure-service-password',
         'provisioning_mode' => 'radius',
         'router_id' => $router->id,
+        'billing_anchor_day' => 15,
     ]);
     app(Tenancy::class)->set($tenant);
     $service = Service::query()->firstOrFail();
@@ -60,6 +61,7 @@ it('creates a pending tenant-scoped service and records its creation event', fun
         ->and($service->network_state)->toBe(NetworkState::PendingSync)
         ->and($service->customer_id)->toBe($customer->id)
         ->and($service->router_id)->toBe($router->id)
+        ->and($service->billing_anchor_day)->toBe(15)
         ->and($service->password_encrypted)->toBe('a-secure-service-password')
         ->and(ServiceEvent::where('service_id', $service->id)->where('event_type', 'created')->exists())->toBeTrue();
 });

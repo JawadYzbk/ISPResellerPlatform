@@ -192,6 +192,9 @@ Route::middleware(['auth', 'tenant', '2fa'])->group(function (): void {
     Route::get('/services/{service:public_id}/plan-change-preview', [ServiceController::class, 'planChangePreview'])->name('services.plan-change-preview');
     Route::post('/services/{service:public_id}/change-plan', [ServiceController::class, 'changePlan'])->name('services.change-plan');
     Route::delete('/services/{service:public_id}/change-plan', [ServiceController::class, 'cancelPlan'])->name('services.change-plan.cancel');
+    Route::get('/services/{service:public_id}/billing-cycle-preview', [ServiceController::class, 'billingCyclePreview'])->name('services.billing-cycle-preview');
+    Route::post('/services/{service:public_id}/billing-cycle', [ServiceController::class, 'scheduleBillingCycle'])->name('services.billing-cycle.schedule');
+    Route::delete('/services/{service:public_id}/billing-cycle', [ServiceController::class, 'cancelBillingCycle'])->name('services.billing-cycle.cancel');
     Route::get('/operations/network-commands', [NetworkOperationsController::class, 'index'])->name('operations.network-commands');
     Route::get('/operations/collector-check-ins', [CollectorFieldDayController::class, 'index'])->name('operations.collector-check-ins');
     Route::get('/operations/collector-routes', [CollectorRouteController::class, 'index'])->name('operations.collector-routes');
