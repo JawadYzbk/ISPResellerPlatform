@@ -94,7 +94,7 @@ export default function PortalSignIn({ tenant }: Props) {
                                     placeholder="+961 70 123 456"
                                 />
                             </label>
-                            <button disabled={busy} className="button-primary w-full justify-center">
+                            <button type="submit" disabled={busy} className="button-primary w-full justify-center">
                                 {busy ? t('portal.sending') : t('portal.send_code')}
                                 <ArrowRight size={16} />
                             </button>
@@ -114,7 +114,7 @@ export default function PortalSignIn({ tenant }: Props) {
                                     placeholder="000000"
                                 />
                             </label>
-                            <button disabled={busy} className="button-primary w-full justify-center">
+                            <button type="submit" disabled={busy} className="button-primary w-full justify-center">
                                 {busy ? t('portal.checking') : t('portal.open_portal')}
                                 <ArrowRight size={16} />
                             </button>

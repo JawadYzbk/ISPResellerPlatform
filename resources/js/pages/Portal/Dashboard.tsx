@@ -245,7 +245,7 @@ export default function PortalDashboard({ tenant }: Props) {
                         <p className="text-sm text-muted">{t('portal.dashboard.customer_portal')}</p>
                         </div>
                     </div>
-                    <button onClick={signOut} className="button-secondary">
+                    <button type="button" onClick={signOut} className="button-secondary">
                         <LogOut size={16} />
                         {t('portal.dashboard.sign_out')}
                     </button>
@@ -539,7 +539,7 @@ export default function PortalDashboard({ tenant }: Props) {
                             </div>
                             <div className="flex items-center justify-between gap-4">
                                 <p className="text-sm text-muted">{t('Phone')}: {customer.phone}</p>
-                                <button disabled={profileBusy} className="button-primary">
+                                <button type="submit" disabled={profileBusy} className="button-primary">
                                     {profileSaved ? <Check size={16} /> : null}
                                     {profileBusy ? t('portal.dashboard.saving') : profileSaved ? t('portal.dashboard.saved') : t('portal.dashboard.save_details')}
                                 </button>
@@ -633,7 +633,7 @@ export default function PortalDashboard({ tenant }: Props) {
                                         }
                                     />
                                 </label>
-                                <button disabled={ticketBusy} className="button-primary w-full justify-center">
+                                <button type="submit" disabled={ticketBusy} className="button-primary w-full justify-center">
                                     <Send size={16} />
                                     {ticketBusy ? t('portal.dashboard.sending') : t('portal.dashboard.send_ticket')}
                                 </button>

@@ -45,7 +45,7 @@ export default function ForgotPassword() {
                 {submitted && !form.errors.email && (
                     <p className="rounded-xl bg-emerald-50 p-3 text-sm text-emerald-700">{t('auth.reset_sent')}</p>
                 )}
-                <button className="button-primary w-full" disabled={form.processing}>
+                <button type="submit" className="button-primary w-full" disabled={form.processing}>
                     <KeyRound size={16} /> {t('auth.send_reset_link')}
                 </button>
                 <Link

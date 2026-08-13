@@ -88,7 +88,7 @@ export default function PublicLinkCreator({
                     <option value="30">{t('30 days')}</option>
                     <option value="90">{t('90 days')}</option>
                 </ResponsiveSelect>
-                <button className="button-secondary justify-center" disabled={form.processing}>
+                <button type="submit" className="button-secondary justify-center" disabled={form.processing}>
                     {t('Create link')}
                 </button>
             </form>

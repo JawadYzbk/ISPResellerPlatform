@@ -42,6 +42,7 @@ export default function Sessions({ sessions }: { sessions: Session[] }) {
                                 </div>
                                 {!session.current && (
                                     <button
+                                        type="button"
                                         onClick={() => router.delete(`/security/sessions/${session.id}`)}
                                         className="rounded-lg p-2 text-muted hover:bg-rose-50 hover:text-coral"
                                         title={t('security.revoke_session')}

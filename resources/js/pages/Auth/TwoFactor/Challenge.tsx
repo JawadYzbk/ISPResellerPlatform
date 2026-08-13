@@ -41,7 +41,7 @@ export default function Challenge() {
                         onChange={(event) => form.setData('code', event.target.value)}
                     />
                     {form.errors.code && <p className="text-xs text-coral">{t(form.errors.code)}</p>}
-                    <button className="button-primary w-full justify-center" disabled={form.processing}>
+                    <button type="submit" className="button-primary w-full justify-center" disabled={form.processing}>
                         {t('Verify and continue')}
                     </button>
                 </form>

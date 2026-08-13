@@ -498,7 +498,7 @@ function StripeForm({ t, onComplete, onError }: { t: (key: string) => string; on
             }}
         >
             <PaymentElement />
-            <button className="button-primary w-full justify-center" disabled={busy || !stripe || !elements}>
+            <button type="submit" className="button-primary w-full justify-center" disabled={busy || !stripe || !elements}>
                 <CreditCard size={16} />
                 {busy ? t('public.billing.confirming') : t('public.billing.confirm_card')}
             </button>

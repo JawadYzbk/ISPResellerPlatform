@@ -63,7 +63,7 @@ export default function ResetPassword({ token, email }: Props) {
                         onChange={(event) => form.setData('password_confirmation', event.target.value)}
                     />
                 </label>
-                <button className="button-primary w-full" disabled={form.processing}>
+                <button type="submit" className="button-primary w-full" disabled={form.processing}>
                     <CheckCircle2 size={16} /> {t('auth.reset_password')}
                 </button>
             </form>

@@ -40,7 +40,7 @@ export default function Reauthenticate() {
                         onChange={(event) => form.setData('password', event.target.value)}
                     />
                     {form.errors.password && <p className="text-xs text-coral">{t(form.errors.password)}</p>}
-                    <button className="button-primary w-full justify-center" disabled={form.processing}>
+                    <button type="submit" className="button-primary w-full justify-center" disabled={form.processing}>
                         {t('Confirm')}
                     </button>
                 </form>

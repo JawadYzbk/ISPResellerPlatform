@@ -59,7 +59,7 @@ export default function AcceptInvitation({ token }: Props) {
                         onChange={(event) => form.setData('password_confirmation', event.target.value)}
                     />
                 </label>
-                <button className="button-primary w-full" disabled={form.processing}>
+                <button type="submit" className="button-primary w-full" disabled={form.processing}>
                     <CheckCircle2 size={16} /> {t('auth.accept_invitation')}
                 </button>
                 <p className="flex items-center gap-2 text-xs text-muted">
