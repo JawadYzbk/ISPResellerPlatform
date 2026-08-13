@@ -189,7 +189,14 @@ test('connects searchable customer errors to the combobox', async ({ page }) => 
     ]);
 
     await page.goto('/billing/invoices/create');
-    await page.locator('#amount').fill('10');
+    await page.locator('form button[type="submit"]').click();
+
+    const amount = page.locator('#amount');
+    await expect(amount).toHaveAttribute('aria-invalid', 'true');
+    await expect(amount).toHaveAttribute('aria-describedby', 'amount-error');
+    await expect(page.locator('#amount-error')).toHaveAttribute('role', 'alert');
+
+    await amount.fill('10');
     await page.locator('form button[type="submit"]').click();
 
     const customer = page.locator('#customer_id');

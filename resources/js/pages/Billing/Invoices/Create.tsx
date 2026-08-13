@@ -36,6 +36,16 @@ export default function CreateInvoice({ customerOptions, selectedCustomer, curre
     const searchSequence = useRef(0);
     const selectedCurrency = currencies.find((currency) => currency.code === form.data.currency);
     const fractionDigits = selectedCurrency?.decimal_digits ?? currencyFractionDigits(form.data.currency);
+    const fieldA11y = (name: keyof typeof form.data) => ({
+        'aria-invalid': Boolean(form.errors[name]),
+        'aria-describedby': form.errors[name] ? `${name}-error` : undefined,
+    });
+    const fieldError = (name: keyof typeof form.data) =>
+        form.errors[name] ? (
+            <p id={`${name}-error`} className="field-error" role="alert">
+                {t(form.errors[name])}
+            </p>
+        ) : null;
 
     useEffect(() => {
         return () => {
@@ -153,11 +163,12 @@ export default function CreateInvoice({ customerOptions, selectedCustomer, curre
                             id="description"
                             className="field min-h-28 resize-y"
                             maxLength={255}
+                            {...fieldA11y('description')}
                             value={form.data.description}
                             onChange={(event) => form.setData('description', event.target.value)}
                             placeholder={t('Installation, equipment, or other one-off charge')}
                         />
-                        {form.errors.description && <p className="field-error" role="alert">{t(form.errors.description)}</p>}
+                        {fieldError('description')}
                     </div>
 
                     <div className="grid gap-6 sm:grid-cols-2">
@@ -172,6 +183,7 @@ export default function CreateInvoice({ customerOptions, selectedCustomer, curre
                                 min="0"
                                 step={fractionDigits === 0 ? '1' : '0.01'}
                                 className="field"
+                                {...fieldA11y('amount')}
                                 placeholder={fractionDigits === 0 ? '0' : '0.00'}
                                 value={form.data.amount}
                                 onChange={(event) => form.setData('amount', event.target.value)}
@@ -179,7 +191,7 @@ export default function CreateInvoice({ customerOptions, selectedCustomer, curre
                             <p className="mt-1 text-xs text-muted">
                                 {t('The saved invoice uses the smallest unit for exact ledger math.')}
                             </p>
-                            {form.errors.amount && <p className="field-error" role="alert">{t(form.errors.amount)}</p>}
+                            {fieldError('amount')}
                         </div>
                         <div>
                             <label className="field-label" htmlFor="currency">
@@ -213,10 +225,11 @@ export default function CreateInvoice({ customerOptions, selectedCustomer, curre
                             id="due_at"
                             type="date"
                             className="field"
+                            {...fieldA11y('due_at')}
                             value={form.data.due_at}
                             onChange={(event) => form.setData('due_at', event.target.value)}
                         />
-                        {form.errors.due_at && <p className="field-error" role="alert">{t(form.errors.due_at)}</p>}
+                        {fieldError('due_at')}
                     </div>
 
                     <label className="flex items-start gap-3 rounded-xl border border-line bg-sand/40 p-4 text-sm">
