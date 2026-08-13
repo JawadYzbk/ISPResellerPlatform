@@ -159,6 +159,14 @@ type FieldStock = {
         source: { code: string; name: string } | null;
         destination: { code: string; name: string } | null;
     }[];
+    counts: {
+        id: string;
+        status: 'pending' | 'posted' | 'rejected';
+        note: string | null;
+        review_note: string | null;
+        warehouse: { code: string; name: string } | null;
+        variance: { item: { sku: string; name: string } | null; quantity: string }[];
+    }[];
 };
 
 type SyncResult = {
@@ -265,6 +273,12 @@ export default function FieldIndex({
         quantity: '',
         note: '',
     });
+    const stockCountForm = useForm({
+        warehouse_id: '',
+        lines: [] as { inventory_item_id: number; counted_quantity: string }[],
+        note: '',
+    });
+    const [countedQuantities, setCountedQuantities] = useState<Record<number, string>>({});
 
     const submitStockRequest = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -281,6 +295,28 @@ export default function FieldIndex({
             preserveScroll: true,
             onSuccess: () => stockRequestForm.reset(),
             onFinish: () => stockRequestForm.transform((data) => data),
+        });
+    };
+
+    const submitStockCount = (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        const location = stock.locations.find((candidate) => String(candidate.id) === stockCountForm.data.warehouse_id);
+        if (!location) return;
+        stockCountForm.transform((data) => ({
+            warehouse_id: data.warehouse_id,
+            lines: location.balances.map((balance) => ({
+                inventory_item_id: balance.item_id,
+                counted_quantity: countedQuantities[balance.item_id] ?? '',
+            })),
+            note: data.note,
+        }));
+        stockCountForm.post('/field/stock-counts', {
+            preserveScroll: true,
+            onSuccess: () => {
+                stockCountForm.reset();
+                setCountedQuantities({});
+            },
+            onFinish: () => stockCountForm.transform((data) => data),
         });
     };
 
@@ -1113,6 +1149,98 @@ export default function FieldIndex({
                             <div className="flex justify-end sm:col-span-2 lg:col-span-3">
                                 <button className="button-primary" disabled={stockRequestForm.processing}>
                                     Submit stock request
+                                </button>
+                            </div>
+                        </form>
+                    )}
+                    {stock.locations.some((location) => location.balances.length > 0) && (
+                        <form onSubmit={submitStockCount} className="border-t border-line p-5">
+                            <h3 className="text-balance font-semibold">Submit physical count</h3>
+                            <p className="mt-1 text-pretty text-xs text-muted">
+                                Enter what is physically present. A manager reviews any variance before balances change.
+                            </p>
+                            <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                                <label className="field-label">
+                                    Stock location
+                                    <ResponsiveSelect
+                                        className="mt-1"
+                                        value={stockCountForm.data.warehouse_id}
+                                        onChange={(event) => {
+                                            stockCountForm.setData('warehouse_id', event.target.value);
+                                            setCountedQuantities({});
+                                        }}
+                                    >
+                                        <option value="">Select location</option>
+                                        {stock.locations
+                                            .filter((location) => location.balances.length > 0)
+                                            .map((location) => (
+                                                <option key={location.id} value={location.id}>
+                                                    {location.code} · {location.name}
+                                                </option>
+                                            ))}
+                                    </ResponsiveSelect>
+                                </label>
+                                <label className="field-label">
+                                    Count note (optional)
+                                    <input
+                                        className="field mt-1"
+                                        value={stockCountForm.data.note}
+                                        onChange={(event) => stockCountForm.setData('note', event.target.value)}
+                                        placeholder="End of route, damaged stock…"
+                                    />
+                                </label>
+                            </div>
+                            {stock.locations.find(
+                                (location) => String(location.id) === stockCountForm.data.warehouse_id,
+                            ) && (
+                                <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                                    {stock.locations
+                                        .find((location) => String(location.id) === stockCountForm.data.warehouse_id)
+                                        ?.balances.map((balance) => (
+                                            <label
+                                                key={balance.item_id}
+                                                className="rounded-xl border border-line p-3 text-sm font-semibold"
+                                            >
+                                                <span className="block truncate">{balance.name}</span>
+                                                <span className="mt-1 block text-xs font-normal text-muted">
+                                                    System: <span className="tabular-nums">{balance.quantity}</span>
+                                                </span>
+                                                <input
+                                                    className="field mt-2 tabular-nums"
+                                                    inputMode="decimal"
+                                                    value={countedQuantities[balance.item_id] ?? ''}
+                                                    onChange={(event) =>
+                                                        setCountedQuantities((current) => ({
+                                                            ...current,
+                                                            [balance.item_id]: event.target.value,
+                                                        }))
+                                                    }
+                                                    placeholder="Physical quantity"
+                                                />
+                                            </label>
+                                        ))}
+                                </div>
+                            )}
+                            {stockCountForm.errors.lines && (
+                                <p className="field-error mt-3">{stockCountForm.errors.lines}</p>
+                            )}
+                            <div className="mt-4 flex justify-end">
+                                <ConfirmDialog
+                                    title="Submit this physical count?"
+                                    description="The count is sent for manager review. Stock balances do not change until it is approved."
+                                    confirmLabel="Submit count"
+                                    onConfirm={() => document.getElementById('field-stock-count-submit')?.click()}
+                                >
+                                    <button
+                                        type="button"
+                                        className="button-secondary"
+                                        disabled={!stockCountForm.data.warehouse_id || stockCountForm.processing}
+                                    >
+                                        Review and submit
+                                    </button>
+                                </ConfirmDialog>
+                                <button id="field-stock-count-submit" type="submit" className="hidden">
+                                    Submit
                                 </button>
                             </div>
                         </form>

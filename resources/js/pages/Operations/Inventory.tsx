@@ -68,6 +68,16 @@ type TransferRequest = {
     source: { code: string; name: string } | null;
     destination: { code: string; name: string } | null;
 };
+type StockCount = {
+    id: string;
+    status: 'pending' | 'posted' | 'rejected';
+    note: string | null;
+    review_note: string | null;
+    counted_at: string | null;
+    warehouse: { code: string; name: string } | null;
+    counter: { name: string; role: string } | null;
+    lines: { item: { sku: string; name: string } | null; expected: string; counted: string; variance: string }[];
+};
 type InventoryMovement = {
     id: string;
     movement_type: string;
@@ -99,6 +109,7 @@ type Props = PageProps & {
     transferWarehouses: BulkWarehouse[];
     fieldUsers: FieldUser[];
     transferRequests: TransferRequest[];
+    stockCounts: StockCount[];
     movements: InventoryMovement[];
 };
 
@@ -118,6 +129,7 @@ export default function InventoryPage({
     transferWarehouses,
     fieldUsers,
     transferRequests,
+    stockCounts,
     movements,
 }: Props) {
     const [search, setSearch] = useState(filters.search ?? '');
@@ -154,6 +166,7 @@ export default function InventoryPage({
     });
     const unitForm = useForm({ inventory_item_id: '', warehouse_id: '', serial_number: '' });
     const reviewForm = useForm({ decision: 'approved', review_note: '' });
+    const countReviewForm = useForm({ decision: 'posted', review_note: '' });
 
     const applyFilters = (event: React.FormEvent) => {
         event.preventDefault();
@@ -256,6 +269,15 @@ export default function InventoryPage({
             preserveScroll: true,
             onSuccess: () => reviewForm.reset(),
             onFinish: () => reviewForm.transform((data) => data),
+        });
+    };
+
+    const reviewStockCount = (count: StockCount, decision: 'posted' | 'rejected') => {
+        countReviewForm.transform(() => ({ decision, review_note: countReviewForm.data.review_note }));
+        countReviewForm.patch(`/operations/inventory/stock-counts/${count.id}`, {
+            preserveScroll: true,
+            onSuccess: () => countReviewForm.reset(),
+            onFinish: () => countReviewForm.transform((data) => data),
         });
     };
 
@@ -845,6 +867,120 @@ export default function InventoryPage({
                                 )}
                             </div>
                         </div>
+                    </div>
+                </section>
+            )}
+
+            {canTransfer && stockCounts.length > 0 && (
+                <section className="card mt-6 overflow-hidden">
+                    <div className="border-b border-line p-5">
+                        <p className="section-title">Physical stock counts</p>
+                        <p className="mt-1 text-pretty text-sm text-muted">
+                            Post verified variances or reject stale and unexplained counts.
+                        </p>
+                    </div>
+                    <div className="divide-y divide-line">
+                        {stockCounts.map((count) => (
+                            <div key={count.id} className="p-5">
+                                <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                                    <div className="min-w-0 flex-1">
+                                        <div className="flex flex-wrap items-center gap-2">
+                                            <p className="font-semibold">{count.counter?.name ?? 'Field user'}</p>
+                                            <span className="text-xs text-muted">{count.warehouse?.code}</span>
+                                            <span
+                                                className={`rounded-full px-2 py-1 text-xs font-semibold capitalize ${count.status === 'posted' ? 'bg-emerald-50 text-emerald-700' : count.status === 'rejected' ? 'bg-rose-50 text-rose-700' : 'bg-amber-50 text-amber-700'}`}
+                                            >
+                                                {count.status}
+                                            </span>
+                                        </div>
+                                        <div className="mt-3 overflow-x-auto">
+                                            <table className="w-full min-w-[32rem] text-sm">
+                                                <thead>
+                                                    <tr className="text-xs text-muted">
+                                                        <th className="py-2 text-start">Item</th>
+                                                        <th className="py-2 text-end">System</th>
+                                                        <th className="py-2 text-end">Counted</th>
+                                                        <th className="py-2 text-end">Variance</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody className="divide-y divide-line">
+                                                    {count.lines.map((line, index) => (
+                                                        <tr key={`${count.id}-${line.item?.sku ?? index}`}>
+                                                            <td className="py-2 font-medium">
+                                                                {line.item?.name ?? line.item?.sku}
+                                                            </td>
+                                                            <td className="py-2 text-end tabular-nums">
+                                                                {line.expected}
+                                                            </td>
+                                                            <td className="py-2 text-end tabular-nums">
+                                                                {line.counted}
+                                                            </td>
+                                                            <td
+                                                                className={`py-2 text-end font-semibold tabular-nums ${Number(line.variance) < 0 ? 'text-coral' : Number(line.variance) > 0 ? 'text-emerald-700' : 'text-muted'}`}
+                                                            >
+                                                                {Number(line.variance) > 0 ? '+' : ''}
+                                                                {line.variance}
+                                                            </td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        {count.note && <p className="mt-2 text-xs text-muted">Counter: {count.note}</p>}
+                                        {count.review_note && (
+                                            <p className="mt-1 text-xs text-muted">Review: {count.review_note}</p>
+                                        )}
+                                    </div>
+                                    {count.status === 'pending' && (
+                                        <div className="flex shrink-0 flex-col gap-2">
+                                            <input
+                                                className="field lg:w-64"
+                                                aria-label="Stock count review note"
+                                                value={countReviewForm.data.review_note}
+                                                onChange={(event) =>
+                                                    countReviewForm.setData('review_note', event.target.value)
+                                                }
+                                                placeholder="Review note"
+                                            />
+                                            <div className="flex gap-2">
+                                                <ConfirmDialog
+                                                    title="Post this stock variance?"
+                                                    description="Balances will change to the counted quantities. Approval is refused automatically if stock moved after the count."
+                                                    confirmLabel="Post variance"
+                                                    onConfirm={() => reviewStockCount(count, 'posted')}
+                                                >
+                                                    <button
+                                                        type="button"
+                                                        className="button-primary"
+                                                        disabled={countReviewForm.processing}
+                                                    >
+                                                        Post variance
+                                                    </button>
+                                                </ConfirmDialog>
+                                                <ConfirmDialog
+                                                    title="Reject this stock count?"
+                                                    description="No stock balances will change."
+                                                    confirmLabel="Reject count"
+                                                    destructive
+                                                    onConfirm={() => reviewStockCount(count, 'rejected')}
+                                                >
+                                                    <button
+                                                        type="button"
+                                                        className="button-quiet text-coral"
+                                                        disabled={countReviewForm.processing}
+                                                    >
+                                                        Reject
+                                                    </button>
+                                                </ConfirmDialog>
+                                            </div>
+                                            {countReviewForm.errors.decision && (
+                                                <p className="field-error">{countReviewForm.errors.decision}</p>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        ))}
                     </div>
                 </section>
             )}

@@ -16,6 +16,7 @@ use App\Actions\UpdateInventoryItem;
 use App\Actions\UpdateWarehouse;
 use App\Http\Controllers\Controller;
 use App\Models\InventoryItem;
+use App\Models\InventoryStockCount;
 use App\Models\InventoryTransferRequest;
 use App\Models\InventoryUnit;
 use App\Models\Service;
@@ -161,6 +162,29 @@ final class InventoryOperationsController extends Controller
                         'item' => $stockRequest->item?->only(['sku', 'name']),
                         'source' => $stockRequest->sourceWarehouse?->only(['code', 'name']),
                         'destination' => $stockRequest->destinationWarehouse?->only(['code', 'name']),
+                    ])->values()
+                : [],
+            'stockCounts' => $canTransfer
+                ? InventoryStockCount::query()
+                    ->with(['warehouse:id,code,name', 'countedBy:id,name,role', 'lines.item:id,sku,name'])
+                    ->orderByRaw("case status when 'pending' then 1 else 2 end")
+                    ->latest('counted_at')
+                    ->limit(50)
+                    ->get()
+                    ->map(fn (InventoryStockCount $count): array => [
+                        'id' => $count->public_id,
+                        'status' => $count->status,
+                        'note' => $count->note,
+                        'review_note' => $count->review_note,
+                        'counted_at' => $this->isoDate($count->counted_at),
+                        'warehouse' => $count->warehouse?->only(['code', 'name']),
+                        'counter' => $count->countedBy?->only(['name', 'role']),
+                        'lines' => $count->lines->map(fn ($line): array => [
+                            'item' => $line->item?->only(['sku', 'name']),
+                            'expected' => (string) $line->expected_quantity,
+                            'counted' => (string) $line->counted_quantity,
+                            'variance' => (string) $line->variance_quantity,
+                        ])->values(),
                     ])->values()
                 : [],
         ]);

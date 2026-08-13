@@ -14,6 +14,7 @@ use App\Models\CollectorFieldDay;
 use App\Models\CollectorRoute;
 use App\Models\CollectorTask;
 use App\Models\InventoryItem;
+use App\Models\InventoryStockCount;
 use App\Models\InventoryTransferRequest;
 use App\Models\Tenant;
 use App\Models\User;
@@ -170,6 +171,20 @@ final class FieldController extends Controller
                     'item' => $stockRequest->item?->only(['sku', 'name']),
                     'source' => $stockRequest->sourceWarehouse?->only(['code', 'name']),
                     'destination' => $stockRequest->destinationWarehouse?->only(['code', 'name']),
+                ])->values(),
+            'counts' => InventoryStockCount::query()
+                ->where('counted_by_id', $user->id)
+                ->with(['warehouse:id,code,name', 'lines.item:id,sku,name'])
+                ->latest('counted_at')
+                ->limit(10)
+                ->get()
+                ->map(fn (InventoryStockCount $count): array => [
+                    'id' => $count->public_id,
+                    'status' => $count->status,
+                    'note' => $count->note,
+                    'review_note' => $count->review_note,
+                    'warehouse' => $count->warehouse?->only(['code', 'name']),
+                    'variance' => $count->lines->map(fn ($line): array => ['item' => $line->item?->only(['sku', 'name']), 'quantity' => (string) $line->variance_quantity])->values(),
                 ])->values(),
         ];
     }
