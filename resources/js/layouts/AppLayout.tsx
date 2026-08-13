@@ -755,20 +755,32 @@ export default function AppLayout({ children }: PropsWithChildren) {
                                 <kbd className="rounded border border-line px-1.5 py-0.5 text-[10px] text-muted">
                                     ESC
                                 </kbd>
+                                <button
+                                    type="button"
+                                    onClick={() => setSearchOpen(false)}
+                                    className="rounded-md p-1.5 text-muted hover:bg-sand hover:text-ink focus:outline-none focus:ring-2 focus:ring-brand/30"
+                                    aria-label={t('Close search')}
+                                >
+                                    <X size={16} aria-hidden="true" />
+                                </button>
                             </div>
-                            <div className="max-h-[min(60vh,32rem)] overflow-y-auto p-2">
+                            <div
+                                className="max-h-[min(60vh,32rem)] overflow-y-auto p-2"
+                                aria-busy={searching}
+                                aria-live="polite"
+                            >
                                 {searching && (
-                                    <p className="px-3 py-8 text-center text-sm text-muted">
+                                    <p role="status" className="px-3 py-8 text-center text-sm text-muted">
                                         {t('Searching workspace…')}
                                     </p>
                                 )}
                                 {!searching && search.trim().length < 2 && (
-                                    <p className="px-3 py-8 text-center text-sm text-muted">
+                                    <p role="status" className="px-3 py-8 text-center text-sm text-muted">
                                         {t('Type at least two characters to search.')}
                                     </p>
                                 )}
                                 {!searching && search.trim().length >= 2 && searchResults.length === 0 && (
-                                    <p className="px-3 py-8 text-center text-sm text-muted">
+                                    <p role="status" className="px-3 py-8 text-center text-sm text-muted">
                                         {t('No matching records found.')}
                                     </p>
                                 )}

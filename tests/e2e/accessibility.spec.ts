@@ -259,8 +259,8 @@ test('keeps shared keyboard focus paths usable', async ({ page }) => {
     const searchInput = page.getByRole('textbox', { name: 'Search workspace' });
     await expect(searchInput).toBeFocused();
     await page.keyboard.press('Tab');
-    await expect(searchInput).toBeFocused();
-    await page.keyboard.press('Escape');
+    await expect(page.getByRole('button', { name: 'Close search' })).toBeFocused();
+    await page.keyboard.press('Enter');
     await expect(searchTrigger).toBeFocused();
 
     const accountTrigger = page.getByRole('button', { name: 'Open account menu' });
