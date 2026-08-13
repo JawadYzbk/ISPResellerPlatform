@@ -154,6 +154,17 @@ test('keeps guest authentication pages accessible', async ({ page }) => {
     await auditPage(page, '/forgot-password');
 });
 
+test('connects password recovery errors to their controls', async ({ page }) => {
+    await page.goto('/forgot-password');
+    await page.locator('#email').fill('');
+    await page.locator('form button[type="submit"]').click();
+
+    const emailField = page.locator('#email');
+    await expect(emailField).toHaveAttribute('aria-invalid', 'true');
+    await expect(emailField).toHaveAttribute('aria-describedby', 'email-error');
+    await expect(page.locator('#email-error')).toHaveAttribute('role', 'alert');
+});
+
 test('connects customer validation messages to their controls', async ({ page }) => {
     test.setTimeout(60_000);
 

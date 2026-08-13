@@ -11,6 +11,16 @@ export default function ForgotPassword() {
     const t = createTranslator(props.app.locale);
     const [submitted, setSubmitted] = useState(false);
     const form = useForm({ email: '' });
+    const fieldA11y = (name: keyof typeof form.data) => ({
+        'aria-invalid': Boolean(form.errors[name]),
+        'aria-describedby': form.errors[name] ? `${name}-error` : undefined,
+    });
+    const fieldError = (name: keyof typeof form.data) =>
+        form.errors[name] ? (
+            <p id={`${name}-error`} className="field-error" role="alert">
+                {t(form.errors[name])}
+            </p>
+        ) : null;
 
     const submit = (event: React.FormEvent) => {
         event.preventDefault();
@@ -32,15 +42,17 @@ export default function ForgotPassword() {
                     <div className="relative">
                         <Mail className="pointer-events-none absolute start-3 top-3.5 text-muted" size={18} />
                         <input
+                            id="email"
                             className="field ps-10"
                             type="email"
                             autoComplete="email"
                             autoFocus
+                            {...fieldA11y('email')}
                             value={form.data.email}
                             onChange={(event) => form.setData('email', event.target.value)}
                         />
                     </div>
-                    {form.errors.email && <p className="field-error" role="alert">{t(form.errors.email)}</p>}
+                    {fieldError('email')}
                 </label>
                 {submitted && !form.errors.email && (
                     <p className="rounded-xl bg-emerald-50 p-3 text-sm text-emerald-700">{t('auth.reset_sent')}</p>

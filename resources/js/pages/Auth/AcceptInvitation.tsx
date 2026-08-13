@@ -11,6 +11,16 @@ export default function AcceptInvitation({ token }: Props) {
     const { props } = usePage<PageProps>();
     const t = createTranslator(props.app.locale);
     const form = useForm({ name: '', password: '', password_confirmation: '' });
+    const fieldA11y = (name: keyof typeof form.data) => ({
+        'aria-invalid': Boolean(form.errors[name]),
+        'aria-describedby': form.errors[name] ? `${name}-error` : undefined,
+    });
+    const fieldError = (name: keyof typeof form.data) =>
+        form.errors[name] ? (
+            <p id={`${name}-error`} className="field-error" role="alert">
+                {t(form.errors[name])}
+            </p>
+        ) : null;
 
     const submit = (event: React.FormEvent) => {
         event.preventDefault();
@@ -30,34 +40,41 @@ export default function AcceptInvitation({ token }: Props) {
                 <label>
                     <span className="field-label">{t('auth.full_name')}</span>
                     <input
+                        id="name"
                         className="field"
                         autoComplete="name"
+                        {...fieldA11y('name')}
                         value={form.data.name}
                         onChange={(event) => form.setData('name', event.target.value)}
                     />
-                    {form.errors.name && <p className="field-error" role="alert">{t(form.errors.name)}</p>}
+                    {fieldError('name')}
                 </label>
                 <label>
                     <span className="field-label">{t('Password')}</span>
                     <input
+                        id="password"
                         className="field"
                         type="password"
                         autoComplete="new-password"
+                        {...fieldA11y('password')}
                         value={form.data.password}
                         onChange={(event) => form.setData('password', event.target.value)}
                     />
-                    {form.errors.password && <p className="field-error" role="alert">{t(form.errors.password)}</p>}
+                    {fieldError('password')}
                     <p className="mt-1 text-xs text-muted">{t('auth.minimum_password')}</p>
                 </label>
                 <label>
                     <span className="field-label">{t('auth.confirm_password')}</span>
                     <input
+                        id="password_confirmation"
                         className="field"
                         type="password"
                         autoComplete="new-password"
+                        {...fieldA11y('password_confirmation')}
                         value={form.data.password_confirmation}
                         onChange={(event) => form.setData('password_confirmation', event.target.value)}
                     />
+                    {fieldError('password_confirmation')}
                 </label>
                 <button type="submit" className="button-primary w-full" disabled={form.processing}>
                     <CheckCircle2 size={16} /> {t('auth.accept_invitation')}
