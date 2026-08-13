@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Actions\ReauthenticateUser;
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Support\WorkspacePageCatalog;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -21,7 +22,7 @@ final class ReauthenticateController extends Controller
         return Inertia::render('Auth/Reauthenticate');
     }
 
-    public function store(Request $request, ReauthenticateUser $reauthenticateUser): RedirectResponse
+    public function store(Request $request, ReauthenticateUser $reauthenticateUser, WorkspacePageCatalog $pages): RedirectResponse
     {
         $validated = $request->validate(['password' => ['required', 'string']]);
         $user = $request->user();
@@ -31,9 +32,7 @@ final class ReauthenticateController extends Controller
             return back()->withErrors(['password' => 'That password is not valid.']);
         }
 
-        $defaultRoute = $user->isPlatformOperator() ? 'admin.tenants' : 'dashboard';
-
-        return redirect()->intended(route($defaultRoute))->with('success', 'Identity confirmed.');
+        return redirect()->intended($pages->defaultDestination($user))->with('success', 'Identity confirmed.');
     }
 
     private function rememberPreviousUrl(Request $request): void

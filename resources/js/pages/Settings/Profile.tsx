@@ -13,11 +13,13 @@ type Profile = {
     role: string;
     locale: 'en' | 'ar' | 'fr' | null;
     timezone: string | null;
+    default_view: string;
 };
 
-type Props = { profile: Profile; workspaceLocale: 'en' | 'ar' | 'fr' };
+type DefaultView = { label: string; detail: string; href: string };
+type Props = { profile: Profile; workspaceLocale: 'en' | 'ar' | 'fr'; defaultViews: DefaultView[] };
 
-export default function ProfilePage({ profile, workspaceLocale }: Props) {
+export default function ProfilePage({ profile, workspaceLocale, defaultViews }: Props) {
     const form = useForm<Profile>(profile);
     const page = usePage<PageProps & { errors?: Record<string, string> }>();
     const t = createTranslator(page.props.app.locale);
@@ -113,8 +115,34 @@ export default function ProfilePage({ profile, workspaceLocale }: Props) {
                                 />
                                 {(form.errors.timezone ?? validationErrors.timezone ?? pageErrors.timezone) && (
                                     <p className="field-error">
-                                        {t(form.errors.timezone ?? validationErrors.timezone ?? pageErrors.timezone ?? '')}
+                                        {t(
+                                            form.errors.timezone ??
+                                                validationErrors.timezone ??
+                                                pageErrors.timezone ??
+                                                '',
+                                        )}
                                     </p>
+                                )}
+                            </label>
+                            <label className="sm:col-span-2">
+                                <span className="field-label">{t('Default view after sign in')}</span>
+                                <ResponsiveSelect
+                                    id="profile-default-view"
+                                    className="field"
+                                    value={form.data.default_view}
+                                    onChange={(event) => form.setData('default_view', event.target.value)}
+                                >
+                                    {defaultViews.map((view) => (
+                                        <option key={view.href} value={view.href}>
+                                            {t(view.label)} · {t(view.detail)}
+                                        </option>
+                                    ))}
+                                </ResponsiveSelect>
+                                <p className="mt-1 text-xs text-muted">
+                                    {t('This is used when there is no page you were trying to open before signing in.')}
+                                </p>
+                                {form.errors.default_view && (
+                                    <p className="field-error">{t(form.errors.default_view)}</p>
                                 )}
                             </label>
                         </div>

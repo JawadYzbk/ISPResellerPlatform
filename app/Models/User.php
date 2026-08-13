@@ -14,7 +14,7 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 
-#[Fillable(['tenant_id', 'partner_id', 'name', 'email', 'password', 'role', 'locale', 'timezone', 'collector_all_zones'])]
+#[Fillable(['tenant_id', 'partner_id', 'name', 'email', 'password', 'role', 'locale', 'timezone', 'default_view', 'collector_all_zones'])]
 #[Hidden(['password', 'remember_token', 'two_factor_secret', 'two_factor_recovery_codes'])]
 /**
  * @property Carbon|null $last_authenticated_at

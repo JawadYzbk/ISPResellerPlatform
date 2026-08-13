@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\UpdateUserProfileRequest;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Support\WorkspacePageCatalog;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -14,7 +15,7 @@ use Inertia\Response;
 
 final class ProfileController extends Controller
 {
-    public function show(Request $request): Response
+    public function show(Request $request, WorkspacePageCatalog $pages): Response
     {
         $user = $this->user($request);
         $tenant = Tenant::query()->find($user->tenant_id);
@@ -26,8 +27,13 @@ final class ProfileController extends Controller
                 'role' => $user->role,
                 'locale' => $user->locale,
                 'timezone' => $user->timezone,
+                'default_view' => $user->default_view ?: '/dashboard',
             ],
             'workspaceLocale' => $tenant?->settingsData()->locale ?? 'en',
+            'defaultViews' => array_map(
+                fn (array $page): array => ['label' => $page['label'], 'detail' => $page['detail'], 'href' => $page['href']],
+                $pages->defaultViewsFor($user),
+            ),
         ]);
     }
 

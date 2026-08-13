@@ -42,6 +42,8 @@ it('lets a signed-in staff member view and update their profile', function (): v
             ->where('profile.name', 'Nadia Haddad')
             ->where('profile.email', 'nadia@example.test')
             ->where('profile.role', 'tenant_owner')
+            ->where('profile.default_view', '/dashboard')
+            ->where('defaultViews.0.href', '/dashboard')
         );
 
     $this->actingAs($user)
@@ -49,11 +51,12 @@ it('lets a signed-in staff member view and update their profile', function (): v
             'name' => 'Nadia Beirut',
             'locale' => 'ar',
             'timezone' => 'Asia/Beirut',
+            'default_view' => '/customers',
         ])
         ->assertRedirect(route('profile'));
 
-    expect($user->refresh()->only(['name', 'locale', 'timezone']))
-        ->toBe(['name' => 'Nadia Beirut', 'locale' => 'ar', 'timezone' => 'Asia/Beirut']);
+    expect($user->refresh()->only(['name', 'locale', 'timezone', 'default_view']))
+        ->toBe(['name' => 'Nadia Beirut', 'locale' => 'ar', 'timezone' => 'Asia/Beirut', 'default_view' => '/customers']);
 });
 
 it('lets staff open the permission-aware notifications center', function (): void {

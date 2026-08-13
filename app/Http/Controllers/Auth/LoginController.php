@@ -6,6 +6,7 @@ use App\Actions\AuthenticateUser;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\LoginRequest;
 use App\Models\User;
+use App\Support\WorkspacePageCatalog;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -17,7 +18,7 @@ final class LoginController extends Controller
         return Inertia::render('Auth/Login');
     }
 
-    public function store(LoginRequest $request, AuthenticateUser $authenticateUser): RedirectResponse
+    public function store(LoginRequest $request, AuthenticateUser $authenticateUser, WorkspacePageCatalog $pages): RedirectResponse
     {
         $authenticated = $authenticateUser->handle(
             $request->string('email')->toString(),
@@ -32,9 +33,9 @@ final class LoginController extends Controller
         $request->session()->regenerate();
 
         $user = $request->user();
-        $defaultRoute = $user instanceof User && $user->isPlatformOperator() ? 'admin.tenants' : 'dashboard';
+        $destination = $user instanceof User ? $pages->defaultDestination($user) : route('dashboard');
 
-        return redirect()->intended(route($defaultRoute))
+        return redirect()->intended($destination)
             ->with('success_title', 'Welcome back')
             ->with('success', 'You are signed in and ready to work.');
     }

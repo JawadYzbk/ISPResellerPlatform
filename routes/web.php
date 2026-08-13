@@ -30,8 +30,8 @@ use App\Http\Controllers\Web\MediaDownloadController;
 use App\Http\Controllers\Web\NetworkOperationsController;
 use App\Http\Controllers\Web\NotificationController;
 use App\Http\Controllers\Web\NotificationTemplateController;
-use App\Http\Controllers\Web\OpticalOperationsController;
 use App\Http\Controllers\Web\OperationalExpenseController;
+use App\Http\Controllers\Web\OpticalOperationsController;
 use App\Http\Controllers\Web\PartnerController;
 use App\Http\Controllers\Web\PlanOperationsController;
 use App\Http\Controllers\Web\PlatformTenantController;
@@ -55,16 +55,17 @@ use App\Http\Controllers\Web\UserOperationsController;
 use App\Http\Controllers\Web\WorkOrderOperationsController;
 use App\Http\Controllers\Web\WorkspaceSearchController;
 use App\Models\User;
+use App\Support\WorkspacePageCatalog;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
+Route::get('/', function (WorkspacePageCatalog $pages) {
     $user = auth()->user();
 
     if (! $user instanceof User) {
         return redirect()->route('login');
     }
 
-    return redirect()->route($user->isPlatformOperator() ? 'admin.tenants' : 'dashboard');
+    return redirect()->to($pages->defaultDestination($user));
 });
 
 Route::get('/docs/api', function () {

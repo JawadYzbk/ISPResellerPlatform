@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Security\TwoFactorService;
+use App\Support\WorkspacePageCatalog;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -12,11 +13,11 @@ use Inertia\Response;
 
 final class TwoFactorController extends Controller
 {
-    public function setup(Request $request, TwoFactorService $twoFactor): Response|RedirectResponse
+    public function setup(Request $request, TwoFactorService $twoFactor, WorkspacePageCatalog $pages): Response|RedirectResponse
     {
         $user = $this->user($request);
         if ($twoFactor->enabled($user)) {
-            return redirect()->route($this->defaultRoute($user));
+            return redirect()->intended($pages->defaultDestination($user));
         }
 
         $setup = $request->session()->get('two_factor_setup');
@@ -32,7 +33,7 @@ final class TwoFactorController extends Controller
         ]);
     }
 
-    public function confirm(Request $request, TwoFactorService $twoFactor): RedirectResponse
+    public function confirm(Request $request, TwoFactorService $twoFactor, WorkspacePageCatalog $pages): RedirectResponse
     {
         $validated = $request->validate(['code' => ['required', 'digits:6']]);
         $user = $this->user($request);
@@ -44,7 +45,7 @@ final class TwoFactorController extends Controller
         $request->session()->put('two_factor_verified_user_id', $user->id);
         $request->session()->forget('two_factor_setup');
 
-        return redirect()->intended(route($this->defaultRoute($user)))->with('success', 'Two-factor authentication enabled.');
+        return redirect()->intended($pages->defaultDestination($user))->with('success', 'Two-factor authentication enabled.');
     }
 
     public function challenge(): Response
@@ -52,7 +53,7 @@ final class TwoFactorController extends Controller
         return Inertia::render('Auth/TwoFactor/Challenge');
     }
 
-    public function verify(Request $request, TwoFactorService $twoFactor): RedirectResponse
+    public function verify(Request $request, TwoFactorService $twoFactor, WorkspacePageCatalog $pages): RedirectResponse
     {
         $validated = $request->validate(['code' => ['required', 'string', 'min:6', 'max:16']]);
         $user = $this->user($request);
@@ -63,7 +64,7 @@ final class TwoFactorController extends Controller
 
         $request->session()->put('two_factor_verified_user_id', $user->id);
 
-        return redirect()->intended(route($this->defaultRoute($user)));
+        return redirect()->intended($pages->defaultDestination($user));
     }
 
     private function user(Request $request): User
@@ -73,10 +74,5 @@ final class TwoFactorController extends Controller
         abort_unless($user instanceof User, 401);
 
         return $user;
-    }
-
-    private function defaultRoute(User $user): string
-    {
-        return $user->isPlatformOperator() ? 'admin.tenants' : 'dashboard';
     }
 }
