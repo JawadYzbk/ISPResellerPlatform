@@ -292,8 +292,8 @@ export default function CustomersCreate({ zones, canCreateService, plans, router
                                             <p className="field-error">{form.errors.billing_anchor_day}</p>
                                         )}
                                         <p className="mt-1 text-xs text-pretty text-muted">
-                                            The first invoice is prorated to this day. Days 29–31 clamp in shorter
-                                            months.
+                                            The first renewal invoice is prorated from its issue date to this day. Days
+                                            29–31 clamp in shorter months.
                                         </p>
                                     </div>
                                     <div>

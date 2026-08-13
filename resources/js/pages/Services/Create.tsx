@@ -176,8 +176,8 @@ export default function ServicesCreate({ customer, plans, routers }: Props) {
                             <p className="field-error">{form.errors.billing_anchor_day}</p>
                         )}
                         <p className="mt-1 text-xs text-pretty text-muted">
-                            The first invoice is prorated from activation to this day. Days 29–31 clamp to shorter
-                            months.
+                            The first renewal invoice is prorated from its issue date to this day. Days 29–31 clamp to
+                            shorter months.
                         </p>
                     </div>
                     <div>

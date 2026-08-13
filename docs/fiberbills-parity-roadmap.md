@@ -41,7 +41,7 @@ Sources:
 | Zone organization | Delivered | Retain tenant, branch, zone, POP and reseller scoping. |
 | Box and building organization | Gap | Add building/site and distribution-box/cabinet entities, map placement, capacity and subscriber assignment. |
 | Monthly auto-invoicing, grace and overdue handling | Delivered | Keep idempotent billing runs, ledger posting and network enforcement. |
-| Custom billing cycle per subscriber | Partial | Add explicit anchor day, first-period proration, cycle preview and safe cycle change. |
+| Custom billing cycle per subscriber | Delivered for monthly prepaid billing | Each service can follow its plan duration or use a day-of-month anchor. Initial and transition periods use previewed half-up proration, days 29–31 clamp safely, open renewal invoices lock their quote, and paid renewal applies the scheduled anchor. |
 | Subscription, usage-based and one-time billing combinations | Partial | Add recurring invoice items and a metered-rating engine over usage/readings; retain operator-created invoice lines. |
 | Plan upgrades and renewals | Delivered | Keep immediate/next-cycle swaps, proration, multi-period renewal and router/RADIUS sync. |
 | Bulk billing operations | Partial | Add a previewable bulk invoice/renewal desk with row-level outcomes and idempotent retries. |
@@ -92,7 +92,7 @@ Sources:
 
 ### Phase 3: billing and finance breadth
 
-1. Per-service custom billing anchors and cycle-change previews.
+1. Per-service custom billing anchors and cycle-change previews. **Delivered for monthly prepaid billing.**
 2. Recurring invoice items, usage rating and safe bulk billing.
 3. Generic operational expenses with approval and ledger posting. **Delivered for responsive web.**
 4. Branded public payment/statement links and compact browser receipts. **Delivered for responsive web.**

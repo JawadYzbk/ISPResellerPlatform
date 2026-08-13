@@ -40,6 +40,8 @@ Termination requires the `services.terminate` capability. It preserves the servi
 
 Staff with `services.change_plan` can change an active or suspended service immediately or schedule a different plan for the next renewal. An immediate change records the unused old-plan credit and new-plan remainder charge in the customer ledger currency, then queues a profile update. A next-cycle change leaves the current period untouched and is applied when the renewal succeeds. Inspect the network command afterward; a queued change is not proof that the device accepted it.
 
+The same service page controls the prepaid monthly billing anchor. Select day 1–31 and inspect the transition quote before confirming. The platform clamps anchors near month-end, snapshots the prorated amount on the renewal invoice, and applies a scheduled anchor only after paid renewal. Once that renewal invoice exists, settle or void it before changing or cancelling the schedule so the customer-facing quote cannot drift.
+
 For a paid renewal, use the service renewal action or API preview before issuing the invoice. Select one to twelve plan periods, confirm the signed preview amount and new expiry, then issue the invoice. The renewal is invoice-first: a service is extended only after the issued invoice is fully paid, and an underpayment remains collectible. A preview is valid for ten minutes; if it expires, create a new preview. Reuse the same idempotency key when retrying invoice issuance.
 
 ## Payments and collections
