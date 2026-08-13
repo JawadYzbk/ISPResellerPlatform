@@ -1,6 +1,6 @@
 import { Head, Link, usePage } from '@inertiajs/react';
 import { CheckCircle2, ExternalLink, LoaderCircle, QrCode, RefreshCw, XCircle } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import AppLayout from '@/layouts/AppLayout';
 import { formatMoney } from '@/lib/format';
@@ -46,7 +46,7 @@ type Props = {
 
 export default function WhishPayment({ customer, attempt: initialAttempt }: Props) {
     const { props } = usePage<PageProps>();
-    const t = createTranslator(props.app.locale);
+    const t = useMemo(() => createTranslator(props.app.locale), [props.app.locale]);
     const [attempt, setAttempt] = useState(initialAttempt);
     const [error, setError] = useState<string | null>(null);
 
@@ -84,7 +84,7 @@ export default function WhishPayment({ customer, attempt: initialAttempt }: Prop
             cancelled = true;
             window.clearInterval(interval);
         };
-    }, [attempt.id, attempt.status, customer.public_id]);
+    }, [attempt.id, attempt.status, customer.public_id, t]);
 
     const terminal = attempt.status !== 'pending';
     const succeeded = attempt.status === 'succeeded';
