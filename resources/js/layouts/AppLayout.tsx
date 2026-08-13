@@ -107,6 +107,8 @@ export default function AppLayout({ children }: PropsWithChildren) {
     const searchDialog = useRef<HTMLDivElement>(null);
     const searchReturnFocus = useRef<HTMLButtonElement | null>(null);
     const accountMenu = useRef<HTMLDivElement>(null);
+    const accountTrigger = useRef<HTMLButtonElement>(null);
+    const accountPanel = useRef<HTMLDivElement>(null);
     const mobileNavTrigger = useRef<HTMLButtonElement>(null);
     const mobileNavClose = useRef<HTMLButtonElement>(null);
     const mobileNavWasOpen = useRef(false);
@@ -167,6 +169,50 @@ export default function AppLayout({ children }: PropsWithChildren) {
     const openSearch = (event: ReactMouseEvent<HTMLButtonElement>) => {
         searchReturnFocus.current = event.currentTarget;
         setSearchOpen(true);
+    };
+
+    const focusAccountItem = (direction: 1 | -1, edge?: 'first' | 'last') => {
+        const items = Array.from(accountPanel.current?.querySelectorAll<HTMLElement>('[role="menuitem"]') ?? []);
+        if (items.length === 0) return;
+
+        const currentIndex = items.indexOf(document.activeElement as HTMLElement);
+        const nextIndex =
+            edge === 'first'
+                ? 0
+                : edge === 'last'
+                  ? items.length - 1
+                  : currentIndex < 0
+                    ? direction === 1
+                        ? 0
+                        : items.length - 1
+                    : (currentIndex + direction + items.length) % items.length;
+
+        items[nextIndex]?.focus();
+    };
+
+    const handleAccountTriggerKeyDown = (event: ReactKeyboardEvent<HTMLButtonElement>) => {
+        if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') return;
+
+        event.preventDefault();
+        setAccountOpen(true);
+        window.setTimeout(() => focusAccountItem(event.key === 'ArrowDown' ? 1 : -1), 0);
+    };
+
+    const handleAccountMenuKeyDown = (event: ReactKeyboardEvent<HTMLDivElement>) => {
+        if (event.key === 'Escape') {
+            event.preventDefault();
+            setAccountOpen(false);
+            accountTrigger.current?.focus();
+            return;
+        }
+
+        if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+            event.preventDefault();
+            focusAccountItem(event.key === 'ArrowDown' ? 1 : -1);
+        } else if (event.key === 'Home' || event.key === 'End') {
+            event.preventDefault();
+            focusAccountItem(1, event.key === 'Home' ? 'first' : 'last');
+        }
     };
 
     useEffect(() => {
@@ -569,8 +615,10 @@ export default function AppLayout({ children }: PropsWithChildren) {
                         )}
                         <div ref={accountMenu} className="relative border-s border-line ps-3">
                             <button
+                                ref={accountTrigger}
                                 type="button"
                                 onClick={() => setAccountOpen((open) => !open)}
+                                onKeyDown={handleAccountTriggerKeyDown}
                                 className="flex items-center gap-3 rounded-xl p-1.5 text-start hover:bg-white"
                                 aria-haspopup="menu"
                                 aria-expanded={accountOpen}
@@ -591,8 +639,10 @@ export default function AppLayout({ children }: PropsWithChildren) {
                             {accountOpen && (
                                 <div
                                     id="account-menu"
+                                    ref={accountPanel}
                                     role="menu"
                                     aria-label={t('Account menu')}
+                                    onKeyDown={handleAccountMenuKeyDown}
                                     className="absolute end-0 top-full z-30 mt-2 w-56 overflow-hidden rounded-xl border border-line bg-white p-1 shadow-xl"
                                 >
                                     {!isPlatformOperator && (
