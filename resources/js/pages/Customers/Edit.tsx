@@ -1,10 +1,11 @@
 import ResponsiveSelect from '@/components/ui/responsive-select';
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import { ArrowLeft, Save } from 'lucide-react';
 
 import CustomerLocationFields from '@/components/CustomerLocationFields';
 import AppLayout from '@/layouts/AppLayout';
-import type { Customer, Zone } from '@/types';
+import { createTranslator } from '@/lib/i18n';
+import type { Customer, PageProps, Zone } from '@/types';
 
 type Props = {
     customer: Pick<Customer, 'public_id' | 'code' | 'first_name' | 'last_name' | 'phone' | 'email' | 'address'> & {
@@ -16,6 +17,8 @@ type Props = {
 };
 
 export default function CustomersEdit({ customer, zones }: Props) {
+    const { props } = usePage<PageProps>();
+    const t = createTranslator(props.app.locale);
     const form = useForm({
         first_name: customer.first_name,
         last_name: customer.last_name ?? '',
@@ -34,12 +37,14 @@ export default function CustomersEdit({ customer, zones }: Props) {
                 href={`/customers/${customer.public_id}`}
                 className="mb-6 inline-flex items-center gap-2 text-sm font-semibold text-muted hover:text-brand"
             >
-                <ArrowLeft size={16} /> Back to customer
+                <ArrowLeft size={16} /> {t('Back to customer')}
             </Link>
             <div className="max-w-3xl">
-                <p className="eyebrow">Subscriber CRM · {customer.code}</p>
-                <h1 className="page-title">Edit customer</h1>
-                <p className="page-subtitle">Keep contact details and service location current.</p>
+                <p className="eyebrow">
+                    {t('Subscriber CRM')} · {customer.code}
+                </p>
+                <h1 className="page-title">{t('Edit customer')}</h1>
+                <p className="page-subtitle">{t('customers.edit_subtitle')}</p>
                 <form
                     onSubmit={(event) => {
                         event.preventDefault();
@@ -50,7 +55,7 @@ export default function CustomersEdit({ customer, zones }: Props) {
                     <div className="grid gap-5 sm:grid-cols-2">
                         <div>
                             <label className="field-label" htmlFor="first_name">
-                                First name
+                                {t('First name')}
                             </label>
                             <input
                                 id="first_name"
@@ -62,7 +67,7 @@ export default function CustomersEdit({ customer, zones }: Props) {
                         </div>
                         <div>
                             <label className="field-label" htmlFor="last_name">
-                                Last name
+                                {t('Last name')}
                             </label>
                             <input
                                 id="last_name"
@@ -74,7 +79,7 @@ export default function CustomersEdit({ customer, zones }: Props) {
                         </div>
                         <div>
                             <label className="field-label" htmlFor="phone">
-                                Phone
+                                {t('Phone')}
                             </label>
                             <input
                                 id="phone"
@@ -86,7 +91,7 @@ export default function CustomersEdit({ customer, zones }: Props) {
                         </div>
                         <div>
                             <label className="field-label" htmlFor="email">
-                                Email
+                                {t('Email')}
                             </label>
                             <input
                                 id="email"
@@ -99,7 +104,7 @@ export default function CustomersEdit({ customer, zones }: Props) {
                         </div>
                         <div>
                             <label className="field-label" htmlFor="zone_id">
-                                Zone
+                                {t('Zone')}
                             </label>
                             <ResponsiveSelect
                                 id="zone_id"
@@ -107,7 +112,7 @@ export default function CustomersEdit({ customer, zones }: Props) {
                                 value={form.data.zone_id}
                                 onChange={(event) => form.setData('zone_id', event.target.value)}
                             >
-                                <option value="">Select a zone</option>
+                                <option value="">{t('Select a zone')}</option>
                                 {zones.map((zone) => (
                                     <option key={zone.id} value={zone.id}>
                                         {zone.name}
@@ -118,7 +123,7 @@ export default function CustomersEdit({ customer, zones }: Props) {
                         </div>
                         <div>
                             <label className="field-label" htmlFor="address">
-                                Address
+                                {t('Address')}
                             </label>
                             <input
                                 id="address"
@@ -137,10 +142,10 @@ export default function CustomersEdit({ customer, zones }: Props) {
                     />
                     <div className="flex justify-end gap-3 border-t border-line pt-5">
                         <Link href={`/customers/${customer.public_id}`} className="button-secondary">
-                            Cancel
+                            {t('Cancel')}
                         </Link>
                         <button className="button-primary" disabled={form.processing}>
-                            <Save size={16} /> Save changes
+                            <Save size={16} /> {t('Save changes')}
                         </button>
                     </div>
                 </form>

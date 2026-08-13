@@ -1,12 +1,15 @@
-import { Head } from '@inertiajs/react';
+import { Head, usePage } from '@inertiajs/react';
 import { ArrowRight, LockKeyhole, Wifi } from 'lucide-react';
 import { useState } from 'react';
 
-import type { PublicTenant } from '@/types';
+import { createTranslator } from '@/lib/i18n';
+import type { PageProps, PublicTenant } from '@/types';
 
 type Props = { tenant: PublicTenant };
 
 export default function PortalSignIn({ tenant }: Props) {
+    const { props } = usePage<PageProps>();
+    const t = createTranslator(props.app.locale);
     const [phone, setPhone] = useState('');
     const [code, setCode] = useState('');
     const [challengeId, setChallengeId] = useState<number | null>(null);
@@ -25,7 +28,7 @@ export default function PortalSignIn({ tenant }: Props) {
         const payload = await response.json();
         setBusy(false);
         if (!response.ok) {
-            setError(payload.detail ?? 'We could not start verification.');
+            setError(payload.detail ?? t('portal.sign_in_error'));
             return;
         }
         setChallengeId(payload.challenge_id);
@@ -44,7 +47,7 @@ export default function PortalSignIn({ tenant }: Props) {
         const payload = await response.json();
         setBusy(false);
         if (!response.ok) {
-            setError(payload.detail ?? 'That code is not valid.');
+            setError(payload.detail ?? t('portal.invalid_code'));
             return;
         }
         sessionStorage.setItem(`portal_token:${tenant.slug}`, payload.token);
@@ -65,20 +68,20 @@ export default function PortalSignIn({ tenant }: Props) {
                     </div>
                     <div>
                         <p className="font-display font-bold">{tenant.name}</p>
-                        <p className="text-sm text-muted">Customer portal</p>
+                        <p className="text-sm text-muted">{t('portal.customer_portal')}</p>
                     </div>
                 </div>
                 <div className="card p-6 sm:p-8">
                     <div className="flex items-center gap-2 text-brand">
                         <LockKeyhole size={18} />
-                        <span className="eyebrow">Secure access</span>
+                        <span className="eyebrow">{t('portal.secure_access')}</span>
                     </div>
-                    <h1 className="mt-4 page-title">Manage your connection.</h1>
-                    <p className="page-subtitle">Use the phone number on your account. We will send a one-time code.</p>
+                    <h1 className="mt-4 page-title">{t('portal.manage_connection')}</h1>
+                    <p className="page-subtitle">{t('portal.subtitle')}</p>
                     {challengeId === null ? (
                         <form onSubmit={requestOtp} className="mt-8 space-y-5">
                             <label className="block">
-                                <span className="field-label">Phone number</span>
+                                <span className="field-label">{t('Phone number')}</span>
                                 <input
                                     required
                                     value={phone}
@@ -88,14 +91,14 @@ export default function PortalSignIn({ tenant }: Props) {
                                 />
                             </label>
                             <button disabled={busy} className="button-primary w-full justify-center">
-                                {busy ? 'Sending…' : 'Send code'}
+                                {busy ? t('portal.sending') : t('portal.send_code')}
                                 <ArrowRight size={16} />
                             </button>
                         </form>
                     ) : (
                         <form onSubmit={verifyOtp} className="mt-8 space-y-5">
                             <label className="block">
-                                <span className="field-label">Verification code</span>
+                                <span className="field-label">{t('portal.verification_code')}</span>
                                 <input
                                     required
                                     inputMode="numeric"
@@ -108,7 +111,7 @@ export default function PortalSignIn({ tenant }: Props) {
                                 />
                             </label>
                             <button disabled={busy} className="button-primary w-full justify-center">
-                                {busy ? 'Checking…' : 'Open portal'}
+                                {busy ? t('portal.checking') : t('portal.open_portal')}
                                 <ArrowRight size={16} />
                             </button>
                             <button
@@ -116,7 +119,7 @@ export default function PortalSignIn({ tenant }: Props) {
                                 onClick={() => setChallengeId(null)}
                                 className="button-quiet w-full justify-center"
                             >
-                                Use a different number
+                                {t('portal.different_number')}
                             </button>
                         </form>
                     )}
