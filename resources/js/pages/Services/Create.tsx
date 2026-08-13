@@ -1,9 +1,10 @@
 import ResponsiveSelect from '@/components/ui/responsive-select';
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import { ArrowLeft, KeyRound, Save, Wifi } from 'lucide-react';
 import { useMemo } from 'react';
 
 import AppLayout from '@/layouts/AppLayout';
+import { createTranslator } from '@/lib/i18n';
 import type { PageProps } from '@/types';
 
 type CustomerSummary = { public_id: string; code: string; first_name: string; last_name: string | null };
@@ -49,6 +50,8 @@ const modes = [
 ] as const;
 
 export default function ServicesCreate({ customer, plans, routers }: Props) {
+    const { props } = usePage<PageProps>();
+    const t = createTranslator(props.app.locale);
     const form = useForm({
         plan_id: plans[0]?.id.toString() ?? '',
         username: `${customer.code.toLowerCase()}.service`,
@@ -72,19 +75,19 @@ export default function ServicesCreate({ customer, plans, routers }: Props) {
 
     return (
         <AppLayout>
-            <Head title="Add service" />
+            <Head title={t('Add service')} />
             <Link
                 href={`/customers/${customer.public_id}`}
                 className="mb-6 inline-flex items-center gap-2 text-sm font-semibold text-muted hover:text-brand"
             >
-                <ArrowLeft size={16} /> Back to customer
+                <ArrowLeft size={16} /> {t('Back to customer')}
             </Link>
             <div className="max-w-3xl">
-                <p className="eyebrow">Subscriber operations</p>
-                <h1 className="page-title">Add service</h1>
+                <p className="eyebrow">{t('Subscriber operations')}</p>
+                <h1 className="page-title">{t('Add service')}</h1>
                 <p className="page-subtitle">
-                    Create a pending connection for {customer.first_name} {customer.last_name ?? ''}. Activation and
-                    network work remain separate steps.
+                    {t('service.create_description')} {customer.first_name} {customer.last_name ?? ''}.{' '}
+                    {t('service.activation_note')}
                 </p>
                 <form
                     onSubmit={(event) => {
@@ -95,7 +98,7 @@ export default function ServicesCreate({ customer, plans, routers }: Props) {
                 >
                     <div>
                         <label className="field-label" htmlFor="plan_id">
-                            Plan
+                            {t('Plan')}
                         </label>
                         <ResponsiveSelect
                             id="plan_id"
@@ -106,19 +109,21 @@ export default function ServicesCreate({ customer, plans, routers }: Props) {
                             {plans.map((plan) => (
                                 <option key={plan.id} value={plan.id}>
                                     {plan.name} · {plan.download_kbps / 1000}/{plan.upload_kbps / 1000} Mbps ·{' '}
-                                    {plan.duration_days} days
+                                    {plan.duration_days} {t('days')}
                                 </option>
                             ))}
                         </ResponsiveSelect>
                         {form.errors.plan_id && <p className="field-error">{form.errors.plan_id}</p>}
                         {selectedPlan && (
-                            <p className="mt-1 text-xs text-muted">Plan currency: {selectedPlan.currency}</p>
+                            <p className="mt-1 text-xs text-muted">
+                                {t('customer.plan_currency')}: {selectedPlan.currency}
+                            </p>
                         )}
                     </div>
                     <div className="grid gap-5 sm:grid-cols-2">
                         <div>
                             <label className="field-label" htmlFor="username">
-                                Service username
+                                {t('customer.service_username')}
                             </label>
                             <input
                                 id="username"
@@ -130,7 +135,7 @@ export default function ServicesCreate({ customer, plans, routers }: Props) {
                         </div>
                         <div>
                             <label className="field-label" htmlFor="password">
-                                Service password
+                                {t('customer.service_password')}
                             </label>
                             <div className="flex gap-2">
                                 <input
@@ -144,20 +149,18 @@ export default function ServicesCreate({ customer, plans, routers }: Props) {
                                     type="button"
                                     className="button-secondary shrink-0"
                                     onClick={generatePassword}
-                                    title="Generate secure password"
+                                    title={t('customer.generate_password')}
                                 >
                                     <KeyRound size={16} />
                                 </button>
                             </div>
                             {form.errors.password && <p className="field-error">{form.errors.password}</p>}
-                            <p className="mt-1 text-xs text-muted">
-                                At least 12 characters. Generate one or enter a subscriber-provided password.
-                            </p>
+                            <p className="mt-1 text-xs text-muted">{t('service.password_note')}</p>
                         </div>
                     </div>
                     <div>
                         <label className="field-label" htmlFor="billing_anchor_day">
-                            Monthly billing anchor
+                            {t('customer.monthly_billing_anchor')}
                         </label>
                         <ResponsiveSelect
                             id="billing_anchor_day"
@@ -165,10 +168,10 @@ export default function ServicesCreate({ customer, plans, routers }: Props) {
                             value={form.data.billing_anchor_day}
                             onChange={(event) => form.setData('billing_anchor_day', event.target.value)}
                         >
-                            <option value="">Follow plan duration</option>
+                            <option value="">{t('customer.follow_plan_duration')}</option>
                             {Array.from({ length: 31 }, (_, index) => index + 1).map((day) => (
                                 <option key={day} value={day}>
-                                    Day {day} of each month
+                                    {t('customer.day_of_month')} {day}
                                 </option>
                             ))}
                         </ResponsiveSelect>
@@ -181,7 +184,7 @@ export default function ServicesCreate({ customer, plans, routers }: Props) {
                         </p>
                     </div>
                     <div>
-                        <p className="field-label">Provisioning mode</p>
+                        <p className="field-label">{t('customer.provisioning_mode')}</p>
                         <div className="grid gap-3 sm:grid-cols-2">
                             {modes.map((mode) => (
                                 <label
@@ -200,8 +203,12 @@ export default function ServicesCreate({ customer, plans, routers }: Props) {
                                         }}
                                         className="sr-only"
                                     />
-                                    <span className="font-semibold">{mode.label}</span>
-                                    <span className="mt-1 block text-xs text-muted">{mode.description}</span>
+                                    <span className="font-semibold">
+                                        {t(`customer.provisioning.${mode.value}.label`)}
+                                    </span>
+                                    <span className="mt-1 block text-xs text-muted">
+                                        {t(`customer.provisioning.${mode.value}.description`)}
+                                    </span>
                                 </label>
                             ))}
                         </div>
@@ -212,7 +219,7 @@ export default function ServicesCreate({ customer, plans, routers }: Props) {
                     {needsRouter && (
                         <div>
                             <label className="field-label" htmlFor="router_id">
-                                Router
+                                {t('Router')}
                             </label>
                             <ResponsiveSelect
                                 id="router_id"
@@ -220,7 +227,7 @@ export default function ServicesCreate({ customer, plans, routers }: Props) {
                                 value={form.data.router_id}
                                 onChange={(event) => form.setData('router_id', event.target.value)}
                             >
-                                <option value="">Select a router</option>
+                                <option value="">{t('customer.select_router')}</option>
                                 {routers.map((router) => (
                                     <option key={router.id} value={router.id}>
                                         {router.name}
@@ -232,17 +239,14 @@ export default function ServicesCreate({ customer, plans, routers }: Props) {
                     )}
                     <div className="flex items-start gap-3 rounded-xl bg-sand/60 p-4 text-sm text-muted">
                         <Wifi size={18} className="mt-0.5 shrink-0 text-brand" />
-                        <p>
-                            The service will be created as pending with a pending network state. No router call occurs
-                            until an authorized activation is queued.
-                        </p>
+                        <p>{t('service.pending_note')}</p>
                     </div>
                     <div className="flex justify-end gap-3 border-t border-line pt-5">
                         <Link href={`/customers/${customer.public_id}`} className="button-secondary">
-                            Cancel
+                            {t('Cancel')}
                         </Link>
                         <button className="button-primary" disabled={form.processing || plans.length === 0}>
-                            <Save size={16} /> Create pending service
+                            <Save size={16} /> {t('service.create_pending')}
                         </button>
                     </div>
                 </form>

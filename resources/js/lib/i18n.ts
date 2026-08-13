@@ -111,6 +111,12 @@ const messages: Record<Exclude<Locale, 'en'>, Messages> = {
         'auth.minimum_password': 'استخدم 12 حرفاً على الأقل.',
         'auth.confirm_password': 'تأكيد كلمة المرور',
         'auth.invitation_expiry': 'الدعوة لمرة واحدة وتنتهي تلقائياً.',
+        'service.create_description': 'أنشئ اتصالاً قيد الانتظار للعميل',
+        'service.activation_note': 'تبقى أعمال التفعيل والشبكة خطوات منفصلة.',
+        'service.password_note': '12 حرفاً على الأقل. أنشئ كلمة مرور أو أدخل كلمة قدمها المشترك.',
+        'service.pending_note':
+            'ستُنشأ الخدمة بحالة انتظار وبحالة شبكة قيد الانتظار. لا يتم الاتصال بالموجّه حتى تتم جدولة تفعيل مصرح به.',
+        'service.create_pending': 'إنشاء خدمة قيد الانتظار',
         Notifications: 'الإشعارات',
         'notifications.workspace_signals': 'إشارات مساحة العمل',
         'notifications.title': 'الإشعارات والتنبيهات',
@@ -1158,6 +1164,13 @@ const messages: Record<Exclude<Locale, 'en'>, Messages> = {
         'auth.minimum_password': 'Utilisez au moins 12 caractères.',
         'auth.confirm_password': 'Confirmer le mot de passe',
         'auth.invitation_expiry': 'L’invitation est à usage unique et expire automatiquement.',
+        'service.create_description': 'Créez une connexion en attente pour',
+        'service.activation_note': 'L’activation et les opérations réseau restent des étapes distinctes.',
+        'service.password_note':
+            'Au moins 12 caractères. Générez-en un ou saisissez un mot de passe fourni par l’abonné.',
+        'service.pending_note':
+            'Le service sera créé en attente avec un état réseau en attente. Aucun appel au routeur n’a lieu avant la mise en file d’une activation autorisée.',
+        'service.create_pending': 'Créer le service en attente',
         Notifications: 'Notifications',
         'notifications.workspace_signals': 'Signaux de l’espace',
         'notifications.title': 'Notifications et attention',
