@@ -1057,6 +1057,7 @@ export default function FieldIndex({
                         </label>
                         <div className="flex justify-end sm:col-span-2">
                             <button
+                                type="submit"
                                 className="button-primary"
                                 disabled={!online || custodyBusy || custodyDescription.trim() === ''}
                             >
@@ -1214,7 +1215,7 @@ export default function FieldIndex({
                                 />
                             </label>
                             <div className="flex justify-end sm:col-span-2 lg:col-span-3">
-                                <button className="button-primary" disabled={stockRequestForm.processing}>
+                                <button type="submit" className="button-primary" disabled={stockRequestForm.processing}>
                                     {t('field.submit_stock_request')}
                                 </button>
                             </div>
@@ -1689,6 +1690,7 @@ export default function FieldIndex({
                                             </label>
                                             <div className="mt-3 flex justify-end">
                                                 <button
+                                                    type="submit"
                                                     className="button-secondary"
                                                     disabled={!online || taskBusy || taskReply.trim() === ''}
                                                 >
@@ -1833,7 +1835,7 @@ export default function FieldIndex({
                                                         placeholder={t('field.operational_note')}
                                                     />
                                                 </label>
-                                                <button className="button-primary" disabled={visitBusy}>
+                                                <button type="submit" className="button-primary" disabled={visitBusy}>
                                                     {visitBusy ? t('Saving…') : t('Save outcome')}
                                                 </button>
                                             </form>

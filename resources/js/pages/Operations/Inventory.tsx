@@ -403,7 +403,7 @@ export default function InventoryPage({
                                     <p className="field-error">{t(itemForm.errors.reorder_level)}</p>
                                 )}
                             </label>
-                            <button className="button-secondary sm:col-span-2" disabled={itemForm.processing}>
+                            <button type="submit" className="button-secondary sm:col-span-2" disabled={itemForm.processing}>
                                 <Package size={15} /> {t('inventory.create_item')}
                             </button>
                         </form>
@@ -483,7 +483,7 @@ export default function InventoryPage({
                                 </label>
                             )}
                             <div className="flex items-end sm:col-span-2">
-                                <button className="button-secondary w-full" disabled={warehouseForm.processing}>
+                                <button type="submit" className="button-secondary w-full" disabled={warehouseForm.processing}>
                                     <Package size={15} /> {t('inventory.create_location')}
                                 </button>
                             </div>
@@ -542,7 +542,7 @@ export default function InventoryPage({
                                     <p className="field-error">{t(unitForm.errors.serial_number)}</p>
                                 )}
                             </label>
-                            <button className="button-secondary sm:col-span-3" disabled={unitForm.processing}>
+                            <button type="submit" className="button-secondary sm:col-span-3" disabled={unitForm.processing}>
                                 <Package size={15} /> {t('inventory.receive_serialized')}
                             </button>
                         </form>
@@ -1525,6 +1525,8 @@ export default function InventoryPage({
                                 <Link
                                     key={index}
                                     href={link.url}
+                                    aria-label={isPrevious ? t('Previous page') : isNext ? t('Next page') : undefined}
+                                    aria-current={link.active ? 'page' : undefined}
                                     className={`grid size-8 place-items-center rounded-lg text-xs ${link.active ? 'bg-brand text-white' : 'text-muted hover:bg-sand'}`}
                                 >
                                     {isPrevious ? (
