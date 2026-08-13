@@ -242,6 +242,7 @@ test.describe('staff core journeys', () => {
         await page.goto('/settings/readiness');
         await expect(page.getByRole('heading', { name: 'Pilot readiness' })).toBeVisible();
         await expect(page.getByText('Tenant logo', { exact: true })).toBeVisible();
+        await expect(page.getByRole('button', { name: 'Run provider checks', exact: true })).toBeVisible();
     });
 
     test('renders the billing, FX, reports, and messaging workspaces', async ({ page }) => {
