@@ -159,7 +159,7 @@ it('uses the tenant RTL setting in shared app props for an English-speaking owne
         'email' => 'settings-rtl@example.test',
         'password' => Hash::make('password'),
         'role' => 'tenant_owner',
-        'locale' => 'en',
+        'locale' => null,
     ]);
     app(CapabilitySeeder::class)->run();
     app(Tenancy::class)->set($tenant);
@@ -234,4 +234,37 @@ it('returns to left-to-right shared app props when RTL is disabled', function ()
     $this->actingAs($user)
         ->get(route('dashboard'))
         ->assertInertia(fn ($page) => $page->where('app.direction', 'ltr'));
+});
+
+it('uses the personal language for both translation and direction', function (): void {
+    $tenant = Tenant::create(['name' => 'Northline', 'slug' => 'northline', 'base_currency' => 'USD', 'collection_currency' => 'USD', 'locale' => 'ar']);
+    $user = User::create([
+        'tenant_id' => $tenant->id,
+        'name' => 'Owner',
+        'email' => 'settings-personal-locale@example.test',
+        'password' => Hash::make('password'),
+        'role' => 'tenant_owner',
+        'locale' => 'fr',
+    ]);
+    app(CapabilitySeeder::class)->run();
+    app(Tenancy::class)->set($tenant);
+    $user->assignRole('tenant_owner');
+    $user->forceFill(['last_authenticated_at' => now()])->save();
+
+    $this->actingAs($user)
+        ->get(route('dashboard'))
+        ->assertInertia(fn ($page) => $page
+            ->where('app.locale', 'fr')
+            ->where('app.direction', 'ltr'));
+
+    $this->actingAs($user)
+        ->post(route('settings.locale'), ['locale' => 'ar'])
+        ->assertRedirect();
+
+    $user->unsetRelation('tenant')->refresh();
+    $this->actingAs($user)
+        ->get(route('dashboard'))
+        ->assertInertia(fn ($page) => $page
+            ->where('app.locale', 'ar')
+            ->where('app.direction', 'rtl'));
 });

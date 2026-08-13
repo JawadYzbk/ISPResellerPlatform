@@ -23,7 +23,13 @@ final class HandleInertiaRequests extends Middleware
         $locale = $user?->locale ?: $tenantLocale;
         $isPlatformOperator = $user?->isPlatformOperator() ?? false;
         $rtlLocales = ['ar', 'fa', 'he', 'ur'];
-        $direction = ($settings !== null && $settings->rtl) || in_array($tenantLocale, $rtlLocales, true) || in_array($locale, $rtlLocales, true) ? 'rtl' : 'ltr';
+        // A personal language is a complete UI override. Do not let the
+        // workspace's RTL preference keep an English or French user in RTL.
+        // When no personal language is selected, the workspace can still use
+        // its explicit RTL preference independently from its locale.
+        $direction = $user?->locale !== null
+            ? (in_array($locale, $rtlLocales, true) ? 'rtl' : 'ltr')
+            : (($settings !== null && $settings->rtl) || in_array($tenantLocale, $rtlLocales, true) ? 'rtl' : 'ltr');
         $hasActionFlash = $request->session()->has('success') || $request->session()->has('error');
 
         return [
