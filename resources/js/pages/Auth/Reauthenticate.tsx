@@ -1,18 +1,24 @@
-import { Head, useForm } from '@inertiajs/react';
+import { Head, useForm, usePage } from '@inertiajs/react';
 
 import AuthLayout from '@/layouts/AuthLayout';
+import { createTranslator } from '@/lib/i18n';
+import type { PageProps } from '@/types';
 
 export default function Reauthenticate() {
+    const page = usePage<PageProps>();
+    const t = createTranslator(page.props.app.locale);
     const form = useForm({ password: '' });
 
     return (
         <AuthLayout>
-            <Head title="Confirm your identity" />
+            <Head title={t('Confirm your identity')} />
             <div>
-                <p className="mb-2 text-sm font-semibold uppercase tracking-[0.18em] text-brand">Protected action</p>
-                <h1 className="font-display text-3xl font-semibold tracking-tight">Confirm your identity</h1>
+                <p className="mb-2 text-sm font-semibold uppercase tracking-[0.18em] text-brand">
+                    {t('Protected action')}
+                </p>
+                <h1 className="font-display text-3xl font-semibold tracking-tight">{t('Confirm your identity')}</h1>
                 <p className="mt-3 text-sm leading-6 text-muted">
-                    Enter your password to continue with this sensitive action.
+                    {t('Enter your password to continue with this sensitive action.')}
                 </p>
                 <form
                     onSubmit={(event) => {
@@ -22,7 +28,7 @@ export default function Reauthenticate() {
                     className="mt-8 space-y-4"
                 >
                     <label className="block text-sm font-semibold" htmlFor="password">
-                        Password
+                        {t('Password')}
                     </label>
                     <input
                         id="password"
@@ -35,7 +41,7 @@ export default function Reauthenticate() {
                     />
                     {form.errors.password && <p className="text-xs text-coral">{form.errors.password}</p>}
                     <button className="button-primary w-full justify-center" disabled={form.processing}>
-                        Confirm
+                        {t('Confirm')}
                     </button>
                 </form>
             </div>

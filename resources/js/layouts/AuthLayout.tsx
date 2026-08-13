@@ -1,11 +1,17 @@
+import { usePage } from '@inertiajs/react';
 import { Activity } from 'lucide-react';
 import type { PropsWithChildren } from 'react';
 
 import { Toaster } from '@/components/ui/toaster';
+import { createTranslator } from '@/lib/i18n';
+import type { PageProps } from '@/types';
 
 export default function AuthLayout({ children }: PropsWithChildren) {
+    const page = usePage<PageProps>();
+    const t = createTranslator(page.props.app.locale);
+
     return (
-        <div className="auth-root relative bg-canvas" dir="ltr">
+        <div className="auth-root relative bg-canvas" dir={page.props.app.direction}>
             <Toaster />
             <div data-testid="auth-shell" className="auth-shell grid lg:grid-cols-[1.1fr_0.9fr]">
                 <section
@@ -29,17 +35,20 @@ export default function AuthLayout({ children }: PropsWithChildren) {
                     </div>
                     <div className="relative z-10 max-w-lg">
                         <p className="mb-6 text-sm font-semibold uppercase tracking-[0.2em] text-white/60">
-                            The operations spine for local ISPs
+                            {t('The operations spine for local ISPs')}
                         </p>
                         <h1 className="font-display text-5xl font-semibold leading-[1.08] tracking-tight">
-                            Know what’s happening. Keep customers connected.
+                            {t('Know what’s happening. Keep customers connected.')}
                         </h1>
                         <p className="mt-6 max-w-md text-base leading-7 text-white/70">
-                            One desk for subscribers, cash collection, field work and the network actions that keep your
-                            business moving.
+                            {t(
+                                'One desk for subscribers, cash collection, field work and the network actions that keep your business moving.',
+                            )}
                         </p>
                     </div>
-                    <p className="relative z-10 text-sm text-white/50">Built for operators who do more with less.</p>
+                    <p className="relative z-10 text-sm text-white/50">
+                        {t('Built for operators who do more with less.')}
+                    </p>
                 </section>
                 <div
                     data-testid="auth-form-panel"

@@ -1,16 +1,20 @@
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import { ArrowRight, Eye, EyeOff, LockKeyhole, Mail } from 'lucide-react';
 import { useState } from 'react';
 
 import AuthLayout from '@/layouts/AuthLayout';
+import { createTranslator } from '@/lib/i18n';
+import type { PageProps } from '@/types';
 
 export default function Login() {
+    const page = usePage<PageProps>();
+    const t = createTranslator(page.props.app.locale);
     const [showPassword, setShowPassword] = useState(false);
     const form = useForm({ email: 'admin@example.com', password: 'password', remember: true });
 
     return (
         <AuthLayout>
-            <Head title="Sign in" />
+            <Head title={t('Sign in')} />
             <div>
                 <div className="mb-10 lg:hidden">
                     <div className="mb-5 grid size-10 place-items-center rounded-xl bg-brand text-white">
@@ -19,10 +23,14 @@ export default function Login() {
                     <p className="font-display text-xl font-bold">ISP Manager</p>
                 </div>
                 <div className="mb-8">
-                    <p className="mb-2 text-sm font-semibold uppercase tracking-[0.18em] text-brand">Welcome back</p>
-                    <h2 className="font-display text-3xl font-semibold tracking-tight">Sign in to your workspace</h2>
+                    <p className="mb-2 text-sm font-semibold uppercase tracking-[0.18em] text-brand">
+                        {t('Welcome back')}
+                    </p>
+                    <h2 className="font-display text-3xl font-semibold tracking-tight">
+                        {t('Sign in to your workspace')}
+                    </h2>
                     <p className="mt-3 text-sm leading-6 text-muted">
-                        Use your staff account to access the operations desk.
+                        {t('Use your staff account to access the operations desk.')}
                     </p>
                 </div>
                 <form
@@ -34,7 +42,7 @@ export default function Login() {
                 >
                     <div>
                         <label htmlFor="email" className="mb-2 block text-sm font-semibold">
-                            Email address
+                            {t('Email address')}
                         </label>
                         <div className="relative">
                             <Mail className="pointer-events-none absolute start-3 top-3.5 text-muted" size={18} />
@@ -51,7 +59,7 @@ export default function Login() {
                     </div>
                     <div>
                         <label htmlFor="password" className="mb-2 block text-sm font-semibold">
-                            Password
+                            {t('Password')}
                         </label>
                         <div className="relative">
                             <LockKeyhole
@@ -86,19 +94,19 @@ export default function Login() {
                                 onChange={(event) => form.setData('remember', event.target.checked)}
                                 className="size-4 rounded border-line text-brand focus:ring-brand"
                             />
-                            Keep me signed in
+                            {t('Keep me signed in')}
                         </label>
                         <Link href="/forgot-password" className="font-semibold text-brand hover:underline">
-                            Forgot password?
+                            {t('Forgot password?')}
                         </Link>
                     </div>
                     <button type="submit" disabled={form.processing} className="button-primary w-full justify-center">
-                        {form.processing ? 'Signing in…' : 'Enter workspace'}
+                        {form.processing ? t('Signing in…') : t('Enter workspace')}
                         <ArrowRight size={17} />
                     </button>
                 </form>
                 <p className="mt-8 text-center text-xs leading-5 text-muted">
-                    Need access? Ask your tenant owner to invite your staff account.
+                    {t('Need access? Ask your tenant owner to invite your staff account.')}
                 </p>
             </div>
         </AuthLayout>
