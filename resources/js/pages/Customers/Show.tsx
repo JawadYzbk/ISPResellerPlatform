@@ -186,8 +186,8 @@ export default function CustomerShow({
                 <div className="mt-6">
                     <PublicLinkCreator
                         endpoint={`/customers/${customer.public_id}/statement-links`}
-                        types={[{ value: 'statement', label: 'Account statement' }]}
-                        title="Share account statement"
+                        types={[{ value: 'statement', label: t('Account statement') }]}
+                        title={t('Share account statement')}
                         existingLinks={publicLinks}
                     />
                 </div>
@@ -279,9 +279,9 @@ export default function CustomerShow({
                                         <div className="flex items-start justify-between gap-3">
                                             <p className="font-semibold">{paymentMonthLabel(month.month)}</p>
                                             {month.status === 'paid' ? (
-                                                <CheckCircle2 size={16} aria-label="Paid" />
+                                                <CheckCircle2 size={16} aria-label={t('Paid')} />
                                             ) : month.status === 'no_invoice' ? (
-                                                <ReceiptText size={16} aria-label="No invoice" />
+                                                <ReceiptText size={16} aria-label={t('No invoice')} />
                                             ) : (
                                                 <CircleAlert size={16} aria-label={statusLabel} />
                                             )}
@@ -349,13 +349,13 @@ export default function CustomerShow({
                                             </div>
                                             <div>
                                                 <p className="font-semibold">
-                                                    {service.plan?.name ?? 'Plan unavailable'}
+                                                    {service.plan?.name ?? t('Plan unavailable')}
                                                 </p>
                                                 <p className="mt-1 text-sm text-muted">
                                                     {service.username} ·{' '}
                                                     {service.plan
                                                         ? `${service.plan.download_kbps / 1000} Mbps down / ${service.plan.upload_kbps / 1000} Mbps up`
-                                                        : 'No plan assigned'}
+                                                        : t('No plan assigned')}
                                                 </p>
                                             </div>
                                         </div>
@@ -366,23 +366,23 @@ export default function CustomerShow({
                                     </div>
                                     <div className="mt-5 grid gap-4 border-t border-line pt-4 sm:grid-cols-2 lg:grid-cols-4">
                                         <div>
-                                            <p className="text-xs text-muted">Expires</p>
+                                            <p className="text-xs text-muted">{t('Expires')}</p>
                                             <p className="mt-1 flex items-center gap-1.5 text-sm font-semibold">
                                                 <CalendarDays size={14} className="text-muted" />
                                                 {formatDate(service.expires_at)}
                                             </p>
                                         </div>
                                         <div>
-                                            <p className="text-xs text-muted">Provisioning</p>
+                                            <p className="text-xs text-muted">{t('Provisioning')}</p>
                                             <p className="mt-1 text-sm font-semibold capitalize">
                                                 {(service.provisioning_mode ?? 'manual').replace('_', ' ')}
                                             </p>
                                             <p className="mt-1 text-xs text-muted">
-                                                {service.router?.name ?? 'No router assigned'}
+                                                {service.router?.name ?? t('No router assigned')}
                                             </p>
                                         </div>
                                         <div>
-                                            <p className="text-xs text-muted">Session</p>
+                                            <p className="text-xs text-muted">{t('Session')}</p>
                                             <p className="mt-1 flex items-center gap-1.5 text-sm font-semibold">
                                                 <span
                                                     className={`size-2 rounded-full ${service.session ? 'bg-emerald-500' : 'bg-slate-300'}`}
@@ -441,9 +441,9 @@ export default function CustomerShow({
                                                             </span>
                                                             {canManageEquipment && (
                                                                 <ConfirmDialog
-                                                                    title={`Mark ${unit.serial_number} as returned?`}
-                                                                    description="The equipment will be removed from this service and made available for recovery."
-                                                                    confirmLabel="Mark returned"
+                                                                    title={t('Mark this equipment as returned?') + ' ' + unit.serial_number}
+                                                                    description={t('The equipment will be removed from this service and made available for recovery.')}
+                                                                    confirmLabel={t('Mark returned')}
                                                                     destructive
                                                                     onConfirm={() =>
                                                                         router.post(
@@ -469,9 +469,9 @@ export default function CustomerShow({
                                         <div className="flex flex-wrap items-center gap-3 sm:justify-end">
                                             {service.status === 'pending' && canActivateServices && (
                                                 <ConfirmDialog
-                                                    title="Activate this service?"
-                                                    description="The service will be activated and its network provisioning will resume."
-                                                    confirmLabel="Activate service"
+                                                    title={t('Activate this service?')}
+                                                    description={t('The service will be activated and its network provisioning will resume.')}
+                                                    confirmLabel={t('Activate service')}
                                                     onConfirm={() =>
                                                         router.post(`/services/${service.public_id}/activate`)
                                                     }
@@ -480,15 +480,15 @@ export default function CustomerShow({
                                                         type="button"
                                                         className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand"
                                                     >
-                                                        <Play size={14} /> Activate
+                                                        <Play size={14} /> {t('Activate')}
                                                     </button>
                                                 </ConfirmDialog>
                                             )}
                                             {service.status === 'active' && canSuspendServices && (
                                                 <ConfirmDialog
-                                                    title="Suspend this service?"
-                                                    description="The service will be suspended and its network access will be restricted."
-                                                    confirmLabel="Suspend service"
+                                                    title={t('Suspend this service?')}
+                                                    description={t('The service will be suspended and its network access will be restricted.')}
+                                                    confirmLabel={t('Suspend service')}
                                                     destructive
                                                     onConfirm={() =>
                                                         router.post(`/services/${service.public_id}/suspend`, {
@@ -500,15 +500,15 @@ export default function CustomerShow({
                                                         type="button"
                                                         className="inline-flex items-center gap-1.5 text-sm font-semibold text-coral"
                                                     >
-                                                        <Pause size={14} /> Suspend
+                                                        <Pause size={14} /> {t('Suspend')}
                                                     </button>
                                                 </ConfirmDialog>
                                             )}
                                             {service.status === 'active' && canPauseServices && (
                                                 <ConfirmDialog
-                                                    title="Pause this service?"
-                                                    description="The service will pause without closing the account or removing its plan."
-                                                    confirmLabel="Pause service"
+                                                    title={t('Pause this service?')}
+                                                    description={t('The service will pause without closing the account or removing its plan.')}
+                                                    confirmLabel={t('Pause service')}
                                                     onConfirm={() =>
                                                         router.post(`/services/${service.public_id}/pause`, {
                                                             reason: 'customer_requested',
@@ -519,7 +519,7 @@ export default function CustomerShow({
                                                         type="button"
                                                         className="inline-flex items-center gap-1.5 text-sm font-semibold text-violet-700"
                                                     >
-                                                        <Pause size={14} /> Pause
+                                                        <Pause size={14} /> {t('Pause')}
                                                     </button>
                                                 </ConfirmDialog>
                                             )}
@@ -529,9 +529,9 @@ export default function CustomerShow({
                                                     canForceResumeServices)) ||
                                                 (service.status === 'paused' && canActivateServices)) && (
                                                 <ConfirmDialog
-                                                    title="Reactivate this service?"
-                                                    description="The service will be active again and network provisioning will resume."
-                                                    confirmLabel="Reactivate service"
+                                                    title={t('Reactivate this service?')}
+                                                    description={t('The service will be active again and network provisioning will resume.')}
+                                                    confirmLabel={t('Reactivate service')}
                                                     onConfirm={() =>
                                                         router.post(`/services/${service.public_id}/resume`)
                                                     }
@@ -540,15 +540,15 @@ export default function CustomerShow({
                                                         type="button"
                                                         className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand"
                                                     >
-                                                        <Play size={14} /> Resume
+                                                        <Play size={14} /> {t('Resume')}
                                                     </button>
                                                 </ConfirmDialog>
                                             )}
                                             {canTerminateServices && service.status !== 'terminated' && (
                                                 <ConfirmDialog
-                                                    title="Terminate this service?"
-                                                    description="Equipment will be marked for recovery and this service cannot be reactivated."
-                                                    confirmLabel="Terminate service"
+                                                    title={t('Terminate this service?')}
+                                                    description={t('Equipment will be marked for recovery and this service cannot be reactivated.')}
+                                                    confirmLabel={t('Terminate service')}
                                                     destructive
                                                     onConfirm={() =>
                                                         router.post(`/services/${service.public_id}/terminate`, {
@@ -560,7 +560,7 @@ export default function CustomerShow({
                                                         type="button"
                                                         className="inline-flex items-center gap-1.5 text-sm font-semibold text-coral"
                                                     >
-                                                        <ShieldOff size={14} /> Terminate
+                                                        <ShieldOff size={14} /> {t('Terminate')}
                                                     </button>
                                                 </ConfirmDialog>
                                             )}
@@ -570,14 +570,14 @@ export default function CustomerShow({
                                                     className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand"
                                                     onClick={() => router.post(`/services/${service.public_id}/resync`)}
                                                 >
-                                                    <RefreshCw size={14} /> Re-sync
+                                                    <RefreshCw size={14} /> {t('Re-sync')}
                                                 </button>
                                             )}
                                             {canDisconnectSessions && service.session && (
                                                 <ConfirmDialog
-                                                    title="Disconnect the current network session?"
-                                                    description="The active network session will be disconnected immediately."
-                                                    confirmLabel="Disconnect session"
+                                                    title={t('Disconnect the current network session?')}
+                                                    description={t('The active network session will be disconnected immediately.')}
+                                                    confirmLabel={t('Disconnect session')}
                                                     destructive
                                                     onConfirm={() =>
                                                         router.post(`/services/${service.public_id}/disconnect-session`)
@@ -587,7 +587,7 @@ export default function CustomerShow({
                                                         type="button"
                                                         className="inline-flex items-center gap-1.5 text-sm font-semibold text-coral"
                                                     >
-                                                        <WifiOff size={14} /> Disconnect
+                                                        <WifiOff size={14} /> {t('Disconnect')}
                                                     </button>
                                                 </ConfirmDialog>
                                             )}
