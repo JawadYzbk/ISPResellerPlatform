@@ -146,9 +146,12 @@ final class WorkspacePageCatalog
         }
 
         $defaultView = (string) ($user->default_view ?: '/dashboard');
-        $available = array_column($this->defaultViewsFor($user), 'href');
+        $defaultable = array_column(
+            array_filter(self::PAGES, fn (array $page): bool => $page['defaultable']),
+            'href',
+        );
 
-        return url(in_array($defaultView, $available, true) ? $defaultView : '/dashboard');
+        return url(in_array($defaultView, $defaultable, true) ? $defaultView : '/dashboard');
     }
 
     /** @param array{permission?: string|list<string>, role?: string} $page */

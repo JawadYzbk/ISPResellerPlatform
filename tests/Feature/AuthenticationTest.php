@@ -31,3 +31,17 @@ it('allows a tenant user to sign in at their selected default view', function ()
 
     $this->get('/')->assertRedirect(url('/customers'));
 });
+
+it('uses the saved default view before tenant permission middleware runs', function (): void {
+    $tenant = Tenant::create(['name' => 'Northline', 'slug' => 'northline', 'base_currency' => 'USD', 'collection_currency' => 'USD']);
+    $user = User::create([
+        'tenant_id' => $tenant->id,
+        'name' => 'Maya Haddad',
+        'email' => 'maya-default@example.test',
+        'password' => Hash::make('password'),
+        'role' => 'tenant_owner',
+        'default_view' => '/customers',
+    ]);
+
+    $this->actingAs($user)->get('/')->assertRedirect(url('/customers'));
+});
