@@ -28,7 +28,7 @@ type CurrencyComboboxProps = {
     emptyLabel?: string;
 };
 
-const PRIORITY_CODES = ['USD', 'EUR', 'LBP'];
+const PRIORITY_CODES = ['USD', 'LBP', 'EUR', 'AED'];
 
 export default function CurrencyCombobox({
     id,

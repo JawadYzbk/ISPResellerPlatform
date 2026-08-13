@@ -25,9 +25,10 @@ it('loads the Frankfurter currency catalog with Lebanon currencies first', funct
 
     $catalog = app(GetCurrencyCatalog::class)->handle();
 
-    expect(array_slice(array_column($catalog, 'code'), 0, 3))->toBe(['USD', 'EUR', 'LBP'])
+    expect(array_slice(array_column($catalog, 'code'), 0, 4))->toBe(['USD', 'LBP', 'EUR', 'AED'])
         ->and($catalog[0]['name'])->toBe('United States Dollar')
-        ->and($catalog[2]['decimal_digits'])->toBe(0);
+        ->and($catalog[1]['decimal_digits'])->toBe(0)
+        ->and($catalog[3]['name'])->toBe('United Arab Emirates Dirham');
 
     Http::assertSent(fn ($request): bool => $request->url() === 'https://api.frankfurter.dev/v2/currencies');
 });

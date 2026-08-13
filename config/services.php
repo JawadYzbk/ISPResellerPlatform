@@ -96,7 +96,7 @@ return [
         'endpoint' => env('FRANKFURTER_ENDPOINT', 'https://api.frankfurter.dev'),
         'connect_timeout' => max(1, (int) env('FRANKFURTER_CONNECT_TIMEOUT', 2)),
         'timeout' => max(1, (int) env('FRANKFURTER_TIMEOUT', 10)),
-        'quotes' => array_values(array_filter(array_map('trim', explode(',', (string) env('FRANKFURTER_QUOTES', 'LBP,USD,EUR'))))),
+        'quotes' => array_values(array_filter(array_map('trim', explode(',', (string) env('FRANKFURTER_QUOTES', 'USD,LBP,EUR,AED'))))),
     ],
 
     'sms' => [

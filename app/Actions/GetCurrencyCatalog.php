@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Log;
 final class GetCurrencyCatalog
 {
     /** @var list<string> */
-    private const PRIORITY_CODES = ['USD', 'EUR', 'LBP'];
+    private const PRIORITY_CODES = ['USD', 'LBP', 'EUR', 'AED'];
 
     /** @return list<array{code: string, name: string, decimal_digits: int}> */
     public function handle(): array
@@ -125,8 +125,9 @@ final class GetCurrencyCatalog
     {
         return [
             'USD' => ['code' => 'USD', 'name' => 'United States Dollar', 'decimal_digits' => 2],
-            'EUR' => ['code' => 'EUR', 'name' => 'Euro', 'decimal_digits' => 2],
             'LBP' => ['code' => 'LBP', 'name' => 'Lebanese Pound', 'decimal_digits' => 0],
+            'EUR' => ['code' => 'EUR', 'name' => 'Euro', 'decimal_digits' => 2],
+            'AED' => ['code' => 'AED', 'name' => 'United Arab Emirates Dirham', 'decimal_digits' => 2],
         ];
     }
 
