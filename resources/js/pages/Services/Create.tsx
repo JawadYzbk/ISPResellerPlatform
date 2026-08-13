@@ -55,6 +55,7 @@ export default function ServicesCreate({ customer, plans, routers }: Props) {
         password: '',
         provisioning_mode: 'manual',
         router_id: '',
+        billing_anchor_day: '',
     });
     const selectedPlan = useMemo(
         () => plans.find((plan) => plan.id.toString() === form.data.plan_id),
@@ -153,6 +154,31 @@ export default function ServicesCreate({ customer, plans, routers }: Props) {
                                 At least 12 characters. Generate one or enter a subscriber-provided password.
                             </p>
                         </div>
+                    </div>
+                    <div>
+                        <label className="field-label" htmlFor="billing_anchor_day">
+                            Monthly billing anchor
+                        </label>
+                        <ResponsiveSelect
+                            id="billing_anchor_day"
+                            className="field"
+                            value={form.data.billing_anchor_day}
+                            onChange={(event) => form.setData('billing_anchor_day', event.target.value)}
+                        >
+                            <option value="">Follow plan duration</option>
+                            {Array.from({ length: 31 }, (_, index) => index + 1).map((day) => (
+                                <option key={day} value={day}>
+                                    Day {day} of each month
+                                </option>
+                            ))}
+                        </ResponsiveSelect>
+                        {form.errors.billing_anchor_day && (
+                            <p className="field-error">{form.errors.billing_anchor_day}</p>
+                        )}
+                        <p className="mt-1 text-xs text-pretty text-muted">
+                            The first invoice is prorated from activation to this day. Days 29–31 clamp to shorter
+                            months.
+                        </p>
                     </div>
                     <div>
                         <p className="field-label">Provisioning mode</p>

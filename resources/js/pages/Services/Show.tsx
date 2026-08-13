@@ -16,6 +16,7 @@ type ServiceDetails = {
     network_state: Status;
     provisioning_mode: string;
     expires_at: string | null;
+    billing_anchor_day: number | null;
     suspension_reason: string | null;
     paused_until: string | null;
     customer: { public_id: string; code: string; first_name: string; last_name: string | null } | null;
@@ -36,6 +37,7 @@ type ServiceDetails = {
         requested_at: string | null;
         apply_at: string | null;
     } | null;
+    pending_billing_cycle: BillingCycleQuote | null;
 };
 
 type PlanOption = {
@@ -70,6 +72,18 @@ type PlanPreview = {
     remaining_seconds: number;
 };
 
+type BillingCycleQuote = {
+    anchor_day: number;
+    starts_at: string | null;
+    ends_at: string;
+    billable_days: number;
+    cycle_days: number;
+    full_amount: number;
+    prorated_amount: number;
+    currency: string;
+    requested_at?: string | null;
+};
+
 type Props = PageProps & {
     service: ServiceDetails;
     liveSession: LiveSession;
@@ -88,6 +102,7 @@ type Props = PageProps & {
     canPause?: boolean;
     canTerminate?: boolean;
     canChangePlan?: boolean;
+    canChangeBillingCycle?: boolean;
     canDisconnectSession?: boolean;
     plans: PlanOption[];
 };
@@ -103,12 +118,18 @@ export default function ServiceShow({
     canPause = false,
     canTerminate = false,
     canChangePlan = false,
+    canChangeBillingCycle = false,
     canDisconnectSession = false,
     plans,
 }: Props) {
     const planForm = useForm({ plan_id: plans[0]?.id.toString() ?? '', effective: 'next_cycle' });
     const [planPreview, setPlanPreview] = useState<PlanPreview | null>(null);
     const [planPreviewError, setPlanPreviewError] = useState<string | null>(null);
+    const cycleForm = useForm({
+        anchor_day: (service.pending_billing_cycle?.anchor_day ?? service.billing_anchor_day ?? 1).toString(),
+    });
+    const [cyclePreview, setCyclePreview] = useState<BillingCycleQuote | null>(null);
+    const [cyclePreviewError, setCyclePreviewError] = useState<string | null>(null);
 
     const setPlanSelection = (field: 'plan_id' | 'effective', value: string) => {
         setPlanPreview(null);
@@ -152,6 +173,40 @@ export default function ServiceShow({
 
         return () => controller.abort();
     }, [canChangePlan, planForm.data.effective, planForm.data.plan_id, service.public_id]);
+
+    useEffect(() => {
+        if (!canChangeBillingCycle || !cycleForm.data.anchor_day) return;
+
+        const controller = new AbortController();
+        fetch(
+            `/services/${service.public_id}/billing-cycle-preview?anchor_day=${encodeURIComponent(cycleForm.data.anchor_day)}`,
+            {
+                headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                signal: controller.signal,
+            },
+        )
+            .then(async (response) => {
+                const payload = (await response.json()) as BillingCycleQuote | { message?: string };
+                if (!response.ok || !('anchor_day' in payload)) {
+                    throw new Error(
+                        'message' in payload && payload.message
+                            ? payload.message
+                            : 'The billing-cycle quote is unavailable.',
+                    );
+                }
+                setCyclePreviewError(null);
+                setCyclePreview(payload);
+            })
+            .catch((error: unknown) => {
+                if (error instanceof DOMException && error.name === 'AbortError') return;
+                setCyclePreview(null);
+                setCyclePreviewError(
+                    error instanceof Error ? error.message : 'The billing-cycle quote is unavailable.',
+                );
+            });
+
+        return () => controller.abort();
+    }, [canChangeBillingCycle, cycleForm.data.anchor_day, service.public_id]);
 
     useEffect(() => {
         const reloadWhenVisible = () => {
@@ -462,6 +517,115 @@ export default function ServiceShow({
                                     </ConfirmDialog>
                                 )}
                             </div>
+                        </div>
+                    )}
+                    {service.pending_billing_cycle && (
+                        <div className="card border-brand/20 bg-brand-soft/20 p-6">
+                            <div className="flex items-start justify-between gap-4">
+                                <div>
+                                    <p className="eyebrow">Scheduled billing cycle</p>
+                                    <h2 className="mt-1 text-base font-semibold text-balance">
+                                        Move to day {service.pending_billing_cycle.anchor_day}
+                                    </h2>
+                                    <p className="mt-1 text-sm text-pretty text-muted">
+                                        The transition invoice is{' '}
+                                        {formatMoney(
+                                            service.pending_billing_cycle.prorated_amount,
+                                            service.pending_billing_cycle.currency,
+                                        )}{' '}
+                                        for {service.pending_billing_cycle.billable_days} days, through{' '}
+                                        {formatDate(service.pending_billing_cycle.ends_at)}.
+                                    </p>
+                                </div>
+                                {canChangeBillingCycle && (
+                                    <ConfirmDialog
+                                        title="Cancel this scheduled billing-cycle change?"
+                                        description="The current anchor stays in place. Cancellation is blocked after its renewal invoice is created."
+                                        confirmLabel="Cancel scheduled change"
+                                        destructive
+                                        onConfirm={() =>
+                                            router.delete(`/services/${service.public_id}/billing-cycle`, {
+                                                preserveScroll: true,
+                                            })
+                                        }
+                                    >
+                                        <button type="button" className="button-secondary text-coral">
+                                            <X size={15} /> Cancel
+                                        </button>
+                                    </ConfirmDialog>
+                                )}
+                            </div>
+                        </div>
+                    )}
+                    {canChangeBillingCycle && service.status !== 'terminated' && (
+                        <div className="card p-6">
+                            <h2 className="section-title text-balance">Billing cycle</h2>
+                            <p className="mt-1 text-sm text-pretty text-muted">
+                                {service.billing_anchor_day
+                                    ? `Invoices currently renew on day ${service.billing_anchor_day} of each month.`
+                                    : 'This service currently follows the plan duration.'}
+                            </p>
+                            <form onSubmit={(event) => event.preventDefault()} className="mt-5 space-y-4">
+                                <label>
+                                    <span className="field-label">Monthly anchor day</span>
+                                    <ResponsiveSelect
+                                        className="field"
+                                        value={cycleForm.data.anchor_day}
+                                        onChange={(event) => cycleForm.setData('anchor_day', event.target.value)}
+                                    >
+                                        {Array.from({ length: 31 }, (_, index) => index + 1).map((day) => (
+                                            <option key={day} value={day}>
+                                                Day {day}
+                                            </option>
+                                        ))}
+                                    </ResponsiveSelect>
+                                    {cycleForm.errors.anchor_day && (
+                                        <p className="field-error">{cycleForm.errors.anchor_day}</p>
+                                    )}
+                                </label>
+                                {cyclePreviewError && <p className="field-error">{cyclePreviewError}</p>}
+                                {cyclePreview && (
+                                    <div className="rounded-xl border border-line bg-sand/60 p-4">
+                                        <div className="flex items-center justify-between gap-3">
+                                            <p className="text-sm font-semibold">Transition quote</p>
+                                            <p className="text-sm font-semibold text-brand tabular-nums">
+                                                {formatMoney(cyclePreview.prorated_amount, cyclePreview.currency)}
+                                            </p>
+                                        </div>
+                                        <p className="mt-2 text-xs text-pretty text-muted">
+                                            {cyclePreview.billable_days} of {cyclePreview.cycle_days} days ·{' '}
+                                            {formatDate(cyclePreview.starts_at)} through{' '}
+                                            {formatDate(cyclePreview.ends_at)}. The normal monthly price is{' '}
+                                            {formatMoney(cyclePreview.full_amount, cyclePreview.currency)}.
+                                        </p>
+                                    </div>
+                                )}
+                                <ConfirmDialog
+                                    title="Schedule this billing-cycle change?"
+                                    description="The displayed prorated amount will be used for the transition invoice. Once that invoice exists, settle or void it before changing the schedule."
+                                    confirmLabel={service.expires_at ? 'Schedule change' : 'Set billing anchor'}
+                                    onConfirm={() => {
+                                        cycleForm.transform((data) => ({ anchor_day: Number(data.anchor_day) }));
+                                        cycleForm.post(`/services/${service.public_id}/billing-cycle`, {
+                                            preserveScroll: true,
+                                        });
+                                    }}
+                                >
+                                    <button
+                                        type="button"
+                                        className="button-primary w-full justify-center"
+                                        disabled={
+                                            cycleForm.processing ||
+                                            !cyclePreview ||
+                                            (!service.pending_billing_cycle &&
+                                                service.billing_anchor_day === Number(cycleForm.data.anchor_day))
+                                        }
+                                    >
+                                        <CalendarDays size={16} />
+                                        {service.expires_at ? 'Schedule billing cycle' : 'Set billing anchor'}
+                                    </button>
+                                </ConfirmDialog>
+                            </form>
                         </div>
                     )}
                     {canChangePlan && service.status !== 'terminated' && plans.length > 0 && (
