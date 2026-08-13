@@ -32,7 +32,7 @@ export default function PortalSignIn({ tenant }: Props) {
         const payload = await response.json();
         setBusy(false);
         if (!response.ok) {
-            setError(payload.detail ?? t('portal.sign_in_error'));
+            setError(payload.detail ? t(payload.detail) : t('portal.sign_in_error'));
             return;
         }
         setChallengeId(payload.challenge_id);
@@ -51,7 +51,7 @@ export default function PortalSignIn({ tenant }: Props) {
         const payload = await response.json();
         setBusy(false);
         if (!response.ok) {
-            setError(payload.detail ?? t('portal.invalid_code'));
+            setError(payload.detail ? t(payload.detail) : t('portal.invalid_code'));
             return;
         }
         sessionStorage.setItem(`portal_token:${tenant.slug}`, payload.token);

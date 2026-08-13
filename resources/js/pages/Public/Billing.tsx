@@ -92,7 +92,7 @@ export default function PublicBilling({
                 publishableKey: payload.payload.publishable_key,
             });
             setWhishSession(null);
-        } else setMessage(payload.message ?? t('public.billing.stripe_start_error'));
+        } else setMessage(payload.message ? t(payload.message) : t('public.billing.stripe_start_error'));
         setBusy(null);
     };
     const startWhish = async () => {
@@ -112,7 +112,7 @@ export default function PublicBilling({
                 qrDataUri: payload.qr_data_uri,
             });
             setStripeSession(null);
-        } else setMessage(payload.message ?? t('public.billing.whish_start_error'));
+        } else setMessage(payload.message ? t(payload.message) : t('public.billing.whish_start_error'));
         setBusy(null);
     };
 
@@ -492,7 +492,7 @@ function StripeForm({ t, onComplete, onError }: { t: (key: string) => string; on
                     confirmParams: { return_url: window.location.href },
                     redirect: 'if_required',
                 });
-                if (result.error) onError(result.error.message ?? t('public.billing.card_confirm_error'));
+                if (result.error) onError(result.error.message ? t(result.error.message) : t('public.billing.card_confirm_error'));
                 else onComplete();
                 setBusy(false);
             }}

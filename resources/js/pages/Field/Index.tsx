@@ -457,7 +457,7 @@ export default function FieldIndex({
             await persist(pending, body.sync_token, nextCustomers);
             setMessage(t('field.message.refreshed'));
         } catch (caught) {
-            setError(caught instanceof Error ? caught.message : t('field.error.refresh'));
+            setError(caught instanceof Error ? t(caught.message) : t('field.error.refresh'));
         } finally {
             setBusy(false);
         }
@@ -505,7 +505,7 @@ export default function FieldIndex({
                         : t('field.message.some_queued'),
                 );
             } catch (caught) {
-                setError(caught instanceof Error ? caught.message : t('field.error.sync'));
+                setError(caught instanceof Error ? t(caught.message) : t('field.error.sync'));
             } finally {
                 setBusy(false);
             }
@@ -662,11 +662,11 @@ export default function FieldIndex({
                 }),
             });
             const body = (await response.json()) as { message?: string; data?: Exclude<FieldDay, null> };
-            if (!response.ok || !body.data) throw new Error(body.message ?? t('field.error.refresh'));
+            if (!response.ok || !body.data) throw new Error(body.message ? t(body.message) : t('field.error.refresh'));
 
             setFieldDay(action === 'check-out' ? null : body.data);
             if (action === 'check-out') setCheckoutNote('');
-            setMessage(body.message ?? (action === 'check-in' ? t('field.message.day_started') : t('field.message.day_ended')));
+            setMessage(body.message ? t(body.message) : (action === 'check-in' ? t('field.message.day_started') : t('field.message.day_ended')));
         } catch (caught) {
             if (typeof caught === 'object' && caught !== null && 'code' in caught) {
                 const locationError = caught as GeolocationPositionError;
@@ -676,7 +676,7 @@ export default function FieldIndex({
                         : t('field.error.location_unreliable'),
                 );
             } else {
-                setError(caught instanceof Error ? caught.message : t('field.error.refresh'));
+                setError(caught instanceof Error ? t(caught.message) : t('field.error.refresh'));
             }
         } finally {
             setLocationBusy(false);
@@ -741,14 +741,14 @@ export default function FieldIndex({
                 }),
             });
             const body = (await response.json()) as { message?: string; data?: Exclude<FieldRoute, null> };
-            if (!response.ok || !body.data) throw new Error(body.message ?? t('field.error.visit'));
+            if (!response.ok || !body.data) throw new Error(body.message ? t(body.message) : t('field.error.visit'));
 
             setCollectorRoute(body.data);
             setSelectedStopId('');
             setVisitNote('');
-            setMessage(body.message ?? t('field.message.visit_saved'));
+            setMessage(body.message ? t(body.message) : t('field.message.visit_saved'));
         } catch (caught) {
-            setError(caught instanceof Error ? caught.message : t('field.error.visit'));
+            setError(caught instanceof Error ? t(caught.message) : t('field.error.visit'));
         } finally {
             setVisitBusy(false);
         }
@@ -788,7 +788,7 @@ export default function FieldIndex({
                 body: JSON.stringify({ status: nextStatus }),
             });
             const body = (await response.json()) as { message?: string; data?: FieldTask };
-            if (!response.ok || !body.data) throw new Error(body.message ?? t('field.error.task'));
+            if (!response.ok || !body.data) throw new Error(body.message ? t(body.message) : t('field.error.task'));
             if (body.data.status === 'completed' || body.data.status === 'cancelled') {
                 const remaining = tasks.filter((item) => item.id !== body.data?.id);
                 setTasks(remaining);
@@ -796,9 +796,9 @@ export default function FieldIndex({
             } else {
                 replaceTask(body.data);
             }
-            setMessage(body.message ?? t('field.message.task_updated'));
+            setMessage(body.message ? t(body.message) : t('field.message.task_updated'));
         } catch (caught) {
-            setError(caught instanceof Error ? caught.message : t('field.error.task'));
+            setError(caught instanceof Error ? t(caught.message) : t('field.error.task'));
         } finally {
             setTaskBusy(false);
         }
@@ -818,13 +818,13 @@ export default function FieldIndex({
                 body: payload,
             });
             const body = (await response.json()) as { message?: string; data?: FieldTask };
-            if (!response.ok || !body.data) throw new Error(body.message ?? t('field.error.message'));
+            if (!response.ok || !body.data) throw new Error(body.message ? t(body.message) : t('field.error.message'));
             replaceTask(body.data);
             setTaskReply('');
             setTaskAttachment(null);
-            setMessage(body.message ?? t('field.message.sent'));
+            setMessage(body.message ? t(body.message) : t('field.message.sent'));
         } catch (caught) {
-            setError(caught instanceof Error ? caught.message : t('field.error.message'));
+            setError(caught instanceof Error ? t(caught.message) : t('field.error.message'));
         } finally {
             setTaskBusy(false);
         }
@@ -869,7 +869,7 @@ export default function FieldIndex({
                 data?: { entry: FieldCustodyEntry; position: FieldCustody['position'] };
             };
             if (!response.ok || !body.data)
-                throw new Error(body.message ?? t('The custody request could not be submitted.'));
+                throw new Error(body.message ? t(body.message) : t('The custody request could not be submitted.'));
             setCustody((current) => ({
                 position: body.data!.position,
                 entries: [body.data!.entry, ...current.entries],
@@ -877,9 +877,9 @@ export default function FieldIndex({
             setCustodyAmount('');
             setCustodyDescription('');
             setCustodyReference('');
-            setMessage(body.message ?? t('Custody request submitted.'));
+                setMessage(body.message ? t(body.message) : t('Custody request submitted.'));
         } catch (caught) {
-            setError(caught instanceof Error ? caught.message : t('The custody request could not be submitted.'));
+            setError(caught instanceof Error ? t(caught.message) : t('The custody request could not be submitted.'));
         } finally {
             setCustodyBusy(false);
         }
@@ -932,7 +932,7 @@ export default function FieldIndex({
                         <p className="mt-1 text-xs text-muted">
                             {entriesOrEmpty(summary.totals)
                                 .map(([code, value]) => formatMoney(value, code))
-                                .join(' · ') || 'Nothing posted yet'}
+                                .join(' · ') || t('Nothing posted yet')}
                         </p>
                     </div>
                     <div className="card p-4">
@@ -1061,10 +1061,10 @@ export default function FieldIndex({
                                 disabled={!online || custodyBusy || custodyDescription.trim() === ''}
                             >
                                 {custodyBusy
-                                    ? 'Submitting…'
-                                    : custodyType === 'expense'
-                                      ? 'Submit expense'
-                                      : 'Submit handover'}
+                                    ? t('Submitting…')
+                                      : custodyType === 'expense'
+                                      ? t('Submit expense')
+                                      : t('Submit handover')}
                             </button>
                         </div>
                     </form>
@@ -1341,7 +1341,9 @@ export default function FieldIndex({
                                 </p>
                                 <ConfirmDialog
                                     title={t('field.record_sale_title')}
-                                    description={`This creates a paid invoice for ${saleTotal === null ? 'the calculated total' : formatMoney(saleTotal, saleForm.data.currency)} and immediately removes the item from your stock.`}
+                                    description={t(
+                                        `This creates a paid invoice for ${saleTotal === null ? t('the calculated total') : formatMoney(saleTotal, saleForm.data.currency)} and immediately removes the item from your stock.`,
+                                    )}
                                     confirmLabel={t('field.record_sale')}
                                     onConfirm={submitInventorySale}
                                 >
@@ -1529,7 +1531,7 @@ export default function FieldIndex({
                         onClick={() => void updateFieldDay(fieldDay ? 'check-out' : 'check-in')}
                     >
                         {fieldDay ? <LogOut size={16} /> : <LogIn size={16} />}
-                        {locationBusy ? 'Capturing location…' : fieldDay ? 'Finish field day' : 'Start field day'}
+                        {locationBusy ? t('Capturing location…') : fieldDay ? t('Finish field day') : t('Start field day')}
                     </button>
                 </section>
 
@@ -1832,7 +1834,7 @@ export default function FieldIndex({
                                                     />
                                                 </label>
                                                 <button className="button-primary" disabled={visitBusy}>
-                                                    {visitBusy ? 'Saving…' : 'Save outcome'}
+                                                    {visitBusy ? t('Saving…') : t('Save outcome')}
                                                 </button>
                                             </form>
                                         )}

@@ -80,7 +80,7 @@ export default function RouterShowPage({ router: device, pops, canEdit }: Props)
                     </div>
                     <p className="page-subtitle">
                         {device.host}:{device.api_port} ·{' '}
-                        {device.pop ? `${device.pop.name} (${device.pop.code})` : 'No POP assigned'}
+                        {device.pop ? `${device.pop.name} (${device.pop.code})` : t('No POP assigned')}
                     </p>
                 </div>
                 <div className="flex items-center gap-2 text-sm text-muted">

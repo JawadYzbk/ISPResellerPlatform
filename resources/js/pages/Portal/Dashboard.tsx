@@ -106,7 +106,7 @@ export default function PortalDashboard({ tenant }: Props) {
             setProfileSaved(true);
         } else {
             const payload = await response.json();
-            setError(payload.detail ?? payload.message ?? t('portal.dashboard.profile_error'));
+            setError(payload.detail || payload.message ? t(payload.detail ?? payload.message) : t('portal.dashboard.profile_error'));
         }
         setProfileBusy(false);
     };
@@ -125,7 +125,7 @@ export default function PortalDashboard({ tenant }: Props) {
         });
         if (!response.ok) {
             const payload = await response.json();
-            setError(payload.detail ?? payload.message ?? t('portal.dashboard.restart_error'));
+            setError(payload.detail || payload.message ? t(payload.detail ?? payload.message) : t('portal.dashboard.restart_error'));
         }
         setRestartBusy(null);
     };
@@ -149,7 +149,7 @@ export default function PortalDashboard({ tenant }: Props) {
         });
         const payload = await response.json();
         if (!response.ok) {
-            setPaymentMessage(payload.detail ?? payload.message ?? t('portal.dashboard.payment_start_error'));
+            setPaymentMessage(payload.detail || payload.message ? t(payload.detail ?? payload.message) : t('portal.dashboard.payment_start_error'));
             setPaymentBusy(false);
             return;
         }
@@ -195,7 +195,7 @@ export default function PortalDashboard({ tenant }: Props) {
             setTicketForm({ category: 'other', subject: '', description: '' });
         } else {
             const payload = await response.json();
-            setError(payload.detail ?? t('portal.dashboard.ticket_error'));
+            setError(payload.detail ? t(payload.detail) : t('portal.dashboard.ticket_error'));
         }
         setTicketBusy(false);
     };
@@ -222,7 +222,7 @@ export default function PortalDashboard({ tenant }: Props) {
             );
             setSupportMessage(t('portal.dashboard.rating_thanks'));
         } else {
-            setError(payload.detail ?? payload.message ?? t('portal.dashboard.rating_error'));
+            setError(payload.detail || payload.message ? t(payload.detail ?? payload.message) : t('portal.dashboard.rating_error'));
         }
         setRatingBusy(null);
     };
@@ -688,7 +688,7 @@ function StripePaymentForm({ t, onSubmitted, onError }: { t: (key: string) => st
             redirect: 'if_required',
         });
         if (result.error) {
-            onError(result.error.message ?? t('portal.dashboard.payment_confirm_error'));
+            onError(result.error.message ? t(result.error.message) : t('portal.dashboard.payment_confirm_error'));
         } else {
             onSubmitted();
         }

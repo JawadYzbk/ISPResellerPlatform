@@ -37,7 +37,7 @@ export default function Sessions({ sessions }: { sessions: Session[] }) {
                                     </p>
                                     <p className="mt-1 text-xs text-muted">
                                         {session.ip_address ?? t('Unknown IP')}{' '}
-                                        {session.current ? '· Current session' : ''}
+                                        {session.current ? `· ${t('Current session')}` : ''}
                                     </p>
                                 </div>
                                 {!session.current && (

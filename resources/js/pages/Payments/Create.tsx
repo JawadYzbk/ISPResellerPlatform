@@ -130,7 +130,7 @@ export default function PaymentCreate({ customer, invoices, defaultCurrency, pay
         event.preventDefault();
         const amountMinor = parseMoneyToMinor(form.data.amount, form.data.currency);
         if (amountMinor === null) {
-            form.setError('amount', 'Enter a valid positive amount.');
+            form.setError('amount', t('Enter a valid positive amount.'));
             return;
         }
 
@@ -142,7 +142,7 @@ export default function PaymentCreate({ customer, invoices, defaultCurrency, pay
     const generateWhishQr = () => {
         const amountMinor = parseMoneyToMinor(form.data.amount, form.data.currency);
         if (amountMinor === null) {
-            form.setError('amount', 'Enter a valid positive amount.');
+            form.setError('amount', t('Enter a valid positive amount.'));
             return;
         }
 

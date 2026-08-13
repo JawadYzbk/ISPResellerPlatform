@@ -121,7 +121,7 @@ function BoxCard({
     const assign = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         if (!assignmentForm.data.service_id) {
-            assignmentForm.setError('service_id', 'Choose a service first.');
+            assignmentForm.setError('service_id', t('Choose a service first.'));
             return;
         }
         assignmentForm.transform((data) => ({ distribution_box_id: box.public_id, network_port: data.network_port }));

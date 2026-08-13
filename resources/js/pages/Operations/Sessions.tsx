@@ -145,7 +145,7 @@ export default function SessionsPage({ sessions, filters, canDisconnect = false 
                                     </td>
                                     <td className="px-5 py-4 text-sm">
                                         <p className="font-semibold">
-                                            {formatDuration(session.started_at, session.last_seen_at)}
+                                            {formatDuration(session.started_at, session.last_seen_at, t)}
                                         </p>
                                         <p className="mt-1 text-xs text-muted">
                                             {t('sessions.started')} {formatDate(session.started_at)}

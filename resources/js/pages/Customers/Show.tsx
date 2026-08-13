@@ -223,7 +223,7 @@ export default function CustomerShow({
                             <p
                                 className={`mt-3 text-sm font-semibold ${nextExpiry !== null && new Date(nextExpiry) < new Date() ? 'text-coral' : ''}`}
                             >
-                                {formatExpiryCountdown(nextExpiry)}
+                                {formatExpiryCountdown(nextExpiry, t)}
                             </p>
                             <p className="mt-1 text-xs text-muted">{t('Earliest service expiry')}</p>
                         </div>
@@ -400,6 +400,7 @@ export default function CustomerShow({
                                                     {formatDuration(
                                                         service.session.started_at,
                                                         service.session.last_seen_at,
+                                                        t,
                                                     )}
                                                 </p>
                                             )}

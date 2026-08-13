@@ -116,7 +116,7 @@ export default function RoutersPage({ routers, filters, canCheckHealth = false, 
                                         </p>
                                     </td>
                                     <td className="px-5 py-4 text-sm text-muted">
-                                        {device.pop ? `${device.pop.name} (${device.pop.code})` : 'No POP assigned'}
+                                        {device.pop ? `${device.pop.name} (${device.pop.code})` : t('No POP assigned')}
                                     </td>
                                     <td className="px-5 py-4">
                                         <div className="flex flex-wrap items-center gap-2">

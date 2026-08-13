@@ -196,7 +196,7 @@ export default function ServiceShow({
                 const payload = (await response.json()) as PlanPreview | { message?: string };
                 if (!response.ok || !('effective' in payload)) {
                     throw new Error(
-                        'message' in payload && payload.message ? payload.message : t('The plan quote is unavailable.'),
+                            'message' in payload && payload.message ? t(payload.message) : t('The plan quote is unavailable.'),
                     );
                 }
                 setPlanPreviewError(null);
@@ -205,7 +205,7 @@ export default function ServiceShow({
             .catch((error: unknown) => {
                 if (error instanceof DOMException && error.name === 'AbortError') return;
                 setPlanPreview(null);
-                setPlanPreviewError(error instanceof Error ? error.message : t('The plan quote is unavailable.'));
+                setPlanPreviewError(error instanceof Error ? t(error.message) : t('The plan quote is unavailable.'));
             });
 
         return () => controller.abort();
@@ -227,7 +227,7 @@ export default function ServiceShow({
                 if (!response.ok || !('anchor_day' in payload)) {
                     throw new Error(
                         'message' in payload && payload.message
-                            ? payload.message
+                            ? t(payload.message)
                             : t('The billing-cycle quote is unavailable.'),
                     );
                 }
@@ -238,7 +238,7 @@ export default function ServiceShow({
                 if (error instanceof DOMException && error.name === 'AbortError') return;
                 setCyclePreview(null);
                 setCyclePreviewError(
-                    error instanceof Error ? error.message : t('The billing-cycle quote is unavailable.'),
+                    error instanceof Error ? t(error.message) : t('The billing-cycle quote is unavailable.'),
                 );
             });
 
@@ -426,7 +426,7 @@ export default function ServiceShow({
                                         <p className="text-xs text-muted">{t('Status')}</p>
                                         <p className="mt-1 font-semibold text-emerald-700">{t('Online')}</p>
                                         <p className="mt-1 text-xs text-muted">
-                                            {t('Uptime')} {formatDuration(liveSession.started_at, liveSession.last_seen_at)}
+                                            {t('Uptime')} {formatDuration(liveSession.started_at, liveSession.last_seen_at, t)}
                                         </p>
                                     </div>
                                     <div>

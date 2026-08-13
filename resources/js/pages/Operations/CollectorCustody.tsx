@@ -61,7 +61,7 @@ export default function CollectorCustody({ filters, collectors, entries, currenc
         event.preventDefault();
         const amount = parseMoneyToMinor(displayAmount, form.data.currency);
         if (amount === null || amount <= 0) {
-            form.setError('amount', 'Enter a positive amount.');
+            form.setError('amount', t('Enter a positive amount.'));
             return;
         }
         form.clearErrors('amount');

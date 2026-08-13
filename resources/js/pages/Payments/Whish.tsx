@@ -72,7 +72,7 @@ export default function WhishPayment({ customer, attempt: initialAttempt }: Prop
                 }
             } catch (statusError) {
                 if (!cancelled) {
-                    setError(statusError instanceof Error ? statusError.message : t('whish.status_unavailable'));
+                    setError(statusError instanceof Error ? t(statusError.message) : t('whish.status_unavailable'));
                 }
             }
         };

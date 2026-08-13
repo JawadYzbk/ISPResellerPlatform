@@ -460,7 +460,7 @@ export default function Expenses({
                             event.preventDefault();
                             const minor = parseMoneyToMinor(recurringAmount, recurringForm.data.currency);
                             if (minor === null || minor <= 0) {
-                                recurringForm.setError('amount', 'Enter a positive amount.');
+                                recurringForm.setError('amount', t('Enter a positive amount.'));
                                 return;
                             }
                             recurringForm.transform((data) => ({ ...data, amount: minor }));
