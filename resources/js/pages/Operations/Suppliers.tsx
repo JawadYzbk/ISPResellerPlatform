@@ -1,11 +1,12 @@
 import CurrencyCombobox, { type CurrencyOption } from '@/components/ui/currency-combobox';
 import ResponsiveSelect from '@/components/ui/responsive-select';
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import { ChevronLeft, Edit3, FileText, Plus, Receipt, Save, Store, X } from 'lucide-react';
 import { useState } from 'react';
 
 import AppLayout from '@/layouts/AppLayout';
 import { formatMoney } from '@/lib/format';
+import { createTranslator } from '@/lib/i18n';
 import type { PageProps } from '@/types';
 
 type Contract = {
@@ -45,6 +46,8 @@ type Props = PageProps & {
 };
 
 function BillPaymentForm({ bill, onDone }: { bill: Bill; onDone: () => void }) {
+    const page = usePage<PageProps>();
+    const t = createTranslator(page.props.app.locale);
     const form = useForm({
         amount: '',
         paid_at: new Date().toISOString().slice(0, 10),
@@ -66,11 +69,11 @@ function BillPaymentForm({ bill, onDone }: { bill: Bill; onDone: () => void }) {
     return (
         <form onSubmit={submit} className="mt-3 grid gap-3 rounded-lg bg-sand/50 p-4 sm:grid-cols-4">
             <label>
-                <span className="field-label">Amount remaining</span>
-                <input className="field" value={remaining} readOnly aria-label="Amount remaining" />
+                <span className="field-label">{t('Amount remaining')}</span>
+                <input className="field" value={remaining} readOnly aria-label={t('Amount remaining')} />
             </label>
             <label>
-                <span className="field-label">Payment amount</span>
+                <span className="field-label">{t('Payment amount')}</span>
                 <input
                     className="field"
                     type="number"
@@ -83,20 +86,20 @@ function BillPaymentForm({ bill, onDone }: { bill: Bill; onDone: () => void }) {
                 {form.errors.amount && <p className="field-error">{form.errors.amount}</p>}
             </label>
             <label>
-                <span className="field-label">Method</span>
+                <span className="field-label">{t('Method')}</span>
                 <ResponsiveSelect
                     className="field"
                     value={form.data.method}
                     onChange={(event) => form.setData('method', event.target.value)}
                 >
-                    <option value="bank_transfer">Bank transfer</option>
-                    <option value="cash">Cash</option>
-                    <option value="card">Card</option>
-                    <option value="other">Other</option>
+                    <option value="bank_transfer">{t('Bank transfer')}</option>
+                    <option value="cash">{t('Cash')}</option>
+                    <option value="card">{t('Card')}</option>
+                    <option value="other">{t('Other')}</option>
                 </ResponsiveSelect>
             </label>
             <label>
-                <span className="field-label">Paid on</span>
+                <span className="field-label">{t('Paid on')}</span>
                 <input
                     className="field"
                     type="date"
@@ -106,17 +109,17 @@ function BillPaymentForm({ bill, onDone }: { bill: Bill; onDone: () => void }) {
                 />
             </label>
             <label className="sm:col-span-3">
-                <span className="field-label">Payment reference (optional)</span>
+                <span className="field-label">{t('Payment reference')} ({t('optional')})</span>
                 <input
                     className="field"
                     value={form.data.reference}
                     onChange={(event) => form.setData('reference', event.target.value)}
-                    placeholder="TRX-2026-08-001"
+                    placeholder={t('TRX-2026-08-001')}
                 />
             </label>
             <div className="flex items-end justify-end">
                 <button type="submit" className="button-primary" disabled={form.processing || remaining <= 0}>
-                    <Save size={15} /> Record payment
+                    <Save size={15} /> {t('Record payment')}
                 </button>
             </div>
         </form>
@@ -132,6 +135,8 @@ function SupplierCard({
     currencies: CurrencyOption[];
     canManage: boolean;
 }) {
+    const page = usePage<PageProps>();
+    const t = createTranslator(page.props.app.locale);
     const [contractOpen, setContractOpen] = useState(false);
     const [editingContractId, setEditingContractId] = useState<number | null>(null);
     const [billOpen, setBillOpen] = useState(false);
@@ -249,13 +254,13 @@ function SupplierCard({
                 {canManage && (
                     <div className="flex gap-2">
                         <button type="button" className="button-quiet" onClick={startEdit}>
-                            <Edit3 size={15} /> Edit
+                            <Edit3 size={15} /> {t('Edit')}
                         </button>
                         <button type="button" className="button-quiet" onClick={() => setContractOpen((open) => !open)}>
-                            <FileText size={15} /> Contract
+                            <FileText size={15} /> {t('Contract')}
                         </button>
                         <button type="button" className="button-quiet" onClick={() => setBillOpen((open) => !open)}>
-                            <Receipt size={15} /> Bill
+                            <Receipt size={15} /> {t('Bill')}
                         </button>
                     </div>
                 )}
@@ -263,10 +268,10 @@ function SupplierCard({
 
             <div className="mt-3 flex items-center gap-2 text-xs font-semibold">
                 <span className={supplier.is_active ? 'text-brand' : 'text-muted'}>
-                    {supplier.is_active ? 'Active supplier' : 'Inactive supplier'}
+                    {supplier.is_active ? t('Active supplier') : t('Inactive supplier')}
                 </span>
                 {!supplier.is_active && (
-                    <span className="text-muted">New receiving and billing should be reviewed.</span>
+                    <span className="text-muted">{t('New receiving and billing should be reviewed.')}</span>
                 )}
             </div>
 
@@ -276,7 +281,7 @@ function SupplierCard({
                     className="mt-5 grid gap-4 rounded-lg bg-sand/50 p-4 md:grid-cols-2 xl:grid-cols-5"
                 >
                     <label>
-                        <span className="field-label">Supplier name</span>
+                        <span className="field-label">{t('Supplier name')}</span>
                         <input
                             className="field"
                             value={editForm.data.name}
@@ -286,7 +291,7 @@ function SupplierCard({
                         {editForm.errors.name && <p className="field-error">{editForm.errors.name}</p>}
                     </label>
                     <label>
-                        <span className="field-label">Code</span>
+                        <span className="field-label">{t('Code')}</span>
                         <input
                             className="field uppercase"
                             value={editForm.data.code}
@@ -296,7 +301,7 @@ function SupplierCard({
                         {editForm.errors.code && <p className="field-error">{editForm.errors.code}</p>}
                     </label>
                     <label>
-                        <span className="field-label">Contact email</span>
+                        <span className="field-label">{t('Contact email')}</span>
                         <input
                             className="field"
                             type="email"
@@ -308,20 +313,20 @@ function SupplierCard({
                         )}
                     </label>
                     <label>
-                        <span className="field-label">Status</span>
+                        <span className="field-label">{t('Status')}</span>
                         <ResponsiveSelect
                             className="field"
                             value={editForm.data.is_active ? 'active' : 'inactive'}
                             onChange={(event) => editForm.setData('is_active', event.target.value === 'active')}
                         >
-                            <option value="active">Active</option>
-                            <option value="inactive">Inactive</option>
+                            <option value="active">{t('Active')}</option>
+                            <option value="inactive">{t('Inactive')}</option>
                         </ResponsiveSelect>
                         {editForm.errors.is_active && <p className="field-error">{editForm.errors.is_active}</p>}
                     </label>
                     <div className="flex items-end gap-2">
                         <button type="submit" className="button-primary" disabled={editForm.processing}>
-                            <Save size={15} /> Save changes
+                            <Save size={15} /> {t('Save changes')}
                         </button>
                         <button
                             type="button"
@@ -329,7 +334,7 @@ function SupplierCard({
                             disabled={editForm.processing}
                             onClick={cancelEdit}
                         >
-                            <X size={15} /> Cancel
+                            <X size={15} /> {t('Cancel')}
                         </button>
                     </div>
                 </form>
@@ -341,7 +346,7 @@ function SupplierCard({
                     className="mt-5 grid gap-4 rounded-lg bg-sand/50 p-4 md:grid-cols-2 xl:grid-cols-5"
                 >
                     <label>
-                        <span className="field-label">Service type</span>
+                        <span className="field-label">{t('Service type')}</span>
                         <input
                             className="field"
                             value={contractForm.data.service_type}
@@ -350,7 +355,7 @@ function SupplierCard({
                         />
                     </label>
                     <label>
-                        <span className="field-label">Wholesale currency</span>
+                        <span className="field-label">{t('Wholesale currency')}</span>
                         <CurrencyCombobox
                             className="field"
                             value={contractForm.data.wholesale_currency}
@@ -359,7 +364,7 @@ function SupplierCard({
                         />
                     </label>
                     <label>
-                        <span className="field-label">Effective from</span>
+                        <span className="field-label">{t('Effective from')}</span>
                         <input
                             className="field"
                             type="date"
@@ -369,7 +374,7 @@ function SupplierCard({
                         />
                     </label>
                     <label>
-                        <span className="field-label">Effective to</span>
+                        <span className="field-label">{t('Effective to')}</span>
                         <input
                             className="field"
                             type="date"
@@ -378,20 +383,20 @@ function SupplierCard({
                         />
                     </label>
                     <label>
-                        <span className="field-label">Status</span>
+                        <span className="field-label">{t('Status')}</span>
                         <ResponsiveSelect
                             className="field"
                             value={contractForm.data.status}
                             onChange={(event) => contractForm.setData('status', event.target.value)}
                         >
-                            <option value="active">Active</option>
-                            <option value="suspended">Suspended</option>
-                            <option value="expired">Expired</option>
+                            <option value="active">{t('Active')}</option>
+                            <option value="suspended">{t('Suspended')}</option>
+                            <option value="expired">{t('Expired')}</option>
                         </ResponsiveSelect>
                     </label>
                     <div className="flex justify-end md:col-span-2 xl:col-span-5">
                         <button type="submit" className="button-primary" disabled={contractForm.processing}>
-                            <Save size={15} /> Save contract
+                            <Save size={15} /> {t('Save contract')}
                         </button>
                     </div>
                 </form>
@@ -403,17 +408,17 @@ function SupplierCard({
                     className="mt-5 grid gap-4 rounded-lg bg-sand/50 p-4 md:grid-cols-2 xl:grid-cols-5"
                 >
                     <label>
-                        <span className="field-label">Bill reference</span>
+                        <span className="field-label">{t('Bill reference')}</span>
                         <input
                             className="field"
                             value={billForm.data.reference}
                             onChange={(event) => billForm.setData('reference', event.target.value)}
-                            placeholder="INV-2026-08"
+                            placeholder={t('INV-2026-08')}
                             required
                         />
                     </label>
                     <label>
-                        <span className="field-label">Amount (minor units)</span>
+                        <span className="field-label">{t('Amount (minor units)')}</span>
                         <input
                             className="field"
                             type="number"
@@ -424,7 +429,7 @@ function SupplierCard({
                         />
                     </label>
                     <label>
-                        <span className="field-label">Currency</span>
+                        <span className="field-label">{t('Currency')}</span>
                         <CurrencyCombobox
                             className="field"
                             value={billForm.data.currency}
@@ -433,7 +438,7 @@ function SupplierCard({
                         />
                     </label>
                     <label>
-                        <span className="field-label">Period from</span>
+                        <span className="field-label">{t('Period from')}</span>
                         <input
                             className="field"
                             type="date"
@@ -443,7 +448,7 @@ function SupplierCard({
                         />
                     </label>
                     <label>
-                        <span className="field-label">Period to</span>
+                        <span className="field-label">{t('Period to')}</span>
                         <input
                             className="field"
                             type="date"
@@ -453,7 +458,7 @@ function SupplierCard({
                         />
                     </label>
                     <label className="md:col-span-2 xl:col-span-4">
-                        <span className="field-label">Notes</span>
+                        <span className="field-label">{t('Notes')}</span>
                         <input
                             className="field"
                             value={billForm.data.notes}
@@ -462,7 +467,7 @@ function SupplierCard({
                     </label>
                     <div className="flex items-end justify-end">
                         <button type="submit" className="button-primary" disabled={billForm.processing}>
-                            <Save size={15} /> Save bill
+                            <Save size={15} /> {t('Save bill')}
                         </button>
                     </div>
                 </form>
@@ -471,7 +476,7 @@ function SupplierCard({
             <div className="mt-5 grid gap-6 lg:grid-cols-2">
                 <section>
                     <div className="flex items-center justify-between">
-                        <h3 className="text-sm font-semibold">Contracts</h3>
+                        <h3 className="text-sm font-semibold">{t('Contracts')}</h3>
                         <span className="text-xs text-muted">{supplier.contracts.length}</span>
                     </div>
                     <div className="mt-3 divide-y divide-line">
@@ -480,7 +485,7 @@ function SupplierCard({
                                 {editingContractId === contract.id ? (
                                     <div className="grid gap-3 rounded-lg bg-sand/50 p-4 md:grid-cols-2">
                                         <label>
-                                            <span className="field-label">Service type</span>
+                                        <span className="field-label">{t('Service type')}</span>
                                             <input
                                                 className="field"
                                                 value={contractEditForm.data.service_type}
@@ -494,7 +499,7 @@ function SupplierCard({
                                             )}
                                         </label>
                                         <label>
-                                            <span className="field-label">Wholesale currency</span>
+                                            <span className="field-label">{t('Wholesale currency')}</span>
                                             <CurrencyCombobox
                                                 className="field"
                                                 value={contractEditForm.data.wholesale_currency}
@@ -510,7 +515,7 @@ function SupplierCard({
                                             )}
                                         </label>
                                         <label>
-                                            <span className="field-label">Effective from</span>
+                                            <span className="field-label">{t('Effective from')}</span>
                                             <input
                                                 className="field"
                                                 type="date"
@@ -525,7 +530,7 @@ function SupplierCard({
                                             )}
                                         </label>
                                         <label>
-                                            <span className="field-label">Effective to</span>
+                                            <span className="field-label">{t('Effective to')}</span>
                                             <input
                                                 className="field"
                                                 type="date"
@@ -539,7 +544,7 @@ function SupplierCard({
                                             )}
                                         </label>
                                         <label>
-                                            <span className="field-label">Status</span>
+                                            <span className="field-label">{t('Status')}</span>
                                             <ResponsiveSelect
                                                 className="field"
                                                 value={contractEditForm.data.status}
@@ -547,9 +552,9 @@ function SupplierCard({
                                                     contractEditForm.setData('status', event.target.value)
                                                 }
                                             >
-                                                <option value="active">Active</option>
-                                                <option value="suspended">Suspended</option>
-                                                <option value="expired">Expired</option>
+                                                <option value="active">{t('Active')}</option>
+                                                <option value="suspended">{t('Suspended')}</option>
+                                                <option value="expired">{t('Expired')}</option>
                                             </ResponsiveSelect>
                                             {contractEditForm.errors.status && (
                                                 <p className="field-error">{contractEditForm.errors.status}</p>
@@ -562,7 +567,7 @@ function SupplierCard({
                                                 disabled={contractEditForm.processing}
                                                 onClick={() => saveContract(contract)}
                                             >
-                                                <Save size={14} /> Save contract
+                                                <Save size={14} /> {t('Save contract')}
                                             </button>
                                             <button
                                                 type="button"
@@ -570,7 +575,7 @@ function SupplierCard({
                                                 disabled={contractEditForm.processing}
                                                 onClick={cancelContractEdit}
                                             >
-                                                <X size={14} /> Cancel
+                                                <X size={14} /> {t('Cancel')}
                                             </button>
                                         </div>
                                     </div>
@@ -586,7 +591,7 @@ function SupplierCard({
                                                         className="text-xs font-semibold text-brand hover:underline"
                                                         onClick={() => startContractEdit(contract)}
                                                     >
-                                                        Edit
+                                                        {t('Edit')}
                                                     </button>
                                                 )}
                                             </div>
@@ -600,13 +605,13 @@ function SupplierCard({
                             </div>
                         ))}
                         {supplier.contracts.length === 0 && (
-                            <p className="py-3 text-sm text-muted">No contracts recorded.</p>
+                            <p className="py-3 text-sm text-muted">{t('No contracts recorded.')}</p>
                         )}
                     </div>
                 </section>
                 <section>
                     <div className="flex items-center justify-between">
-                        <h3 className="text-sm font-semibold">Bills</h3>
+                        <h3 className="text-sm font-semibold">{t('Bills')}</h3>
                         <span className="text-xs text-muted">{supplier.bills.length}</span>
                     </div>
                     <div className="mt-3 divide-y divide-line">
@@ -624,7 +629,7 @@ function SupplierCard({
                                         <div className="text-end">
                                             <p className="font-semibold">{formatMoney(bill.amount, bill.currency)}</p>
                                             <p className="mt-1 text-xs text-muted">
-                                                Paid {formatMoney(bill.paid_amount, bill.currency)} · {bill.status}
+                                                {t('Paid')} {formatMoney(bill.paid_amount, bill.currency)} · {t(bill.status)}
                                             </p>
                                         </div>
                                     </div>
@@ -634,7 +639,7 @@ function SupplierCard({
                                             className="mt-2 text-xs font-semibold text-brand hover:underline"
                                             onClick={() => setPaymentBillId(paymentOpen ? null : bill.id)}
                                         >
-                                            {paymentOpen ? 'Close payment form' : 'Record payment'}
+                                            {paymentOpen ? t('Close payment form') : t('Record payment')}
                                         </button>
                                     )}
                                     {paymentOpen && (
@@ -643,7 +648,9 @@ function SupplierCard({
                                 </div>
                             );
                         })}
-                        {supplier.bills.length === 0 && <p className="py-3 text-sm text-muted">No bills recorded.</p>}
+                        {supplier.bills.length === 0 && (
+                            <p className="py-3 text-sm text-muted">{t('No bills recorded.')}</p>
+                        )}
                     </div>
                 </section>
             </div>
@@ -652,6 +659,8 @@ function SupplierCard({
 }
 
 export default function SuppliersPage({ suppliers, canManage, currencies }: Props) {
+    const page = usePage<PageProps>();
+    const t = createTranslator(page.props.app.locale);
     const supplierForm = useForm({ name: '', code: '', contact_email: '' });
 
     const submitSupplier = (event: React.FormEvent<HTMLFormElement>) => {
@@ -661,55 +670,55 @@ export default function SuppliersPage({ suppliers, canManage, currencies }: Prop
 
     return (
         <AppLayout>
-            <Head title="Suppliers" />
+            <Head title={t('Suppliers')} />
             <Link
                 href="/operations/credentials"
                 className="mb-5 inline-flex items-center gap-2 text-sm font-semibold text-muted hover:text-brand"
             >
-                <ChevronLeft size={16} /> Back to credentials
+                <ChevronLeft size={16} /> {t('Back to credentials')}
             </Link>
             <div>
-                <p className="eyebrow">Supplier operations</p>
-                <h1 className="page-title">Suppliers, contracts and bills</h1>
+                <p className="eyebrow">{t('Supplier operations')}</p>
+                <h1 className="page-title">{t('Suppliers, contracts and bills')}</h1>
                 <p className="page-subtitle">
-                    Keep upstream commercial records alongside credential inventory and reconciliation.
+                    {t('Keep upstream commercial records alongside credential inventory and reconciliation.')}
                 </p>
             </div>
             {canManage && (
                 <form onSubmit={submitSupplier} className="card mt-8 grid gap-4 p-5 md:grid-cols-4">
                     <label>
-                        <span className="field-label">Supplier name</span>
+                        <span className="field-label">{t('Supplier name')}</span>
                         <input
                             className="field"
                             value={supplierForm.data.name}
                             onChange={(event) => supplierForm.setData('name', event.target.value)}
-                            placeholder="Transit ISP"
+                            placeholder={t('Transit ISP')}
                             required
                         />
                     </label>
                     <label>
-                        <span className="field-label">Code</span>
+                        <span className="field-label">{t('Code')}</span>
                         <input
                             className="field uppercase"
                             value={supplierForm.data.code}
                             onChange={(event) => supplierForm.setData('code', event.target.value)}
-                            placeholder="TRANSIT"
+                            placeholder={t('TRANSIT')}
                             required
                         />
                     </label>
                     <label>
-                        <span className="field-label">Contact email</span>
+                        <span className="field-label">{t('Contact email')}</span>
                         <input
                             className="field"
                             type="email"
                             value={supplierForm.data.contact_email}
                             onChange={(event) => supplierForm.setData('contact_email', event.target.value)}
-                            placeholder="billing@example.com"
+                            placeholder={t('billing@example.com')}
                         />
                     </label>
                     <div className="flex items-end justify-end">
                         <button type="submit" className="button-primary" disabled={supplierForm.processing}>
-                            <Plus size={16} /> Add supplier
+                            <Plus size={16} /> {t('Add supplier')}
                         </button>
                     </div>
                 </form>
@@ -719,7 +728,7 @@ export default function SuppliersPage({ suppliers, canManage, currencies }: Prop
                     <SupplierCard key={supplier.id} supplier={supplier} currencies={currencies} canManage={canManage} />
                 ))}
                 {suppliers.length === 0 && (
-                    <div className="card p-8 text-center text-sm text-muted">No suppliers recorded yet.</div>
+                    <div className="card p-8 text-center text-sm text-muted">{t('No suppliers recorded yet.')}</div>
                 )}
             </div>
         </AppLayout>
