@@ -2,7 +2,7 @@ import CurrencyCombobox, { type CurrencyOption } from '@/components/ui/currency-
 import CustomerCombobox from '@/components/ui/customer-combobox';
 import ConfirmDialog from '@/components/ui/confirm-dialog';
 import ResponsiveSelect from '@/components/ui/responsive-select';
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import {
     CheckCircle2,
     CircleDollarSign,
@@ -24,6 +24,8 @@ import {
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import AppLayout from '@/layouts/AppLayout';
+import { createTranslator } from '@/lib/i18n';
+import type { PageProps } from '@/types';
 import {
     clearFieldState,
     readFieldState,
@@ -239,6 +241,9 @@ export default function FieldIndex({
     storageKey,
     storageEncryptionKey,
 }: Props) {
+    const { props } = usePage<PageProps>();
+    const t = createTranslator(props.app.locale);
+    const fieldValue = (value: string) => t('field.value.' + value);
     const [customers, setCustomers] = useState(snapshot.data.customers);
     const [currencyOptions, setCurrencyOptions] = useState(currencies);
     const [selectedCustomerId, setSelectedCustomerId] = useState('');
@@ -354,7 +359,7 @@ export default function FieldIndex({
             !Number.isFinite(Number(saleQuantity)) ||
             Number(saleQuantity) <= 0
         ) {
-            saleForm.setError('lines', 'Enter a positive quantity and unit price.');
+            saleForm.setError('lines', t('field.error.positive_sale'));
             return;
         }
         saleForm.transform((data) => ({
@@ -429,7 +434,7 @@ export default function FieldIndex({
 
     const refreshSnapshot = useCallback(async () => {
         if (!online) {
-            setError('You are offline. The saved customer list and payment queue are still available.');
+            setError(t('field.error.offline'));
             return;
         }
 
@@ -442,7 +447,7 @@ export default function FieldIndex({
                 headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
             });
             const body = (await response.json()) as FieldSnapshot;
-            if (!response.ok) throw new Error('The field list could not be refreshed.');
+            if (!response.ok) throw new Error(t('field.error.refresh'));
 
             const changedCustomers = new Map(customers.map((customer) => [customer.id, customer]));
             body.data.customers.forEach((customer) => changedCustomers.set(customer.id, customer));
@@ -450,9 +455,9 @@ export default function FieldIndex({
             const nextCustomers = [...changedCustomers.values()];
             setCustomers(nextCustomers);
             await persist(pending, body.sync_token, nextCustomers);
-            setMessage('Field data refreshed.');
+            setMessage(t('field.message.refreshed'));
         } catch (caught) {
-            setError(caught instanceof Error ? caught.message : 'The field list could not be refreshed.');
+            setError(caught instanceof Error ? caught.message : t('field.error.refresh'));
         } finally {
             setBusy(false);
         }
@@ -484,7 +489,7 @@ export default function FieldIndex({
                 });
                 const body = (await response.json()) as { results?: SyncResult[] };
                 if (!response.ok || !Array.isArray(body.results))
-                    throw new Error('Queued payments could not be synchronized.');
+                    throw new Error(t('field.error.sync'));
 
                 const results = body.results;
                 const remaining = queue.flatMap((item, index) => {
@@ -496,11 +501,11 @@ export default function FieldIndex({
                 await persist(remaining);
                 setMessage(
                     remaining.length === 0
-                        ? 'All queued payments were synchronized.'
-                        : 'Some payments remain queued for review.',
+                        ? t('field.message.synced')
+                        : t('field.message.some_queued'),
                 );
             } catch (caught) {
-                setError(caught instanceof Error ? caught.message : 'Queued payments could not be synchronized.');
+                setError(caught instanceof Error ? caught.message : t('field.error.sync'));
             } finally {
                 setBusy(false);
             }
@@ -581,13 +586,13 @@ export default function FieldIndex({
     const queuePayment = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         if (!selectedCustomer) {
-            setError('Choose a customer before saving a payment.');
+            setError(t('field.error.choose_customer'));
             return;
         }
 
         const amountMinor = parseMoneyToMinor(amount, currency);
         if (amountMinor === null) {
-            setError('Enter a valid positive amount.');
+            setError(t('field.error.amount'));
             return;
         }
 
@@ -602,8 +607,8 @@ export default function FieldIndex({
         setAmount('');
         setMessage(
             online
-                ? 'Payment saved locally and queued for synchronization.'
-                : 'Payment saved on this device. It will synchronize when you are back online.',
+                ? t('field.message.queued_online')
+                : t('field.message.queued_offline'),
         );
         setError(null);
         if (online) void pushQueue([...pending, item]);
@@ -615,17 +620,17 @@ export default function FieldIndex({
         setSyncToken(snapshot.sync_token);
         setCustomers(snapshot.data.customers);
         setCurrencyOptions(currencies);
-        setMessage('Field data was cleared from this device.');
+        setMessage(t('field.message.cleared'));
         setError(null);
     };
 
     const updateFieldDay = async (action: 'check-in' | 'check-out') => {
         if (!online) {
-            setError('Connect to the internet before recording a field check-in.');
+            setError(t('field.error.online'));
             return;
         }
         if (!('geolocation' in navigator)) {
-            setError('Location capture is not available in this browser.');
+            setError(t('field.error.geolocation'));
             return;
         }
 
@@ -657,21 +662,21 @@ export default function FieldIndex({
                 }),
             });
             const body = (await response.json()) as { message?: string; data?: Exclude<FieldDay, null> };
-            if (!response.ok || !body.data) throw new Error(body.message ?? 'The field check-in could not be saved.');
+            if (!response.ok || !body.data) throw new Error(body.message ?? t('field.error.refresh'));
 
             setFieldDay(action === 'check-out' ? null : body.data);
             if (action === 'check-out') setCheckoutNote('');
-            setMessage(body.message ?? (action === 'check-in' ? 'Field day started.' : 'Field day ended.'));
+            setMessage(body.message ?? (action === 'check-in' ? t('field.message.day_started') : t('field.message.day_ended')));
         } catch (caught) {
             if (typeof caught === 'object' && caught !== null && 'code' in caught) {
                 const locationError = caught as GeolocationPositionError;
                 setError(
                     locationError.code === locationError.PERMISSION_DENIED
-                        ? 'Location permission is required for field check-in.'
-                        : 'A reliable location could not be captured. Move to an open area and try again.',
+                        ? t('field.error.location_permission')
+                        : t('field.error.location_unreliable'),
                 );
             } else {
-                setError(caught instanceof Error ? caught.message : 'The field check-in could not be saved.');
+                setError(caught instanceof Error ? caught.message : t('field.error.refresh'));
             }
         } finally {
             setLocationBusy(false);
@@ -689,7 +694,7 @@ export default function FieldIndex({
 
     const sortRouteNearby = async () => {
         if (!('geolocation' in navigator)) {
-            setError('Location capture is not available in this browser.');
+            setError(t('field.error.geolocation'));
             return;
         }
         setLocationBusy(true);
@@ -698,9 +703,9 @@ export default function FieldIndex({
             const position = await captureLocation();
             setRouteOrigin({ latitude: position.coords.latitude, longitude: position.coords.longitude });
             setNearbyOrder(true);
-            setMessage('Route ordered by your current location. The manager’s planned order is unchanged.');
+            setMessage(t('field.message.route_sorted'));
         } catch {
-            setError('A reliable location could not be captured for nearby sorting.');
+            setError(t('field.error.nearby_location'));
         } finally {
             setLocationBusy(false);
         }
@@ -709,7 +714,7 @@ export default function FieldIndex({
     const recordVisit = async (event: React.FormEvent) => {
         event.preventDefault();
         if (!fieldDay) {
-            setError('Start your field day before recording a visit.');
+            setError(t('field.error.start_day'));
             return;
         }
         if (!selectedStopId || !('geolocation' in navigator)) return;
@@ -736,14 +741,14 @@ export default function FieldIndex({
                 }),
             });
             const body = (await response.json()) as { message?: string; data?: Exclude<FieldRoute, null> };
-            if (!response.ok || !body.data) throw new Error(body.message ?? 'The visit outcome could not be saved.');
+            if (!response.ok || !body.data) throw new Error(body.message ?? t('field.error.visit'));
 
             setCollectorRoute(body.data);
             setSelectedStopId('');
             setVisitNote('');
-            setMessage(body.message ?? 'Visit outcome recorded.');
+            setMessage(body.message ?? t('field.message.visit_saved'));
         } catch (caught) {
-            setError(caught instanceof Error ? caught.message : 'The visit outcome could not be saved.');
+            setError(caught instanceof Error ? caught.message : t('field.error.visit'));
         } finally {
             setVisitBusy(false);
         }
@@ -783,7 +788,7 @@ export default function FieldIndex({
                 body: JSON.stringify({ status: nextStatus }),
             });
             const body = (await response.json()) as { message?: string; data?: FieldTask };
-            if (!response.ok || !body.data) throw new Error(body.message ?? 'The task could not be updated.');
+            if (!response.ok || !body.data) throw new Error(body.message ?? t('field.error.task'));
             if (body.data.status === 'completed' || body.data.status === 'cancelled') {
                 const remaining = tasks.filter((item) => item.id !== body.data?.id);
                 setTasks(remaining);
@@ -791,9 +796,9 @@ export default function FieldIndex({
             } else {
                 replaceTask(body.data);
             }
-            setMessage(body.message ?? 'Task updated.');
+            setMessage(body.message ?? t('field.message.task_updated'));
         } catch (caught) {
-            setError(caught instanceof Error ? caught.message : 'The task could not be updated.');
+            setError(caught instanceof Error ? caught.message : t('field.error.task'));
         } finally {
             setTaskBusy(false);
         }
@@ -813,13 +818,13 @@ export default function FieldIndex({
                 body: payload,
             });
             const body = (await response.json()) as { message?: string; data?: FieldTask };
-            if (!response.ok || !body.data) throw new Error(body.message ?? 'The message could not be sent.');
+            if (!response.ok || !body.data) throw new Error(body.message ?? t('field.error.message'));
             replaceTask(body.data);
             setTaskReply('');
             setTaskAttachment(null);
-            setMessage(body.message ?? 'Message sent.');
+            setMessage(body.message ?? t('field.message.sent'));
         } catch (caught) {
-            setError(caught instanceof Error ? caught.message : 'The message could not be sent.');
+            setError(caught instanceof Error ? caught.message : t('field.error.message'));
         } finally {
             setTaskBusy(false);
         }
@@ -828,16 +833,16 @@ export default function FieldIndex({
     const submitCustodyRequest = async (event: React.FormEvent) => {
         event.preventDefault();
         if (!online) {
-            setError('Connect to the internet before submitting a custody request.');
+            setError(t('field.error.custody_online'));
             return;
         }
         const amount = parseMoneyToMinor(custodyAmount, custodyCurrency);
         if (amount === null || amount <= 0) {
-            setError('Enter a positive custody amount.');
+            setError(t('field.error.custody_amount'));
             return;
         }
         if (custodyDescription.trim() === '') {
-            setError('Describe the expense or handover before submitting.');
+            setError(t('field.error.custody_description'));
             return;
         }
 
@@ -882,46 +887,48 @@ export default function FieldIndex({
 
     return (
         <AppLayout>
-            <Head title="Field collection" />
+            <Head title={t('field.title')} />
             <div className="mx-auto max-w-4xl pb-24">
                 <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
                     <div>
-                        <p className="eyebrow">Field operations</p>
-                        <h1 className="page-title">Collector desk</h1>
-                        <p className="page-subtitle">
-                            Find customers, record collections and keep working when the connection drops.
-                        </p>
+                        <p className="eyebrow">{t('field.eyebrow')}</p>
+                        <h1 className="page-title">{t('field.collector_desk')}</h1>
+                        <p className="page-subtitle">{t('field.subtitle')}</p>
                     </div>
                     <div
                         className={`inline-flex items-center gap-2 self-start rounded-full px-3 py-2 text-xs font-semibold ${online ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'}`}
                     >
                         {online ? <Wifi size={15} /> : <CloudOff size={15} />}
-                        {online ? 'Online' : 'Offline'}
+                        {online ? t('field.online') : t('field.offline')}
                     </div>
                 </div>
 
                 <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                     <div className="card p-4">
-                        <p className="eyebrow">Field day</p>
-                        <p className="mt-2 text-lg font-semibold">{fieldDay ? 'Checked in' : 'Not started'}</p>
+                        <p className="eyebrow">{t('field.field_day')}</p>
+                        <p className="mt-2 text-lg font-semibold">
+                            {fieldDay ? t('field.checked_in') : t('field.not_started')}
+                        </p>
                         <p className="mt-1 text-xs text-muted">
                             {fieldDay
-                                ? 'Location recorded for this field session.'
-                                : 'Start when you begin your route.'}
+                                ? t('field.location_recorded')
+                                : t('field.start_route')}
                         </p>
                     </div>
                     <div className="card p-4">
-                        <p className="eyebrow">Shift</p>
-                        <p className="mt-2 text-lg font-semibold">{shift ? 'Open' : 'Not open'}</p>
+                        <p className="eyebrow">{t('field.shift')}</p>
+                        <p className="mt-2 text-lg font-semibold">{shift ? t('field.open') : t('field.not_open')}</p>
                         <p className="mt-1 text-xs text-muted">
                             {shift
                                 ? `${shift.payment_count} posted payment(s)`
-                                : 'Open a cash shift before collecting.'}
+                                : t('field.open_shift_before')}
                         </p>
                     </div>
                     <div className="card p-4">
-                        <p className="eyebrow">Today</p>
-                        <p className="mt-2 text-lg font-semibold">{summary.payment_count} payment(s)</p>
+                        <p className="eyebrow">{t('field.today')}</p>
+                        <p className="mt-2 text-lg font-semibold">
+                            {summary.payment_count} {t('field.payments')}
+                        </p>
                         <p className="mt-1 text-xs text-muted">
                             {entriesOrEmpty(summary.totals)
                                 .map(([code, value]) => formatMoney(value, code))
@@ -929,8 +936,10 @@ export default function FieldIndex({
                         </p>
                     </div>
                     <div className="card p-4">
-                        <p className="eyebrow">Queue</p>
-                        <p className="mt-2 text-lg font-semibold">{pending.length} pending</p>
+                        <p className="eyebrow">{t('field.queue')}</p>
+                        <p className="mt-2 text-lg font-semibold">
+                            {pending.length} {t('field.pending')}
+                        </p>
                         <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1">
                             <button
                                 type="button"
@@ -938,16 +947,16 @@ export default function FieldIndex({
                                 disabled={!online || busy || pending.length === 0}
                                 onClick={() => void pushQueue()}
                             >
-                                <RefreshCw size={13} className={busy ? 'animate-spin' : ''} /> Synchronize now
+                                <RefreshCw size={13} className={busy ? 'animate-spin' : ''} /> {t('field.synchronize_now')}
                             </button>
                             <ConfirmDialog
-                                title="Clear field data from this device?"
+                                title={t('field.clear_data_title')}
                                 description={
                                     pending.length > 0
-                                        ? 'This removes the cached customer list and permanently deletes the queued payments on this device. Only continue after the queue is synchronized or no longer needed.'
-                                        : 'This removes the cached customer list and currency catalog from this device. The server data is not changed.'
+                                        ? t('field.clear_data_pending')
+                                        : t('field.clear_data_empty')
                                 }
-                                confirmLabel="Clear device data"
+                                confirmLabel={t('field.clear_device_data')}
                                 destructive={pending.length > 0}
                                 onConfirm={clearDeviceData}
                             >
@@ -956,7 +965,7 @@ export default function FieldIndex({
                                     className="text-xs font-semibold text-coral disabled:opacity-50"
                                     disabled={busy}
                                 >
-                                    Clear device data
+                                    {t('field.clear_device_data')}
                                 </button>
                             </ConfirmDialog>
                         </div>
@@ -968,10 +977,9 @@ export default function FieldIndex({
                         <div className="flex items-start gap-3">
                             <CircleDollarSign className="mt-0.5 shrink-0 text-brand" size={20} />
                             <div>
-                                <h2 className="text-balance text-xl font-semibold">Cash custody</h2>
+                                <h2 className="text-balance text-xl font-semibold">{t('field.cash_custody')}</h2>
                                 <p className="mt-1 text-pretty text-sm text-muted">
-                                    Cash collections and opening float stay in custody until an expense or handover is
-                                    approved.
+                                    {t('field.cash_custody_description')}
                                 </p>
                             </div>
                         </div>
@@ -985,7 +993,7 @@ export default function FieldIndex({
                                 </div>
                             ))}
                             <div className="rounded-xl border border-line px-4 py-3">
-                                <p className="eyebrow">Pending review</p>
+                                    <p className="eyebrow">{t('field.pending_review')}</p>
                                 <p className="mt-1 font-semibold tabular-nums">{custody.position.pending_count}</p>
                             </div>
                         </div>
@@ -995,18 +1003,18 @@ export default function FieldIndex({
                         onSubmit={(event) => void submitCustodyRequest(event)}
                     >
                         <label className="field-label">
-                            Request type
+                            {t('field.request_type')}
                             <ResponsiveSelect
                                 className="mt-1"
                                 value={custodyType}
                                 onChange={(event) => setCustodyType(event.target.value as 'expense' | 'handover')}
                             >
-                                <option value="expense">Field expense</option>
-                                <option value="handover">Cash handover</option>
+                                <option value="expense">{t('field.field_expense')}</option>
+                                <option value="handover">{t('field.cash_handover')}</option>
                             </ResponsiveSelect>
                         </label>
                         <label className="field-label">
-                            Currency
+                            {t('field.currency')}
                             <CurrencyCombobox
                                 className="field mt-1"
                                 value={custodyCurrency}
@@ -1015,7 +1023,7 @@ export default function FieldIndex({
                             />
                         </label>
                         <label className="field-label">
-                            Amount
+                            {t('field.amount')}
                             <input
                                 className="field mt-1 tabular-nums"
                                 inputMode="decimal"
@@ -1024,25 +1032,25 @@ export default function FieldIndex({
                             />
                         </label>
                         <label className="field-label">
-                            Reference (optional)
+                            {t('field.reference_optional')}
                             <input
                                 className="field mt-1"
                                 value={custodyReference}
                                 maxLength={120}
-                                placeholder="Receipt or handover reference"
+                                placeholder={t('field.receipt_reference')}
                                 onChange={(event) => setCustodyReference(event.target.value)}
                             />
                         </label>
                         <label className="field-label sm:col-span-2">
-                            Description
+                            {t('field.description')}
                             <textarea
                                 className="field mt-1 min-h-20"
                                 value={custodyDescription}
                                 maxLength={2000}
                                 placeholder={
                                     custodyType === 'expense'
-                                        ? 'What was purchased and why?'
-                                        : 'Who received the cash and where?'
+                                        ? t('field.expense_prompt')
+                                        : t('field.handover_prompt')
                                 }
                                 onChange={(event) => setCustodyDescription(event.target.value)}
                             />
@@ -1063,23 +1071,25 @@ export default function FieldIndex({
                     {custody.entries.length > 0 && (
                         <div className="border-t border-line">
                             <div className="px-5 py-3">
-                                <p className="eyebrow">Recent custody activity</p>
+                                <p className="eyebrow">{t('field.recent_custody')}</p>
                             </div>
                             <div className="divide-y divide-line">
                                 {custody.entries.slice(0, 6).map((entry) => (
                                     <div key={entry.id} className="flex items-start justify-between gap-4 px-5 py-4">
                                         <div className="min-w-0">
                                             <div className="flex flex-wrap items-center gap-2">
-                                                <p className="text-sm font-semibold capitalize">{entry.type}</p>
+                                                <p className="text-sm font-semibold capitalize">{fieldValue(entry.type)}</p>
                                                 <span
                                                     className={`rounded-full px-2 py-0.5 text-xs font-semibold capitalize ${entry.status === 'posted' ? 'bg-emerald-50 text-emerald-700' : entry.status === 'rejected' ? 'bg-rose-50 text-rose-700' : 'bg-amber-50 text-amber-700'}`}
                                                 >
-                                                    {entry.status}
+                                                    {fieldValue(entry.status)}
                                                 </span>
                                             </div>
                                             <p className="mt-1 line-clamp-2 text-xs text-muted">{entry.description}</p>
                                             {entry.review_note && (
-                                                <p className="mt-1 text-xs text-muted">Manager: {entry.review_note}</p>
+                                                <p className="mt-1 text-xs text-muted">
+                                                    {t('field.manager')}: {entry.review_note}
+                                                </p>
                                             )}
                                         </div>
                                         <p
@@ -1097,9 +1107,9 @@ export default function FieldIndex({
 
                 <section className="card mt-6 overflow-hidden">
                     <div className="border-b border-line p-5">
-                        <h2 className="text-balance text-xl font-semibold">Field stock</h2>
+                        <h2 className="text-balance text-xl font-semibold">{t('field.field_stock')}</h2>
                         <p className="mt-1 text-pretty text-sm text-muted">
-                            See stock in your custody and request replenishment or return unused material.
+                            {t('field.field_stock_description')}
                         </p>
                         <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                             {stock.locations.flatMap((location) =>
@@ -1117,25 +1127,25 @@ export default function FieldIndex({
                                 )),
                             )}
                             {stock.locations.every((location) => location.balances.length === 0) && (
-                                <p className="text-sm text-muted">No material is currently assigned to you.</p>
+                                <p className="text-sm text-muted">{t('field.no_material')}</p>
                             )}
                         </div>
                     </div>
                     {stock.locations.length > 0 && stock.central_locations.length > 0 && (
                         <form onSubmit={submitStockRequest} className="grid gap-4 p-5 sm:grid-cols-2 lg:grid-cols-3">
                             <label className="field-label">
-                                Request type
+                                {t('field.request_type')}
                                 <ResponsiveSelect
                                     className="mt-1"
                                     value={stockRequestForm.data.type}
                                     onChange={(event) => stockRequestForm.setData('type', event.target.value)}
                                 >
-                                    <option value="replenishment">Replenishment</option>
-                                    <option value="return">Return unused stock</option>
+                                    <option value="replenishment">{t('field.replenishment')}</option>
+                                    <option value="return">{t('field.return_unused_stock')}</option>
                                 </ResponsiveSelect>
                             </label>
                             <label className="field-label">
-                                Material
+                                {t('field.material')}
                                 <ResponsiveSelect
                                     className="mt-1"
                                     value={stockRequestForm.data.inventory_item_id}
@@ -1143,7 +1153,7 @@ export default function FieldIndex({
                                         stockRequestForm.setData('inventory_item_id', event.target.value)
                                     }
                                 >
-                                    <option value="">Select material</option>
+                                    <option value="">{t('field.select_material')}</option>
                                     {stock.items.map((item) => (
                                         <option key={item.id} value={item.id}>
                                             {item.sku} · {item.name}
@@ -1152,13 +1162,13 @@ export default function FieldIndex({
                                 </ResponsiveSelect>
                             </label>
                             <label className="field-label">
-                                Your stock location
+                                {t('field.stock_location')}
                                 <ResponsiveSelect
                                     className="mt-1"
                                     value={stockRequestForm.data.location_id}
                                     onChange={(event) => stockRequestForm.setData('location_id', event.target.value)}
                                 >
-                                    <option value="">Select location</option>
+                                    <option value="">{t('field.select_location')}</option>
                                     {stock.locations.map((location) => (
                                         <option key={location.id} value={location.id}>
                                             {location.code} · {location.name}
@@ -1167,13 +1177,13 @@ export default function FieldIndex({
                                 </ResponsiveSelect>
                             </label>
                             <label className="field-label">
-                                Central warehouse
+                                {t('field.central_warehouse')}
                                 <ResponsiveSelect
                                     className="mt-1"
                                     value={stockRequestForm.data.central_id}
                                     onChange={(event) => stockRequestForm.setData('central_id', event.target.value)}
                                 >
-                                    <option value="">Select warehouse</option>
+                                    <option value="">{t('field.select_warehouse')}</option>
                                     {stock.central_locations.map((location) => (
                                         <option key={location.id} value={location.id}>
                                             {location.code} · {location.name}
@@ -1182,7 +1192,7 @@ export default function FieldIndex({
                                 </ResponsiveSelect>
                             </label>
                             <label className="field-label">
-                                Quantity
+                                {t('field.quantity')}
                                 <input
                                     className="field mt-1 tabular-nums"
                                     inputMode="decimal"
@@ -1195,34 +1205,33 @@ export default function FieldIndex({
                                 )}
                             </label>
                             <label className="field-label">
-                                Note (optional)
+                                {t('field.note_optional')}
                                 <input
                                     className="field mt-1"
                                     value={stockRequestForm.data.note}
                                     onChange={(event) => stockRequestForm.setData('note', event.target.value)}
-                                    placeholder="Route or return context"
+                                    placeholder={t('field.route_context')}
                                 />
                             </label>
                             <div className="flex justify-end sm:col-span-2 lg:col-span-3">
                                 <button className="button-primary" disabled={stockRequestForm.processing}>
-                                    Submit stock request
+                                    {t('field.submit_stock_request')}
                                 </button>
                             </div>
                         </form>
                     )}
                     {stock.locations.some((location) => location.balances.length > 0) && (
                         <div className="border-t border-line p-5">
-                            <h3 className="text-balance font-semibold">Sell stock to a customer</h3>
+                            <h3 className="text-balance font-semibold">{t('field.sell_stock')}</h3>
                             <p className="mt-1 text-pretty text-xs text-muted">
-                                Creates and pays a customer invoice, removes stock from your custody, and includes cash
-                                in your shift.
+                                {t('field.sell_stock_description')}
                             </p>
                             <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                                 <label className="field-label">
-                                    Customer
+                                    {t('field.customer')}
                                     <CustomerCombobox
                                         className="mt-1"
-                                        aria-label="Sale customer"
+                                        aria-label={t('field.sale_customer')}
                                         value={saleForm.data.customer_id}
                                         customers={customers.map((customer) => ({
                                             id: customer.id,
@@ -1237,13 +1246,13 @@ export default function FieldIndex({
                                     />
                                 </label>
                                 <label className="field-label">
-                                    Stock location
+                                    {t('field.stock_location')}
                                     <ResponsiveSelect
                                         className="mt-1"
                                         value={saleForm.data.warehouse_id}
                                         onChange={(event) => saleForm.setData('warehouse_id', event.target.value)}
                                     >
-                                        <option value="">Select location</option>
+                                        <option value="">{t('field.select_location')}</option>
                                         {stock.locations
                                             .filter((location) => location.balances.length > 0)
                                             .map((location) => (
@@ -1254,13 +1263,13 @@ export default function FieldIndex({
                                     </ResponsiveSelect>
                                 </label>
                                 <label className="field-label">
-                                    Item
+                                    {t('field.item')}
                                     <ResponsiveSelect
                                         className="mt-1"
                                         value={saleForm.data.inventory_item_id}
                                         onChange={(event) => saleForm.setData('inventory_item_id', event.target.value)}
                                     >
-                                        <option value="">Select item</option>
+                                        <option value="">{t('field.select_item')}</option>
                                         {stock.locations
                                             .find((location) => String(location.id) === saleForm.data.warehouse_id)
                                             ?.balances.map((balance) => (
@@ -1271,7 +1280,7 @@ export default function FieldIndex({
                                     </ResponsiveSelect>
                                 </label>
                                 <label className="field-label">
-                                    Quantity
+                                    {t('field.quantity')}
                                     <input
                                         className="field mt-1 tabular-nums"
                                         inputMode="decimal"
@@ -1281,7 +1290,7 @@ export default function FieldIndex({
                                     />
                                 </label>
                                 <label className="field-label">
-                                    Unit price
+                                    {t('field.unit_price')}
                                     <input
                                         className="field mt-1 tabular-nums"
                                         inputMode="decimal"
@@ -1291,7 +1300,7 @@ export default function FieldIndex({
                                     />
                                 </label>
                                 <label className="field-label">
-                                    Currency
+                                    {t('field.currency')}
                                     <CurrencyCombobox
                                         className="field mt-1"
                                         value={saleForm.data.currency}
@@ -1300,40 +1309,40 @@ export default function FieldIndex({
                                     />
                                 </label>
                                 <label className="field-label">
-                                    Payment method
+                                    {t('field.payment_method')}
                                     <ResponsiveSelect
                                         className="mt-1"
                                         value={saleForm.data.payment_method}
                                         onChange={(event) => saleForm.setData('payment_method', event.target.value)}
                                     >
-                                        <option value="cash">Cash</option>
-                                        <option value="mobile_wallet">Mobile wallet</option>
-                                        <option value="card">Card</option>
-                                        <option value="bank_transfer">Bank transfer</option>
+                                        <option value="cash">{t('field.cash')}</option>
+                                        <option value="mobile_wallet">{t('field.mobile_wallet')}</option>
+                                        <option value="card">{t('field.card')}</option>
+                                        <option value="bank_transfer">{t('field.bank_transfer')}</option>
                                     </ResponsiveSelect>
                                 </label>
                                 <label className="field-label sm:col-span-2">
-                                    Note (optional)
+                                    {t('field.note_optional')}
                                     <input
                                         className="field mt-1"
                                         value={saleForm.data.note}
                                         onChange={(event) => saleForm.setData('note', event.target.value)}
-                                        placeholder="Item handover context"
+                                        placeholder={t('field.item_handover')}
                                     />
                                 </label>
                             </div>
                             {saleForm.errors.lines && <p className="field-error mt-3">{saleForm.errors.lines}</p>}
                             <div className="mt-4 flex items-center justify-between gap-4">
                                 <p className="text-sm text-muted">
-                                    Total:{' '}
+                                    {t('field.total')}:{' '}
                                     <span className="font-semibold tabular-nums text-ink">
                                         {saleTotal === null ? '—' : formatMoney(saleTotal, saleForm.data.currency)}
                                     </span>
                                 </p>
                                 <ConfirmDialog
-                                    title="Record this paid inventory sale?"
+                                    title={t('field.record_sale_title')}
                                     description={`This creates a paid invoice for ${saleTotal === null ? 'the calculated total' : formatMoney(saleTotal, saleForm.data.currency)} and immediately removes the item from your stock.`}
-                                    confirmLabel="Record sale"
+                                    confirmLabel={t('field.record_sale')}
                                     onConfirm={submitInventorySale}
                                 >
                                     <button
@@ -1376,13 +1385,13 @@ export default function FieldIndex({
                     )}
                     {stock.locations.some((location) => location.balances.length > 0) && (
                         <form onSubmit={submitStockCount} className="border-t border-line p-5">
-                            <h3 className="text-balance font-semibold">Submit physical count</h3>
+                            <h3 className="text-balance font-semibold">{t('field.submit_physical_count')}</h3>
                             <p className="mt-1 text-pretty text-xs text-muted">
-                                Enter what is physically present. A manager reviews any variance before balances change.
+                                {t('field.physical_count_description')}
                             </p>
                             <div className="mt-4 grid gap-4 sm:grid-cols-2">
                                 <label className="field-label">
-                                    Stock location
+                                    {t('field.stock_location')}
                                     <ResponsiveSelect
                                         className="mt-1"
                                         value={stockCountForm.data.warehouse_id}
@@ -1391,7 +1400,7 @@ export default function FieldIndex({
                                             setCountedQuantities({});
                                         }}
                                     >
-                                        <option value="">Select location</option>
+                                        <option value="">{t('field.select_location')}</option>
                                         {stock.locations
                                             .filter((location) => location.balances.length > 0)
                                             .map((location) => (
@@ -1402,12 +1411,12 @@ export default function FieldIndex({
                                     </ResponsiveSelect>
                                 </label>
                                 <label className="field-label">
-                                    Count note (optional)
+                                    {t('field.count_note')}
                                     <input
                                         className="field mt-1"
                                         value={stockCountForm.data.note}
                                         onChange={(event) => stockCountForm.setData('note', event.target.value)}
-                                        placeholder="End of route, damaged stock…"
+                                        placeholder={t('field.end_route')}
                                     />
                                 </label>
                             </div>
@@ -1424,7 +1433,7 @@ export default function FieldIndex({
                                             >
                                                 <span className="block truncate">{balance.name}</span>
                                                 <span className="mt-1 block text-xs font-normal text-muted">
-                                                    System: <span className="tabular-nums">{balance.quantity}</span>
+                                                    {t('field.system')}: <span className="tabular-nums">{balance.quantity}</span>
                                                 </span>
                                                 <input
                                                     className="field mt-2 tabular-nums"
@@ -1436,7 +1445,7 @@ export default function FieldIndex({
                                                             [balance.item_id]: event.target.value,
                                                         }))
                                                     }
-                                                    placeholder="Physical quantity"
+                                                    placeholder={t('field.physical_quantity')}
                                                 />
                                             </label>
                                         ))}
@@ -1447,9 +1456,9 @@ export default function FieldIndex({
                             )}
                             <div className="mt-4 flex justify-end">
                                 <ConfirmDialog
-                                    title="Submit this physical count?"
-                                    description="The count is sent for manager review. Stock balances do not change until it is approved."
-                                    confirmLabel="Submit count"
+                                    title={t('field.submit_count_title')}
+                                    description={t('field.submit_count_description')}
+                                    confirmLabel={t('field.submit_count')}
                                     onConfirm={() => document.getElementById('field-stock-count-submit')?.click()}
                                 >
                                     <button
@@ -1457,7 +1466,7 @@ export default function FieldIndex({
                                         className="button-secondary"
                                         disabled={!stockCountForm.data.warehouse_id || stockCountForm.processing}
                                     >
-                                        Review and submit
+                                        {t('field.review_submit')}
                                     </button>
                                 </ConfirmDialog>
                                 <button id="field-stock-count-submit" type="submit" className="hidden">
@@ -1482,7 +1491,7 @@ export default function FieldIndex({
                                     <div className="shrink-0 text-end">
                                         <p className="text-sm font-semibold tabular-nums">{request.quantity}</p>
                                         <p className="mt-1 text-xs font-semibold capitalize text-muted">
-                                            {request.status}
+                                            {fieldValue(request.status)}
                                         </p>
                                     </div>
                                 </div>
@@ -1495,21 +1504,20 @@ export default function FieldIndex({
                     <div className="flex items-start gap-3">
                         <MapPin className="mt-0.5 shrink-0 text-brand" size={19} />
                         <div>
-                            <h2 className="text-sm font-semibold">Field attendance</h2>
+                            <h2 className="text-sm font-semibold">{t('field.field_attendance')}</h2>
                             <p className="mt-1 text-pretty text-xs text-muted">
-                                Your browser shares location only when you press this button. There is no continuous
-                                background tracking.
+                                {t('field.attendance_description')}
                             </p>
                         </div>
                     </div>
                     {fieldDay && (
                         <label className="field-label min-w-0 flex-1 sm:max-w-sm">
-                            Checkout note (optional)
+                            {t('field.checkout_note')}
                             <textarea
                                 className="field mt-1 min-h-16"
                                 value={checkoutNote}
                                 maxLength={2000}
-                                placeholder="Cash handover, unresolved visits, or follow-up needed"
+                                placeholder={t('field.checkout_placeholder')}
                                 onChange={(event) => setCheckoutNote(event.target.value)}
                             />
                         </label>
@@ -1530,14 +1538,14 @@ export default function FieldIndex({
                         <div className="flex items-start gap-3">
                             <ClipboardCheck className="mt-0.5 shrink-0 text-brand" size={19} />
                             <div>
-                                <h2 className="text-balance text-xl font-semibold">Assigned tasks</h2>
+                                <h2 className="text-balance text-xl font-semibold">{t('field.assigned_tasks')}</h2>
                                 <p className="mt-1 text-pretty text-sm text-muted">
-                                    Acknowledge field work and keep questions with the assignment.
+                                    {t('field.assigned_tasks_description')}
                                 </p>
                             </div>
                         </div>
                         <span className="rounded-full bg-brand-soft px-3 py-1 text-xs font-semibold text-brand tabular-nums">
-                            {tasks.length} open
+                            {tasks.length} {t('field.open_tasks')}
                         </span>
                     </div>
                     {tasks.length > 0 ? (
@@ -1557,12 +1565,12 @@ export default function FieldIndex({
                                             {task.unread && (
                                                 <span
                                                     className="mt-1.5 size-2 shrink-0 rounded-full bg-brand"
-                                                    aria-label="Unread messages"
+                                                    aria-label={t('field.unread_messages')}
                                                 />
                                             )}
                                         </div>
                                         <p className="mt-2 text-xs capitalize text-muted">
-                                            {task.priority} · {task.status.replaceAll('_', ' ')}
+                                            {fieldValue(task.priority)} · {fieldValue(task.status)}
                                         </p>
                                     </button>
                                 ))}
@@ -1571,7 +1579,7 @@ export default function FieldIndex({
                                 <div className="min-w-0 p-5">
                                     <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-start">
                                         <div>
-                                            <p className="eyebrow">{selectedTask.priority} priority</p>
+                                            <p className="eyebrow">{fieldValue(selectedTask.priority)} priority</p>
                                             <h3 className="mt-1 text-balance text-lg font-semibold">
                                                 {selectedTask.title}
                                             </h3>
@@ -1588,12 +1596,12 @@ export default function FieldIndex({
                                             onClick={() => void updateTaskStatus(selectedTask)}
                                         >
                                             {selectedTask.status === 'assigned'
-                                                ? 'Acknowledge'
+                                                ? t('field.acknowledge')
                                                 : selectedTask.status === 'acknowledged'
-                                                  ? 'Start task'
+                                                  ? t('field.start_task')
                                                   : selectedTask.status === 'in_progress'
-                                                    ? 'Complete task'
-                                                    : 'Completed'}
+                                                    ? t('field.complete_task')
+                                                    : t('field.completed')}
                                         </button>
                                     </div>
                                     {selectedTask.description && (
@@ -1612,14 +1620,14 @@ export default function FieldIndex({
                                             <p className="mt-1 text-xs text-muted">
                                                 {selectedTask.customer.address ??
                                                     selectedTask.customer.phone ??
-                                                    'Open customer details'}
+                                                    t('field.open_customer_details')}
                                             </p>
                                         </Link>
                                     )}
                                     <div className="mt-5 border-t border-line pt-5">
                                         <div className="flex items-center gap-2">
                                             <MessageSquare size={17} className="text-brand" />
-                                            <h4 className="text-sm font-semibold">Conversation</h4>
+                                            <h4 className="text-sm font-semibold">{t('field.conversation')}</h4>
                                         </div>
                                         <div className="mt-3 max-h-72 space-y-3 overflow-y-auto">
                                             {selectedTask.messages.map((taskMessage) => (
@@ -1645,7 +1653,7 @@ export default function FieldIndex({
                                             ))}
                                             {selectedTask.messages.length === 0 && (
                                                 <p className="rounded-xl border border-dashed border-line p-5 text-center text-sm text-muted">
-                                                    No messages yet.
+                                                    {t('field.no_messages')}
                                                 </p>
                                             )}
                                         </div>
@@ -1657,7 +1665,7 @@ export default function FieldIndex({
                                             }}
                                         >
                                             <label className="field-label">
-                                                Reply
+                                                {t('field.reply')}
                                                 <textarea
                                                     className="field mt-1 min-h-20"
                                                     value={taskReply}
@@ -1666,7 +1674,7 @@ export default function FieldIndex({
                                                 />
                                             </label>
                                             <label className="field-label mt-3 block">
-                                                Attachment (optional)
+                                                {t('field.attachment_optional')}
                                                 <input
                                                     key={taskAttachment?.name ?? 'empty'}
                                                     className="field mt-1"
@@ -1682,7 +1690,7 @@ export default function FieldIndex({
                                                     className="button-secondary"
                                                     disabled={!online || taskBusy || taskReply.trim() === ''}
                                                 >
-                                                    Send reply
+                                                    {t('field.send_reply')}
                                                 </button>
                                             </div>
                                         </form>
@@ -1693,9 +1701,9 @@ export default function FieldIndex({
                     ) : (
                         <div className="p-10 text-center">
                             <CheckCircle2 className="mx-auto text-emerald-600" size={28} />
-                            <p className="mt-3 font-semibold">No open tasks</p>
+                            <p className="mt-3 font-semibold">{t('field.no_open_tasks')}</p>
                             <p className="mt-1 text-pretty text-sm text-muted">
-                                New assignments from your manager will appear here.
+                                {t('field.new_assignments')}
                             </p>
                         </div>
                     )}
@@ -1704,14 +1712,14 @@ export default function FieldIndex({
                 <section className="card mt-6 overflow-hidden">
                     <div className="flex flex-col gap-4 border-b border-line p-5 sm:flex-row sm:items-start sm:justify-between">
                         <div>
-                            <p className="eyebrow">Today’s route</p>
+                            <p className="eyebrow">{t('field.todays_route')}</p>
                             <h2 className="mt-1 text-xl font-semibold text-balance">
                                 {collectorRoute
                                     ? `${collectorRoute.completed_count}/${collectorRoute.stop_count} stops completed`
-                                    : 'No route assigned'}
+                                    : t('field.no_route')}
                             </h2>
                             <p className="mt-1 text-pretty text-sm text-muted">
-                                Planned order is preserved. Nearby sorting changes only your current view.
+                                {t('field.route_description')}
                             </p>
                         </div>
                         {collectorRoute && (
@@ -1722,14 +1730,14 @@ export default function FieldIndex({
                                     onClick={() => void sortRouteNearby()}
                                     disabled={locationBusy}
                                 >
-                                    <LocateFixed size={15} /> Nearest first
+                                    <LocateFixed size={15} /> {t('field.nearest_first')}
                                 </button>
                                 <button
                                     type="button"
                                     className={!nearbyOrder ? 'button-secondary' : 'button-quiet'}
                                     onClick={() => setNearbyOrder(false)}
                                 >
-                                    <ListOrdered size={15} /> Planned order
+                                    <ListOrdered size={15} /> {t('field.planned_order')}
                                 </button>
                             </div>
                         )}
@@ -1751,7 +1759,7 @@ export default function FieldIndex({
                                                     <span className="text-xs text-muted">{stop.customer.code}</span>
                                                     {stop.outcome !== 'pending' && (
                                                         <span className="rounded-full bg-sand px-2 py-1 text-xs font-semibold capitalize text-muted">
-                                                            {stop.outcome.replaceAll('_', ' ')}
+                                                            {fieldValue(stop.outcome)}
                                                         </span>
                                                     )}
                                                 </div>
@@ -1779,7 +1787,7 @@ export default function FieldIndex({
                                                             ?.scrollIntoView({ block: 'start' });
                                                     }}
                                                 >
-                                                    Collect
+                                                    {t('field.collect')}
                                                 </button>
                                                 <button
                                                     type="button"
@@ -1787,7 +1795,7 @@ export default function FieldIndex({
                                                     onClick={() => setSelectedStopId(selected ? '' : stop.id)}
                                                     disabled={!fieldDay || stop.outcome !== 'pending'}
                                                 >
-                                                    Outcome
+                                                    {t('field.outcome')}
                                                 </button>
                                             </div>
                                         </div>
@@ -1797,7 +1805,7 @@ export default function FieldIndex({
                                                 className="mt-4 grid gap-4 rounded-xl border border-line bg-sand/50 p-4 sm:grid-cols-[0.7fr_1.3fr_auto] sm:items-end"
                                             >
                                                 <label>
-                                                    <span className="field-label">Visit outcome</span>
+                                                    <span className="field-label">{t('field.visit_outcome')}</span>
                                                     <ResponsiveSelect
                                                         className="field"
                                                         value={visitOutcome}
@@ -1807,20 +1815,20 @@ export default function FieldIndex({
                                                             )
                                                         }
                                                     >
-                                                        <option value="collected">Collected</option>
-                                                        <option value="no_answer">No answer</option>
-                                                        <option value="refused">Refused</option>
-                                                        <option value="reschedule">Reschedule</option>
-                                                        <option value="address_issue">Address issue</option>
+                                                        <option value="collected">{t('field.collected')}</option>
+                                                        <option value="no_answer">{t('field.no_answer')}</option>
+                                                        <option value="refused">{t('field.refused')}</option>
+                                                        <option value="reschedule">{t('field.reschedule')}</option>
+                                                        <option value="address_issue">{t('field.address_issue')}</option>
                                                     </ResponsiveSelect>
                                                 </label>
                                                 <label>
-                                                    <span className="field-label">Visit note</span>
+                                                    <span className="field-label">{t('field.visit_note')}</span>
                                                     <input
                                                         className="field"
                                                         value={visitNote}
                                                         onChange={(event) => setVisitNote(event.target.value)}
-                                                        placeholder="Optional operational note"
+                                                        placeholder={t('field.operational_note')}
                                                     />
                                                 </label>
                                                 <button className="button-primary" disabled={visitBusy}>
@@ -1835,15 +1843,15 @@ export default function FieldIndex({
                     ) : (
                         <div className="p-10 text-center">
                             <MapPin className="mx-auto text-muted" size={28} />
-                            <p className="mt-3 font-semibold">No customer stops assigned today</p>
-                            <p className="mt-1 text-sm text-muted">Your manager can publish a route from operations.</p>
+                            <p className="mt-3 font-semibold">{t('field.no_stops')}</p>
+                            <p className="mt-1 text-sm text-muted">{t('field.route_publish')}</p>
                         </div>
                     )}
                 </section>
 
                 {!shift && (
                     <div className="mt-6 flex flex-col gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900 sm:flex-row sm:items-center sm:justify-between">
-                        <span>Open a cash shift before recording collector payments.</span>
+                        <span>{t('field.open_shift_before')}</span>
                         <Link href="/billing/shifts" className="font-semibold underline">
                             Open shifts
                         </Link>
@@ -1861,24 +1869,24 @@ export default function FieldIndex({
 
                 <section id="field-payment-form" className="card mt-6 overflow-hidden scroll-mt-24">
                     <div className="border-b border-line p-5">
-                        <p className="eyebrow">Customer queue</p>
+                        <p className="eyebrow">{t('field.customer_queue')}</p>
                         <div className="flex items-start justify-between gap-4">
-                            <h2 className="mt-1 text-xl font-semibold">Choose a customer</h2>
+                            <h2 className="mt-1 text-xl font-semibold">{t('field.choose_customer')}</h2>
                             <button
                                 type="button"
                                 className="inline-flex shrink-0 items-center gap-1 text-xs font-semibold text-brand disabled:opacity-50"
                                 onClick={() => void refreshSnapshot()}
                                 disabled={!online || busy}
                             >
-                                <RefreshCw size={13} className={busy ? 'animate-spin' : ''} /> Refresh list
+                                <RefreshCw size={13} className={busy ? 'animate-spin' : ''} /> {t('field.refresh_list')}
                             </button>
                         </div>
                         <div className="relative mt-4">
                             <Search size={17} className="pointer-events-none absolute start-3 top-3 text-muted" />
                             <input
                                 className="field ps-10"
-                                aria-label="Search field customers"
-                                placeholder="Search name, code or phone"
+                                aria-label={t('field.search_customers')}
+                                placeholder={t('field.search_customers')}
                                 value={search}
                                 onChange={(event) => setSearch(event.target.value)}
                             />
@@ -1913,7 +1921,7 @@ export default function FieldIndex({
                             );
                         })}
                         {filteredCustomers.length === 0 && (
-                            <p className="p-6 text-sm text-muted">No customers match this search.</p>
+                            <p className="p-6 text-sm text-muted">{t('field.no_customer_match')}</p>
                         )}
                     </div>
                 </section>
@@ -1922,20 +1930,22 @@ export default function FieldIndex({
                     <div className="flex items-center gap-2">
                         <CreditCard size={18} className="text-brand" />
                         <div>
-                            <p className="font-semibold">Record collection</p>
+                            <p className="font-semibold">{t('field.record_collection')}</p>
                             <p className="text-xs text-muted">
                                 {selectedCustomer
                                     ? `${selectedCustomer.first_name} ${selectedCustomer.last_name ?? ''}`
-                                    : 'Select a customer above'}
+                                    : t('field.select_customer')}
                             </p>
                         </div>
                     </div>
                     <div className="grid gap-5 sm:grid-cols-2">
                         <label className="block">
-                            <span className="field-label">Amount ({currency})</span>
+                            <span className="field-label">
+                                {t('field.amount')} ({currency})
+                            </span>
                             <input
                                 className="field"
-                                aria-label="Field payment amount"
+                                aria-label={t('field.field_payment_amount')}
                                 type="number"
                                 inputMode="decimal"
                                 min="0"
@@ -1946,25 +1956,25 @@ export default function FieldIndex({
                             />
                         </label>
                         <label className="block">
-                            <span className="field-label">Currency</span>
+                            <span className="field-label">{t('field.currency')}</span>
                             <CurrencyCombobox
-                                aria-label="Field payment currency"
+                                aria-label={t('field.field_payment_currency')}
                                 value={currency}
                                 currencies={currencyOptions}
                                 onChange={setCurrency}
                             />
                         </label>
                         <label className="block sm:col-span-2">
-                            <span className="field-label">Payment method</span>
+                            <span className="field-label">{t('field.payment_method')}</span>
                             <ResponsiveSelect
-                                aria-label="Field payment method"
+                                aria-label={t('field.field_payment_method')}
                                 value={method}
                                 onChange={(event) => setMethod(event.target.value)}
                             >
-                                <option value="cash">Cash</option>
-                                <option value="bank_transfer">Bank transfer</option>
-                                <option value="card">Card</option>
-                                <option value="mobile_wallet">Mobile wallet</option>
+                                <option value="cash">{t('field.cash')}</option>
+                                <option value="bank_transfer">{t('field.bank_transfer')}</option>
+                                <option value="card">{t('field.card')}</option>
+                                <option value="mobile_wallet">{t('field.mobile_wallet')}</option>
                             </ResponsiveSelect>
                         </label>
                     </div>
@@ -1973,17 +1983,16 @@ export default function FieldIndex({
                         className="button-primary w-full justify-center"
                         disabled={!shift || !selectedCustomer || busy}
                     >
-                        <CheckCircle2 size={17} /> Save payment to device
+                        <CheckCircle2 size={17} /> {t('field.save_payment')}
                     </button>
                     <p className="text-xs text-muted">
-                        Payments use a unique idempotency key and are encrypted in this browser until the server accepts
-                        or rejects them.
+                        {t('field.encryption_note')}
                     </p>
                 </form>
 
                 {pending.length > 0 && (
                     <section className="card mt-6 p-5">
-                        <h2 className="font-semibold">Pending review</h2>
+                        <h2 className="font-semibold">{t('field.pending_review')}</h2>
                         <div className="mt-3 space-y-3">
                             {pending.map((item) => {
                                 const customer = customers.find((candidate) => candidate.id === item.customer_id);
