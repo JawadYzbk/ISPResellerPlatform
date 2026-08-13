@@ -9,6 +9,7 @@ use App\Actions\DisconnectWhatsAppAccount;
 use App\Actions\GetCurrencyCatalog;
 use App\Actions\GetPaymentSetupStatus;
 use App\Actions\GetTenantReadiness;
+use App\Actions\GetBackupHealth;
 use App\Actions\GetWhatsAppSetupStatus;
 use App\Actions\GetWorkspaceSetupSignals;
 use App\Actions\QueueWhatsAppTestMessage;
@@ -70,7 +71,7 @@ final class SettingsController extends Controller
         ]);
     }
 
-    public function readiness(Request $request, GetTenantReadiness $readiness): Response
+    public function readiness(Request $request, GetTenantReadiness $readiness, GetBackupHealth $backupHealth): Response
     {
         $user = $request->user();
         abort_unless($user instanceof User && $user->can('settings.manage'), 403);
@@ -88,6 +89,7 @@ final class SettingsController extends Controller
                 ...$check,
             ])->values()->all(),
             'providerChecks' => $request->session()->get('provider_checks'),
+            'backupHealth' => $backupHealth->handle(),
         ]);
     }
 

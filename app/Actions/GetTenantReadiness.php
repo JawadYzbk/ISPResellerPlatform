@@ -20,6 +20,7 @@ use Throwable;
 final readonly class GetTenantReadiness implements Action
 {
     public function __construct(
+        private GetBackupHealth $backupHealth,
         private GetWhatsAppSetupStatus $whatsappStatus,
         private MessageTemplateProvisioner $templateProvisioner,
         private Tenancy $tenancy,
@@ -94,7 +95,16 @@ final readonly class GetTenantReadiness implements Action
             'Stripe gateway' => $this->stripeCheck(),
             'Whish Pay gateway' => $this->whishCheck(),
             'WhatsApp channel' => $this->whatsappCheck($tenant),
+            'Backup health' => $this->backupCheck(),
         ];
+    }
+
+    /** @return array{status: 'PASS'|'WARN'|'FAIL', detail: string} */
+    private function backupCheck(): array
+    {
+        $health = $this->backupHealth->handle();
+
+        return $this->check($health['status'], $health['detail']);
     }
 
     /** @return array{status: 'PASS'|'WARN'|'FAIL', detail: string} */
