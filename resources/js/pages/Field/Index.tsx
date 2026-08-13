@@ -1201,7 +1201,7 @@ export default function FieldIndex({
                                     placeholder="0.000"
                                 />
                                 {stockRequestForm.errors.quantity && (
-                                    <span className="field-error">{stockRequestForm.errors.quantity}</span>
+                                    <span className="field-error">{t(stockRequestForm.errors.quantity)}</span>
                                 )}
                             </label>
                             <label className="field-label">
@@ -1331,7 +1331,7 @@ export default function FieldIndex({
                                     />
                                 </label>
                             </div>
-                            {saleForm.errors.lines && <p className="field-error mt-3">{saleForm.errors.lines}</p>}
+                            {saleForm.errors.lines && <p className="field-error mt-3">{t(saleForm.errors.lines)}</p>}
                             <div className="mt-4 flex items-center justify-between gap-4">
                                 <p className="text-sm text-muted">
                                     {t('field.total')}:{' '}
@@ -1454,7 +1454,7 @@ export default function FieldIndex({
                                 </div>
                             )}
                             {stockCountForm.errors.lines && (
-                                <p className="field-error mt-3">{stockCountForm.errors.lines}</p>
+                                <p className="field-error mt-3">{t(stockCountForm.errors.lines)}</p>
                             )}
                             <div className="mt-4 flex justify-end">
                                 <ConfirmDialog

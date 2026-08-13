@@ -685,7 +685,7 @@ export default function CustomerShow({
                                         }
                                     />
                                     {documentForm.errors.file && (
-                                        <p className="field-error">{documentForm.errors.file}</p>
+                                        <p className="field-error">{t(documentForm.errors.file)}</p>
                                     )}
                                 </label>
                                 <label>
@@ -701,7 +701,7 @@ export default function CustomerShow({
                                         <option value="other">{t('Other')}</option>
                                     </ResponsiveSelect>
                                     {documentForm.errors.document_type && (
-                                        <p className="field-error">{documentForm.errors.document_type}</p>
+                                        <p className="field-error">{t(documentForm.errors.document_type)}</p>
                                     )}
                                 </label>
                                 <label>
@@ -715,7 +715,7 @@ export default function CustomerShow({
                                         }
                                     />
                                     {documentForm.errors.retention_until && (
-                                        <p className="field-error">{documentForm.errors.retention_until}</p>
+                                        <p className="field-error">{t(documentForm.errors.retention_until)}</p>
                                     )}
                                 </label>
                                 <button

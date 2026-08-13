@@ -218,7 +218,7 @@ export default function InvoiceShowPage({
                                     onChange={(event) => creditForm.setData('amount', event.target.value)}
                                     placeholder="1000"
                                 />
-                                {creditForm.errors.amount && <p className="field-error">{creditForm.errors.amount}</p>}
+                                {creditForm.errors.amount && <p className="field-error">{t(creditForm.errors.amount)}</p>}
                             </label>
                             <label>
                                 <span className="field-label">{t('Reason')}</span>
@@ -228,7 +228,7 @@ export default function InvoiceShowPage({
                                     onChange={(event) => creditForm.setData('reason', event.target.value)}
                                     placeholder={t('Service interruption')}
                                 />
-                                {creditForm.errors.reason && <p className="field-error">{creditForm.errors.reason}</p>}
+                                {creditForm.errors.reason && <p className="field-error">{t(creditForm.errors.reason)}</p>}
                             </label>
                             <button type="submit" className="button-secondary w-full" disabled={creditForm.processing}>
                                 {t('Issue credit note')}
