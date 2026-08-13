@@ -18,15 +18,18 @@ final class MediaDownloadController extends Controller
         $user = $request->user();
         abort_unless($user instanceof User, 401);
         $upload = MediaUpload::query()
-            ->with('collectorTaskMessage.task')
+            ->with(['collectorTaskMessage.task', 'operationalExpense'])
             ->where('public_id', $media)
             ->where(function (Builder $query): void {
                 $query->whereNotNull('work_order_id')
                     ->orWhereNotNull('customer_id')
-                    ->orWhereNotNull('collector_task_message_id');
+                    ->orWhereNotNull('collector_task_message_id')
+                    ->orWhereNotNull('operational_expense_id');
             })
             ->firstOrFail();
-        if ($upload->collector_task_message_id !== null) {
+        if ($upload->operational_expense_id !== null) {
+            abort_unless($user->can('expenses.view'), 403);
+        } elseif ($upload->collector_task_message_id !== null) {
             $task = $upload->collectorTaskMessage?->task;
             abort_unless($task !== null && app(CollectorTaskAccess::class)->canView($user, $task), 404);
         } elseif ($upload->customer_id !== null) {
