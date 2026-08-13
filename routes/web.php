@@ -112,6 +112,7 @@ Route::middleware(['auth', 'tenant', '2fa'])->group(function (): void {
     Route::get('/settings', fn () => redirect()->route('settings.general'))->name('settings');
     Route::get('/settings/general', [SettingsController::class, 'general'])->name('settings.general');
     Route::get('/settings/readiness', [SettingsController::class, 'readiness'])->name('settings.readiness');
+    Route::post('/settings/readiness/provider-check', [SettingsController::class, 'providerCheck'])->middleware('recent-auth')->name('settings.readiness.provider-check');
     Route::get('/settings/locations', [LocationOperationsController::class, 'index'])->name('settings.locations');
     Route::post('/settings/locations/branches', [LocationOperationsController::class, 'storeBranch'])->middleware('recent-auth')->name('settings.locations.branches.store');
     Route::patch('/settings/locations/branches/{branch}', [LocationOperationsController::class, 'updateBranch'])->middleware('recent-auth')->name('settings.locations.branches.update');

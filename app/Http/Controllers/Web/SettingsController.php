@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Web;
 
+use App\Actions\CheckProviderConnectivity;
 use App\Actions\CreateWhatsAppAccount;
 use App\Actions\DeleteWhatsAppAccount;
 use App\Actions\DisconnectWhatsAppAccount;
@@ -81,7 +82,24 @@ final class SettingsController extends Controller
                 'name' => $name,
                 ...$check,
             ])->values()->all(),
+            'providerChecks' => $request->session()->get('provider_checks'),
         ]);
+    }
+
+    public function providerCheck(Request $request, CheckProviderConnectivity $check): RedirectResponse
+    {
+        $user = $request->user();
+        abort_unless($user instanceof User && $user->can('settings.manage'), 403);
+
+        $results = $check->handle();
+        $hasIssues = collect($results)->contains(fn (array $result): bool => in_array($result['status'], ['failed', 'not_configured'], true));
+
+        return to_route('settings.readiness')
+            ->with('provider_checks', $results)
+            ->with('success_title', 'Provider checks')
+            ->with('success', $hasIssues
+                ? 'Provider checks completed with actions required.'
+                : 'All configured provider checks passed.');
     }
 
     public function updateGeneral(TenantSettingsRequest $request, UpdateTenantSettings $update): RedirectResponse

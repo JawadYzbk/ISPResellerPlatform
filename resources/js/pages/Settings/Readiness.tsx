@@ -1,11 +1,13 @@
-import { Head, Link } from '@inertiajs/react';
-import { AlertTriangle, ArrowLeft, CheckCircle2, ExternalLink, XCircle } from 'lucide-react';
+import { Head, Link, useForm } from '@inertiajs/react';
+import { AlertTriangle, ArrowLeft, CheckCircle2, ExternalLink, LoaderCircle, RefreshCw, XCircle } from 'lucide-react';
 
 import AppLayout from '@/layouts/AppLayout';
 
 type Status = 'PASS' | 'WARN' | 'FAIL';
 type Check = { name: string; status: Status; detail: string };
-type Props = { overall: Status; checks: Check[] };
+type ProviderStatus = 'ready' | 'disabled' | 'not_configured' | 'failed';
+type ProviderCheck = { status: ProviderStatus; detail: string };
+type Props = { overall: Status; checks: Check[]; providerChecks?: Record<string, ProviderCheck> | null };
 
 const checkLinks: Record<string, string> = {
     'Tenant status': '/settings/general',
@@ -49,8 +51,24 @@ function StatusIcon({ status }: { status: Status }) {
     return <XCircle size={20} className="shrink-0 text-coral" />;
 }
 
-export default function Readiness({ overall, checks }: Props) {
+const providerLabels: Record<string, string> = {
+    frankfurter: 'Frankfurter FX',
+    stripe: 'Stripe',
+    whish: 'Whish Pay',
+    whatsapp_web: 'WhatsApp Web.js',
+};
+
+function ProviderIcon({ status }: { status: ProviderStatus }) {
+    if (status === 'ready') return <CheckCircle2 size={18} className="shrink-0 text-emerald-700" />;
+    if (status === 'disabled') return <AlertTriangle size={18} className="shrink-0 text-muted" />;
+    if (status === 'not_configured') return <AlertTriangle size={18} className="shrink-0 text-amber-700" />;
+
+    return <XCircle size={18} className="shrink-0 text-coral" />;
+}
+
+export default function Readiness({ overall, checks, providerChecks = null }: Props) {
     const summary = statusCopy[overall];
+    const providerForm = useForm({});
 
     return (
         <AppLayout>
@@ -110,6 +128,55 @@ export default function Readiness({ overall, checks }: Props) {
                             </div>
                         );
                     })}
+                </section>
+
+                <section className="card mt-6 overflow-hidden">
+                    <div className="flex flex-wrap items-start justify-between gap-4 border-b border-line px-5 py-5">
+                        <div>
+                            <p className="eyebrow">External services</p>
+                            <h2 className="mt-1 text-base font-semibold">Provider connectivity</h2>
+                            <p className="mt-1 text-sm text-muted">
+                                Read-only probes use server-side credentials and never create a payment or send a message.
+                            </p>
+                        </div>
+                        <button
+                            type="button"
+                            className="button-secondary inline-flex items-center gap-2"
+                            disabled={providerForm.processing}
+                            onClick={() => providerForm.post('/settings/readiness/provider-check', { preserveScroll: true })}
+                        >
+                            {providerForm.processing ? <LoaderCircle size={16} className="animate-spin" /> : <RefreshCw size={16} />}
+                            {providerForm.processing ? 'Checking…' : 'Run provider checks'}
+                        </button>
+                    </div>
+                    {providerChecks ? (
+                        <div className="divide-y divide-line">
+                            {Object.entries(providerChecks).map(([provider, check]) => (
+                                <div key={provider} className="flex items-start gap-3 px-5 py-4">
+                                    <ProviderIcon status={check.status} />
+                                    <div className="min-w-0 flex-1">
+                                        <p className="text-sm font-semibold">{providerLabels[provider] ?? provider}</p>
+                                        <p className="mt-1 text-sm text-muted">{check.detail}</p>
+                                    </div>
+                                    <span
+                                        className={`shrink-0 text-xs font-semibold ${
+                                            check.status === 'ready'
+                                                ? 'text-emerald-700'
+                                                : check.status === 'disabled'
+                                                  ? 'text-muted'
+                                                  : check.status === 'not_configured'
+                                                    ? 'text-amber-700'
+                                                    : 'text-coral'
+                                        }`}
+                                    >
+                                        {check.status.replace('_', ' ').toUpperCase()}
+                                    </span>
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <p className="px-5 py-5 text-sm text-muted">Run the probe after loading your provider configuration.</p>
+                    )}
                 </section>
             </div>
         </AppLayout>
