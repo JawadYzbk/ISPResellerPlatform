@@ -496,7 +496,7 @@ export default function FieldIndex({
                     const result = results.find((candidate) => candidate.index === index);
                     return result?.status === 'created' || result?.status === 'replayed'
                         ? []
-                        : [{ ...item, last_error: result?.error ?? 'Payment was not accepted yet.' }];
+                        : [{ ...item, last_error: result?.error ?? t('Payment was not accepted yet.') }];
                 });
                 await persist(remaining);
                 setMessage(
@@ -869,7 +869,7 @@ export default function FieldIndex({
                 data?: { entry: FieldCustodyEntry; position: FieldCustody['position'] };
             };
             if (!response.ok || !body.data)
-                throw new Error(body.message ?? 'The custody request could not be submitted.');
+                throw new Error(body.message ?? t('The custody request could not be submitted.'));
             setCustody((current) => ({
                 position: body.data!.position,
                 entries: [body.data!.entry, ...current.entries],
@@ -877,9 +877,9 @@ export default function FieldIndex({
             setCustodyAmount('');
             setCustodyDescription('');
             setCustodyReference('');
-            setMessage(body.message ?? 'Custody request submitted.');
+            setMessage(body.message ?? t('Custody request submitted.'));
         } catch (caught) {
-            setError(caught instanceof Error ? caught.message : 'The custody request could not be submitted.');
+            setError(caught instanceof Error ? caught.message : t('The custody request could not be submitted.'));
         } finally {
             setCustodyBusy(false);
         }
@@ -1355,7 +1355,7 @@ export default function FieldIndex({
                                             !saleForm.data.inventory_item_id
                                         }
                                     >
-                                        Record sale
+                                        {t('Record sale')}
                                     </button>
                                 </ConfirmDialog>
                             </div>
@@ -1365,7 +1365,7 @@ export default function FieldIndex({
                                         <div key={sale.id} className="flex items-start justify-between gap-4 py-3">
                                             <div className="min-w-0">
                                                 <p className="truncate text-sm font-semibold">
-                                                    {sale.customer?.name ?? 'Customer sale'}
+                                                    {sale.customer?.name ?? t('Customer sale')}
                                                 </p>
                                                 <p className="mt-1 truncate text-xs text-muted">
                                                     {sale.invoice?.number} ·{' '}
@@ -1470,7 +1470,7 @@ export default function FieldIndex({
                                     </button>
                                 </ConfirmDialog>
                                 <button id="field-stock-count-submit" type="submit" className="hidden">
-                                    Submit
+                                    {t('Submit')}
                                 </button>
                             </div>
                         </form>
@@ -1481,7 +1481,7 @@ export default function FieldIndex({
                                 <div key={request.id} className="flex items-start justify-between gap-4 px-5 py-4">
                                     <div className="min-w-0">
                                         <p className="truncate text-sm font-semibold">
-                                            {request.item?.name ?? 'Stock request'}
+                                            {request.item?.name ?? t('Stock request')}
                                         </p>
                                         <p className="mt-1 text-xs text-muted">
                                             {request.source?.code} → {request.destination?.code}
@@ -1764,7 +1764,7 @@ export default function FieldIndex({
                                                     )}
                                                 </div>
                                                 <p className="mt-1 text-pretty text-sm text-muted">
-                                                    {stop.customer.address ?? stop.customer.zone ?? 'No address saved'}
+                                    {stop.customer.address ?? stop.customer.zone ?? t('No address saved')}
                                                 </p>
                                                 <p className="mt-2 text-xs font-semibold tabular-nums text-muted">
                                                     {formatMoney(

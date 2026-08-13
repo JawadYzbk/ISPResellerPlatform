@@ -36,7 +36,7 @@ export default function Sessions({ sessions }: { sessions: Session[] }) {
                                         {session.user_agent ?? t('security.unknown_device')}
                                     </p>
                                     <p className="mt-1 text-xs text-muted">
-                                        {session.ip_address ?? 'Unknown IP'}{' '}
+                                        {session.ip_address ?? t('Unknown IP')}{' '}
                                         {session.current ? '· Current session' : ''}
                                     </p>
                                 </div>

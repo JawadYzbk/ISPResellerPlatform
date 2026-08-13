@@ -113,8 +113,8 @@ function readingValue(value: string | null | undefined, suffix: string): string 
     return value === null || value === undefined ? '—' : `${value}${suffix}`;
 }
 
-function formatDate(value: string | null): string {
-    if (!value) return 'No reading recorded';
+function formatDate(value: string | null, t: (key: string) => string): string {
+    if (!value) return t('No reading recorded');
 
     return new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value));
 }
@@ -483,7 +483,7 @@ export default function OpticalOperationsPage({
                                                     {device.latest_reading.service
                                                         ? `Service ${device.latest_reading.service.username}${device.latest_reading.service.customer ? ` · ${device.latest_reading.service.customer}` : ''}`
                                                         : t('Not linked to a service')}{' '}
-                                                    · {formatDate(device.latest_reading.recorded_at)}
+                                                    · {formatDate(device.latest_reading.recorded_at, t)}
                                                 </div>
                                             </div>
                                         ) : (

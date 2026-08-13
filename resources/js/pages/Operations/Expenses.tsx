@@ -355,7 +355,7 @@ export default function Expenses({
                                         </div>
                                         <p className="mt-1 text-pretty text-sm text-muted">{expense.description}</p>
                                         <p className="mt-2 text-xs text-muted">
-                                            {expense.vendor?.name ?? 'No vendor'} · {expense.requested_by.name} ·{' '}
+                                            {expense.vendor?.name ?? t('No vendor')} · {expense.requested_by.name} ·{' '}
                                             {formatDate(expense.incurred_at)}
                                         </p>
                                     </div>
@@ -611,7 +611,7 @@ export default function Expenses({
                                         </span>
                                     </div>
                                     <p className="mt-1 text-xs text-muted">
-                                        {schedule.category.name} · {schedule.vendor?.name ?? 'No vendor'} · every{' '}
+                                        {schedule.category.name} · {schedule.vendor?.name ?? t('No vendor')} · {t('every')}{' '}
                                         {schedule.interval} {t(schedule.frequency)} · {t('next')} {schedule.next_run_on}
                                     </p>
                                 </div>

@@ -375,7 +375,7 @@ export default function CustomerShow({
                                         <div>
                                             <p className="text-xs text-muted">{t('Provisioning')}</p>
                                             <p className="mt-1 text-sm font-semibold capitalize">
-                                                {(service.provisioning_mode ?? 'manual').replace('_', ' ')}
+                                                {t(`customer.provisioning.${service.provisioning_mode ?? 'manual'}.label`)}
                                             </p>
                                             <p className="mt-1 text-xs text-muted">
                                                 {service.router?.name ?? t('No router assigned')}
@@ -732,7 +732,9 @@ export default function CustomerShow({
                                     <div className="min-w-0">
                                         <p className="truncate text-sm font-semibold">{document.filename}</p>
                                         <p className="mt-1 text-xs capitalize text-muted">
-                                            {document.document_type?.replace('_', ' ') ?? 'other'} ·{' '}
+                                            {document.document_type
+                                                ? t(document.document_type.replace('_', ' '))
+                                                : t('Other')}{' '}
                                             {document.mime_type} · {document.size_bytes} bytes ·{' '}
                                             {formatDate(document.created_at)}
                                         </p>

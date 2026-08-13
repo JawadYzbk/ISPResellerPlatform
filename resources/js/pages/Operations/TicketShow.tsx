@@ -142,7 +142,7 @@ export default function TicketShow({
                             </div>
                             {ticket.satisfaction_rating !== null && (
                                 <div>
-                                    <dt className="text-xs text-muted">Customer rating</dt>
+                                    <dt className="text-xs text-muted">{t('Customer rating')}</dt>
                                     <dd className="mt-1 font-semibold text-amber-700" aria-label={t('Customer rating')}>
                                         {'★'.repeat(ticket.satisfaction_rating)}
                                         <span className="ms-2 text-ink">{ticket.satisfaction_rating}/5</span>

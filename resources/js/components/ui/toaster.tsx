@@ -4,6 +4,7 @@ import { useEffect, useRef } from 'react';
 
 import { Toast, ToastDescription, ToastProvider, ToastTitle, ToastViewport } from '@/components/ui/toast';
 import { toast as notify, useToast } from '@/components/ui/use-toast';
+import { createTranslator } from '@/lib/i18n';
 import type { PageProps } from '@/types';
 
 const firstErrorMessage = (errors: Record<string, unknown>) =>
@@ -33,13 +34,16 @@ const inferredSuccessTitle = (message: string): string => {
 };
 
 if (typeof window !== 'undefined') {
+    const translateCurrent = (key: string) =>
+        createTranslator(document.documentElement.lang?.slice(0, 2) ?? 'en')(key);
+
     router.on('error', (event) => {
         const message = firstErrorMessage(event.detail.errors as Record<string, unknown>);
 
         if (message) {
             notify({
-                title: 'Please check the form',
-                description: message,
+                title: translateCurrent('Please check the form'),
+                description: translateCurrent(message),
                 variant: 'destructive',
                 duration: 8000,
             });
@@ -54,10 +58,11 @@ if (typeof window !== 'undefined') {
             404: 'The requested record could not be found.',
             419: 'Your session expired. Refresh the page and try again.',
         };
+        const message = messages[status] ?? 'The server could not complete this action. Try again.';
 
         notify({
-            title: 'Request failed',
-            description: messages[status] ?? 'The server could not complete this action. Try again.',
+            title: translateCurrent('Request failed'),
+            description: translateCurrent(message),
             variant: 'destructive',
             duration: 8000,
         });
@@ -65,8 +70,8 @@ if (typeof window !== 'undefined') {
 
     router.on('networkError', (event) => {
         notify({
-            title: 'Connection problem',
-            description: event.detail.error.message || 'Unable to reach the server. Try again.',
+            title: translateCurrent('Connection problem'),
+            description: translateCurrent(event.detail.error.message || 'Unable to reach the server. Try again.'),
             variant: 'destructive',
             duration: 8000,
         });
@@ -77,6 +82,7 @@ export function Toaster() {
     const { toasts, toast, dismiss } = useToast();
     const { props } = usePage<PageProps>();
     const flash = props.flash;
+    const t = createTranslator(props.app.locale);
     const lastFlashId = useRef<string | null>(null);
 
     useEffect(() => {
@@ -86,21 +92,21 @@ export function Toaster() {
 
         if (flash.success) {
             toast({
-                title: flash.successTitle ?? inferredSuccessTitle(flash.success),
-                description: flash.success,
+                title: t(flash.successTitle ?? inferredSuccessTitle(flash.success)),
+                description: t(flash.success),
                 duration: 5000,
             });
         }
 
         if (flash.error) {
             toast({
-                title: 'Action could not be completed',
-                description: flash.error,
+                title: t('Action could not be completed'),
+                description: t(flash.error),
                 variant: 'destructive',
                 duration: 8000,
             });
         }
-    }, [flash?.error, flash?.id, flash?.success, flash?.successTitle, toast]);
+    }, [flash?.error, flash?.id, flash?.success, flash?.successTitle, t, toast]);
 
     return (
         <ToastProvider swipeDirection="right">

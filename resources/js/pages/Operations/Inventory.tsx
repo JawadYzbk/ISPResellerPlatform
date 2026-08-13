@@ -1043,7 +1043,7 @@ export default function InventoryPage({
                                             </label>
                                             <ConfirmDialog
                                                 title={t('inventory.approve_transfer_title')}
-                                                description={`This immediately transfers ${request.quantity} ${request.item?.name ?? 'items'} from ${request.source?.code ?? 'the source'} to ${request.destination?.code ?? 'the destination'}.`}
+                                                description={`${t('This immediately transfers')} ${request.quantity} ${request.item?.name ?? t('items')} ${t('from')} ${request.source?.code ?? t('the source')} ${t('to')} ${request.destination?.code ?? t('the destination')}.`}
                                                 confirmLabel={t('inventory.approve_transfer')}
                                                 onConfirm={() => reviewTransferRequest(request, 'approved')}
                                             >
