@@ -20,16 +20,18 @@ use Illuminate\Support\Str;
  * @property array<string, mixed>|null $checklist
  * @property array<string, mixed>|null $metadata
  * @property array<string, string>|null $readings
+ * @property array<string, scalar|null>|null $installation_survey
+ * @property Carbon|null $activation_accepted_at
  */
 class WorkOrder extends Model
 {
     use Auditable, BelongsToTenant;
 
-    protected $fillable = ['tenant_id', 'public_id', 'number', 'type', 'customer_id', 'service_id', 'assigned_to', 'status', 'scheduled_at', 'started_at', 'completed_at', 'completion_idempotency_key', 'failure_reason', 'checklist', 'readings', 'completion_notes', 'metadata'];
+    protected $fillable = ['tenant_id', 'public_id', 'number', 'type', 'customer_id', 'service_id', 'network_building_id', 'distribution_box_id', 'network_port', 'assigned_to', 'status', 'scheduled_at', 'started_at', 'completed_at', 'activation_accepted_at', 'activation_accepted_by_id', 'activation_acceptance_note', 'onu_serial', 'installation_survey', 'completion_idempotency_key', 'failure_reason', 'checklist', 'readings', 'completion_notes', 'metadata'];
 
     protected function casts(): array
     {
-        return ['status' => WorkOrderStatus::class, 'scheduled_at' => 'datetime', 'started_at' => 'datetime', 'completed_at' => 'datetime', 'checklist' => 'array', 'readings' => 'array', 'metadata' => 'array'];
+        return ['status' => WorkOrderStatus::class, 'scheduled_at' => 'datetime', 'started_at' => 'datetime', 'completed_at' => 'datetime', 'activation_accepted_at' => 'datetime', 'network_building_id' => 'integer', 'distribution_box_id' => 'integer', 'network_port' => 'integer', 'activation_accepted_by_id' => 'integer', 'checklist' => 'array', 'readings' => 'array', 'installation_survey' => 'array', 'metadata' => 'array'];
     }
 
     protected static function booted(): void
@@ -56,6 +58,24 @@ class WorkOrder extends Model
     public function service(): BelongsTo
     {
         return $this->belongsTo(Service::class);
+    }
+
+    /** @return BelongsTo<NetworkBuilding, $this> */
+    public function networkBuilding(): BelongsTo
+    {
+        return $this->belongsTo(NetworkBuilding::class);
+    }
+
+    /** @return BelongsTo<DistributionBox, $this> */
+    public function distributionBox(): BelongsTo
+    {
+        return $this->belongsTo(DistributionBox::class);
+    }
+
+    /** @return BelongsTo<User, $this> */
+    public function activationAcceptedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'activation_accepted_by_id');
     }
 
     /** @return BelongsTo<User, $this> */
