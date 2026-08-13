@@ -4,7 +4,7 @@ import ResponsiveSelect from '@/components/ui/responsive-select';
 import AppLayout from '@/layouts/AppLayout';
 import { formatDate } from '@/lib/format';
 import { Head, Link, router, useForm } from '@inertiajs/react';
-import { ClipboardCheck, MessageSquare, Plus, UserRound } from 'lucide-react';
+import { ClipboardCheck, MessageSquare, Paperclip, Plus, UserRound } from 'lucide-react';
 
 type Collector = { id: number; name: string; email: string };
 type Customer = { id: number; code: string; name: string; phone: string | null };
@@ -13,6 +13,7 @@ type Message = {
     body: string;
     created_at: string;
     author: { id: number; name: string; role: string; is_viewer: boolean };
+    attachments: { id: string; name: string; mime_type: string; size_bytes: number; download_url: string }[];
 };
 type Task = {
     id: string;
@@ -55,7 +56,7 @@ export default function CollectorTasks({ filters, collectors, customers, tasks, 
         priority: 'normal',
         due_at: '',
     });
-    const messageForm = useForm({ body: '' });
+    const messageForm = useForm<{ body: string; attachment: File | null }>({ body: '', attachment: null });
     const customerOptions: CustomerOption[] = customers.map((customer) => ({
         id: String(customer.id),
         code: customer.code,
@@ -347,6 +348,16 @@ export default function CollectorTasks({ filters, collectors, customers, tasks, 
                                             <p className="mt-2 whitespace-pre-wrap text-pretty text-sm">
                                                 {message.body}
                                             </p>
+                                            {message.attachments.map((attachment) => (
+                                                <a
+                                                    key={attachment.id}
+                                                    href={attachment.download_url}
+                                                    className="mt-3 inline-flex items-center gap-2 text-xs font-semibold text-brand"
+                                                    download
+                                                >
+                                                    <Paperclip size={13} /> {attachment.name}
+                                                </a>
+                                            ))}
                                         </div>
                                     ))}
                                     {selectedTask.messages.length === 0 && (
@@ -361,6 +372,7 @@ export default function CollectorTasks({ filters, collectors, customers, tasks, 
                                         event.preventDefault();
                                         messageForm.post(`/operations/collector-tasks/${selectedTask.id}/messages`, {
                                             preserveScroll: true,
+                                            forceFormData: true,
                                             onSuccess: () => messageForm.reset(),
                                         });
                                     }}
@@ -374,8 +386,23 @@ export default function CollectorTasks({ filters, collectors, customers, tasks, 
                                             onChange={(event) => messageForm.setData('body', event.target.value)}
                                         />
                                     </label>
+                                    <label className="field-label mt-3 block">
+                                        Attachment (optional)
+                                        <input
+                                            key={messageForm.data.attachment?.name ?? 'empty'}
+                                            className="field mt-1"
+                                            type="file"
+                                            accept=".pdf,.jpg,.jpeg,.png,.webp,.txt"
+                                            onChange={(event) =>
+                                                messageForm.setData('attachment', event.target.files?.[0] ?? null)
+                                            }
+                                        />
+                                    </label>
                                     {messageForm.errors.body && (
                                         <p className="field-error mt-1">{messageForm.errors.body}</p>
+                                    )}
+                                    {messageForm.errors.attachment && (
+                                        <p className="field-error mt-1">{messageForm.errors.attachment}</p>
                                     )}
                                     <div className="mt-3 flex justify-end">
                                         <button

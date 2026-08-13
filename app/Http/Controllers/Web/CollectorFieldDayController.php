@@ -6,6 +6,7 @@ use App\Actions\EndCollectorFieldDay;
 use App\Actions\StartCollectorFieldDay;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\CollectorLocationRequest;
+use App\Http\Requests\EndCollectorFieldDayRequest;
 use App\Models\CollectorFieldDay;
 use App\Models\Tenant;
 use App\Models\User;
@@ -58,7 +59,7 @@ final class CollectorFieldDayController extends Controller
         return response()->json(['message' => 'Field day started.', 'data' => $this->resource($fieldDay)], 201);
     }
 
-    public function checkOut(CollectorLocationRequest $request, EndCollectorFieldDay $end): JsonResponse
+    public function checkOut(EndCollectorFieldDayRequest $request, EndCollectorFieldDay $end): JsonResponse
     {
         try {
             $fieldDay = $end->handle(
@@ -66,6 +67,7 @@ final class CollectorFieldDayController extends Controller
                 (float) $request->validated('latitude'),
                 (float) $request->validated('longitude'),
                 $request->validated('accuracy_meters'),
+                $request->validated('summary_note'),
             );
         } catch (DomainException $exception) {
             return response()->json(['message' => $exception->getMessage()], 422);
@@ -85,6 +87,8 @@ final class CollectorFieldDayController extends Controller
             'check_in' => $this->location($fieldDay->check_in_latitude, $fieldDay->check_in_longitude, $fieldDay->check_in_accuracy_meters),
             'check_out' => $fieldDay->check_out_latitude === null ? null : $this->location($fieldDay->check_out_latitude, $fieldDay->check_out_longitude, $fieldDay->check_out_accuracy_meters),
             'collector' => $includeCollector ? ['name' => $fieldDay->collector->name, 'email' => $fieldDay->collector->email] : null,
+            'summary' => $fieldDay->summary,
+            'summary_note' => $fieldDay->summary_note,
         ];
     }
 

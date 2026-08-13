@@ -22,6 +22,7 @@ class CollectorFieldDay extends Model
         'check_in_latitude', 'check_in_longitude', 'check_in_accuracy_meters',
         'checked_out_at', 'check_out_latitude', 'check_out_longitude',
         'check_out_accuracy_meters', 'check_in_source', 'check_out_source',
+        'summary', 'summary_note',
     ];
 
     protected function casts(): array
@@ -35,6 +36,7 @@ class CollectorFieldDay extends Model
             'check_out_longitude' => 'decimal:7',
             'check_in_accuracy_meters' => 'integer',
             'check_out_accuracy_meters' => 'integer',
+            'summary' => 'array',
         ];
     }
 

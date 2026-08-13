@@ -5,6 +5,7 @@ namespace App\Support;
 use App\Models\CollectorTask;
 use App\Models\CollectorTaskMessage;
 use App\Models\CollectorTaskRead;
+use App\Models\MediaUpload;
 use App\Models\User;
 
 final class CollectorTaskPresenter
@@ -14,7 +15,7 @@ final class CollectorTaskPresenter
     {
         $task->loadMissing(['collector:id,name,email', 'createdBy:id,name', 'customer:id,public_id,code,first_name,last_name,phone,address', 'reads']);
         if ($withMessages) {
-            $task->loadMissing('messages.author:id,name,role');
+            $task->loadMissing(['messages.author:id,name,role', 'messages.attachments']);
         }
         $read = $task->reads->first(fn (CollectorTaskRead $item): bool => (int) $item->user_id === (int) $viewer->id);
         $lastMessageAt = $task->messages()->max('created_at');
@@ -49,6 +50,13 @@ final class CollectorTaskPresenter
                     'role' => $message->author->role,
                     'is_viewer' => (int) $message->author_id === (int) $viewer->id,
                 ],
+                'attachments' => $message->attachments->map(fn (MediaUpload $attachment): array => [
+                    'id' => $attachment->public_id,
+                    'name' => $attachment->original_name,
+                    'mime_type' => $attachment->mime_type,
+                    'size_bytes' => $attachment->size_bytes,
+                    'download_url' => route('operations.media.download', $attachment->public_id),
+                ])->values()->all(),
             ])->values() : [],
         ];
     }

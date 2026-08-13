@@ -1,14 +1,18 @@
 <?php
 
+use App\Models\CollectorFieldDay;
 use App\Models\CollectorTask;
 use App\Models\CollectorTaskMessage;
 use App\Models\Customer;
+use App\Models\MediaUpload;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Support\Tenancy;
 use Database\Seeders\CapabilitySeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 
 uses(RefreshDatabase::class);
 
@@ -142,4 +146,73 @@ it('does not expose a task to another collector', function (): void {
     $this->actingAs($otherCollector)
         ->patchJson(route('field.tasks.status', $task), ['status' => 'acknowledged'])
         ->assertNotFound();
+});
+
+it('stores task attachments privately and limits downloads to task participants', function (): void {
+    [$tenant, $manager, $collector, $otherCollector] = collectorTaskWorkspace();
+    Storage::fake('local');
+    config()->set('filesystems.default', 'local');
+    $task = CollectorTask::create([
+        'collector_id' => $collector->id,
+        'created_by_id' => $manager->id,
+        'title' => 'Review access photo',
+        'priority' => 'normal',
+    ]);
+
+    $this->actingAs($collector)
+        ->postJson(route('field.tasks.messages.store', $task), [
+            'body' => 'Attached from the field.',
+            'attachment' => UploadedFile::fake()->image('roof.jpg'),
+        ])
+        ->assertCreated()
+        ->assertJsonPath('data.messages.0.attachments.0.name', 'roof.jpg');
+
+    app(Tenancy::class)->set($tenant);
+    $upload = MediaUpload::query()->firstOrFail();
+    Storage::disk('local')->assertExists($upload->path);
+    $this->actingAs($collector)->get(route('operations.media.download', $upload->public_id))->assertOk();
+    $this->actingAs($manager)->get(route('operations.media.download', $upload->public_id))->assertOk();
+    $this->actingAs($otherCollector)->get(route('operations.media.download', $upload->public_id))->assertNotFound();
+});
+
+it('persists a collector checkout summary for manager supervision', function (): void {
+    [$tenant, $manager, $collector] = collectorTaskWorkspace();
+    $task = CollectorTask::create([
+        'collector_id' => $collector->id,
+        'created_by_id' => $manager->id,
+        'title' => 'Close before checkout',
+        'priority' => 'normal',
+        'status' => 'completed',
+        'completed_at' => now(),
+    ]);
+    CollectorFieldDay::create([
+        'user_id' => $collector->id,
+        'checked_in_at' => now()->subHour(),
+        'check_in_latitude' => 33.89,
+        'check_in_longitude' => 35.50,
+    ]);
+
+    $this->actingAs($collector)
+        ->postJson(route('field.check-out'), [
+            'latitude' => 33.90,
+            'longitude' => 35.51,
+            'accuracy_meters' => 12,
+            'summary_note' => 'Cash handed to the billing desk.',
+        ])
+        ->assertOk()
+        ->assertJsonPath('data.summary.tasks.completed', 1)
+        ->assertJsonPath('data.summary_note', 'Cash handed to the billing desk.');
+
+    app(Tenancy::class)->set($tenant);
+    $day = CollectorFieldDay::query()->firstOrFail();
+    expect($day->summary['tasks']['completed'])->toBe(1)
+        ->and($day->summary_note)->toBe('Cash handed to the billing desk.')
+        ->and($task->refresh()->status)->toBe('completed');
+
+    $this->actingAs($manager)
+        ->get(route('operations.collector-check-ins'))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->where('fieldDays.0.summary.tasks.completed', 1)
+            ->where('fieldDays.0.summary_note', 'Cash handed to the billing desk.'));
 });

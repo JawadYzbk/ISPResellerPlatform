@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Web;
 
 use App\Actions\AddCollectorTaskMessage;
 use App\Actions\CreateCollectorTask;
+use App\Actions\DiscardCollectorTaskMessage;
 use App\Actions\MarkCollectorTaskRead;
+use App\Actions\StoreCollectorTaskAttachment;
 use App\Actions\UpdateCollectorTaskStatus;
 use App\Http\Controllers\Controller;
 use App\Models\CollectorTask;
@@ -20,6 +22,7 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
+use Throwable;
 
 final class CollectorTaskController extends Controller
 {
@@ -94,16 +97,31 @@ final class CollectorTaskController extends Controller
         return redirect()->route('operations.collector-tasks', ['task' => $task->public_id])->with('success', 'Collector task created.');
     }
 
-    public function message(Request $request, CollectorTask $collectorTask, AddCollectorTaskMessage $add, CollectorTaskPresenter $presenter): RedirectResponse|JsonResponse
+    public function message(Request $request, CollectorTask $collectorTask, AddCollectorTaskMessage $add, StoreCollectorTaskAttachment $storeAttachment, DiscardCollectorTaskMessage $discard, CollectorTaskPresenter $presenter): RedirectResponse|JsonResponse
     {
         $actor = $this->participant($request, $collectorTask);
-        $validated = $request->validate(['body' => ['required', 'string', 'max:5000']]);
+        $validated = $request->validate([
+            'body' => ['required', 'string', 'max:5000'],
+            'attachment' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png,webp,txt', 'max:10240'],
+        ]);
         try {
             $message = $add->handle($actor, $collectorTask, $validated['body']);
+            if ($request->hasFile('attachment')) {
+                $storeAttachment->handle($request->file('attachment'), $actor, $message);
+            }
         } catch (DomainException $exception) {
             return $request->expectsJson()
                 ? response()->json(['message' => $exception->getMessage()], 422)
                 : back()->withErrors(['message' => $exception->getMessage()]);
+        } catch (Throwable $exception) {
+            if (isset($message)) {
+                $discard->handle($message);
+            }
+            report($exception);
+
+            return $request->expectsJson()
+                ? response()->json(['message' => 'The attachment could not be stored.'], 422)
+                : back()->withErrors(['attachment' => 'The attachment could not be stored.']);
         }
 
         return $request->expectsJson()

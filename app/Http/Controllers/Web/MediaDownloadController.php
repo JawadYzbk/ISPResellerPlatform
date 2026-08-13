@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Web;
 use App\Http\Controllers\Controller;
 use App\Models\MediaUpload;
 use App\Models\User;
+use App\Support\CollectorTaskAccess;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -15,14 +16,20 @@ final class MediaDownloadController extends Controller
     public function __invoke(Request $request, string $media): StreamedResponse
     {
         $user = $request->user();
-        abort_unless($user instanceof User && $user->can('workorders.complete'), 403);
+        abort_unless($user instanceof User, 401);
         $upload = MediaUpload::query()
+            ->with('collectorTaskMessage.task')
             ->where('public_id', $media)
             ->where(function (Builder $query): void {
-                $query->whereNotNull('work_order_id')->orWhereNotNull('customer_id');
+                $query->whereNotNull('work_order_id')
+                    ->orWhereNotNull('customer_id')
+                    ->orWhereNotNull('collector_task_message_id');
             })
             ->firstOrFail();
-        if ($upload->customer_id !== null) {
+        if ($upload->collector_task_message_id !== null) {
+            $task = $upload->collectorTaskMessage?->task;
+            abort_unless($task !== null && app(CollectorTaskAccess::class)->canView($user, $task), 404);
+        } elseif ($upload->customer_id !== null) {
             abort_unless($user->can('customers.view'), 403);
         } else {
             abort_unless($user->can('workorders.complete'), 403);

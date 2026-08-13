@@ -2,7 +2,7 @@ import { Head, router } from '@inertiajs/react';
 import { ExternalLink, MapPinned, Navigation, TimerReset } from 'lucide-react';
 
 import AppLayout from '@/layouts/AppLayout';
-import { formatDate } from '@/lib/format';
+import { entriesOrEmpty, formatDate, formatMoney } from '@/lib/format';
 
 type Location = {
     latitude: number;
@@ -19,6 +19,14 @@ type FieldDay = {
     check_in: Location;
     check_out: Location | null;
     collector: { name: string; email: string };
+    summary: {
+        duration_minutes: number;
+        payments: { count: number; totals: Record<string, number> };
+        route: { status: string | null; stops: number; completed: number; outcomes: Record<string, number> };
+        tasks: { completed: number; open: number };
+        cash_shift: { id: string; status: string; system_totals: Record<string, number>; variance: boolean } | null;
+    } | null;
+    summary_note: string | null;
 };
 
 export default function CollectorCheckIns({ date, fieldDays }: { date: string; fieldDays: FieldDay[] }) {
@@ -72,7 +80,7 @@ export default function CollectorCheckIns({ date, fieldDays }: { date: string; f
 
             <section className="card mt-6 overflow-hidden">
                 <div className="overflow-x-auto">
-                    <table className="w-full min-w-[860px] text-start">
+                    <table className="w-full min-w-[1180px] text-start">
                         <thead>
                             <tr className="border-b border-line bg-sand/50 text-xs font-semibold uppercase text-muted">
                                 <th className="px-5 py-3.5 text-start">Collector</th>
@@ -80,6 +88,9 @@ export default function CollectorCheckIns({ date, fieldDays }: { date: string; f
                                 <th className="px-5 py-3.5 text-start">Finished</th>
                                 <th className="px-5 py-3.5 text-start">Check-in location</th>
                                 <th className="px-5 py-3.5 text-start">Check-out location</th>
+                                <th className="px-5 py-3.5 text-start">Route</th>
+                                <th className="px-5 py-3.5 text-start">Collections</th>
+                                <th className="px-5 py-3.5 text-start">Tasks / note</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-line">
@@ -122,11 +133,58 @@ export default function CollectorCheckIns({ date, fieldDays }: { date: string; f
                                             <span className="text-muted">Pending</span>
                                         )}
                                     </td>
+                                    <td className="px-5 py-4 text-sm tabular-nums">
+                                        {fieldDay.summary ? (
+                                            <>
+                                                <p className="font-semibold">
+                                                    {fieldDay.summary.route.completed}/{fieldDay.summary.route.stops}{' '}
+                                                    stops
+                                                </p>
+                                                <p className="mt-1 text-xs capitalize text-muted">
+                                                    {fieldDay.summary.route.status?.replaceAll('_', ' ') ?? 'No route'}
+                                                </p>
+                                            </>
+                                        ) : (
+                                            <span className="text-muted">Pending checkout</span>
+                                        )}
+                                    </td>
+                                    <td className="px-5 py-4 text-sm tabular-nums">
+                                        {fieldDay.summary ? (
+                                            <>
+                                                <p className="font-semibold">
+                                                    {fieldDay.summary.payments.count} payment(s)
+                                                </p>
+                                                <p className="mt-1 text-xs text-muted">
+                                                    {entriesOrEmpty(fieldDay.summary.payments.totals)
+                                                        .map(([currency, amount]) => formatMoney(amount, currency))
+                                                        .join(' · ') || 'No collections'}
+                                                </p>
+                                            </>
+                                        ) : (
+                                            <span className="text-muted">—</span>
+                                        )}
+                                    </td>
+                                    <td className="px-5 py-4 text-sm tabular-nums">
+                                        {fieldDay.summary ? (
+                                            <>
+                                                <p className="font-semibold">
+                                                    {fieldDay.summary.tasks.completed} completed ·{' '}
+                                                    {fieldDay.summary.tasks.open} open
+                                                </p>
+                                                <p className="mt-1 max-w-64 text-pretty text-xs text-muted">
+                                                    {fieldDay.summary_note ??
+                                                        `${fieldDay.summary.duration_minutes} minutes in field`}
+                                                </p>
+                                            </>
+                                        ) : (
+                                            <span className="text-muted">—</span>
+                                        )}
+                                    </td>
                                 </tr>
                             ))}
                             {fieldDays.length === 0 && (
                                 <tr>
-                                    <td colSpan={5} className="px-5 py-14 text-center">
+                                    <td colSpan={8} className="px-5 py-14 text-center">
                                         <MapPinned className="mx-auto text-muted" size={28} />
                                         <p className="mt-3 font-semibold">No field check-ins for this date</p>
                                         <p className="mt-1 text-sm text-muted">

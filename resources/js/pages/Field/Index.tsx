@@ -13,6 +13,7 @@ import {
     LocateFixed,
     MapPin,
     MessageSquare,
+    Paperclip,
     RefreshCw,
     Search,
     UserRound,
@@ -115,6 +116,7 @@ type FieldTask = {
         body: string;
         created_at: string;
         author: { id: number; name: string; role: string; is_viewer: boolean };
+        attachments: { id: string; name: string; mime_type: string; size_bytes: number; download_url: string }[];
     }[];
 };
 
@@ -188,6 +190,7 @@ export default function FieldIndex({
     const [hydrated, setHydrated] = useState(false);
     const [fieldDay, setFieldDay] = useState<FieldDay>(initialFieldDay);
     const [locationBusy, setLocationBusy] = useState(false);
+    const [checkoutNote, setCheckoutNote] = useState('');
     const [collectorRoute, setCollectorRoute] = useState<FieldRoute>(initialRoute);
     const [routeOrigin, setRouteOrigin] = useState<{ latitude: number; longitude: number } | null>(null);
     const [nearbyOrder, setNearbyOrder] = useState(false);
@@ -200,6 +203,7 @@ export default function FieldIndex({
         initialTasks.find((task) => task.unread)?.id ?? initialTasks[0]?.id ?? '',
     );
     const [taskReply, setTaskReply] = useState('');
+    const [taskAttachment, setTaskAttachment] = useState<File | null>(null);
     const [taskBusy, setTaskBusy] = useState(false);
 
     const selectedCustomer = customers.find((customer) => customer.id === selectedCustomerId) ?? null;
@@ -478,12 +482,14 @@ export default function FieldIndex({
                     latitude: position.coords.latitude,
                     longitude: position.coords.longitude,
                     accuracy_meters: Math.round(position.coords.accuracy),
+                    summary_note: action === 'check-out' ? checkoutNote : undefined,
                 }),
             });
             const body = (await response.json()) as { message?: string; data?: Exclude<FieldDay, null> };
             if (!response.ok || !body.data) throw new Error(body.message ?? 'The field check-in could not be saved.');
 
             setFieldDay(action === 'check-out' ? null : body.data);
+            if (action === 'check-out') setCheckoutNote('');
             setMessage(body.message ?? (action === 'check-in' ? 'Field day started.' : 'Field day ended.'));
         } catch (caught) {
             if (typeof caught === 'object' && caught !== null && 'code' in caught) {
@@ -607,7 +613,13 @@ export default function FieldIndex({
             });
             const body = (await response.json()) as { message?: string; data?: FieldTask };
             if (!response.ok || !body.data) throw new Error(body.message ?? 'The task could not be updated.');
-            replaceTask(body.data);
+            if (body.data.status === 'completed' || body.data.status === 'cancelled') {
+                const remaining = tasks.filter((item) => item.id !== body.data?.id);
+                setTasks(remaining);
+                setSelectedTaskId(remaining[0]?.id ?? '');
+            } else {
+                replaceTask(body.data);
+            }
             setMessage(body.message ?? 'Task updated.');
         } catch (caught) {
             setError(caught instanceof Error ? caught.message : 'The task could not be updated.');
@@ -621,19 +633,19 @@ export default function FieldIndex({
         setTaskBusy(true);
         setError(null);
         try {
+            const payload = new FormData();
+            payload.append('body', taskReply);
+            if (taskAttachment) payload.append('attachment', taskAttachment);
             const response = await fetch(`/field/tasks/${task.id}/messages`, {
                 method: 'POST',
-                headers: {
-                    Accept: 'application/json',
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': csrfToken(),
-                },
-                body: JSON.stringify({ body: taskReply }),
+                headers: { Accept: 'application/json', 'X-CSRF-TOKEN': csrfToken() },
+                body: payload,
             });
             const body = (await response.json()) as { message?: string; data?: FieldTask };
             if (!response.ok || !body.data) throw new Error(body.message ?? 'The message could not be sent.');
             replaceTask(body.data);
             setTaskReply('');
+            setTaskAttachment(null);
             setMessage(body.message ?? 'Message sent.');
         } catch (caught) {
             setError(caught instanceof Error ? caught.message : 'The message could not be sent.');
@@ -736,6 +748,18 @@ export default function FieldIndex({
                             </p>
                         </div>
                     </div>
+                    {fieldDay && (
+                        <label className="field-label min-w-0 flex-1 sm:max-w-sm">
+                            Checkout note (optional)
+                            <textarea
+                                className="field mt-1 min-h-16"
+                                value={checkoutNote}
+                                maxLength={2000}
+                                placeholder="Cash handover, unresolved visits, or follow-up needed"
+                                onChange={(event) => setCheckoutNote(event.target.value)}
+                            />
+                        </label>
+                    )}
                     <button
                         type="button"
                         className={fieldDay ? 'button-secondary shrink-0' : 'button-primary shrink-0'}
@@ -853,6 +877,16 @@ export default function FieldIndex({
                                                     <p className="mt-1 whitespace-pre-wrap text-pretty text-sm">
                                                         {taskMessage.body}
                                                     </p>
+                                                    {taskMessage.attachments.map((attachment) => (
+                                                        <a
+                                                            key={attachment.id}
+                                                            href={attachment.download_url}
+                                                            className="mt-2 inline-flex items-center gap-2 text-xs font-semibold text-brand"
+                                                            download
+                                                        >
+                                                            <Paperclip size={13} /> {attachment.name}
+                                                        </a>
+                                                    ))}
                                                 </div>
                                             ))}
                                             {selectedTask.messages.length === 0 && (
@@ -875,6 +909,18 @@ export default function FieldIndex({
                                                     value={taskReply}
                                                     maxLength={5000}
                                                     onChange={(event) => setTaskReply(event.target.value)}
+                                                />
+                                            </label>
+                                            <label className="field-label mt-3 block">
+                                                Attachment (optional)
+                                                <input
+                                                    key={taskAttachment?.name ?? 'empty'}
+                                                    className="field mt-1"
+                                                    type="file"
+                                                    accept=".pdf,.jpg,.jpeg,.png,.webp,.txt"
+                                                    onChange={(event) =>
+                                                        setTaskAttachment(event.target.files?.[0] ?? null)
+                                                    }
                                                 />
                                             </label>
                                             <div className="mt-3 flex justify-end">

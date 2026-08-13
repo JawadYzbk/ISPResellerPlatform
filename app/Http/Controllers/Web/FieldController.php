@@ -50,7 +50,7 @@ final class FieldController extends Controller
             'tasks' => CollectorTask::query()
                 ->where('collector_id', $user->id)
                 ->whereNotIn('status', ['completed', 'cancelled'])
-                ->with(['collector:id,name,email', 'createdBy:id,name', 'customer:id,public_id,code,first_name,last_name,phone,address', 'messages.author:id,name,role', 'reads'])
+                ->with(['collector:id,name,email', 'createdBy:id,name', 'customer:id,public_id,code,first_name,last_name,phone,address', 'messages.author:id,name,role', 'messages.attachments', 'reads'])
                 ->orderByRaw("case priority when 'urgent' then 1 when 'high' then 2 when 'normal' then 3 else 4 end")
                 ->orderBy('due_at')
                 ->limit(50)

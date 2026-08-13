@@ -7,6 +7,7 @@ use App\Models\CollectorTask;
 use App\Models\Customer;
 use App\Models\User;
 use App\Support\Tenancy;
+use Carbon\CarbonImmutable;
 use DomainException;
 
 final readonly class CreateCollectorTask implements Action
@@ -28,6 +29,8 @@ final readonly class CreateCollectorTask implements Action
             throw new DomainException('Choose a valid task priority.');
         }
 
+        $timezone = $actor->tenant()->value('timezone') ?: 'UTC';
+
         return CollectorTask::create([
             'tenant_id' => $tenantId,
             'collector_id' => $collector->id,
@@ -37,7 +40,9 @@ final readonly class CreateCollectorTask implements Action
             'description' => filled($data['description'] ?? null) ? trim((string) $data['description']) : null,
             'priority' => $data['priority'],
             'status' => 'assigned',
-            'due_at' => $data['due_at'] ?? null,
+            'due_at' => filled($data['due_at'] ?? null)
+                ? CarbonImmutable::parse((string) $data['due_at'], $timezone)->utc()
+                : null,
         ]);
     }
 }

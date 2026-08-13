@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Models\Concerns\BelongsToTenant;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
 class CollectorTaskMessage extends Model
@@ -30,5 +31,11 @@ class CollectorTaskMessage extends Model
     public function author(): BelongsTo
     {
         return $this->belongsTo(User::class, 'author_id');
+    }
+
+    /** @return HasMany<MediaUpload, $this> */
+    public function attachments(): HasMany
+    {
+        return $this->hasMany(MediaUpload::class);
     }
 }
