@@ -3482,6 +3482,7 @@ const fieldFrench: Messages = {
 
 const messages: Record<Exclude<Locale, 'en'>, Messages> = {
     ar: {
+        'Rate for 1 unit': 'سعر وحدة واحدة',
         'Operations desk': 'مكتب العمليات',
         Workspace: 'مساحة العمل',
         Overview: 'نظرة عامة',
@@ -5380,6 +5381,7 @@ const messages: Record<Exclude<Locale, 'en'>, Messages> = {
         ...serviceArabic,
     },
     fr: {
+        'Rate for 1 unit': 'Taux pour 1 unité',
         'Operations desk': 'Bureau des opérations',
         Workspace: 'Espace de travail',
         Overview: 'Vue d’ensemble',

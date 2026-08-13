@@ -35,6 +35,22 @@ type Props = PageProps & {
     currencies: CurrencyOption[];
 };
 
+function formatExchangeRate(numerator: number, denominator: number, locale: string): string {
+    const value = denominator > 0 ? numerator / denominator : Number.NaN;
+
+    if (!Number.isFinite(value)) {
+        return '—';
+    }
+
+    try {
+        return new Intl.NumberFormat(locale, {
+            maximumFractionDigits: 8,
+        }).format(value);
+    } catch {
+        return value.toLocaleString(undefined, { maximumFractionDigits: 8 });
+    }
+}
+
 function Pagination({ rates, t }: { rates: Paginator<ExchangeRate>; t: (key: string) => string }) {
     return (
         <div className="flex items-center justify-between border-t border-line px-5 py-4">
@@ -66,7 +82,13 @@ function Pagination({ rates, t }: { rates: Paginator<ExchangeRate>; t: (key: str
                             href={link.url}
                             className={`grid size-8 place-items-center rounded-lg text-xs ${link.active ? 'bg-brand text-white' : 'text-muted hover:bg-sand'}`}
                         >
-                            {isPrevious ? <ChevronLeft size={16} /> : isNext ? <ChevronRight size={16} /> : t(link.label)}
+                            {isPrevious ? (
+                                <ChevronLeft size={16} />
+                            ) : isNext ? (
+                                <ChevronRight size={16} />
+                            ) : (
+                                t(link.label)
+                            )}
                         </Link>
                     );
                 })}
@@ -86,9 +108,15 @@ export default function ExchangeRatesPage({
     const t = createTranslator(app.locale);
     const [baseCurrency, setBaseCurrency] = useState(filters.base_currency ?? '');
     const [quoteCurrency, setQuoteCurrency] = useState(filters.quote_currency ?? '');
+    const defaultBaseCurrency =
+        currencies.find((currency) => currency.code.toUpperCase() === 'USD')?.code ?? currencies[0]?.code ?? '';
+    const defaultQuoteCurrency =
+        currencies.find((currency) => currency.code.toUpperCase() === 'LBP')?.code ??
+        currencies.find((currency) => currency.code !== defaultBaseCurrency)?.code ??
+        '';
     const form = useForm<RateForm>({
-        base_currency: '',
-        quote_currency: '',
+        base_currency: defaultBaseCurrency,
+        quote_currency: defaultQuoteCurrency,
         rate_numerator: 1,
         rate_denominator: 1,
         effective_from: new Date().toISOString().slice(0, 10),
@@ -230,7 +258,9 @@ export default function ExchangeRatesPage({
                             value={form.data.rate_denominator}
                             onChange={(event) => form.setData('rate_denominator', Number(event.target.value))}
                         />
-                        {form.errors.rate_denominator && <p className="field-error">{t(form.errors.rate_denominator)}</p>}
+                        {form.errors.rate_denominator && (
+                            <p className="field-error">{t(form.errors.rate_denominator)}</p>
+                        )}
                     </label>
                     <label>
                         <span className="field-label">{t('Source')}</span>
@@ -283,7 +313,9 @@ export default function ExchangeRatesPage({
                 <div className="flex items-center justify-between border-b border-line px-5 py-4">
                     <div className="flex items-center gap-2">
                         <Scale size={17} className="text-brand" />
-                        <p className="text-sm font-semibold">{rates.total.toLocaleString()} {t('rate(s)')}</p>
+                        <p className="text-sm font-semibold">
+                            {rates.total.toLocaleString()} {t('rate(s)')}
+                        </p>
                     </div>
                     <p className="text-xs text-muted">{t('Newest effective rates appear first.')}</p>
                 </div>
@@ -292,7 +324,7 @@ export default function ExchangeRatesPage({
                         <thead>
                             <tr className="border-b border-line bg-sand/50 text-xs font-semibold uppercase tracking-wider text-muted">
                                 <th className="px-5 py-3.5 text-start">{t('Pair')}</th>
-                                <th className="px-5 py-3.5 text-start">{t('Exact ratio')}</th>
+                                <th className="px-5 py-3.5 text-start">{t('Rate for 1 unit')}</th>
                                 <th className="px-5 py-3.5 text-start">{t('Effective from')}</th>
                                 <th className="px-5 py-3.5 text-start">{t('Source')}</th>
                             </tr>
@@ -303,9 +335,10 @@ export default function ExchangeRatesPage({
                                     <td className="px-5 py-4 text-sm font-semibold">
                                         {rate.base_currency} <span className="text-muted">→</span> {rate.quote_currency}
                                     </td>
-                                    <td className="px-5 py-4 font-mono text-sm text-muted">
-                                        {rate.rate_numerator.toLocaleString()} /{' '}
-                                        {rate.rate_denominator.toLocaleString()}
+                                    <td className="px-5 py-4 font-mono text-sm text-muted" dir="ltr">
+                                        <span className="font-semibold text-ink">1 {rate.base_currency}</span> ={' '}
+                                        {formatExchangeRate(rate.rate_numerator, rate.rate_denominator, app.locale)}{' '}
+                                        {rate.quote_currency}
                                     </td>
                                     <td className="px-5 py-4 text-sm text-muted">{formatDate(rate.effective_from)}</td>
                                     <td className="px-5 py-4 text-sm text-muted">{rate.source}</td>
