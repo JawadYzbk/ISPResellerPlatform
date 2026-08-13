@@ -1,5 +1,6 @@
 import { Check, ChevronsUpDown } from 'lucide-react';
 import { useMemo, useState } from 'react';
+import type { AriaAttributes } from 'react';
 
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { createTranslator } from '@/lib/i18n';
@@ -23,6 +24,8 @@ type CurrencyComboboxProps = {
     currencies: CurrencyOption[];
     onChange: (value: string) => void;
     'aria-label'?: string;
+    'aria-describedby'?: string;
+    'aria-invalid'?: AriaAttributes['aria-invalid'];
     className?: string;
     disabled?: boolean;
     emptyLabel?: string;
@@ -36,6 +39,8 @@ export default function CurrencyCombobox({
     currencies,
     onChange,
     'aria-label': ariaLabel,
+    'aria-describedby': ariaDescribedBy,
+    'aria-invalid': ariaInvalid,
     className,
     disabled = false,
     emptyLabel,
@@ -82,6 +87,8 @@ export default function CurrencyCombobox({
             <select
                 id={id}
                 aria-label={ariaLabel}
+                aria-describedby={ariaDescribedBy}
+                aria-invalid={ariaInvalid}
                 className={cn('field', className)}
                 disabled={disabled}
                 value={value}
@@ -111,6 +118,8 @@ export default function CurrencyCombobox({
                     type="button"
                     role="combobox"
                     aria-label={ariaLabel}
+                    aria-describedby={ariaDescribedBy}
+                    aria-invalid={ariaInvalid}
                     aria-expanded={open}
                     disabled={disabled}
                     className={cn('field flex items-center justify-between gap-2 text-start', className)}

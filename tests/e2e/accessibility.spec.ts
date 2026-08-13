@@ -177,6 +177,27 @@ test('connects customer validation messages to their controls', async ({ page })
     await expect(page.locator('#username-error')).toHaveAttribute('role', 'alert');
 });
 
+test('connects searchable customer errors to the combobox', async ({ page }) => {
+    test.setTimeout(60_000);
+
+    await page.goto('/login');
+    await page.getByLabel('Email address').fill(email);
+    await page.getByRole('textbox', { name: 'Password' }).fill(password);
+    await Promise.all([
+        page.waitForURL(/\/(dashboard|customers|profile)$/),
+        page.getByRole('button', { name: 'Enter workspace' }).click(),
+    ]);
+
+    await page.goto('/billing/invoices/create');
+    await page.locator('#amount').fill('10');
+    await page.locator('form button[type="submit"]').click();
+
+    const customer = page.locator('#customer_id');
+    await expect(customer).toHaveAttribute('aria-invalid', 'true');
+    await expect(customer).toHaveAttribute('aria-describedby', 'customer_id-error');
+    await expect(page.locator('#customer_id-error')).toHaveAttribute('role', 'alert');
+});
+
 test('keeps customer portal sign-in inputs accessible', async ({ page }) => {
     await auditPage(page, '/portal/northline');
 

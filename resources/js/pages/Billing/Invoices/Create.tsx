@@ -129,6 +129,8 @@ export default function CreateInvoice({ customerOptions, selectedCustomer, curre
                         <CustomerCombobox
                             id="customer_id"
                             aria-label={t('Customer')}
+                            aria-invalid={Boolean(form.errors.customer_id)}
+                            aria-describedby={form.errors.customer_id ? 'customer_id-error' : undefined}
                             value={form.data.customer_id}
                             customers={customers}
                             onChange={(value) => form.setData('customer_id', value)}
@@ -136,7 +138,11 @@ export default function CreateInvoice({ customerOptions, selectedCustomer, curre
                             searchStatus={customerSearchStatus}
                             placeholder={t('Select a customer')}
                         />
-                        {form.errors.customer_id && <p className="field-error" role="alert">{t(form.errors.customer_id)}</p>}
+                        {form.errors.customer_id && (
+                            <p id="customer_id-error" className="field-error" role="alert">
+                                {t(form.errors.customer_id)}
+                            </p>
+                        )}
                     </div>
 
                     <div>
@@ -182,6 +188,8 @@ export default function CreateInvoice({ customerOptions, selectedCustomer, curre
                             <CurrencyCombobox
                                 id="currency"
                                 aria-label={t('Currency')}
+                                aria-invalid={Boolean(form.errors.currency)}
+                                aria-describedby={form.errors.currency ? 'currency-error' : undefined}
                                 value={form.data.currency}
                                 currencies={currencies}
                                 onChange={(value) => {
@@ -189,7 +197,11 @@ export default function CreateInvoice({ customerOptions, selectedCustomer, curre
                                     form.setData('amount', '');
                                 }}
                             />
-                            {form.errors.currency && <p className="field-error" role="alert">{t(form.errors.currency)}</p>}
+                            {form.errors.currency && (
+                                <p id="currency-error" className="field-error" role="alert">
+                                    {t(form.errors.currency)}
+                                </p>
+                            )}
                         </div>
                     </div>
 

@@ -1,5 +1,6 @@
 import { Check, ChevronsUpDown, LoaderCircle } from 'lucide-react';
 import { useMemo, useState } from 'react';
+import type { AriaAttributes } from 'react';
 
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { formatMoney } from '@/lib/format';
@@ -29,6 +30,8 @@ type CustomerComboboxProps = {
     onChange: (value: string) => void;
     onSearch?: (query: string) => void;
     'aria-label'?: string;
+    'aria-describedby'?: string;
+    'aria-invalid'?: AriaAttributes['aria-invalid'];
     className?: string;
     disabled?: boolean;
     placeholder?: string;
@@ -42,6 +45,8 @@ export default function CustomerCombobox({
     onChange,
     onSearch,
     'aria-label': ariaLabel,
+    'aria-describedby': ariaDescribedBy,
+    'aria-invalid': ariaInvalid,
     className,
     disabled = false,
     placeholder,
@@ -78,6 +83,8 @@ export default function CustomerCombobox({
             <select
                 id={id}
                 aria-label={ariaLabel}
+                aria-describedby={ariaDescribedBy}
+                aria-invalid={ariaInvalid}
                 className={className}
                 disabled={disabled}
                 value={value}
@@ -107,6 +114,8 @@ export default function CustomerCombobox({
                     type="button"
                     role="combobox"
                     aria-label={ariaLabel}
+                    aria-describedby={ariaDescribedBy}
+                    aria-invalid={ariaInvalid}
                     aria-expanded={open}
                     aria-busy={searchStatus === 'loading'}
                     disabled={disabled}
