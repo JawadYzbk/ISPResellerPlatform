@@ -1,10 +1,12 @@
 import ResponsiveSelect from '@/components/ui/responsive-select';
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import { ArrowLeft, KeyRound, Save, Wifi } from 'lucide-react';
 import { useMemo } from 'react';
 
 import CustomerLocationFields from '@/components/CustomerLocationFields';
 import AppLayout from '@/layouts/AppLayout';
+import { createTranslator } from '@/lib/i18n';
+import type { PageProps } from '@/types';
 
 type Zone = { id: number; name: string; code: string };
 type Plan = {
@@ -46,6 +48,8 @@ const provisioningModes = [
 ] as const;
 
 export default function CustomersCreate({ zones, canCreateService, plans, routers }: Props) {
+    const { props } = usePage<PageProps>();
+    const t = createTranslator(props.app.locale);
     const form = useForm({
         first_name: '',
         last_name: '',
@@ -78,20 +82,17 @@ export default function CustomersCreate({ zones, canCreateService, plans, router
 
     return (
         <AppLayout>
-            <Head title="Add customer" />
+            <Head title={t('Add customer')} />
             <Link
                 href="/customers"
                 className="mb-6 inline-flex items-center gap-2 text-sm font-semibold text-muted hover:text-brand"
             >
-                <ArrowLeft size={16} /> Back to customers
+                <ArrowLeft size={16} /> {t('customer.back_to_customers')}
             </Link>
             <div className="max-w-3xl">
-                <p className="eyebrow">Subscriber CRM</p>
-                <h1 className="page-title">Register subscriber</h1>
-                <p className="page-subtitle">
-                    Capture the subscriber and, when ready, create a pending connection with its installation work
-                    order.
-                </p>
+                <p className="eyebrow">{t('customer.subscriber_crm')}</p>
+                <h1 className="page-title">{t('customer.register_subscriber')}</h1>
+                <p className="page-subtitle">{t('customer.register_description')}</p>
                 <form
                     onSubmit={(event) => {
                         event.preventDefault();
@@ -102,7 +103,7 @@ export default function CustomersCreate({ zones, canCreateService, plans, router
                     <div className="grid gap-5 sm:grid-cols-2">
                         <div>
                             <label className="field-label" htmlFor="first_name">
-                                First name
+                                {t('First name')}
                             </label>
                             <input
                                 id="first_name"
@@ -114,7 +115,7 @@ export default function CustomersCreate({ zones, canCreateService, plans, router
                         </div>
                         <div>
                             <label className="field-label" htmlFor="last_name">
-                                Last name
+                                {t('Last name')}
                             </label>
                             <input
                                 id="last_name"
@@ -125,7 +126,7 @@ export default function CustomersCreate({ zones, canCreateService, plans, router
                         </div>
                         <div>
                             <label className="field-label" htmlFor="phone">
-                                Phone
+                                {t('Phone')}
                             </label>
                             <input
                                 id="phone"
@@ -138,7 +139,7 @@ export default function CustomersCreate({ zones, canCreateService, plans, router
                         </div>
                         <div>
                             <label className="field-label" htmlFor="email">
-                                Email
+                                {t('Email')}
                             </label>
                             <input
                                 id="email"
@@ -151,7 +152,7 @@ export default function CustomersCreate({ zones, canCreateService, plans, router
                         </div>
                         <div>
                             <label className="field-label" htmlFor="zone_id">
-                                Zone
+                                {t('Zone')}
                             </label>
                             <ResponsiveSelect
                                 id="zone_id"
@@ -159,7 +160,7 @@ export default function CustomersCreate({ zones, canCreateService, plans, router
                                 value={form.data.zone_id}
                                 onChange={(event) => form.setData('zone_id', event.target.value)}
                             >
-                                <option value="">Select a zone</option>
+                                <option value="">{t('customer.select_zone')}</option>
                                 {zones.map((zone) => (
                                     <option key={zone.id} value={zone.id}>
                                         {zone.name}
@@ -170,7 +171,7 @@ export default function CustomersCreate({ zones, canCreateService, plans, router
                         </div>
                         <div>
                             <label className="field-label" htmlFor="address">
-                                Address
+                                {t('Address')}
                             </label>
                             <input
                                 id="address"
@@ -196,10 +197,11 @@ export default function CustomersCreate({ zones, canCreateService, plans, router
                                     onChange={(event) => form.setData('create_service', event.target.checked)}
                                 />
                                 <span>
-                                    <span className="block font-semibold text-ink">Create the initial service</span>
+                                    <span className="block font-semibold text-ink">
+                                        {t('customer.create_initial_service')}
+                                    </span>
                                     <span className="mt-1 block text-sm text-muted">
-                                        Creates a pending service and installation work order after the customer is
-                                        saved.
+                                        {t('customer.create_initial_service_description')}
                                     </span>
                                 </span>
                             </label>
@@ -207,7 +209,7 @@ export default function CustomersCreate({ zones, canCreateService, plans, router
                                 <div className="space-y-6 rounded-xl bg-sand/40 p-5">
                                     <div>
                                         <label className="field-label" htmlFor="plan_id">
-                                            Initial plan
+                                            {t('customer.initial_plan')}
                                         </label>
                                         <ResponsiveSelect
                                             id="plan_id"
@@ -218,21 +220,21 @@ export default function CustomersCreate({ zones, canCreateService, plans, router
                                             {plans.map((plan) => (
                                                 <option key={plan.id} value={plan.id}>
                                                     {plan.name} / {plan.download_kbps / 1000}/{plan.upload_kbps / 1000}{' '}
-                                                    Mbps / {plan.duration_days} days
+                                                    Mbps / {plan.duration_days} {t('days')}
                                                 </option>
                                             ))}
                                         </ResponsiveSelect>
                                         {form.errors.plan_id && <p className="field-error">{form.errors.plan_id}</p>}
                                         {selectedPlan && (
                                             <p className="mt-1 text-xs text-muted">
-                                                Plan currency: {selectedPlan.currency}
+                                                {t('customer.plan_currency')}: {selectedPlan.currency}
                                             </p>
                                         )}
                                     </div>
                                     <div className="grid gap-5 sm:grid-cols-2">
                                         <div>
                                             <label className="field-label" htmlFor="username">
-                                                Service username
+                                                {t('customer.service_username')}
                                             </label>
                                             <input
                                                 id="username"
@@ -246,7 +248,7 @@ export default function CustomersCreate({ zones, canCreateService, plans, router
                                         </div>
                                         <div>
                                             <label className="field-label" htmlFor="password">
-                                                Service password
+                                                {t('customer.service_password')}
                                             </label>
                                             <div className="flex gap-2">
                                                 <input
@@ -260,7 +262,7 @@ export default function CustomersCreate({ zones, canCreateService, plans, router
                                                     type="button"
                                                     className="button-secondary shrink-0"
                                                     onClick={generatePassword}
-                                                    title="Generate secure password"
+                                                    title={t('customer.generate_password')}
                                                 >
                                                     <KeyRound size={16} />
                                                 </button>
@@ -268,12 +270,12 @@ export default function CustomersCreate({ zones, canCreateService, plans, router
                                             {form.errors.password && (
                                                 <p className="field-error">{form.errors.password}</p>
                                             )}
-                                            <p className="mt-1 text-xs text-muted">At least 12 characters.</p>
+                                            <p className="mt-1 text-xs text-muted">{t('customer.minimum_password')}</p>
                                         </div>
                                     </div>
                                     <div>
                                         <label className="field-label" htmlFor="billing_anchor_day">
-                                            Monthly billing anchor
+                                            {t('customer.monthly_billing_anchor')}
                                         </label>
                                         <ResponsiveSelect
                                             id="billing_anchor_day"
@@ -281,10 +283,10 @@ export default function CustomersCreate({ zones, canCreateService, plans, router
                                             value={form.data.billing_anchor_day}
                                             onChange={(event) => form.setData('billing_anchor_day', event.target.value)}
                                         >
-                                            <option value="">Follow plan duration</option>
+                                            <option value="">{t('customer.follow_plan_duration')}</option>
                                             {Array.from({ length: 31 }, (_, index) => index + 1).map((day) => (
                                                 <option key={day} value={day}>
-                                                    Day {day} of each month
+                                                    {t('customer.day_of_month')} {day}
                                                 </option>
                                             ))}
                                         </ResponsiveSelect>
@@ -292,12 +294,11 @@ export default function CustomersCreate({ zones, canCreateService, plans, router
                                             <p className="field-error">{form.errors.billing_anchor_day}</p>
                                         )}
                                         <p className="mt-1 text-xs text-pretty text-muted">
-                                            The first renewal invoice is prorated from its issue date to this day. Days
-                                            29–31 clamp in shorter months.
+                                            {t('customer.billing_anchor_description')}
                                         </p>
                                     </div>
                                     <div>
-                                        <p className="field-label">Provisioning mode</p>
+                                        <p className="field-label">{t('customer.provisioning_mode')}</p>
                                         <div className="grid gap-3 sm:grid-cols-2">
                                             {provisioningModes.map((mode) => (
                                                 <label
@@ -319,9 +320,11 @@ export default function CustomersCreate({ zones, canCreateService, plans, router
                                                         }}
                                                         className="sr-only"
                                                     />
-                                                    <span className="font-semibold">{mode.label}</span>
+                                                    <span className="font-semibold">
+                                                        {t(`customer.provisioning.${mode.value}.label`)}
+                                                    </span>
                                                     <span className="mt-1 block text-xs text-muted">
-                                                        {mode.description}
+                                                        {t(`customer.provisioning.${mode.value}.description`)}
                                                     </span>
                                                 </label>
                                             ))}
@@ -333,7 +336,7 @@ export default function CustomersCreate({ zones, canCreateService, plans, router
                                     {needsRouter && (
                                         <div>
                                             <label className="field-label" htmlFor="router_id">
-                                                Router
+                                                {t('Router')}
                                             </label>
                                             <ResponsiveSelect
                                                 id="router_id"
@@ -341,7 +344,7 @@ export default function CustomersCreate({ zones, canCreateService, plans, router
                                                 value={form.data.router_id}
                                                 onChange={(event) => form.setData('router_id', event.target.value)}
                                             >
-                                                <option value="">Select a router</option>
+                                                <option value="">{t('customer.select_router')}</option>
                                                 {routers.map((router) => (
                                                     <option key={router.id} value={router.id}>
                                                         {router.name}
@@ -355,26 +358,21 @@ export default function CustomersCreate({ zones, canCreateService, plans, router
                                     )}
                                     <div className="flex items-start gap-3 rounded-xl bg-white/70 p-4 text-sm text-muted">
                                         <Wifi size={18} className="mt-0.5 shrink-0 text-brand" />
-                                        <p>
-                                            The service remains pending until the installation work order is completed.
-                                            No router call is made during registration.
-                                        </p>
+                                        <p>{t('customer.pending_installation_note')}</p>
                                     </div>
                                 </div>
                             )}
                         </section>
                     )}
                     {canCreateService && plans.length === 0 && (
-                        <p className="border-t border-line pt-5 text-sm text-muted">
-                            Create an active plan before registering a service. You can still save the subscriber now.
-                        </p>
+                        <p className="border-t border-line pt-5 text-sm text-muted">{t('customer.no_plans_note')}</p>
                     )}
                     <div className="flex justify-end gap-3 border-t border-line pt-5">
                         <Link href="/customers" className="button-secondary">
-                            Cancel
+                            {t('Cancel')}
                         </Link>
                         <button className="button-primary" disabled={form.processing}>
-                            <Save size={16} /> Save customer
+                            <Save size={16} /> {t('customer.save_customer')}
                         </button>
                     </div>
                 </form>
