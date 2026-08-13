@@ -28,6 +28,16 @@ export default function TicketCreate({ customer, services }: Props) {
         priority: 'normal',
         service_public_id: '',
     });
+    const fieldA11y = (id: string, error?: string) => ({
+        'aria-invalid': Boolean(error),
+        'aria-describedby': error ? `${id}-error` : undefined,
+    });
+    const fieldError = (id: string, error?: string) =>
+        error ? (
+            <p id={`${id}-error`} className="field-error" role="alert">
+                {t(error)}
+            </p>
+        ) : null;
 
     const submit = (event: React.FormEvent) => {
         event.preventDefault();
@@ -55,19 +65,23 @@ export default function TicketCreate({ customer, services }: Props) {
                     <label>
                         <span className="field-label">{t('Subject')}</span>
                         <input
+                            id="subject"
                             className="field"
+                            {...fieldA11y('subject', form.errors.subject)}
                             value={form.data.subject}
                             onChange={(event) => form.setData('subject', event.target.value)}
                             maxLength={160}
                             required
                         />
-                        {form.errors.subject && <p className="field-error" role="alert">{t(form.errors.subject)}</p>}
+                        {fieldError('subject', form.errors.subject)}
                     </label>
                     <div className="grid gap-5 sm:grid-cols-3">
                         <label>
                             <span className="field-label">{t('Category')}</span>
                             <ResponsiveSelect
+                                id="category"
                                 className="field"
+                                {...fieldA11y('category', form.errors.category)}
                                 value={form.data.category}
                                 onChange={(event) => form.setData('category', event.target.value)}
                             >
@@ -81,7 +95,9 @@ export default function TicketCreate({ customer, services }: Props) {
                         <label>
                             <span className="field-label">{t('Priority')}</span>
                             <ResponsiveSelect
+                                id="priority"
                                 className="field"
+                                {...fieldA11y('priority', form.errors.priority)}
                                 value={form.data.priority}
                                 onChange={(event) => form.setData('priority', event.target.value)}
                             >
@@ -94,7 +110,9 @@ export default function TicketCreate({ customer, services }: Props) {
                         <label>
                             <span className="field-label">{t('Service')}</span>
                             <ResponsiveSelect
+                                id="service_public_id"
                                 className="field"
+                                {...fieldA11y('service_public_id', form.errors.service_public_id)}
                                 value={form.data.service_public_id}
                                 onChange={(event) => form.setData('service_public_id', event.target.value)}
                             >
@@ -110,13 +128,15 @@ export default function TicketCreate({ customer, services }: Props) {
                     <label>
                         <span className="field-label">{t('Description')}</span>
                         <textarea
+                            id="description"
                             className="field min-h-40"
+                            {...fieldA11y('description', form.errors.description)}
                             value={form.data.description}
                             onChange={(event) => form.setData('description', event.target.value)}
                             maxLength={10000}
                             required
                         />
-                        {form.errors.description && <p className="field-error" role="alert">{t(form.errors.description)}</p>}
+                        {fieldError('description', form.errors.description)}
                     </label>
                     <div className="flex justify-end gap-3 border-t border-line pt-5">
                         <Link href={`/customers/${customer.public_id}`} className="button-secondary">
