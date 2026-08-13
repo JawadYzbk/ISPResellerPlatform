@@ -9,12 +9,21 @@ final class Tenancy
 {
     private ?int $tenantId = null;
 
+    private ?int $providerSettingsTenantId = null;
+
     public function set(Tenant|int $tenant): void
     {
         $model = $tenant instanceof Tenant ? $tenant : Tenant::query()->findOrFail($tenant);
+        if ($this->providerSettingsTenantId !== null && $this->providerSettingsTenantId !== $model->getKey()) {
+            app(TenantIntegrationSettings::class)->reset();
+            $this->providerSettingsTenantId = null;
+        }
         $this->tenantId = $model->getKey();
         setPermissionsTeamId($this->tenantId);
-        app(TenantIntegrationSettings::class)->apply($model);
+        if (is_array($model->provider_settings) && $model->provider_settings !== []) {
+            app(TenantIntegrationSettings::class)->apply($model);
+            $this->providerSettingsTenantId = $model->getKey();
+        }
     }
 
     public function id(): ?int
@@ -31,7 +40,10 @@ final class Tenancy
     {
         $this->tenantId = null;
         setPermissionsTeamId(null);
-        app(TenantIntegrationSettings::class)->reset();
+        if ($this->providerSettingsTenantId !== null) {
+            app(TenantIntegrationSettings::class)->reset();
+            $this->providerSettingsTenantId = null;
+        }
     }
 
     public function run(Tenant|int $tenant, callable $callback): mixed

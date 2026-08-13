@@ -57,6 +57,7 @@ final readonly class UpdateTenantIntegrationSettings implements Action
             'whatsapp_phone_number_id' => 'whatsapp.phone_number_id',
             'whatsapp_web_token' => 'whatsapp.web.token',
             'whatsapp_webhook_secret' => 'webhooks.secrets.whatsapp_web',
+            'whatsapp_cloud_webhook_secret' => 'webhooks.secrets.whatsapp',
             'stripe_secret' => 'stripe.secret',
             'stripe_publishable_key' => 'stripe.publishable_key',
             'stripe_webhook_secret' => 'stripe.webhook_secret',

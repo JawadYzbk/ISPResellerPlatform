@@ -21,6 +21,7 @@ use App\Http\Requests\TenantSettingsRequest;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Models\WhatsAppAccount;
+use App\Support\Tenancy;
 use App\Support\TenantIntegrationSettings;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -121,6 +122,7 @@ final class SettingsController extends Controller
             'whatsapp_phone_number_id' => 'whatsapp.phone_number_id',
             'whatsapp_web_token' => 'whatsapp.web.token',
             'whatsapp_webhook_secret' => 'webhooks.secrets.whatsapp_web',
+            'whatsapp_cloud_webhook_secret' => 'webhooks.secrets.whatsapp',
             'stripe_secret' => 'stripe.secret',
             'stripe_publishable_key' => 'stripe.publishable_key',
             'stripe_webhook_secret' => 'stripe.webhook_secret',
@@ -172,7 +174,8 @@ final class SettingsController extends Controller
         abort_unless($user instanceof User && $user->can('settings.manage'), 403);
         $tenant = Tenant::query()->find($user->tenant_id);
         abort_unless($tenant instanceof Tenant, 403);
-        $update->handle($tenant, $request->validated());
+        $updated = $update->handle($tenant, $request->validated());
+        app(Tenancy::class)->set($updated);
 
         return redirect()->route('settings.integrations')
             ->with('success_title', 'Integration settings saved.')

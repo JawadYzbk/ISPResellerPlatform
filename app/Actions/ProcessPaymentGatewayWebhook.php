@@ -24,19 +24,27 @@ final readonly class ProcessPaymentGatewayWebhook implements Action
             throw new DomainException('Unsupported payment gateway webhook.');
         }
 
-        $secret = config('services.stripe.webhook_secret');
-        if (! is_string($secret) || ! $this->signatures->verify($rawPayload, $signature, $secret)) {
-            throw new InvalidPaymentWebhookSignature('Invalid payment gateway webhook signature.');
-        }
-
         try {
             $payload = json_decode($rawPayload, true, 512, JSON_THROW_ON_ERROR);
         } catch (JsonException) {
+            $this->assertSignature($rawPayload, $signature);
             throw new InvalidPaymentWebhookPayload('Payment gateway webhook payload must be valid JSON.');
         }
         if (! is_array($payload)) {
+            $this->assertSignature($rawPayload, $signature);
             throw new InvalidPaymentWebhookPayload('Payment gateway webhook payload must be a JSON object.');
         }
+
+        $tenant = $this->tenantFromPayload($payload);
+        $process = fn (): array => $this->processVerifiedPayload($payload, $rawPayload, $signature);
+
+        return $tenant instanceof Tenant ? $this->tenancy->run($tenant, $process) : $process();
+    }
+
+    /** @param array<string, mixed> $payload */
+    private function processVerifiedPayload(array $payload, string $rawPayload, ?string $signature): array
+    {
+        $this->assertSignature($rawPayload, $signature);
 
         $eventId = $this->requiredString($payload['id'] ?? null, 'event id');
         $eventType = $this->requiredString($payload['type'] ?? null, 'event type');
@@ -67,7 +75,7 @@ final readonly class ProcessPaymentGatewayWebhook implements Action
             throw new InvalidPaymentWebhookPayload('Payment intent tenant could not be found.');
         }
 
-        return $this->tenancy->run($tenant, function () use ($eventId, $eventType, $paymentIntentId, $customerPublicId, $invoicePublicId, $currency, $amount): array {
+        return (function () use ($eventId, $eventType, $paymentIntentId, $customerPublicId, $invoicePublicId, $currency, $amount): array {
             $customer = Customer::query()->where('public_id', $customerPublicId)->first();
             if (! $customer instanceof Customer) {
                 throw new InvalidPaymentWebhookPayload('Payment intent customer could not be found.');
@@ -96,7 +104,27 @@ final readonly class ProcessPaymentGatewayWebhook implements Action
             );
 
             return ['status' => 'processed', 'event_id' => $eventId, 'payment_id' => $payment->public_id];
-        });
+        })();
+    }
+
+    /** @param array<string, mixed> $payload */
+    private function tenantFromPayload(array $payload): ?Tenant
+    {
+        $metadata = $payload['data']['object']['metadata'] ?? null;
+        $tenantPublicId = is_array($metadata) ? $metadata['tenant_public_id'] ?? null : null;
+        if (! is_string($tenantPublicId) || trim($tenantPublicId) === '') {
+            return null;
+        }
+
+        return Tenant::query()->where('public_id', trim($tenantPublicId))->first();
+    }
+
+    private function assertSignature(string $rawPayload, ?string $signature): void
+    {
+        $secret = config('services.stripe.webhook_secret');
+        if (! is_string($secret) || ! $this->signatures->verify($rawPayload, $signature, $secret)) {
+            throw new InvalidPaymentWebhookSignature('Invalid payment gateway webhook signature.');
+        }
     }
 
     private function requiredString(mixed $value, string $field): string

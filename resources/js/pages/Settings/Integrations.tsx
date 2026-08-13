@@ -36,6 +36,7 @@ type SecretField =
     | 'whatsapp_phone_number_id'
     | 'whatsapp_web_token'
     | 'whatsapp_webhook_secret'
+    | 'whatsapp_cloud_webhook_secret'
     | 'stripe_secret'
     | 'stripe_publishable_key'
     | 'stripe_webhook_secret'
@@ -106,6 +107,7 @@ export default function Integrations({ settings, configured, sources }: Props) {
         whatsapp_phone_number_id: '',
         whatsapp_web_token: '',
         whatsapp_webhook_secret: '',
+        whatsapp_cloud_webhook_secret: '',
         stripe_secret: '',
         stripe_publishable_key: '',
         stripe_webhook_secret: '',
@@ -115,6 +117,7 @@ export default function Integrations({ settings, configured, sources }: Props) {
         clear_whatsapp_phone_number_id: false,
         clear_whatsapp_web_token: false,
         clear_whatsapp_webhook_secret: false,
+        clear_whatsapp_cloud_webhook_secret: false,
         clear_stripe_secret: false,
         clear_stripe_publishable_key: false,
         clear_stripe_webhook_secret: false,
@@ -287,6 +290,13 @@ export default function Integrations({ settings, configured, sources }: Props) {
                                 form={form}
                                 configured={configured.whatsapp_phone_number_id}
                                 source={sources.whatsapp_phone_number_id}
+                            />
+                            <SecretInput
+                                label="Cloud signed webhook secret"
+                                field="whatsapp_cloud_webhook_secret"
+                                form={form}
+                                configured={configured.whatsapp_cloud_webhook_secret}
+                                source={sources.whatsapp_cloud_webhook_secret}
                             />
                             <label className="flex items-center gap-3 text-sm font-medium">
                                 <input

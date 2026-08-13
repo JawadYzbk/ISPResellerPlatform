@@ -69,3 +69,49 @@ it('rejects an unsigned Stripe payment webhook', function (): void {
         ->post('/api/v1/webhooks/payments/stripe', [], ['Content-Type' => 'application/json'])
         ->assertUnauthorized();
 });
+
+it('uses the tenant webhook secret when the callback arrives without tenant middleware', function (): void {
+    $tenant = Tenant::create([
+        'name' => 'Northline',
+        'slug' => 'northline',
+        'base_currency' => 'USD',
+        'collection_currency' => 'USD',
+        'provider_settings' => ['stripe.webhook_secret' => 'whsec_tenant_only'],
+    ]);
+    app(Tenancy::class)->set($tenant);
+    $customer = Customer::factory()->create();
+    $invoice = Invoice::create([
+        'customer_id' => $customer->id,
+        'number' => 'INV-TENANT-001',
+        'status' => 'issued',
+        'currency' => 'USD',
+        'subtotal_amount' => 2500,
+        'tax_amount' => 0,
+        'total_amount' => 2500,
+        'issued_at' => now(),
+    ]);
+    app(Tenancy::class)->clear();
+    config(['services.stripe.webhook_secret' => 'whsec_wrong_global']);
+    $payload = json_encode([
+        'id' => 'evt_tenant_secret',
+        'type' => 'payment_intent.succeeded',
+        'data' => ['object' => [
+            'id' => 'pi_tenant_secret',
+            'amount' => 2500,
+            'amount_received' => 2500,
+            'currency' => 'usd',
+            'metadata' => [
+                'tenant_public_id' => $tenant->public_id,
+                'customer_public_id' => $customer->public_id,
+                'invoice_public_id' => $invoice->public_id,
+            ],
+        ]],
+    ], JSON_THROW_ON_ERROR);
+    $timestamp = time();
+    $signature = 't='.$timestamp.',v1='.hash_hmac('sha256', $timestamp.'.'.$payload, 'whsec_tenant_only');
+
+    $this->call('POST', '/api/v1/webhooks/payments/stripe', [], [], [], [
+        'HTTP_STRIPE_SIGNATURE' => $signature,
+        'CONTENT_TYPE' => 'application/json',
+    ], $payload)->assertOk()->assertJsonPath('status', 'processed');
+});

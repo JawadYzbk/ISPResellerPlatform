@@ -24,6 +24,7 @@ final class TenantIntegrationSettings
         'whatsapp.web.token',
         'whatsapp.web.client_id',
         'whatsapp.web.webhook_url',
+        'webhooks.secrets.whatsapp',
         'webhooks.secrets.whatsapp_web',
         'stripe.secret',
         'stripe.publishable_key',
