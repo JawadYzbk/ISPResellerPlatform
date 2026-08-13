@@ -142,6 +142,7 @@ Route::middleware(['auth', 'tenant', '2fa'])->group(function (): void {
     Route::put('/settings/integrations', [SettingsController::class, 'updateIntegrations'])->middleware('recent-auth')->name('settings.integrations.update');
     Route::get('/settings/readiness', [SettingsController::class, 'readiness'])->name('settings.readiness');
     Route::post('/settings/readiness/provider-check', [SettingsController::class, 'providerCheck'])->middleware('recent-auth')->name('settings.readiness.provider-check');
+    Route::post('/settings/readiness/backup', [SettingsController::class, 'runBackup'])->middleware('recent-auth')->name('settings.readiness.backup');
     Route::get('/settings/locations', [LocationOperationsController::class, 'index'])->name('settings.locations');
     Route::post('/settings/locations/branches', [LocationOperationsController::class, 'storeBranch'])->middleware('recent-auth')->name('settings.locations.branches.store');
     Route::patch('/settings/locations/branches/{branch}', [LocationOperationsController::class, 'updateBranch'])->middleware('recent-auth')->name('settings.locations.branches.update');

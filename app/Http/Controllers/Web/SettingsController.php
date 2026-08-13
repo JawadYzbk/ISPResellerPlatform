@@ -13,6 +13,7 @@ use App\Actions\GetBackupHealth;
 use App\Actions\GetWhatsAppSetupStatus;
 use App\Actions\GetWorkspaceSetupSignals;
 use App\Actions\QueueWhatsAppTestMessage;
+use App\Actions\RunApplicationBackup;
 use App\Actions\UpdateTenantIntegrationSettings;
 use App\Actions\UpdateTenantSettings;
 use App\Actions\UpdateWhatsAppAccount;
@@ -198,7 +199,27 @@ final class SettingsController extends Controller
             ->with('success_title', 'Provider checks')
             ->with('success', $hasIssues
                 ? 'Provider checks completed with actions required.'
-                : 'All configured provider checks passed.');
+            : 'All configured provider checks passed.');
+    }
+
+    public function runBackup(Request $request, RunApplicationBackup $backup): RedirectResponse
+    {
+        $user = $request->user();
+        abort_unless($user instanceof User && $user->can('settings.manage'), 403);
+
+        try {
+            $backup->handle();
+        } catch (\Throwable $exception) {
+            report($exception);
+
+            return back()
+                ->with('error_title', 'Backup failed')
+                ->with('error', 'The backup could not be completed. Review the server backup logs.');
+        }
+
+        return back()
+            ->with('success_title', 'Backup created')
+            ->with('success', 'A verified application backup was created successfully.');
     }
 
     public function updateGeneral(TenantSettingsRequest $request, UpdateTenantSettings $update): RedirectResponse
