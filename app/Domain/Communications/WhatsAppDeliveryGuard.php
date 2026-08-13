@@ -21,7 +21,7 @@ final readonly class WhatsAppDeliveryGuard
 
             $blockedUntil = $this->latestDate($locked->next_send_at, $locked->cooldown_until);
             if ($blockedUntil instanceof Carbon && $blockedUntil->isFuture()) {
-                return WhatsAppDeliveryDecision::deferred($now->diffInSeconds($blockedUntil) + 1, 'account_pacing');
+                return WhatsAppDeliveryDecision::deferred($blockedUntil->getTimestamp() - $now->getTimestamp() + 1, 'account_pacing');
             }
 
             $hourlyLimit = (int) config('services.whatsapp.safety.hourly_limit', 60);

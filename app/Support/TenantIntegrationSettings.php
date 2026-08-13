@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\DB;
 
 final class TenantIntegrationSettings
 {
-    /** @var array<string, mixed> */
+    /** @var list<string> */
     private const CONFIG_PATHS = [
         'payments.driver',
         'frankfurter.enabled',
