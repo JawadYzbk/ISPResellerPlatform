@@ -8,7 +8,10 @@ import {
     Clock3,
     Download,
     Images,
+    MapPinned,
     PackageOpen,
+    RadioTower,
+    Save,
     UserRound,
 } from 'lucide-react';
 
@@ -30,6 +33,21 @@ type WorkOrder = {
     checklist: Record<string, boolean | string>;
     metadata: Record<string, unknown>;
     readings: Record<string, string>;
+    installation: {
+        enabled: boolean;
+        requires_acceptance: boolean;
+        network_building_id: number | null;
+        network_building_code: string | null;
+        distribution_box_id: number | null;
+        distribution_box_public_id: string | null;
+        distribution_box_code: string | null;
+        network_port: number | null;
+        onu_serial: string | null;
+        survey: Record<string, string>;
+        activation_accepted_at: string | null;
+        activation_accepted_by: string | null;
+        activation_acceptance_note: string | null;
+    };
     customer: { public_id: string; code: string; name: string } | null;
     service: { public_id: string; username: string } | null;
     assignee: { name: string } | null;
@@ -71,6 +89,13 @@ type BulkMaterial = {
     quantity: string;
 };
 
+type NetworkBuilding = {
+    id: number;
+    name: string;
+    code: string;
+    boxes: { id: number; public_id: string; name: string; code: string; capacity_ports: number }[];
+};
+
 function checklistLabel(key: string): string {
     return key.replaceAll('_', ' ');
 }
@@ -100,10 +125,23 @@ type Props = {
     bulkMaterials: BulkMaterial[];
     scheduledAtLocal: string | null;
     timezone: string;
+    canManageInstallation: boolean;
+    networkBuildings: NetworkBuilding[];
 };
 
-export default function WorkOrderShowPage({ workOrder, bulkMaterials, scheduledAtLocal, timezone }: Props) {
-    const canComplete = ['assigned', 'in_progress'].includes(workOrder.status);
+export default function WorkOrderShowPage({
+    workOrder,
+    bulkMaterials,
+    scheduledAtLocal,
+    timezone,
+    canManageInstallation,
+    networkBuildings,
+}: Props) {
+    const installationNeedsAcceptance =
+        workOrder.installation.enabled &&
+        workOrder.installation.requires_acceptance &&
+        workOrder.installation.activation_accepted_at === null;
+    const canComplete = ['assigned', 'in_progress'].includes(workOrder.status) && !installationNeedsAcceptance;
     const scheduleForm = useForm({ scheduled_at: scheduledAtLocal ?? '' });
     const signatureForm = useForm<{ file: File | null; signer_name: string }>({ file: null, signer_name: '' });
     const readingsForm = useForm({
@@ -115,6 +153,30 @@ export default function WorkOrderShowPage({ workOrder, bulkMaterials, scheduledA
         ),
     });
     const materialForm = useForm({ inventory_item_id: '', warehouse_id: '', quantity: '', note: '' });
+    const installationForm = useForm({
+        network_building_id: workOrder.installation.network_building_id
+            ? String(workOrder.installation.network_building_id)
+            : '',
+        distribution_box_id: workOrder.installation.distribution_box_public_id ?? '',
+        network_port: workOrder.installation.network_port ? String(workOrder.installation.network_port) : '',
+        onu_serial: workOrder.installation.onu_serial ?? '',
+        survey: {
+            unit_label: workOrder.installation.survey.unit_label ?? '',
+            access_notes: workOrder.installation.survey.access_notes ?? '',
+            cable_route: workOrder.installation.survey.cable_route ?? '',
+            power_available: workOrder.installation.survey.power_available ?? '',
+        },
+    });
+    const acceptanceForm = useForm({ note: '' });
+
+    const selectedBuilding = networkBuildings.find(
+        (building) => String(building.id) === installationForm.data.network_building_id,
+    );
+    const selectedBox = selectedBuilding?.boxes.find(
+        (box) => box.public_id === installationForm.data.distribution_box_id,
+    );
+    const installationErrors = installationForm.errors as Record<string, string | undefined>;
+    const acceptanceErrors = acceptanceForm.errors as Record<string, string | undefined>;
 
     const submitSchedule = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -135,6 +197,18 @@ export default function WorkOrderShowPage({ workOrder, bulkMaterials, scheduledA
         event.preventDefault();
         materialForm.post('/operations/work-orders/' + workOrder.public_id + '/materials', {
             onSuccess: () => materialForm.reset(),
+        });
+    };
+    const submitInstallation = (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        installationForm.post('/operations/work-orders/' + workOrder.public_id + '/installation', {
+            preserveScroll: true,
+        });
+    };
+    const acceptActivation = (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        acceptanceForm.post('/operations/work-orders/' + workOrder.public_id + '/activation-acceptance', {
+            preserveScroll: true,
         });
     };
 
@@ -160,7 +234,7 @@ export default function WorkOrderShowPage({ workOrder, bulkMaterials, scheduledA
                         {workOrder.assignee?.name ?? 'nobody'}
                     </p>
                 </div>
-                {canComplete && (
+                {canComplete ? (
                     <button
                         type="button"
                         className="button-primary"
@@ -172,7 +246,11 @@ export default function WorkOrderShowPage({ workOrder, bulkMaterials, scheduledA
                     >
                         <CheckCircle2 size={16} /> Complete work order
                     </button>
-                )}
+                ) : installationNeedsAcceptance ? (
+                    <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+                        Accept activation before completing this installation.
+                    </div>
+                ) : null}
             </div>
 
             <div className="mt-8 grid gap-6 lg:grid-cols-[0.8fr_1.2fr]">
@@ -268,6 +346,257 @@ export default function WorkOrderShowPage({ workOrder, bulkMaterials, scheduledA
                 </aside>
 
                 <div className="space-y-6">
+                    {workOrder.installation.enabled && canManageInstallation && (
+                        <section className="card p-6">
+                            <div className="flex items-center gap-2">
+                                <MapPinned size={17} className="text-brand" />
+                                <h2 className="section-title text-balance">Installation survey and topology</h2>
+                            </div>
+                            <p className="mt-1 max-w-2xl text-sm text-muted text-pretty">
+                                Record the customer-site survey and reserve the exact building, distribution box, and
+                                port used by this installation.
+                            </p>
+
+                            <form onSubmit={submitInstallation} className="mt-5 space-y-5">
+                                <div className="grid gap-4 sm:grid-cols-2">
+                                    <label>
+                                        <span className="field-label">Building</span>
+                                        <ResponsiveSelect
+                                            className="field"
+                                            value={installationForm.data.network_building_id}
+                                            onChange={(event) => {
+                                                installationForm.setData('network_building_id', event.target.value);
+                                                installationForm.setData('distribution_box_id', '');
+                                                installationForm.setData('network_port', '');
+                                            }}
+                                        >
+                                            <option value="">Select building</option>
+                                            {networkBuildings.map((building) => (
+                                                <option key={building.id} value={building.id}>
+                                                    {building.name} · {building.code}
+                                                </option>
+                                            ))}
+                                        </ResponsiveSelect>
+                                        {installationForm.errors.network_building_id && (
+                                            <p className="field-error">{installationForm.errors.network_building_id}</p>
+                                        )}
+                                    </label>
+                                    <label>
+                                        <span className="field-label">Distribution box</span>
+                                        <ResponsiveSelect
+                                            className="field"
+                                            value={installationForm.data.distribution_box_id}
+                                            disabled={!selectedBuilding}
+                                            onChange={(event) => {
+                                                installationForm.setData('distribution_box_id', event.target.value);
+                                                installationForm.setData('network_port', '');
+                                            }}
+                                        >
+                                            <option value="">Select box</option>
+                                            {selectedBuilding?.boxes.map((box) => (
+                                                <option key={box.public_id} value={box.public_id}>
+                                                    {box.name} · {box.code} · {box.capacity_ports} ports
+                                                </option>
+                                            ))}
+                                        </ResponsiveSelect>
+                                        {installationForm.errors.distribution_box_id && (
+                                            <p className="field-error">{installationForm.errors.distribution_box_id}</p>
+                                        )}
+                                    </label>
+                                    <label>
+                                        <span className="field-label">Network port</span>
+                                        <input
+                                            className="field tabular-nums"
+                                            type="number"
+                                            min={1}
+                                            max={selectedBox?.capacity_ports}
+                                            value={installationForm.data.network_port}
+                                            onChange={(event) =>
+                                                installationForm.setData('network_port', event.target.value)
+                                            }
+                                            placeholder={
+                                                selectedBox ? `1–${selectedBox.capacity_ports}` : 'Select a box first'
+                                            }
+                                            disabled={!selectedBox}
+                                        />
+                                        {installationForm.errors.network_port && (
+                                            <p className="field-error">{installationForm.errors.network_port}</p>
+                                        )}
+                                    </label>
+                                    <label>
+                                        <span className="field-label">
+                                            ONU serial{' '}
+                                            <span className="font-normal text-muted">(required for fiber)</span>
+                                        </span>
+                                        <input
+                                            className="field"
+                                            value={installationForm.data.onu_serial}
+                                            onChange={(event) =>
+                                                installationForm.setData('onu_serial', event.target.value)
+                                            }
+                                            placeholder="Scan or enter the ONU serial"
+                                        />
+                                        {installationForm.errors.onu_serial && (
+                                            <p className="field-error">{installationForm.errors.onu_serial}</p>
+                                        )}
+                                    </label>
+                                </div>
+
+                                <div className="border-t border-line pt-5">
+                                    <div className="flex items-center gap-2">
+                                        <RadioTower size={16} className="text-brand" />
+                                        <h3 className="text-sm font-semibold text-balance">Site survey</h3>
+                                    </div>
+                                    <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                                        <label>
+                                            <span className="field-label">Unit / apartment</span>
+                                            <input
+                                                className="field"
+                                                value={installationForm.data.survey.unit_label}
+                                                onChange={(event) =>
+                                                    installationForm.setData('survey', {
+                                                        ...installationForm.data.survey,
+                                                        unit_label: event.target.value,
+                                                    })
+                                                }
+                                                placeholder="Building 2 · Apt 301"
+                                            />
+                                        </label>
+                                        <label>
+                                            <span className="field-label">Power available</span>
+                                            <ResponsiveSelect
+                                                className="field"
+                                                value={installationForm.data.survey.power_available}
+                                                onChange={(event) =>
+                                                    installationForm.setData('survey', {
+                                                        ...installationForm.data.survey,
+                                                        power_available: event.target.value,
+                                                    })
+                                                }
+                                            >
+                                                <option value="">Not recorded</option>
+                                                <option value="yes">Yes</option>
+                                                <option value="no">No</option>
+                                            </ResponsiveSelect>
+                                        </label>
+                                        <label>
+                                            <span className="field-label">Cable route</span>
+                                            <input
+                                                className="field"
+                                                value={installationForm.data.survey.cable_route}
+                                                onChange={(event) =>
+                                                    installationForm.setData('survey', {
+                                                        ...installationForm.data.survey,
+                                                        cable_route: event.target.value,
+                                                    })
+                                                }
+                                                placeholder="Riser · east facade · 35 m"
+                                            />
+                                        </label>
+                                        <label>
+                                            <span className="field-label">Access notes</span>
+                                            <input
+                                                className="field"
+                                                value={installationForm.data.survey.access_notes}
+                                                onChange={(event) =>
+                                                    installationForm.setData('survey', {
+                                                        ...installationForm.data.survey,
+                                                        access_notes: event.target.value,
+                                                    })
+                                                }
+                                                placeholder="Caretaker contact or access instructions"
+                                            />
+                                        </label>
+                                    </div>
+                                </div>
+
+                                {installationErrors.installation && (
+                                    <p className="field-error">{installationErrors.installation}</p>
+                                )}
+                                {installationForm.errors.survey && (
+                                    <p className="field-error">{installationForm.errors.survey}</p>
+                                )}
+                                <button
+                                    type="submit"
+                                    className="button-secondary"
+                                    disabled={installationForm.processing}
+                                >
+                                    <Save size={15} /> Save installation details
+                                </button>
+                            </form>
+
+                            <div className="mt-6 border-t border-line pt-5">
+                                <div className="flex flex-wrap items-start justify-between gap-4">
+                                    <div>
+                                        <div className="flex items-center gap-2">
+                                            <CheckCircle2 size={16} className="text-brand" />
+                                            <h3 className="text-sm font-semibold text-balance">
+                                                Activation acceptance
+                                            </h3>
+                                        </div>
+                                        <p className="mt-1 text-sm text-muted text-pretty">
+                                            Confirm the topology and site handover before this installation activates
+                                            its service.
+                                        </p>
+                                    </div>
+                                    {workOrder.installation.activation_accepted_at ? (
+                                        <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
+                                            Accepted
+                                        </span>
+                                    ) : (
+                                        <span className="rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-800">
+                                            Pending
+                                        </span>
+                                    )}
+                                </div>
+
+                                {workOrder.installation.activation_accepted_at ? (
+                                    <div className="mt-4 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900">
+                                        <p className="font-semibold">
+                                            Accepted by {workOrder.installation.activation_accepted_by ?? 'operator'}
+                                        </p>
+                                        <p className="mt-1 text-xs tabular-nums text-emerald-800">
+                                            {formatDate(workOrder.installation.activation_accepted_at)}
+                                        </p>
+                                        {workOrder.installation.activation_acceptance_note && (
+                                            <p className="mt-2 text-sm text-pretty">
+                                                {workOrder.installation.activation_acceptance_note}
+                                            </p>
+                                        )}
+                                    </div>
+                                ) : ['assigned', 'en_route', 'in_progress'].includes(workOrder.status) ? (
+                                    <form onSubmit={acceptActivation} className="mt-4 space-y-3">
+                                        <label>
+                                            <span className="field-label">
+                                                Acceptance note{' '}
+                                                <span className="font-normal text-muted">(optional)</span>
+                                            </span>
+                                            <textarea
+                                                className="field min-h-20 resize-y"
+                                                value={acceptanceForm.data.note}
+                                                onChange={(event) => acceptanceForm.setData('note', event.target.value)}
+                                                placeholder="Customer confirmed service handover"
+                                            />
+                                        </label>
+                                        {acceptanceErrors.activation && (
+                                            <p className="field-error">{acceptanceErrors.activation}</p>
+                                        )}
+                                        <button
+                                            type="submit"
+                                            className="button-primary"
+                                            disabled={acceptanceForm.processing}
+                                        >
+                                            <CheckCircle2 size={15} /> Accept activation
+                                        </button>
+                                    </form>
+                                ) : (
+                                    <p className="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 text-pretty">
+                                        Assign this work order before accepting activation.
+                                    </p>
+                                )}
+                            </div>
+                        </section>
+                    )}
                     <section className="card p-6">
                         <div className="flex items-center gap-2">
                             <ClipboardCheck size={17} className="text-brand" />
