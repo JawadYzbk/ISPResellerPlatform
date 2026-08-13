@@ -2,14 +2,17 @@
 
 use App\Actions\CreateCollectorCustodyEntry;
 use App\Actions\CreateOperationalExpense;
+use App\Actions\GenerateDueOperationalExpenses;
 use App\Actions\GetCollectorCustodyPosition;
 use App\Actions\ReviewOperationalExpense;
 use App\Models\ExpenseCategory;
 use App\Models\JournalLine;
 use App\Models\OperationalExpense;
+use App\Models\RecurringExpenseSchedule;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Support\Tenancy;
+use Carbon\CarbonImmutable;
 use Database\Seeders\CapabilitySeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -167,4 +170,27 @@ it('provides a tenant-scoped expense workflow with secure receipt uploads', func
     $this->actingAs($manager)
         ->get(route('operations.media.download', $expense->attachments->firstOrFail()->public_id))
         ->assertOk();
+});
+
+it('generates each due recurring expense once and advances its schedule', function (): void {
+    [, $manager, , $category] = operationalExpenseWorkspace();
+    $schedule = RecurringExpenseSchedule::create([
+        'expense_category_id' => $category->id,
+        'created_by_id' => $manager->id,
+        'frequency' => 'monthly',
+        'interval' => 1,
+        'payment_source' => 'bank',
+        'amount' => 20000,
+        'currency' => 'USD',
+        'description' => 'Office rent',
+        'starts_on' => '2026-06-01',
+        'next_run_on' => '2026-06-01',
+        'is_active' => true,
+    ]);
+
+    $through = CarbonImmutable::parse('2026-08-15');
+    expect(app(GenerateDueOperationalExpenses::class)->handle($through))->toBe(3)
+        ->and(app(GenerateDueOperationalExpenses::class)->handle($through))->toBe(0)
+        ->and(OperationalExpense::query()->where('recurring_expense_schedule_id', $schedule->id)->count())->toBe(3)
+        ->and($schedule->refresh()->next_run_on->format('Y-m-d'))->toBe('2026-09-01');
 });

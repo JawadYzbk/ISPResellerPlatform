@@ -25,6 +25,7 @@ class OperationalExpense extends Model
     protected $fillable = [
         'tenant_id', 'public_id', 'expense_category_id', 'expense_vendor_id', 'requested_by_id',
         'reviewed_by_id', 'collector_id', 'cash_shift_id', 'journal_entry_id', 'collector_custody_entry_id',
+        'recurring_expense_schedule_id', 'recurrence_key',
         'status', 'payment_source', 'amount', 'currency', 'description', 'reference', 'incurred_at',
         'reviewed_at', 'review_note',
     ];
@@ -93,5 +94,11 @@ class OperationalExpense extends Model
     public function attachments(): HasMany
     {
         return $this->hasMany(MediaUpload::class);
+    }
+
+    /** @return BelongsTo<RecurringExpenseSchedule, $this> */
+    public function recurringSchedule(): BelongsTo
+    {
+        return $this->belongsTo(RecurringExpenseSchedule::class, 'recurring_expense_schedule_id');
     }
 }

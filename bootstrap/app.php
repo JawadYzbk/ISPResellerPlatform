@@ -49,6 +49,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $schedule->command('radius:mark-stale-sessions')->everyFifteenMinutes();
         $schedule->command('tickets:auto-close-resolved')->hourlyAt(20);
         $schedule->command('billing:generate-invoices')->dailyAt('01:20');
+        $schedule->command('expenses:generate-recurring')->dailyAt('01:25')->withoutOverlapping(30);
         $schedule->command('fx:sync-frankfurter')->dailyAt('01:35')->withoutOverlapping(30);
         $schedule->command('usage:rollup-daily')->dailyAt('01:40');
         $schedule->command('radius:enforce-quotas')->dailyAt('01:45');
