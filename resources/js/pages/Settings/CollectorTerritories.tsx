@@ -1,8 +1,10 @@
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import { MapPinned, Save, Search, ShieldCheck, UserRoundCheck } from 'lucide-react';
 import { useState } from 'react';
 
 import AppLayout from '@/layouts/AppLayout';
+import { createTranslator } from '@/lib/i18n';
+import type { PageProps } from '@/types';
 
 type Zone = {
     id: number;
@@ -26,6 +28,8 @@ type Props = {
 };
 
 function CollectorTerritoryCard({ collector, zones }: { collector: Collector; zones: Zone[] }) {
+    const { props } = usePage<PageProps>();
+    const t = createTranslator(props.app.locale);
     const form = useForm({
         all_zones: collector.all_zones,
         zone_ids: collector.zone_ids,
@@ -54,7 +58,7 @@ function CollectorTerritoryCard({ collector, zones }: { collector: Collector; zo
                     <p className="mt-1 truncate text-sm text-muted">{collector.email}</p>
                 </div>
                 <button className="button-primary shrink-0" disabled={form.processing}>
-                    <Save size={16} /> {form.processing ? 'Saving…' : 'Save territory'}
+                    <Save size={16} /> {form.processing ? t('Saving...') : t('territories.save')}
                 </button>
             </div>
 
@@ -66,17 +70,16 @@ function CollectorTerritoryCard({ collector, zones }: { collector: Collector; zo
                     className="mt-0.5"
                 />
                 <span>
-                    <span className="block text-sm font-semibold">All service zones</span>
+                    <span className="block text-sm font-semibold">{t('territories.all_zones')}</span>
                     <span className="mt-1 block text-pretty text-xs text-muted">
-                        Use this for roaming collectors. Restricted collectors only receive customers in the selected
-                        zones and their child zones.
+                        {t('territories.all_zones_description')}
                     </span>
                 </span>
             </label>
 
             {!form.data.all_zones && (
                 <fieldset className="mt-5">
-                    <legend className="field-label">Assigned zones</legend>
+                    <legend className="field-label">{t('territories.assigned_zones')}</legend>
                     <div className="mt-2 grid max-h-72 gap-2 overflow-y-auto rounded-xl border border-line p-3 sm:grid-cols-2">
                         {zones.map((zone) => (
                             <label
@@ -93,7 +96,7 @@ function CollectorTerritoryCard({ collector, zones }: { collector: Collector; zo
                                     <span className="block truncate text-sm font-medium">{zone.name}</span>
                                     <span className="block truncate text-xs text-muted">
                                         {zone.code}
-                                        {zone.parent_name ? ` · under ${zone.parent_name}` : ''}
+                                        {zone.parent_name ? ` · ${t('territories.under')} ${zone.parent_name}` : ''}
                                     </span>
                                 </span>
                             </label>
@@ -101,9 +104,9 @@ function CollectorTerritoryCard({ collector, zones }: { collector: Collector; zo
                     </div>
                     {zones.length === 0 && (
                         <div className="mt-2 text-sm text-amber-700">
-                            <p>Create a service zone before restricting this collector.</p>
+                            <p>{t('territories.create_zone_first')}</p>
                             <Link href="/settings/locations" className="mt-2 inline-flex font-semibold text-brand">
-                                Create a service zone →
+                                {t('territories.create_zone')} →
                             </Link>
                         </div>
                     )}
@@ -117,6 +120,8 @@ function CollectorTerritoryCard({ collector, zones }: { collector: Collector; zo
 }
 
 export default function CollectorTerritories({ collectors, zones }: Props) {
+    const { props } = usePage<PageProps>();
+    const t = createTranslator(props.app.locale);
     const [search, setSearch] = useState('');
     const term = search.trim().toLocaleLowerCase();
     const visibleCollectors = collectors.filter(
@@ -128,22 +133,19 @@ export default function CollectorTerritories({ collectors, zones }: Props) {
 
     return (
         <AppLayout>
-            <Head title="Collector territories" />
+            <Head title={t('Collector territories')} />
             <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
                 <div>
-                    <p className="eyebrow">Jebaya setup</p>
-                    <h1 className="page-title text-balance">Collector territories</h1>
-                    <p className="page-subtitle text-pretty">
-                        Control which customer zones each collector can download, search, and collect from in the field
-                        desk.
-                    </p>
+                    <p className="eyebrow">{t('territories.setup')}</p>
+                    <h1 className="page-title text-balance">{t('Collector territories')}</h1>
+                    <p className="page-subtitle text-pretty">{t('territories.subtitle')}</p>
                 </div>
                 <div className="flex flex-wrap gap-2">
                     <Link href="/settings/users" className="button-secondary">
-                        Users and invitations
+                        {t('Users and invitations')}
                     </Link>
                     <Link href="/settings/locations" className="button-secondary">
-                        Branches and zones
+                        {t('locations.title')}
                     </Link>
                 </div>
             </div>
@@ -151,11 +153,8 @@ export default function CollectorTerritories({ collectors, zones }: Props) {
             <section className="card mt-6 flex items-start gap-3 p-5">
                 <ShieldCheck className="mt-0.5 shrink-0 text-brand" size={19} />
                 <div>
-                    <h2 className="text-sm font-semibold">Territories are enforced server-side</h2>
-                    <p className="mt-1 text-pretty text-sm text-muted">
-                        Restricted collectors only receive matching customers and services through web sync and the
-                        collector API. Assigning a parent zone includes its current child zones.
-                    </p>
+                    <h2 className="text-sm font-semibold">{t('territories.server_enforced')}</h2>
+                    <p className="mt-1 text-pretty text-sm text-muted">{t('territories.server_description')}</p>
                 </div>
             </section>
 
@@ -166,8 +165,8 @@ export default function CollectorTerritories({ collectors, zones }: Props) {
                         className="field ps-10"
                         value={search}
                         onChange={(event) => setSearch(event.target.value)}
-                        placeholder="Search collectors"
-                        aria-label="Search collectors"
+                        placeholder={t('territories.search')}
+                        aria-label={t('territories.search')}
                     />
                 </div>
             )}
@@ -181,21 +180,21 @@ export default function CollectorTerritories({ collectors, zones }: Props) {
             {collectors.length === 0 && (
                 <section className="card mt-6 p-10 text-center">
                     <MapPinned className="mx-auto text-muted" size={30} />
-                    <h2 className="mt-3 text-balance font-semibold">No collector accounts yet</h2>
+                    <h2 className="mt-3 text-balance font-semibold">{t('territories.no_collectors')}</h2>
                     <p className="mx-auto mt-2 max-w-lg text-pretty text-sm text-muted">
-                        Invite an operator with the collector role, then return here to restrict their field coverage.
+                        {t('territories.no_collectors_description')}
                     </p>
                     <Link href="/settings/users" className="button-primary mt-5">
-                        Invite a collector
+                        {t('territories.invite_collector')}
                     </Link>
                 </section>
             )}
 
             {collectors.length > 0 && visibleCollectors.length === 0 && (
                 <section className="card mt-6 p-8 text-center">
-                    <p className="font-semibold">No collectors match this search.</p>
+                    <p className="font-semibold">{t('territories.no_matches')}</p>
                     <button type="button" className="button-secondary mt-4" onClick={() => setSearch('')}>
-                        Clear search
+                        {t('Clear search')}
                     </button>
                 </section>
             )}
