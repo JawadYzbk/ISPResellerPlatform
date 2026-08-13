@@ -391,7 +391,7 @@ export default function PaymentCreate({ customer, invoices, defaultCurrency, pay
                     </div>
                     {invoices.length === 0 && (
                         <p className="flex items-center gap-2 text-xs text-muted">
-                            <Receipt size={14} /> No issued invoices are currently open for this customer.
+                            <Receipt size={14} /> {t('No issued invoices are currently open for this customer.')}
                         </p>
                     )}
                 </form>

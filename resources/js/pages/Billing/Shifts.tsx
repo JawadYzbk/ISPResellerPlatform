@@ -293,7 +293,7 @@ export default function ShiftsPage({ shifts, currentShift, currencies, canViewRe
                                     <td className="px-5 py-4 text-sm">
                                         {shift.variance ? (
                                             <span className="font-semibold text-coral">
-                                                Flagged · {shift.variance_note}
+                                                {t('Flagged')} · {shift.variance_note}
                                             </span>
                                         ) : (
                                             <span className="text-muted">{t('Balanced')}</span>

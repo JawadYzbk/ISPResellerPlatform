@@ -5,7 +5,7 @@ import { useId, useState } from 'react';
 import ResponsiveSelect from '@/components/ui/responsive-select';
 import ConfirmDialog from '@/components/ui/confirm-dialog';
 import { formatDate } from '@/lib/format';
-import { createTranslator } from '@/lib/i18n';
+import { createTranslator, enumLabel } from '@/lib/i18n';
 import type { PageProps } from '@/types';
 
 type LinkType = 'invoice' | 'payment' | 'statement' | 'receipt';
@@ -122,7 +122,7 @@ export default function PublicLinkCreator({
                             <div key={link.public_id} className="flex items-center justify-between gap-3 py-3">
                                 <div>
                                     <p className="text-xs font-semibold capitalize">
-                                        {link.type} {t('link')} ·{' '}
+                                {enumLabel(link.type, t)} {t('link')} ·{' '}
                                         {link.is_active ? t('Active') : link.revoked_at ? t('Revoked') : t('Expired')}
                                     </p>
                                     <p className="mt-1 text-xs text-muted tabular-nums">

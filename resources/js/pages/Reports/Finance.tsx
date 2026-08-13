@@ -249,8 +249,8 @@ export default function FinanceReportPage({ report }: Props) {
                         </p>
                     </div>
                     <p className="text-sm text-muted">
-                        {report.supplier_payables.bill_count} bill(s) · {report.supplier_payables.payment_count}{' '}
-                        payment(s)
+                        {report.supplier_payables.bill_count} {t('bill(s)')} · {report.supplier_payables.payment_count}{' '}
+                        {t('payment(s)')}
                     </p>
                 </div>
                 <div className="mt-4 grid gap-4 md:grid-cols-3">
@@ -279,10 +279,10 @@ export default function FinanceReportPage({ report }: Props) {
                             <tr>
                                 <th className="pb-3">{t('Currency')}</th>
                                 <th className="pb-3">{t('Current')}</th>
-                                <th className="pb-3">1–30 days</th>
-                                <th className="pb-3">31–60 days</th>
-                                <th className="pb-3">61–90 days</th>
-                                <th className="pb-3">90+ days</th>
+                                <th className="pb-3">{t('1–30 days')}</th>
+                                <th className="pb-3">{t('31–60 days')}</th>
+                                <th className="pb-3">{t('61–90 days')}</th>
+                                <th className="pb-3">{t('90+ days')}</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-line">

@@ -232,7 +232,7 @@ export default function OperationsReportPage({ report }: Props) {
                                             </span>
                                         </span>
                                         <span className="text-muted">
-                                            {contract.purchased} purchased ·{' '}
+                                            {contract.purchased} {t('purchased')} ·{' '}
                                             {entriesOrEmpty(contract.cost_by_currency)
                                                 .map(([currency, amount]) => formatMoney(amount, currency))
                                                 .join(' · ') || t('No cost recorded')}

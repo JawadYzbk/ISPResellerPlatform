@@ -6,7 +6,7 @@ import PublicLinkCreator, { type PublicLinkSummary } from '@/components/PublicLi
 import ConfirmDialog from '@/components/ui/confirm-dialog';
 import AppLayout from '@/layouts/AppLayout';
 import { formatDate, formatMoney } from '@/lib/format';
-import { createTranslator } from '@/lib/i18n';
+import { createTranslator, enumLabel } from '@/lib/i18n';
 import type { PageProps } from '@/types';
 
 type Payment = {
@@ -180,7 +180,7 @@ export default function PaymentShowPage({ payment, canReverse, canShare, publicL
                             <div>
                                 <dt className="field-label">{t('payment.fx_policy')}</dt>
                                 <dd className="mt-1 text-sm font-semibold">
-                                    {payment.fx_rounding_mode.replace('_', ' ')}
+                                {enumLabel(payment.fx_rounding_mode, t)}
                                     <span className="mt-1 block text-xs font-normal text-muted">
                                         {payment.fx_rate_source ?? t('stored rate')}
                                         {payment.fx_rate_effective_from

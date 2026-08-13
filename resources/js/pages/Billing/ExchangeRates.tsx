@@ -283,7 +283,7 @@ export default function ExchangeRatesPage({
                 <div className="flex items-center justify-between border-b border-line px-5 py-4">
                     <div className="flex items-center gap-2">
                         <Scale size={17} className="text-brand" />
-                        <p className="text-sm font-semibold">{rates.total.toLocaleString()} rate(s)</p>
+                        <p className="text-sm font-semibold">{rates.total.toLocaleString()} {t('rate(s)')}</p>
                     </div>
                     <p className="text-xs text-muted">{t('Newest effective rates appear first.')}</p>
                 </div>

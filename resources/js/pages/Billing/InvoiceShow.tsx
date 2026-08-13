@@ -108,7 +108,7 @@ export default function InvoiceShowPage({
                     <p className="eyebrow">{t('invoice.billing_document')}</p>
                     <h1 className="page-title">{invoice.number}</h1>
                     <p className="page-subtitle">
-                        Issued {formatDate(invoice.issued_at)} · Due {formatDate(invoice.due_at)}
+                        {t('Issued')} {formatDate(invoice.issued_at)} · {t('Due')} {formatDate(invoice.due_at)}
                     </p>
                 </div>
                 <StatusBadge status={invoice.status} />

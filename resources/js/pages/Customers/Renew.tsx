@@ -4,7 +4,7 @@ import { ArrowLeft, CalendarClock, Receipt, Save } from 'lucide-react';
 
 import AppLayout from '@/layouts/AppLayout';
 import { formatDate, formatMoney } from '@/lib/format';
-import { createTranslator } from '@/lib/i18n';
+import { createTranslator, enumLabel } from '@/lib/i18n';
 import type { PageProps } from '@/types';
 
 type Customer = {
@@ -78,7 +78,7 @@ export default function CustomerRenew({ customer, services }: Props) {
                             <div>
                                 <p className="text-xs text-muted">{t('Status')}</p>
                                 <p className="mt-1 font-semibold capitalize">
-                                    {selectedService.status.replace('_', ' ')}
+                                    {enumLabel(selectedService.status, t)}
                                 </p>
                             </div>
                             <div>

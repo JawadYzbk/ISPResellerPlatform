@@ -576,7 +576,7 @@ export default function Commercial({
                                 <p className="mt-1 text-xs text-muted">{t('partner.commercial.fund_description')}</p>
                                 <label className="mt-4 block">
                                     <span className="field-label">
-                                        Amount ({selectedPartner.wallet?.currency ?? selectedPartner.currency ?? 'USD'})
+                                        {t('Amount')} ({selectedPartner.wallet?.currency ?? selectedPartner.currency ?? 'USD'})
                                     </span>
                                     <input
                                         className="field"

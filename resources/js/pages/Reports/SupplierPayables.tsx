@@ -5,7 +5,7 @@ import { useState } from 'react';
 import ResponsiveSelect from '@/components/ui/responsive-select';
 import AppLayout from '@/layouts/AppLayout';
 import { entriesOrEmpty, formatMoney } from '@/lib/format';
-import { createTranslator } from '@/lib/i18n';
+import { createTranslator, enumLabel } from '@/lib/i18n';
 import type { PageProps, SupplierPayablesReport } from '@/types';
 
 type SupplierOption = { id: number; name: string; code: string };
@@ -271,7 +271,7 @@ export default function SupplierPayablesPage({ report, suppliers }: Props) {
                                         </p>
                                     </td>
                                     <td className="py-3">
-                                        <span className="status-badge">{bill.status.replace('_', ' ')}</span>
+                                        <span className="status-badge">{enumLabel(bill.status, t)}</span>
                                     </td>
                                     <td className="py-3">{formatMoney(bill.amount, bill.currency)}</td>
                                     <td className="py-3">{formatMoney(bill.paid_amount, bill.currency)}</td>

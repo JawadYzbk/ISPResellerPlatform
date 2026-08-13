@@ -7,7 +7,7 @@ import { useEffect, useMemo, useState } from 'react';
 
 import { StatusBadge } from '@/components/StatusBadge';
 import { formatDate, formatMoney } from '@/lib/format';
-import { createTranslator } from '@/lib/i18n';
+import { createTranslator, enumLabel } from '@/lib/i18n';
 import { createIdempotencyKey } from '@/lib/idempotency';
 import type { Customer, PortalBalance, PortalBilling, PortalNotice, PortalTicket, PublicTenant } from '@/types';
 
@@ -319,8 +319,8 @@ export default function PortalDashboard({ tenant }: Props) {
                                             <div>
                                                 <h2 className="font-semibold">{service.plan.name}</h2>
                                                 <p className="mt-1 text-sm text-muted">
-                                                    {service.plan.download_kbps / 1000} Mbps down ·{' '}
-                                                    {service.plan.upload_kbps / 1000} Mbps up
+                                                    {service.plan.download_kbps / 1000} Mbps {t('downstream')} ·{' '}
+                                                    {service.plan.upload_kbps / 1000} Mbps {t('upstream')}
                                                 </p>
                                             </div>
                                         </div>
@@ -354,7 +354,7 @@ export default function PortalDashboard({ tenant }: Props) {
                                         <div className="flex flex-wrap items-center gap-3 sm:justify-end">
                                             <span className="inline-flex items-center gap-1.5 text-sm text-muted">
                                                 <RefreshCw size={14} />
-                                                {service.network_state.replace('_', ' ')}
+                                                {enumLabel(service.network_state, t)}
                                             </span>
                                             {service.status === 'active' && (
                                                 <button
@@ -394,7 +394,7 @@ export default function PortalDashboard({ tenant }: Props) {
                                             >
                                                 <span>
                                                     <b>{invoice.number}</b>
-                                                    <small className="mt-1 block text-muted">{invoice.status}</small>
+                                                    <small className="mt-1 block text-muted">{enumLabel(invoice.status, t)}</small>
                                                 </span>
                                                 <span className="font-semibold">
                                                     {formatMoney(invoice.total_amount, invoice.currency)}
@@ -416,7 +416,7 @@ export default function PortalDashboard({ tenant }: Props) {
                                             >
                                                 <span>
                                                     <b>{payment.number}</b>
-                                                    <small className="mt-1 block text-muted">{payment.status}</small>
+                                                    <small className="mt-1 block text-muted">{enumLabel(payment.status, t)}</small>
                                                 </span>
                                                 <span className="font-semibold">
                                                     {formatMoney(payment.amount, payment.currency)}
@@ -557,7 +557,7 @@ export default function PortalDashboard({ tenant }: Props) {
                                                 <span>
                                                     <b>{ticket.subject}</b>
                                                     <small className="mt-1 block text-muted">
-                                                        {ticket.number} · {ticket.status}
+                                                        {ticket.number} · {enumLabel(ticket.status, t)}
                                                     </small>
                                                 </span>
                                                     <span className="text-xs text-muted">

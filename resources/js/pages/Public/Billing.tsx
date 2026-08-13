@@ -7,7 +7,7 @@ import { useEffect, useMemo, useState } from 'react';
 import StatusBadge, { type Status } from '@/components/StatusBadge';
 import { formatDate, formatMoney } from '@/lib/format';
 import { createIdempotencyKey } from '@/lib/idempotency';
-import { createTranslator } from '@/lib/i18n';
+import { createTranslator, enumLabel } from '@/lib/i18n';
 
 type Tenant = { name: string; slug: string; logo_url: string | null; locale: string };
 type Customer = { code: string; name: string; balance_amount: number; balance_currency: string };
@@ -373,7 +373,7 @@ function PaymentDetails({ payment, token, t }: { payment: Payment; token: string
                 </div>
                 <div>
                     <dt className="field-label">{t('public.billing.method')}</dt>
-                    <dd className="mt-1 text-sm font-semibold capitalize">{payment.method.replaceAll('_', ' ')}</dd>
+                    <dd className="mt-1 text-sm font-semibold capitalize">{enumLabel(payment.method, t)}</dd>
                 </div>
                 <div>
                     <dt className="field-label">{t('public.billing.reference')}</dt>
@@ -415,7 +415,7 @@ function StatementDetails({ customer, statement, t }: { customer: Customer; stat
                         <div>
                             <p className="text-sm font-semibold">{invoice.number}</p>
                             <p className="text-xs text-muted">
-                                {formatDate(invoice.issued_at)} · {invoice.status}
+                                {formatDate(invoice.issued_at)} · {enumLabel(invoice.status, t)}
                             </p>
                         </div>
                         <div className="text-end">

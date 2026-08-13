@@ -4,7 +4,7 @@ import { useState } from 'react';
 
 import AppLayout from '@/layouts/AppLayout';
 import { formatDate, formatMoney } from '@/lib/format';
-import { createTranslator } from '@/lib/i18n';
+import { createTranslator, enumLabel } from '@/lib/i18n';
 import type { PageProps, Paginator } from '@/types';
 
 type CreditNoteRow = {
@@ -95,7 +95,7 @@ export default function CreditNotesPage({ creditNotes, filters }: Props) {
                                 <tr key={note.public_id} className="hover:bg-sand/30">
                                     <td className="px-5 py-4">
                                         <p className="text-sm font-semibold">{note.number}</p>
-                                        <p className="mt-1 text-xs capitalize text-muted">{note.status}</p>
+                                        <p className="mt-1 text-xs capitalize text-muted">{enumLabel(note.status, t)}</p>
                                     </td>
                                     <td className="px-5 py-4">
                                         <Link

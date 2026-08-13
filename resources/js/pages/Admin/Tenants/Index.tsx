@@ -300,7 +300,7 @@ export default function TenantIndex({ tenants, currencies }: Props) {
 
                             <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-muted">
                                 <span>
-                                    {tenant.base_currency} base · {tenant.collection_currency} collection
+                                    {tenant.base_currency} {t('base')} · {tenant.collection_currency} {t('collection')}
                                 </span>
                                 <span>{tenant.timezone}</span>
                                 <span>{t('Created')} {formatDate(tenant.created_at)}</span>

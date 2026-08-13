@@ -7,7 +7,7 @@ import { StatusBadge, type Status } from '@/components/StatusBadge';
 import AppLayout from '@/layouts/AppLayout';
 import ConfirmDialog from '@/components/ui/confirm-dialog';
 import { formatBytes, formatDate, formatDuration, formatMoney } from '@/lib/format';
-import { createTranslator } from '@/lib/i18n';
+import { createTranslator, enumLabel } from '@/lib/i18n';
 import type { PageProps } from '@/types';
 
 type ServiceDetails = {
@@ -386,7 +386,7 @@ export default function ServiceShow({
                                 <CalendarDays size={14} className="text-muted" /> {formatDate(service.expires_at)}
                             </p>
                             <p className="mt-1 text-xs capitalize text-muted">
-                                {service.provisioning_mode.replace('_', ' ')}
+                                {enumLabel(service.provisioning_mode, t)}
                             </p>
                         </div>
                         <div className="card p-5">
@@ -555,7 +555,7 @@ export default function ServiceShow({
                             {recentCommands.map((command) => (
                                 <div key={command.id} className="px-6 py-4">
                                     <div className="flex items-start justify-between gap-3">
-                                        <p className="text-sm font-semibold capitalize">{command.action}</p>
+                                        <p className="text-sm font-semibold capitalize">{enumLabel(command.action, t)}</p>
                                         <StatusBadge status={command.status} />
                                     </div>
                                     <p className="mt-1 text-xs text-muted">
@@ -865,7 +865,7 @@ export default function ServiceShow({
                                             </p>
                                         </div>
                                         <div className="flex items-center gap-3">
-                                            <span className="status-badge">{addon.status}</span>
+                                            <span className="status-badge">{enumLabel(addon.status, t)}</span>
                                             {addon.status === 'active' && (
                                                 <ConfirmDialog
                                                     title={t('Cancel this add-on?')}
@@ -1000,7 +1000,7 @@ export default function ServiceShow({
                                     key={`${metric.observed_at}-${index}`}
                                     className="flex items-center justify-between text-sm"
                                 >
-                                    <span className="capitalize text-muted">{metric.status}</span>
+                                    <span className="capitalize text-muted">{enumLabel(metric.status, t)}</span>
                                     <span className="font-semibold">
                                         {metric.latency_ms === null ? '—' : `${metric.latency_ms} ms`}
                                     </span>

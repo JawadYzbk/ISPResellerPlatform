@@ -986,7 +986,7 @@ export default function FieldIndex({
                         <div className="mt-4 flex flex-wrap gap-3">
                             {entriesOrEmpty(custody.position.balances).map(([currencyCode, amount]) => (
                                 <div key={currencyCode} className="rounded-xl border border-line px-4 py-3">
-                                    <p className="eyebrow">{currencyCode} balance</p>
+                                    <p className="eyebrow">{currencyCode} {t('balance')}</p>
                                     <p className={`mt-1 font-semibold tabular-nums ${amount < 0 ? 'text-coral' : ''}`}>
                                         {formatMoney(amount, currencyCode)}
                                     </p>
@@ -1274,7 +1274,7 @@ export default function FieldIndex({
                                             .find((location) => String(location.id) === saleForm.data.warehouse_id)
                                             ?.balances.map((balance) => (
                                                 <option key={balance.item_id} value={balance.item_id}>
-                                                    {balance.sku} · {balance.name} · {balance.quantity} available
+                                                     {balance.sku} · {balance.name} · {balance.quantity} {t('available')}
                                                 </option>
                                             ))}
                                     </ResponsiveSelect>
@@ -1579,7 +1579,7 @@ export default function FieldIndex({
                                 <div className="min-w-0 p-5">
                                     <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-start">
                                         <div>
-                                            <p className="eyebrow">{fieldValue(selectedTask.priority)} priority</p>
+                                            <p className="eyebrow">{fieldValue(selectedTask.priority)} {t('priority')}</p>
                                             <h3 className="mt-1 text-balance text-lg font-semibold">
                                                 {selectedTask.title}
                                             </h3>

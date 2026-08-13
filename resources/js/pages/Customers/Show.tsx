@@ -30,7 +30,7 @@ import MapView from '@/components/MapView';
 import AppLayout from '@/layouts/AppLayout';
 import ConfirmDialog from '@/components/ui/confirm-dialog';
 import { formatBytes, formatDate, formatDuration, formatExpiryCountdown, formatMoney } from '@/lib/format';
-import { createTranslator } from '@/lib/i18n';
+import { createTranslator, enumLabel } from '@/lib/i18n';
 import type { Customer, PageProps } from '@/types';
 
 type Props = PageProps & {
@@ -783,7 +783,7 @@ export default function CustomerShow({
                                         <div className="min-w-0">
                                             <p className="text-sm font-semibold">{ticket.subject}</p>
                                             <p className="mt-1 text-xs text-muted">
-                                                {ticket.number} · {ticket.priority} {t('priority')}
+                                            {ticket.number} · {enumLabel(ticket.priority, t)} {t('priority')}
                                             </p>
                                         </div>
                                         <StatusBadge status={ticket.status} />
