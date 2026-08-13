@@ -21,6 +21,7 @@ final class FrankfurterExchangeRateProvider implements ExchangeRateProvider
 
         try {
             $response = Http::acceptJson()
+                ->connectTimeout((int) config('services.frankfurter.connect_timeout', 2))
                 ->timeout((int) config('services.frankfurter.timeout', 10))
                 ->retry(2, 200)
                 ->get(rtrim((string) config('services.frankfurter.endpoint', 'https://api.frankfurter.dev'), '/').'/v2/rates', [
