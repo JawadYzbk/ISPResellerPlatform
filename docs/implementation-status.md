@@ -47,6 +47,7 @@ Last updated: 2026-08-13
 | ISP-FB-06 | Tenant-safe mapped building/site and distribution-box topology with POP linkage, capacity and occupied-port validation, auditable subscriber service assignment/unassignment, localized WhatsApp template editing for English/Arabic/French with validated variables, and grouped active-section workspace navigation | delivered for responsive web; live provider policy gates remain |
 | ISP-FB-07 | Installation work-order survey capture, tenant-safe building/box/port assignment synchronized to the service topology, ONU serial evidence, activation acceptance audit events, and completion guardrails for subscriber registrations | delivered for responsive web; optical readings and OLT/ONU registry remain |
 | ISP-FB-08 | Due-renewal preview desk with ready/open/blocked classification, selected batch invoice issuance, persisted row-level outcomes, same-key idempotency, and failed-row retry behavior | delivered for responsive web; recurring usage rating and live payment/provider acceptance remain |
+| ISP-FB-09 | Service-level recurring add-ons with quantity, effective dates, cancellation, tenant-safe attachment, renewal invoice snapshots, billing-period occurrences, and currency mismatch rollback protection | delivered for responsive web; usage-based rating and one-time invoice-line tooling remain |
 
 ## In progress
 
