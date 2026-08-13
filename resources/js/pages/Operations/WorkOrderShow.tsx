@@ -225,7 +225,7 @@ export default function WorkOrderShowPage({
             <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
                 <div>
                     <p className="eyebrow">
-                        {t('Field operations')} · {t(workOrder.type.replace('_', ' '))}
+                        {t('Field operations')} · {enumLabel(workOrder.type, t)}
                     </p>
                     <div className="mt-2 flex flex-wrap items-center gap-3">
                         <h1 className="page-title">{workOrder.number}</h1>

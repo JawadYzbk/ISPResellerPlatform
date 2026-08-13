@@ -3,7 +3,7 @@ import { useMemo, useState } from 'react';
 
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { formatMoney } from '@/lib/format';
-import { createTranslator } from '@/lib/i18n';
+import { createTranslator, enumLabel } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 import { usePage } from '@inertiajs/react';
 
@@ -149,7 +149,7 @@ export default function CustomerCombobox({
                                             {customer.phone ? ` · ${customer.phone}` : ''}
                                         </span>
                                         <span className="block truncate text-xs text-muted">
-                                            {t(customer.status)} ·{' '}
+                                {enumLabel(customer.status, t)} ·{' '}
                                             {formatMoney(customer.balance_amount, customer.balance_currency)}
                                         </span>
                                     </span>

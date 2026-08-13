@@ -439,7 +439,7 @@ function StatementDetails({ customer, statement, t }: { customer: Customer; stat
                         <div>
                             <p className="text-sm font-semibold">{payment.number}</p>
                             <p className="text-xs text-muted">
-                                {formatDate(payment.received_at)} · {payment.method}
+                                {formatDate(payment.received_at)} · {enumLabel(payment.method, t)}
                             </p>
                         </div>
                         <p className="text-sm font-semibold tabular-nums">

@@ -377,7 +377,7 @@ export default function ServiceShow({
                             <p className="text-xs text-muted">{t('Router')}</p>
                             <p className="mt-2 font-semibold">{service.router?.name ?? t('No router')}</p>
                             <p className="mt-1 text-xs capitalize text-muted">
-                                {service.router?.status ? t(service.router.status) : t('Unassigned')}
+                                {service.router?.status ? enumLabel(service.router.status, t) : t('Unassigned')}
                             </p>
                         </div>
                         <div className="card p-5">

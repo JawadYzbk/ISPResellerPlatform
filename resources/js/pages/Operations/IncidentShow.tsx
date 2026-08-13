@@ -56,7 +56,7 @@ export default function IncidentShow({ incident }: Props) {
                     <span
                         className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold capitalize ${severityClass[incident.severity] ?? 'bg-slate-100 text-slate-600'}`}
                     >
-                        {incident.severity}
+                            {enumLabel(incident.severity, t)}
                     </span>
                     <StatusBadge status={incident.status as Status} />
                 </div>

@@ -629,7 +629,7 @@ function SupplierCard({
                                         <div className="text-end">
                                             <p className="font-semibold">{formatMoney(bill.amount, bill.currency)}</p>
                                             <p className="mt-1 text-xs text-muted">
-                                                {t('Paid')} {formatMoney(bill.paid_amount, bill.currency)} · {t(bill.status)}
+                                {t('Paid')} {formatMoney(bill.paid_amount, bill.currency)} · {enumLabel(bill.status, t)}
                                             </p>
                                         </div>
                                     </div>

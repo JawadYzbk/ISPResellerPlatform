@@ -5,7 +5,7 @@ import { useMemo } from 'react';
 
 import AppLayout from '@/layouts/AppLayout';
 import ConfirmDialog from '@/components/ui/confirm-dialog';
-import { createTranslator } from '@/lib/i18n';
+import { createTranslator, enumLabel } from '@/lib/i18n';
 import type { ImportBatchReportRow, ImportBatchResult, PageProps } from '@/types';
 
 type ImportType = {
@@ -305,7 +305,7 @@ function ReportRow({ row, t }: { row: ImportBatchReportRow; t: (key: string) => 
                     className={`inline-flex items-center gap-1.5 text-xs font-semibold ${accepted ? 'text-brand' : 'text-coral'}`}
                 >
                     {accepted ? <CheckCircle2 size={14} /> : <AlertTriangle size={14} />}
-                    {t(row.status)}
+                    {enumLabel(row.status, t)}
                 </span>
             </td>
             <td className="px-6 py-3 text-sm text-muted">{rowErrorText(row, t)}</td>
@@ -333,7 +333,7 @@ function HistoryRow({
             </td>
             <td className="px-6 py-4">
                 <span className="rounded-full bg-sand px-2.5 py-1 text-xs font-semibold capitalize">
-                    {t(batch.status.replace('_', ' '))}
+                    {enumLabel(batch.status, t)}
                 </span>
             </td>
             <td className="px-6 py-4 text-sm text-muted">

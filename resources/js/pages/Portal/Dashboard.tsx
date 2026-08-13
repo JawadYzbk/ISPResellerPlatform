@@ -298,7 +298,7 @@ export default function PortalDashboard({ tenant }: Props) {
                                         className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-amber-950"
                                     >
                                         <p className="text-xs font-bold uppercase tracking-[0.16em]">
-                                            {notice.severity}
+                            {enumLabel(notice.severity, t)}
                                         </p>
                                         <h3 className="mt-1 font-semibold">{notice.title}</h3>
                                         {notice.description && (
