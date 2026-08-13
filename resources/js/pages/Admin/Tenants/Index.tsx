@@ -7,7 +7,7 @@ import { useState } from 'react';
 
 import AppLayout from '@/layouts/AppLayout';
 import { formatDate } from '@/lib/format';
-import { createTranslator } from '@/lib/i18n';
+import { createTranslator, enumLabel } from '@/lib/i18n';
 import type { PageProps } from '@/types';
 
 type TenantRow = {
@@ -276,7 +276,7 @@ export default function TenantIndex({ tenants, currencies }: Props) {
                                 <span
                                     className={`inline-flex w-fit rounded-full px-2.5 py-1 text-xs font-semibold capitalize ${tenant.status === 'active' ? 'bg-emerald-50 text-emerald-700' : tenant.status === 'suspended' ? 'bg-amber-50 text-amber-700' : 'bg-slate-100 text-slate-600'}`}
                                 >
-                                    {t(tenant.status)}
+                                    {enumLabel(tenant.status, t)}
                                 </span>
                             </div>
 

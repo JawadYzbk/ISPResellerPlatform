@@ -209,7 +209,7 @@ export default function TicketShow({
                             >
                                 <div className="flex items-center justify-between gap-3 text-xs text-muted">
                                     <span className="font-semibold capitalize">
-                                        {message.author_type} ·{' '}
+                                        {enumLabel(message.author_type, t)} ·{' '}
                                         {message.visibility === 'internal' ? t('Internal note') : t('Public reply')}
                                     </span>
                                     <time>{formatDate(message.created_at)}</time>

@@ -9,7 +9,7 @@ import AppLayout from '@/layouts/AppLayout';
 import { currencyFractionDigits, formatDate, formatMoney, parseMoneyToMinor } from '@/lib/format';
 import { createIdempotencyKey } from '@/lib/idempotency';
 import type { PageProps } from '@/types';
-import { createTranslator } from '@/lib/i18n';
+import { createTranslator, enumLabel } from '@/lib/i18n';
 
 type Partner = {
     id: string;
@@ -741,7 +741,7 @@ export default function Commercial({
                                             {formatDate(settlement.period_start)} – {formatDate(settlement.period_end)}
                                         </p>
                                         <span className="rounded-full bg-sand px-2.5 py-1 text-xs font-semibold capitalize">
-                                            {t(settlement.status.replace('_', ' ').replace(/\b\w/g, (letter) => letter.toUpperCase()))}
+                                            {enumLabel(settlement.status, t)}
                                         </span>
                                     </div>
                                     <div className="mt-3 grid grid-cols-2 gap-3 text-sm">

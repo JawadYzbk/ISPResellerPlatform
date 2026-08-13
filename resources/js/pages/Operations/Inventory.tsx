@@ -1005,7 +1005,7 @@ export default function InventoryPage({
                                         <div className="flex flex-wrap items-center gap-2">
                                             <p className="font-semibold">{request.requester?.name ?? t('inventory.field_user')}</p>
                                             <span className="rounded-full bg-sand px-2 py-1 text-xs font-semibold capitalize text-muted">
-                                                {request.type}
+                                                {enumLabel(request.type, t)}
                                             </span>
                                             <span
                                                 className={`rounded-full px-2 py-1 text-xs font-semibold capitalize ${request.status === 'approved' ? 'bg-emerald-50 text-emerald-700' : request.status === 'rejected' ? 'bg-rose-50 text-rose-700' : 'bg-amber-50 text-amber-700'}`}

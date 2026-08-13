@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 
 import StatusBadge from '@/components/StatusBadge';
 import AppLayout from '@/layouts/AppLayout';
-import { createTranslator } from '@/lib/i18n';
+import { createTranslator, enumLabel } from '@/lib/i18n';
 import type { PageProps, Paginator } from '@/types';
 
 type NetworkCommand = {
@@ -31,8 +31,6 @@ type Props = PageProps & {
     filters: { status?: string; network_state?: string };
     canRetry?: boolean;
 };
-
-const titleize = (value: string) => value.replaceAll('_', ' ').replace(/\b\w/g, (letter) => letter.toUpperCase());
 
 export default function NetworkCommandsPage({ commands, filters, canRetry = false }: Props) {
     const { props } = usePage<PageProps>();
@@ -157,7 +155,7 @@ export default function NetworkCommandsPage({ commands, filters, canRetry = fals
                                         </p>
                                     </td>
                                     <td className="px-5 py-4">
-                                        <p className="text-sm font-semibold">{titleize(command.action)}</p>
+                                        <p className="text-sm font-semibold">{enumLabel(command.action, t)}</p>
                                         <p className="mt-1 text-xs text-muted">
                                             v{command.desired_state_version} · {command.public_id}
                                         </p>
