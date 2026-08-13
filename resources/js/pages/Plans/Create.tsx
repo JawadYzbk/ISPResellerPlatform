@@ -1,12 +1,16 @@
 import CurrencyCombobox, { type CurrencyOption } from '@/components/ui/currency-combobox';
 import ResponsiveSelect from '@/components/ui/responsive-select';
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import { ArrowLeft, Save, Tags } from 'lucide-react';
 
 import AppLayout from '@/layouts/AppLayout';
 import { currencyFractionDigits, parseMoneyToMinor } from '@/lib/format';
+import { createTranslator } from '@/lib/i18n';
+import type { PageProps } from '@/types';
 
 export default function PlanCreate({ currencies }: { currencies: CurrencyOption[] }) {
+    const { props } = usePage<PageProps>();
+    const t = createTranslator(props.app.locale);
     const form = useForm({
         name: '',
         slug: '',
@@ -24,7 +28,7 @@ export default function PlanCreate({ currencies }: { currencies: CurrencyOption[
         event.preventDefault();
         const amountMinor = parseMoneyToMinor(form.data.amount, form.data.currency);
         if (amountMinor === null) {
-            form.setError('amount', 'Enter a valid non-negative amount.');
+            form.setError('amount', t('plan.valid_non_negative_amount'));
             return;
         }
         form.clearErrors('amount');
@@ -34,38 +38,36 @@ export default function PlanCreate({ currencies }: { currencies: CurrencyOption[
 
     return (
         <AppLayout>
-            <Head title="New plan" />
+            <Head title={t('plan.new_plan')} />
             <Link
                 href="/plans"
                 className="mb-6 inline-flex items-center gap-2 text-sm font-semibold text-muted hover:text-brand"
             >
-                <ArrowLeft size={16} /> Back to plans
+                <ArrowLeft size={16} /> {t('plan.back_to_plans')}
             </Link>
             <div className="max-w-3xl">
-                <p className="eyebrow">Commercial catalog</p>
-                <h1 className="page-title">New plan</h1>
-                <p className="page-subtitle">
-                    Create the plan definition and its first effective price in one transaction.
-                </p>
+                <p className="eyebrow">{t('plan.commercial_catalog')}</p>
+                <h1 className="page-title">{t('plan.new_plan')}</h1>
+                <p className="page-subtitle">{t('plan.create_description')}</p>
             </div>
             <form onSubmit={submit} className="card mt-8 max-w-3xl space-y-6 p-6">
                 <div className="grid gap-5 sm:grid-cols-2">
                     <div>
                         <label className="field-label" htmlFor="name">
-                            Plan name
+                            {t('plan.plan_name')}
                         </label>
                         <input
                             id="name"
                             className="field"
                             value={form.data.name}
                             onChange={(event) => form.setData('name', event.target.value)}
-                            placeholder="Home 100"
+                            placeholder={t('plan.home_100')}
                         />
                         {form.errors.name && <p className="field-error">{form.errors.name}</p>}
                     </div>
                     <div>
                         <label className="field-label" htmlFor="slug">
-                            Slug (optional)
+                            {t('plan.slug_optional')}
                         </label>
                         <input
                             id="slug"
@@ -78,7 +80,7 @@ export default function PlanCreate({ currencies }: { currencies: CurrencyOption[
                     </div>
                     <div>
                         <label className="field-label" htmlFor="download_kbps">
-                            Download (kbps)
+                            {t('plan.download_kbps')}
                         </label>
                         <input
                             id="download_kbps"
@@ -93,7 +95,7 @@ export default function PlanCreate({ currencies }: { currencies: CurrencyOption[
                     </div>
                     <div>
                         <label className="field-label" htmlFor="upload_kbps">
-                            Upload (kbps)
+                            {t('plan.upload_kbps')}
                         </label>
                         <input
                             id="upload_kbps"
@@ -108,7 +110,7 @@ export default function PlanCreate({ currencies }: { currencies: CurrencyOption[
                     </div>
                     <div>
                         <label className="field-label" htmlFor="duration_days">
-                            Duration (days)
+                            {t('plan.duration_days')}
                         </label>
                         <input
                             id="duration_days"
@@ -122,7 +124,7 @@ export default function PlanCreate({ currencies }: { currencies: CurrencyOption[
                     </div>
                     <div>
                         <label className="field-label" htmlFor="amount">
-                            Price ({form.data.currency})
+                            {t('Price')} ({form.data.currency})
                         </label>
                         <input
                             id="amount"
@@ -138,7 +140,7 @@ export default function PlanCreate({ currencies }: { currencies: CurrencyOption[
                     </div>
                     <div>
                         <label className="field-label" htmlFor="currency">
-                            Currency
+                            {t('Currency')}
                         </label>
                         <CurrencyCombobox
                             id="currency"
@@ -151,7 +153,7 @@ export default function PlanCreate({ currencies }: { currencies: CurrencyOption[
                     </div>
                     <div>
                         <label className="field-label" htmlFor="effective_from">
-                            Price effective from
+                            {t('plan.price_effective_from')}
                         </label>
                         <input
                             id="effective_from"
@@ -165,7 +167,7 @@ export default function PlanCreate({ currencies }: { currencies: CurrencyOption[
                 </div>
                 <div>
                     <label className="field-label" htmlFor="status">
-                        Plan status
+                        {t('plan.plan_status')}
                     </label>
                     <ResponsiveSelect
                         id="status"
@@ -173,26 +175,25 @@ export default function PlanCreate({ currencies }: { currencies: CurrencyOption[
                         value={form.data.status}
                         onChange={(event) => form.setData('status', event.target.value)}
                     >
-                        <option value="active">Active</option>
-                        <option value="inactive">Inactive</option>
+                        <option value="active">{t('Active')}</option>
+                        <option value="inactive">{t('Inactive')}</option>
                     </ResponsiveSelect>
                 </div>
                 <div className="flex items-center gap-2 rounded-xl border border-line bg-sand/40 p-4 text-sm text-muted">
-                    <Tags size={17} className="text-brand" /> Router rate-limit preview:{' '}
+                    <Tags size={17} className="text-brand" /> {t('plan.router_rate_limit_preview')}:{' '}
                     <code className="font-semibold text-ink">
                         {form.data.upload_kbps || '0'}k/{form.data.download_kbps || '0'}k
                     </code>
                 </div>
                 <div className="flex items-center gap-2 rounded-xl border border-line bg-sand/40 p-4 text-sm text-muted">
-                    <Tags size={17} className="text-brand" /> Prices are stored as integer minor units with an effective
-                    date.
+                    <Tags size={17} className="text-brand" /> {t('plan.price_storage_note')}
                 </div>
                 <div className="flex justify-end gap-3 border-t border-line pt-5">
                     <Link href="/plans" className="button-secondary">
-                        Cancel
+                        {t('Cancel')}
                     </Link>
                     <button className="button-primary" disabled={form.processing}>
-                        <Save size={16} /> Create plan
+                        <Save size={16} /> {t('plan.create_plan')}
                     </button>
                 </div>
             </form>

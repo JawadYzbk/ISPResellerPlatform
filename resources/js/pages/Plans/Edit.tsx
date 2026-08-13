@@ -1,10 +1,12 @@
 import CurrencyCombobox, { type CurrencyOption } from '@/components/ui/currency-combobox';
 import ResponsiveSelect from '@/components/ui/responsive-select';
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import { ArrowLeft, Save, Tags } from 'lucide-react';
 
 import AppLayout from '@/layouts/AppLayout';
 import { currencyFractionDigits, parseMoneyToMinor } from '@/lib/format';
+import { createTranslator } from '@/lib/i18n';
+import type { PageProps } from '@/types';
 
 type Plan = {
     public_id: string;
@@ -28,6 +30,8 @@ function minorToInput(amountMinor: number, currency: string): string {
 }
 
 export default function PlanEdit({ plan, currencies }: Props) {
+    const { props } = usePage<PageProps>();
+    const t = createTranslator(props.app.locale);
     const form = useForm({
         name: plan.name,
         slug: plan.slug,
@@ -45,7 +49,7 @@ export default function PlanEdit({ plan, currencies }: Props) {
         event.preventDefault();
         const amountMinor = parseMoneyToMinor(form.data.amount, form.data.currency);
         if (amountMinor === null) {
-            form.setError('amount', 'Enter a valid non-negative amount.');
+            form.setError('amount', t('plan.valid_non_negative_amount'));
             return;
         }
         form.clearErrors('amount');
@@ -55,29 +59,27 @@ export default function PlanEdit({ plan, currencies }: Props) {
 
     return (
         <AppLayout>
-            <Head title={`Edit ${plan.name}`} />
+            <Head title={`${t('Edit')} ${plan.name}`} />
             <Link
                 href="/plans"
                 className="mb-6 inline-flex items-center gap-2 text-sm font-semibold text-muted hover:text-brand"
             >
-                <ArrowLeft size={16} /> Back to plans
+                <ArrowLeft size={16} /> {t('plan.back_to_plans')}
             </Link>
             <div className="max-w-3xl">
-                <p className="eyebrow">Commercial catalog</p>
-                <h1 className="page-title">Edit plan</h1>
-                <p className="page-subtitle">
-                    Update the catalog definition and append a new effective price without rewriting history.
-                </p>
+                <p className="eyebrow">{t('plan.commercial_catalog')}</p>
+                <h1 className="page-title">{t('plan.edit_plan')}</h1>
+                <p className="page-subtitle">{t('plan.edit_description')}</p>
             </div>
             <form onSubmit={submit} className="card mt-8 max-w-3xl space-y-6 p-6">
                 <div className="grid gap-5 sm:grid-cols-2">
                     {(
                         [
-                            ['name', 'Plan name', 'Home 100'],
-                            ['slug', 'Slug', 'home-100'],
-                            ['download_kbps', 'Download (kbps)', '100000'],
-                            ['upload_kbps', 'Upload (kbps)', '20000'],
-                            ['duration_days', 'Duration (days)', '30'],
+                            ['name', t('plan.plan_name'), t('plan.home_100')],
+                            ['slug', t('plan.slug'), 'home-100'],
+                            ['download_kbps', t('plan.download_kbps'), '100000'],
+                            ['upload_kbps', t('plan.upload_kbps'), '20000'],
+                            ['duration_days', t('plan.duration_days'), '30'],
                         ] as const
                     ).map(([key, label, placeholder]) => (
                         <label key={key}>
@@ -94,7 +96,9 @@ export default function PlanEdit({ plan, currencies }: Props) {
                         </label>
                     ))}
                     <label>
-                        <span className="field-label">Price ({form.data.currency})</span>
+                        <span className="field-label">
+                            {t('Price')} ({form.data.currency})
+                        </span>
                         <input
                             className="field"
                             type="number"
@@ -107,7 +111,7 @@ export default function PlanEdit({ plan, currencies }: Props) {
                         {form.errors.amount && <p className="field-error">{form.errors.amount}</p>}
                     </label>
                     <label>
-                        <span className="field-label">Currency</span>
+                        <span className="field-label">{t('Currency')}</span>
                         <CurrencyCombobox
                             className="field"
                             value={form.data.currency}
@@ -117,7 +121,7 @@ export default function PlanEdit({ plan, currencies }: Props) {
                         {form.errors.currency && <p className="field-error">{form.errors.currency}</p>}
                     </label>
                     <label>
-                        <span className="field-label">Price effective from</span>
+                        <span className="field-label">{t('plan.price_effective_from')}</span>
                         <input
                             className="field"
                             type="date"
@@ -128,25 +132,25 @@ export default function PlanEdit({ plan, currencies }: Props) {
                     </label>
                 </div>
                 <label>
-                    <span className="field-label">Plan status</span>
+                    <span className="field-label">{t('plan.plan_status')}</span>
                     <ResponsiveSelect
                         className="field"
                         value={form.data.status}
                         onChange={(event) => form.setData('status', event.target.value as 'active' | 'inactive')}
                     >
-                        <option value="active">Active</option>
-                        <option value="inactive">Inactive</option>
+                        <option value="active">{t('Active')}</option>
+                        <option value="inactive">{t('Inactive')}</option>
                     </ResponsiveSelect>
                 </label>
                 <div className="flex items-center gap-2 rounded-xl border border-line bg-sand/40 p-4 text-sm text-muted">
-                    <Tags size={17} className="text-brand" /> Existing invoices keep their original price snapshot.
+                    <Tags size={17} className="text-brand" /> {t('plan.invoice_snapshot_note')}
                 </div>
                 <div className="flex justify-end gap-3 border-t border-line pt-5">
                     <Link href="/plans" className="button-secondary">
-                        Cancel
+                        {t('Cancel')}
                     </Link>
                     <button className="button-primary" disabled={form.processing}>
-                        <Save size={16} /> Save plan
+                        <Save size={16} /> {t('plan.save_plan')}
                     </button>
                 </div>
             </form>
