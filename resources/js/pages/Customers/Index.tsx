@@ -259,6 +259,7 @@ export default function CustomersIndex({ customers, filters, zones, savedViews, 
                             value={search}
                             onChange={(event) => setSearch(event.target.value)}
                             placeholder={t('Search name, phone or customer code')}
+                            aria-label={t('Search name, phone or customer code')}
                             className="field ps-10"
                         />
                     </form>
@@ -567,6 +568,8 @@ export default function CustomersIndex({ customers, filters, zones, savedViews, 
                                     key={index}
                                     href={link.url}
                                     className={`grid size-8 place-items-center rounded-lg text-xs ${link.active ? 'bg-brand text-white' : 'text-muted hover:bg-sand'}`}
+                                    aria-label={isPrevious ? t('Previous page') : isNext ? t('Next page') : link.label}
+                                    aria-current={link.active ? 'page' : undefined}
                                 >
                                     {isPrevious ? (
                                         <ChevronLeft size={16} />

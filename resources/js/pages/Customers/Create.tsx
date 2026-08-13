@@ -371,8 +371,8 @@ export default function CustomersCreate({ zones, canCreateService, plans, router
                         <Link href="/customers" className="button-secondary">
                             {t('Cancel')}
                         </Link>
-                        <button className="button-primary" disabled={form.processing}>
-                            <Save size={16} /> {t('customer.save_customer')}
+                        <button type="submit" className="button-primary" disabled={form.processing}>
+                            <Save size={16} aria-hidden="true" /> {t('customer.save_customer')}
                         </button>
                     </div>
                 </form>
