@@ -30,19 +30,22 @@ use Illuminate\Support\Str;
  * @property Carbon|null $fup_applied_at
  * @property Carbon|null $expires_at
  * @property int|null $billing_anchor_day
+ * @property int|null $network_building_id
+ * @property int|null $distribution_box_id
+ * @property int|null $network_port
  */
 class Service extends Model
 {
     /** @use HasFactory<ServiceFactory> */
     use Auditable, BelongsToTenant, HasFactory, SoftDeletes;
 
-    protected $fillable = ['tenant_id', 'customer_id', 'plan_id', 'router_id', 'username', 'password_encrypted', 'status', 'provisioning_mode', 'network_state', 'desired_state_version', 'current_period_bytes', 'fup_applied_at', 'activated_at', 'expires_at', 'billing_anchor_day', 'suspension_reason', 'paused_until', 'metadata'];
+    protected $fillable = ['tenant_id', 'customer_id', 'plan_id', 'router_id', 'network_building_id', 'distribution_box_id', 'network_port', 'username', 'password_encrypted', 'status', 'provisioning_mode', 'network_state', 'desired_state_version', 'current_period_bytes', 'fup_applied_at', 'activated_at', 'expires_at', 'billing_anchor_day', 'suspension_reason', 'paused_until', 'metadata'];
 
     protected $hidden = ['password_encrypted'];
 
     protected function casts(): array
     {
-        return ['status' => ServiceStatus::class, 'provisioning_mode' => ProvisioningMode::class, 'network_state' => NetworkState::class, 'password_encrypted' => 'encrypted', 'metadata' => 'array', 'activated_at' => 'datetime', 'expires_at' => 'datetime', 'billing_anchor_day' => 'integer', 'paused_until' => 'datetime', 'fup_applied_at' => 'datetime', 'desired_state_version' => 'integer', 'current_period_bytes' => 'integer'];
+        return ['status' => ServiceStatus::class, 'provisioning_mode' => ProvisioningMode::class, 'network_state' => NetworkState::class, 'password_encrypted' => 'encrypted', 'metadata' => 'array', 'activated_at' => 'datetime', 'expires_at' => 'datetime', 'billing_anchor_day' => 'integer', 'network_building_id' => 'integer', 'distribution_box_id' => 'integer', 'network_port' => 'integer', 'paused_until' => 'datetime', 'fup_applied_at' => 'datetime', 'desired_state_version' => 'integer', 'current_period_bytes' => 'integer'];
     }
 
     protected static function booted(): void
@@ -74,6 +77,18 @@ class Service extends Model
     public function router(): BelongsTo
     {
         return $this->belongsTo(Router::class);
+    }
+
+    /** @return BelongsTo<NetworkBuilding, $this> */
+    public function networkBuilding(): BelongsTo
+    {
+        return $this->belongsTo(NetworkBuilding::class, 'network_building_id');
+    }
+
+    /** @return BelongsTo<DistributionBox, $this> */
+    public function distributionBox(): BelongsTo
+    {
+        return $this->belongsTo(DistributionBox::class);
     }
 
     /** @return HasMany<ServiceEvent, $this> */
