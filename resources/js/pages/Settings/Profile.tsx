@@ -18,8 +18,9 @@ type Props = { profile: Profile; workspaceLocale: 'en' | 'ar' | 'fr' };
 
 export default function ProfilePage({ profile, workspaceLocale }: Props) {
     const form = useForm<Profile>(profile);
-    const page = usePage<PageProps>();
-    const t = createTranslator(page.props.app.locale);
+const page = usePage<PageProps & { errors?: Record<string, string> }>();
+const t = createTranslator(page.props.app.locale);
+const pageErrors = page.props.errors ?? {};
 
     const submit = (event: React.FormEvent) => {
         event.preventDefault();
@@ -55,7 +56,9 @@ export default function ProfilePage({ profile, workspaceLocale }: Props) {
                                     onChange={(event) => form.setData('name', event.target.value)}
                                     autoComplete="name"
                                 />
-                                {form.errors.name && <p className="field-error">{t(form.errors.name)}</p>}
+                                {(form.errors.name ?? pageErrors.name) && (
+                                    <p className="field-error">{t(form.errors.name ?? pageErrors.name ?? '')}</p>
+                                )}
                             </label>
                             <label>
                                 <span className="field-label">{t('Email')}</span>
@@ -99,7 +102,9 @@ export default function ProfilePage({ profile, workspaceLocale }: Props) {
                                     placeholder={t('Leave blank to use the workspace timezone')}
                                     autoComplete="off"
                                 />
-                                {form.errors.timezone && <p className="field-error">{t(form.errors.timezone)}</p>}
+                                {(form.errors.timezone ?? pageErrors.timezone) && (
+                                    <p className="field-error">{t(form.errors.timezone ?? pageErrors.timezone ?? '')}</p>
+                                )}
                             </label>
                         </div>
                     </section>
