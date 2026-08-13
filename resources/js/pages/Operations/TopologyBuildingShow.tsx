@@ -4,8 +4,10 @@ import CustomerLocationFields from '@/components/CustomerLocationFields';
 import type { Status } from '@/components/StatusBadge';
 import StatusBadge from '@/components/StatusBadge';
 import AppLayout from '@/layouts/AppLayout';
-import { Head, Link, router, useForm } from '@inertiajs/react';
+import { createTranslator } from '@/lib/i18n';
+import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
 import { ArrowLeft, Box, Cable, MapPinned, Plus, Save, Unplug } from 'lucide-react';
+import type { PageProps } from '@/types';
 
 type Service = {
     public_id: string;
@@ -89,6 +91,8 @@ function BoxCard({
     boxTypes: string[];
     boxStatuses: string[];
 }) {
+    const page = usePage<PageProps>();
+    const t = createTranslator(page.props.app.locale);
     const editForm = useForm<BoxFormValues>({
         name: box.name,
         code: box.code,
@@ -143,7 +147,7 @@ function BoxCard({
             <div className="space-y-5 p-5">
                 <div>
                     <div className="flex justify-between gap-4 text-sm">
-                        <span className="text-muted">Port capacity</span>
+                        <span className="text-muted">{t('Port capacity')}</span>
                         <span className="font-semibold tabular-nums">
                             {box.used_ports} / {box.capacity_ports}
                         </span>
@@ -156,7 +160,7 @@ function BoxCard({
                     <form onSubmit={save} className="space-y-4 rounded-xl bg-sand/40 p-4">
                         <div className="grid gap-4 sm:grid-cols-2">
                             <label>
-                                <span className="field-label">Name</span>
+                                <span className="field-label">{t('Name')}</span>
                                 <input
                                     className="field"
                                     value={editForm.data.name}
@@ -165,7 +169,7 @@ function BoxCard({
                                 <ErrorText message={editForm.errors.name} />
                             </label>
                             <label>
-                                <span className="field-label">Code</span>
+                                <span className="field-label">{t('Code')}</span>
                                 <input
                                     className="field uppercase"
                                     value={editForm.data.code}
@@ -174,7 +178,7 @@ function BoxCard({
                                 <ErrorText message={editForm.errors.code} />
                             </label>
                             <label>
-                                <span className="field-label">Type</span>
+                                <span className="field-label">{t('Type')}</span>
                                 <ResponsiveSelect
                                     className="field"
                                     value={editForm.data.box_type}
@@ -189,7 +193,7 @@ function BoxCard({
                                 <ErrorText message={editForm.errors.box_type} />
                             </label>
                             <label>
-                                <span className="field-label">Capacity ports</span>
+                                <span className="field-label">{t('Capacity ports')}</span>
                                 <input
                                     type="number"
                                     min="1"
@@ -200,13 +204,13 @@ function BoxCard({
                                 <ErrorText message={editForm.errors.capacity_ports} />
                             </label>
                             <label>
-                                <span className="field-label">POP</span>
+                                <span className="field-label">{t('POP')}</span>
                                 <ResponsiveSelect
                                     className="field"
                                     value={editForm.data.pop_id}
                                     onChange={(event) => editForm.setData('pop_id', event.target.value)}
                                 >
-                                    <option value="">No POP linked</option>
+                                    <option value="">{t('No POP linked')}</option>
                                     {pops.map((pop) => (
                                         <option key={pop.id} value={pop.id}>
                                             {pop.name} · {pop.code}
@@ -216,7 +220,7 @@ function BoxCard({
                                 <ErrorText message={editForm.errors.pop_id} />
                             </label>
                             <label>
-                                <span className="field-label">Status</span>
+                                <span className="field-label">{t('Status')}</span>
                                 <ResponsiveSelect
                                     className="field"
                                     value={editForm.data.status}
@@ -236,11 +240,11 @@ function BoxCard({
                             longitude={editForm.data.longitude}
                             onLatitudeChange={(value) => editForm.setData('latitude', value)}
                             onLongitudeChange={(value) => editForm.setData('longitude', value)}
-                            title="Box location"
-                            description="Pin the cabinet or splitter location for field technicians."
+                            title={t('Box location')}
+                            description={t('Pin the cabinet or splitter location for field technicians.')}
                         />
                         <label>
-                            <span className="field-label">Notes</span>
+                            <span className="field-label">{t('Notes')}</span>
                             <textarea
                                 className="field min-h-16"
                                 value={editForm.data.notes}
@@ -250,7 +254,7 @@ function BoxCard({
                         </label>
                         <div className="flex justify-end">
                             <button type="submit" className="button-secondary" disabled={editForm.processing}>
-                                <Save size={15} /> Save box
+                                <Save size={15} /> {t('Save box')}
                             </button>
                         </div>
                     </form>
@@ -261,16 +265,16 @@ function BoxCard({
                         className="grid gap-3 rounded-xl border border-brand/20 bg-brand/5 p-4 sm:grid-cols-[1fr_9rem_auto] sm:items-end"
                     >
                         <label>
-                            <span className="field-label">Assign service</span>
+                            <span className="field-label">{t('Assign service')}</span>
                             <ResponsiveSelect
                                 className="field"
                                 value={assignmentForm.data.service_id}
                                 onChange={(event) => assignmentForm.setData('service_id', event.target.value)}
                             >
-                                <option value="">Choose a service</option>
+                                <option value="">{t('Choose a service')}</option>
                                 {services.map((service) => (
                                     <option key={service.public_id} value={service.public_id}>
-                                        {service.customer?.name ?? 'Unknown customer'} ·{' '}
+                                        {service.customer?.name ?? t('Unknown customer')} ·{' '}
                                         {service.username ?? service.public_id.slice(0, 8)}
                                     </option>
                                 ))}
@@ -283,7 +287,7 @@ function BoxCard({
                             />
                         </label>
                         <label>
-                            <span className="field-label">Port</span>
+                            <span className="field-label">{t('Port')}</span>
                             <input
                                 type="number"
                                 min="1"
@@ -296,15 +300,15 @@ function BoxCard({
                             <ErrorText message={assignmentForm.errors.network_port} />
                         </label>
                         <button type="submit" className="button-primary" disabled={assignmentForm.processing}>
-                            <Cable size={15} /> Assign
+                            <Cable size={15} /> {t('Assign')}
                         </button>
                     </form>
                 )}
                 <div className="divide-y divide-line rounded-xl border border-line">
                     <div className="flex items-center justify-between gap-3 px-4 py-3">
-                        <p className="text-sm font-semibold">Assigned services</p>
+                        <p className="text-sm font-semibold">{t('Assigned services')}</p>
                         <p className="text-xs text-muted">
-                            {box.used_ports} occupied port{box.used_ports === 1 ? '' : 's'}
+                            {box.used_ports} {t(box.used_ports === 1 ? 'occupied port' : 'occupied ports')}
                         </p>
                     </div>
                     {box.services.map((service) => (
@@ -313,9 +317,9 @@ function BoxCard({
                             className="flex flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
                         >
                             <div>
-                                <p className="text-sm font-semibold">{service.customer?.name ?? 'Unknown customer'}</p>
+                                <p className="text-sm font-semibold">{service.customer?.name ?? t('Unknown customer')}</p>
                                 <p className="mt-1 text-xs text-muted">
-                                    {service.customer?.code ?? '—'} · {service.plan?.name ?? 'No plan'} · port{' '}
+                                    {service.customer?.code ?? '—'} · {service.plan?.name ?? t('No plan')} · {t('port')}{' '}
                                     <span className="font-semibold tabular-nums">{service.network_port ?? '—'}</span>
                                 </p>
                             </div>
@@ -323,9 +327,11 @@ function BoxCard({
                                 <StatusBadge status={service.status} />
                                 {canManage && (
                                     <ConfirmDialog
-                                        title="Unassign service?"
-                                        description="The physical box and port will be cleared from this service. The service itself will stay active."
-                                        confirmLabel="Unassign"
+                                        title={t('Unassign service?')}
+                                        description={t(
+                                            'The physical box and port will be cleared from this service. The service itself will stay active.',
+                                        )}
+                                        confirmLabel={t('Unassign')}
                                         destructive
                                         onConfirm={() =>
                                             router.delete(
@@ -335,7 +341,7 @@ function BoxCard({
                                         }
                                     >
                                         <button type="button" className="button-quiet text-rose-700">
-                                            <Unplug size={14} /> Unassign
+                                            <Unplug size={14} /> {t('Unassign')}
                                         </button>
                                     </ConfirmDialog>
                                 )}
@@ -344,7 +350,7 @@ function BoxCard({
                     ))}
                     {box.services.length === 0 && (
                         <p className="px-4 py-8 text-center text-sm text-muted">
-                            No active services assigned to this box.
+                            {t('No active services assigned to this box.')}
                         </p>
                     )}
                 </div>
@@ -362,6 +368,8 @@ export default function TopologyBuildingShowPage({
     boxTypes,
     boxStatuses,
 }: Props) {
+    const page = usePage<PageProps>();
+    const t = createTranslator(page.props.app.locale);
     const buildingForm = useForm<FormValues>({
         name: building.name,
         code: building.code,
@@ -418,21 +426,23 @@ export default function TopologyBuildingShowPage({
                 href="/operations/topology/buildings"
                 className="mb-6 inline-flex items-center gap-2 text-sm font-semibold text-muted hover:text-brand"
             >
-                <ArrowLeft size={16} /> Back to buildings
+                <ArrowLeft size={16} /> {t('Back to buildings')}
             </Link>
             <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
                 <div>
-                    <p className="eyebrow">Network topology</p>
+                    <p className="eyebrow">{t('Network topology')}</p>
                     <div className="mt-2 flex flex-wrap items-center gap-3">
                         <h1 className="page-title">{building.name}</h1>
                         <StatusBadge status={building.status} />
                     </div>
                     <p className="page-subtitle">
-                        {building.code} · {building.address ?? 'No address recorded'}
+                        {building.code} · {building.address ?? t('No address recorded')}
                     </p>
                 </div>
                 <div className="flex items-center gap-4 text-sm text-muted">
-                    <span className="tabular-nums">{building.boxes.length} boxes</span>
+                    <span className="tabular-nums">
+                        {building.boxes.length} {t('boxes')}
+                    </span>
                     <span className="tabular-nums">
                         {
                             services.filter(
@@ -441,7 +451,7 @@ export default function TopologyBuildingShowPage({
                                     building.boxes.some((box) => box.public_id === service.distribution_box?.public_id),
                             ).length
                         }{' '}
-                        assigned services
+                        {t('assigned services')}
                     </span>
                 </div>
             </div>
@@ -451,15 +461,15 @@ export default function TopologyBuildingShowPage({
                     <div className="flex items-center gap-2">
                         <MapPinned size={17} className="text-brand" />
                         <div>
-                            <h2 className="section-title">Building details</h2>
+                            <h2 className="section-title">{t('Building details')}</h2>
                             <p className="mt-1 text-sm text-muted">
-                                Keep the location and access information current for installation work.
+                                {t('Keep the location and access information current for installation work.')}
                             </p>
                         </div>
                     </div>
                     <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
                         <label>
-                            <span className="field-label">Name</span>
+                            <span className="field-label">{t('Name')}</span>
                             <input
                                 className="field"
                                 value={buildingForm.data.name}
@@ -468,7 +478,7 @@ export default function TopologyBuildingShowPage({
                             <ErrorText message={buildingForm.errors.name} />
                         </label>
                         <label>
-                            <span className="field-label">Code</span>
+                            <span className="field-label">{t('Code')}</span>
                             <input
                                 className="field uppercase"
                                 value={buildingForm.data.code}
@@ -477,7 +487,7 @@ export default function TopologyBuildingShowPage({
                             <ErrorText message={buildingForm.errors.code} />
                         </label>
                         <label className="md:col-span-2">
-                            <span className="field-label">Address</span>
+                            <span className="field-label">{t('Address')}</span>
                             <input
                                 className="field"
                                 value={buildingForm.data.address}
@@ -486,7 +496,7 @@ export default function TopologyBuildingShowPage({
                             <ErrorText message={buildingForm.errors.address} />
                         </label>
                         <label>
-                            <span className="field-label">Floors</span>
+                            <span className="field-label">{t('Floors')}</span>
                             <input
                                 type="number"
                                 min="0"
@@ -497,7 +507,7 @@ export default function TopologyBuildingShowPage({
                             <ErrorText message={buildingForm.errors.floors} />
                         </label>
                         <label>
-                            <span className="field-label">Units</span>
+                            <span className="field-label">{t('Units')}</span>
                             <input
                                 type="number"
                                 min="0"
@@ -508,7 +518,7 @@ export default function TopologyBuildingShowPage({
                             <ErrorText message={buildingForm.errors.unit_count} />
                         </label>
                         <label>
-                            <span className="field-label">Status</span>
+                            <span className="field-label">{t('Status')}</span>
                             <ResponsiveSelect
                                 className="field"
                                 value={buildingForm.data.status}
@@ -516,7 +526,7 @@ export default function TopologyBuildingShowPage({
                             >
                                 {buildingStatuses.map((status) => (
                                     <option key={status} value={status}>
-                                        {status.replace('_', ' ')}
+                                        {t(status.replace('_', ' '))}
                                     </option>
                                 ))}
                             </ResponsiveSelect>
@@ -528,11 +538,11 @@ export default function TopologyBuildingShowPage({
                         longitude={buildingForm.data.longitude}
                         onLatitudeChange={(value) => buildingForm.setData('latitude', value)}
                         onLongitudeChange={(value) => buildingForm.setData('longitude', value)}
-                        title="Building location"
-                        description="Click to place the site pin, or drag it to refine the coordinates."
+                        title={t('Building location')}
+                        description={t('Click to place the site pin, or drag it to refine the coordinates.')}
                     />
                     <label>
-                        <span className="field-label">Notes</span>
+                        <span className="field-label">{t('Notes')}</span>
                         <textarea
                             className="field min-h-20"
                             value={buildingForm.data.notes}
@@ -542,7 +552,7 @@ export default function TopologyBuildingShowPage({
                     </label>
                     <div className="flex justify-end">
                         <button type="submit" className="button-primary" disabled={buildingForm.processing}>
-                            <Save size={15} /> Save building
+                            <Save size={15} /> {t('Save building')}
                         </button>
                     </div>
                 </form>
@@ -553,15 +563,15 @@ export default function TopologyBuildingShowPage({
                     <div className="flex items-center gap-2">
                         <Plus size={17} className="text-brand" />
                         <div>
-                            <h2 className="section-title">Add distribution box</h2>
+                            <h2 className="section-title">{t('Add distribution box')}</h2>
                             <p className="mt-1 text-sm text-muted">
-                                Record a cabinet, splitter, or distribution point inside this site.
+                                {t('Record a cabinet, splitter, or distribution point inside this site.')}
                             </p>
                         </div>
                     </div>
                     <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
                         <label>
-                            <span className="field-label">Name</span>
+                            <span className="field-label">{t('Name')}</span>
                             <input
                                 className="field"
                                 value={boxForm.data.name}
@@ -571,7 +581,7 @@ export default function TopologyBuildingShowPage({
                             <ErrorText message={boxForm.errors.name} />
                         </label>
                         <label>
-                            <span className="field-label">Code</span>
+                            <span className="field-label">{t('Code')}</span>
                             <input
                                 className="field uppercase"
                                 value={boxForm.data.code}
@@ -581,7 +591,7 @@ export default function TopologyBuildingShowPage({
                             <ErrorText message={boxForm.errors.code} />
                         </label>
                         <label>
-                            <span className="field-label">Type</span>
+                            <span className="field-label">{t('Type')}</span>
                             <ResponsiveSelect
                                 className="field"
                                 value={boxForm.data.box_type}
@@ -589,14 +599,14 @@ export default function TopologyBuildingShowPage({
                             >
                                 {boxTypes.map((type) => (
                                     <option key={type} value={type}>
-                                        {type.replace('_', ' ')}
+                                        {t(type.replace('_', ' '))}
                                     </option>
                                 ))}
                             </ResponsiveSelect>
                             <ErrorText message={boxForm.errors.box_type} />
                         </label>
                         <label>
-                            <span className="field-label">Capacity ports</span>
+                            <span className="field-label">{t('Capacity ports')}</span>
                             <input
                                 type="number"
                                 min="1"
@@ -607,13 +617,13 @@ export default function TopologyBuildingShowPage({
                             <ErrorText message={boxForm.errors.capacity_ports} />
                         </label>
                         <label>
-                            <span className="field-label">POP</span>
+                            <span className="field-label">{t('POP')}</span>
                             <ResponsiveSelect
                                 className="field"
                                 value={boxForm.data.pop_id}
                                 onChange={(event) => boxForm.setData('pop_id', event.target.value)}
                             >
-                                <option value="">No POP linked</option>
+                                <option value="">{t('No POP linked')}</option>
                                 {pops.map((pop) => (
                                     <option key={pop.id} value={pop.id}>
                                         {pop.name} · {pop.code}
@@ -628,11 +638,11 @@ export default function TopologyBuildingShowPage({
                         longitude={boxForm.data.longitude}
                         onLatitudeChange={(value) => boxForm.setData('latitude', value)}
                         onLongitudeChange={(value) => boxForm.setData('longitude', value)}
-                        title="Box location"
-                        description="Optional GPS coordinates for the physical cabinet or splitter."
+                        title={t('Box location')}
+                        description={t('Optional GPS coordinates for the physical cabinet or splitter.')}
                     />
                     <label>
-                        <span className="field-label">Notes</span>
+                        <span className="field-label">{t('Notes')}</span>
                         <textarea
                             className="field min-h-16"
                             value={boxForm.data.notes}
@@ -643,7 +653,7 @@ export default function TopologyBuildingShowPage({
                     </label>
                     <div className="flex justify-end">
                         <button type="submit" className="button-primary" disabled={boxForm.processing}>
-                            <Plus size={15} /> Add box
+                            <Plus size={15} /> {t('Add box')}
                         </button>
                     </div>
                 </form>
@@ -652,7 +662,7 @@ export default function TopologyBuildingShowPage({
             <section className="mt-8 space-y-5">
                 <div className="flex items-center gap-2">
                     <Box size={17} className="text-brand" />
-                    <h2 className="section-title">Distribution boxes</h2>
+                    <h2 className="section-title">{t('Distribution boxes')}</h2>
                 </div>
                 {building.boxes.map((box) => (
                     <BoxCard
@@ -668,9 +678,9 @@ export default function TopologyBuildingShowPage({
                 {building.boxes.length === 0 && (
                     <div className="card px-5 py-14 text-center">
                         <Box className="mx-auto text-muted" size={30} />
-                        <p className="mt-3 font-semibold">No boxes recorded</p>
+                        <p className="mt-3 font-semibold">{t('No boxes recorded')}</p>
                         <p className="mt-1 text-sm text-muted">
-                            Add the first distribution point above to start assigning subscriber ports.
+                            {t('Add the first distribution point above to start assigning subscriber ports.')}
                         </p>
                     </div>
                 )}

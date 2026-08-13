@@ -1,5 +1,5 @@
 import ResponsiveSelect from '@/components/ui/responsive-select';
-import { Head, Link, router, useForm } from '@inertiajs/react';
+import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
 import {
     ArrowLeft,
     CalendarClock,
@@ -20,6 +20,8 @@ import SignaturePad from '@/components/SignaturePad';
 import AppLayout from '@/layouts/AppLayout';
 import { entriesOrEmpty, formatDate, keysOrEmpty } from '@/lib/format';
 import { createIdempotencyKey } from '@/lib/idempotency';
+import { createTranslator } from '@/lib/i18n';
+import type { PageProps } from '@/types';
 
 type WorkOrder = {
     public_id: string;
@@ -137,6 +139,8 @@ export default function WorkOrderShowPage({
     canManageInstallation,
     networkBuildings,
 }: Props) {
+    const page = usePage<PageProps>();
+    const t = createTranslator(page.props.app.locale);
     const installationNeedsAcceptance =
         workOrder.installation.enabled &&
         workOrder.installation.requires_acceptance &&
@@ -219,19 +223,21 @@ export default function WorkOrderShowPage({
                 href="/operations/work-orders"
                 className="mb-6 inline-flex items-center gap-2 text-sm font-semibold text-muted hover:text-brand"
             >
-                <ArrowLeft size={16} /> Back to work orders
+                <ArrowLeft size={16} /> {t('Back to work orders')}
             </Link>
 
             <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
                 <div>
-                    <p className="eyebrow">Field operations · {workOrder.type.replace('_', ' ')}</p>
+                    <p className="eyebrow">
+                        {t('Field operations')} · {t(workOrder.type.replace('_', ' '))}
+                    </p>
                     <div className="mt-2 flex flex-wrap items-center gap-3">
                         <h1 className="page-title">{workOrder.number}</h1>
                         <StatusBadge status={workOrder.status} />
                     </div>
                     <p className="page-subtitle">
-                        Scheduled {formatDate(workOrder.scheduled_at)} · Assigned to{' '}
-                        {workOrder.assignee?.name ?? 'nobody'}
+                        {t('Scheduled')} {formatDate(workOrder.scheduled_at)} · {t('Assigned to')}{' '}
+                        {workOrder.assignee?.name ?? t('nobody')}
                     </p>
                 </div>
                 {canComplete ? (
@@ -244,11 +250,11 @@ export default function WorkOrderShowPage({
                             })
                         }
                     >
-                        <CheckCircle2 size={16} /> Complete work order
+                        <CheckCircle2 size={16} /> {t('Complete work order')}
                     </button>
                 ) : installationNeedsAcceptance ? (
                     <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
-                        Accept activation before completing this installation.
+                        {t('Accept activation before completing this installation.')}
                     </div>
                 ) : null}
             </div>
@@ -258,11 +264,11 @@ export default function WorkOrderShowPage({
                     <div className="card p-6">
                         <div className="flex items-center gap-2">
                             <UserRound size={17} className="text-brand" />
-                            <h2 className="section-title">Assignment</h2>
+                            <h2 className="section-title">{t('Assignment')}</h2>
                         </div>
                         <dl className="mt-5 space-y-4 text-sm">
                             <div>
-                                <dt className="field-label">Customer</dt>
+                                <dt className="field-label">{t('Customer')}</dt>
                                 <dd className="mt-1 font-semibold">
                                     {workOrder.customer ? (
                                         <Link
@@ -272,7 +278,7 @@ export default function WorkOrderShowPage({
                                             {workOrder.customer.name}
                                         </Link>
                                     ) : (
-                                        'No customer linked'
+                                        t('No customer linked')
                                     )}
                                     <span className="mt-1 block text-xs font-normal text-muted">
                                         {workOrder.customer?.code ?? ''}
@@ -280,33 +286,33 @@ export default function WorkOrderShowPage({
                                 </dd>
                             </div>
                             <div>
-                                <dt className="field-label">Service</dt>
+                                <dt className="field-label">{t('Service')}</dt>
                                 <dd className="mt-1 font-semibold">
-                                    {workOrder.service?.username ?? 'No service linked'}
+                                    {workOrder.service?.username ?? t('No service linked')}
                                 </dd>
                             </div>
                             <div>
-                                <dt className="field-label">Operator</dt>
-                                <dd className="mt-1 font-semibold">{workOrder.assignee?.name ?? 'Unassigned'}</dd>
+                                <dt className="field-label">{t('Operator')}</dt>
+                                <dd className="mt-1 font-semibold">{workOrder.assignee?.name ?? t('Unassigned')}</dd>
                             </div>
                         </dl>
                     </div>
                     <div className="card p-6">
                         <div className="flex items-center gap-2">
                             <Clock3 size={17} className="text-brand" />
-                            <h2 className="section-title">Timing</h2>
+                            <h2 className="section-title">{t('Timing')}</h2>
                         </div>
                         <dl className="mt-5 space-y-4 text-sm">
                             <div className="flex justify-between gap-4">
-                                <dt className="text-muted">Scheduled</dt>
+                                <dt className="text-muted">{t('Scheduled')}</dt>
                                 <dd className="font-semibold">{formatDate(workOrder.scheduled_at)}</dd>
                             </div>
                             <div className="flex justify-between gap-4">
-                                <dt className="text-muted">Started</dt>
+                                <dt className="text-muted">{t('Started')}</dt>
                                 <dd className="font-semibold">{formatDate(workOrder.started_at)}</dd>
                             </div>
                             <div className="flex justify-between gap-4">
-                                <dt className="text-muted">Completed</dt>
+                                <dt className="text-muted">{t('Completed')}</dt>
                                 <dd className="font-semibold">{formatDate(workOrder.completed_at)}</dd>
                             </div>
                         </dl>
@@ -314,10 +320,12 @@ export default function WorkOrderShowPage({
                             <form onSubmit={submitSchedule} className="mt-5 space-y-3 border-t border-line pt-5">
                                 <div className="flex items-center gap-2">
                                     <CalendarClock size={15} className="text-brand" />
-                                    <span className="text-sm font-semibold">Reschedule</span>
+                                    <span className="text-sm font-semibold">{t('Reschedule')}</span>
                                 </div>
                                 <label>
-                                    <span className="field-label">Tenant local time ({timezone})</span>
+                                    <span className="field-label">
+                                        {t('Tenant local time')} ({timezone})
+                                    </span>
                                     <input
                                         type="datetime-local"
                                         className="field"
@@ -333,7 +341,7 @@ export default function WorkOrderShowPage({
                                     className="button-secondary w-full"
                                     disabled={scheduleForm.processing}
                                 >
-                                    Save schedule
+                                    {t('Save schedule')}
                                 </button>
                             </form>
                         )}
@@ -350,17 +358,16 @@ export default function WorkOrderShowPage({
                         <section className="card p-6">
                             <div className="flex items-center gap-2">
                                 <MapPinned size={17} className="text-brand" />
-                                <h2 className="section-title text-balance">Installation survey and topology</h2>
+                                <h2 className="section-title text-balance">{t('Installation survey and topology')}</h2>
                             </div>
                             <p className="mt-1 max-w-2xl text-sm text-muted text-pretty">
-                                Record the customer-site survey and reserve the exact building, distribution box, and
-                                port used by this installation.
+                                {t('Record the customer-site survey and reserve the exact building, distribution box, and port used by this installation.')}
                             </p>
 
                             <form onSubmit={submitInstallation} className="mt-5 space-y-5">
                                 <div className="grid gap-4 sm:grid-cols-2">
                                     <label>
-                                        <span className="field-label">Building</span>
+                                        <span className="field-label">{t('Building')}</span>
                                         <ResponsiveSelect
                                             className="field"
                                             value={installationForm.data.network_building_id}
@@ -370,7 +377,7 @@ export default function WorkOrderShowPage({
                                                 installationForm.setData('network_port', '');
                                             }}
                                         >
-                                            <option value="">Select building</option>
+                                            <option value="">{t('Select building')}</option>
                                             {networkBuildings.map((building) => (
                                                 <option key={building.id} value={building.id}>
                                                     {building.name} · {building.code}
@@ -382,7 +389,7 @@ export default function WorkOrderShowPage({
                                         )}
                                     </label>
                                     <label>
-                                        <span className="field-label">Distribution box</span>
+                                        <span className="field-label">{t('Distribution box')}</span>
                                         <ResponsiveSelect
                                             className="field"
                                             value={installationForm.data.distribution_box_id}
@@ -392,7 +399,7 @@ export default function WorkOrderShowPage({
                                                 installationForm.setData('network_port', '');
                                             }}
                                         >
-                                            <option value="">Select box</option>
+                                            <option value="">{t('Select box')}</option>
                                             {selectedBuilding?.boxes.map((box) => (
                                                 <option key={box.public_id} value={box.public_id}>
                                                     {box.name} · {box.code} · {box.capacity_ports} ports
@@ -404,7 +411,7 @@ export default function WorkOrderShowPage({
                                         )}
                                     </label>
                                     <label>
-                                        <span className="field-label">Network port</span>
+                                        <span className="field-label">{t('Network port')}</span>
                                         <input
                                             className="field tabular-nums"
                                             type="number"
@@ -415,7 +422,7 @@ export default function WorkOrderShowPage({
                                                 installationForm.setData('network_port', event.target.value)
                                             }
                                             placeholder={
-                                                selectedBox ? `1–${selectedBox.capacity_ports}` : 'Select a box first'
+                                                selectedBox ? `1–${selectedBox.capacity_ports}` : t('Select a box first')
                                             }
                                             disabled={!selectedBox}
                                         />
@@ -425,8 +432,8 @@ export default function WorkOrderShowPage({
                                     </label>
                                     <label>
                                         <span className="field-label">
-                                            ONU serial{' '}
-                                            <span className="font-normal text-muted">(required for fiber)</span>
+                                            {t('ONU serial')}{' '}
+                                            <span className="font-normal text-muted">({t('required for fiber')})</span>
                                         </span>
                                         <input
                                             className="field"
@@ -434,7 +441,7 @@ export default function WorkOrderShowPage({
                                             onChange={(event) =>
                                                 installationForm.setData('onu_serial', event.target.value)
                                             }
-                                            placeholder="Scan or enter the ONU serial"
+                                            placeholder={t('Scan or enter the ONU serial')}
                                         />
                                         {installationForm.errors.onu_serial && (
                                             <p className="field-error">{installationForm.errors.onu_serial}</p>
@@ -445,11 +452,11 @@ export default function WorkOrderShowPage({
                                 <div className="border-t border-line pt-5">
                                     <div className="flex items-center gap-2">
                                         <RadioTower size={16} className="text-brand" />
-                                        <h3 className="text-sm font-semibold text-balance">Site survey</h3>
+                                        <h3 className="text-sm font-semibold text-balance">{t('Site survey')}</h3>
                                     </div>
                                     <div className="mt-4 grid gap-4 sm:grid-cols-2">
                                         <label>
-                                            <span className="field-label">Unit / apartment</span>
+                                            <span className="field-label">{t('Unit / apartment')}</span>
                                             <input
                                                 className="field"
                                                 value={installationForm.data.survey.unit_label}
@@ -459,11 +466,11 @@ export default function WorkOrderShowPage({
                                                         unit_label: event.target.value,
                                                     })
                                                 }
-                                                placeholder="Building 2 · Apt 301"
+                                                placeholder={t('Building 2 · Apt 301')}
                                             />
                                         </label>
                                         <label>
-                                            <span className="field-label">Power available</span>
+                                            <span className="field-label">{t('Power available')}</span>
                                             <ResponsiveSelect
                                                 className="field"
                                                 value={installationForm.data.survey.power_available}
@@ -474,13 +481,13 @@ export default function WorkOrderShowPage({
                                                     })
                                                 }
                                             >
-                                                <option value="">Not recorded</option>
-                                                <option value="yes">Yes</option>
-                                                <option value="no">No</option>
+                                                <option value="">{t('Not recorded')}</option>
+                                                <option value="yes">{t('Yes')}</option>
+                                                <option value="no">{t('No')}</option>
                                             </ResponsiveSelect>
                                         </label>
                                         <label>
-                                            <span className="field-label">Cable route</span>
+                                            <span className="field-label">{t('Cable route')}</span>
                                             <input
                                                 className="field"
                                                 value={installationForm.data.survey.cable_route}
@@ -490,11 +497,11 @@ export default function WorkOrderShowPage({
                                                         cable_route: event.target.value,
                                                     })
                                                 }
-                                                placeholder="Riser · east facade · 35 m"
+                                                placeholder={t('Riser · east facade · 35 m')}
                                             />
                                         </label>
                                         <label>
-                                            <span className="field-label">Access notes</span>
+                                            <span className="field-label">{t('Access notes')}</span>
                                             <input
                                                 className="field"
                                                 value={installationForm.data.survey.access_notes}
@@ -504,7 +511,7 @@ export default function WorkOrderShowPage({
                                                         access_notes: event.target.value,
                                                     })
                                                 }
-                                                placeholder="Caretaker contact or access instructions"
+                                                placeholder={t('Caretaker contact or access instructions')}
                                             />
                                         </label>
                                     </div>
@@ -521,7 +528,7 @@ export default function WorkOrderShowPage({
                                     className="button-secondary"
                                     disabled={installationForm.processing}
                                 >
-                                    <Save size={15} /> Save installation details
+                                    <Save size={15} /> {t('Save installation details')}
                                 </button>
                             </form>
 
@@ -531,21 +538,20 @@ export default function WorkOrderShowPage({
                                         <div className="flex items-center gap-2">
                                             <CheckCircle2 size={16} className="text-brand" />
                                             <h3 className="text-sm font-semibold text-balance">
-                                                Activation acceptance
+                                                {t('Activation acceptance')}
                                             </h3>
                                         </div>
                                         <p className="mt-1 text-sm text-muted text-pretty">
-                                            Confirm the topology and site handover before this installation activates
-                                            its service.
+                                            {t('Confirm the topology and site handover before this installation activates its service.')}
                                         </p>
                                     </div>
                                     {workOrder.installation.activation_accepted_at ? (
                                         <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
-                                            Accepted
+                                            {t('Accepted')}
                                         </span>
                                     ) : (
                                         <span className="rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-800">
-                                            Pending
+                                            {t('Pending')}
                                         </span>
                                     )}
                                 </div>
@@ -553,7 +559,7 @@ export default function WorkOrderShowPage({
                                 {workOrder.installation.activation_accepted_at ? (
                                     <div className="mt-4 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900">
                                         <p className="font-semibold">
-                                            Accepted by {workOrder.installation.activation_accepted_by ?? 'operator'}
+                                            {t('Accepted by')} {workOrder.installation.activation_accepted_by ?? t('operator')}
                                         </p>
                                         <p className="mt-1 text-xs tabular-nums text-emerald-800">
                                             {formatDate(workOrder.installation.activation_accepted_at)}
@@ -568,14 +574,14 @@ export default function WorkOrderShowPage({
                                     <form onSubmit={acceptActivation} className="mt-4 space-y-3">
                                         <label>
                                             <span className="field-label">
-                                                Acceptance note{' '}
-                                                <span className="font-normal text-muted">(optional)</span>
+                                                {t('Acceptance note')}{' '}
+                                                <span className="font-normal text-muted">({t('optional')})</span>
                                             </span>
                                             <textarea
                                                 className="field min-h-20 resize-y"
                                                 value={acceptanceForm.data.note}
                                                 onChange={(event) => acceptanceForm.setData('note', event.target.value)}
-                                                placeholder="Customer confirmed service handover"
+                                                placeholder={t('Customer confirmed service handover')}
                                             />
                                         </label>
                                         {acceptanceErrors.activation && (
@@ -586,12 +592,12 @@ export default function WorkOrderShowPage({
                                             className="button-primary"
                                             disabled={acceptanceForm.processing}
                                         >
-                                            <CheckCircle2 size={15} /> Accept activation
+                                            <CheckCircle2 size={15} /> {t('Accept activation')}
                                         </button>
                                     </form>
                                 ) : (
                                     <p className="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 text-pretty">
-                                        Assign this work order before accepting activation.
+                                        {t('Assign this work order before accepting activation.')}
                                     </p>
                                 )}
                             </div>
@@ -600,7 +606,7 @@ export default function WorkOrderShowPage({
                     <section className="card p-6">
                         <div className="flex items-center gap-2">
                             <ClipboardCheck size={17} className="text-brand" />
-                            <h2 className="section-title">Completion checklist</h2>
+                            <h2 className="section-title">{t('Completion checklist')}</h2>
                         </div>
                         <div className="mt-5 grid gap-3 sm:grid-cols-2">
                             {entriesOrEmpty(workOrder.checklist).map(([key, value]) => (
@@ -616,19 +622,19 @@ export default function WorkOrderShowPage({
                                                 : 'font-semibold text-coral'
                                         }
                                     >
-                                        {isChecked(value) ? 'Checked' : 'Open'}
+                                        {isChecked(value) ? t('Checked') : t('Open')}
                                     </span>
                                 </div>
                             ))}
                             {keysOrEmpty(workOrder.checklist).length === 0 && (
-                                <p className="text-sm text-muted">No checklist items were recorded.</p>
+                                <p className="text-sm text-muted">{t('No checklist items were recorded.')}</p>
                             )}
                         </div>
                     </section>
                     <section className="card p-6">
                         <div className="flex items-center gap-2">
                             <PackageOpen size={17} className="text-brand" />
-                            <h2 className="section-title">Materials consumed</h2>
+                            <h2 className="section-title">{t('Materials consumed')}</h2>
                         </div>
                         <div className="mt-5 space-y-3">
                             {workOrder.materials.map((material) => (
@@ -637,9 +643,9 @@ export default function WorkOrderShowPage({
                                     className="flex items-center justify-between gap-4 rounded-lg border border-line px-4 py-3 text-sm"
                                 >
                                     <div>
-                                        <p className="font-semibold">{material.name ?? material.sku ?? 'Material'}</p>
+                                        <p className="font-semibold">{material.name ?? material.sku ?? t('Material')}</p>
                                         <p className="mt-1 text-xs text-muted">
-                                            {material.sku ?? 'No SKU'} · {material.warehouse ?? 'Unknown warehouse'} ·{' '}
+                                            {material.sku ?? t('No SKU')} · {material.warehouse ?? t('Unknown warehouse')} ·{' '}
                                             {formatDate(material.consumed_at)}
                                         </p>
                                     </div>
@@ -647,15 +653,15 @@ export default function WorkOrderShowPage({
                                 </div>
                             ))}
                             {workOrder.materials.length === 0 && (
-                                <p className="text-sm text-muted">No bulk materials have been recorded.</p>
+                                <p className="text-sm text-muted">{t('No bulk materials have been recorded.')}</p>
                             )}
                         </div>
                         {canComplete && bulkMaterials.length > 0 && (
                             <form onSubmit={submitMaterial} className="mt-5 space-y-3 border-t border-line pt-5">
-                                <p className="text-sm font-semibold">Record material use</p>
+                                <p className="text-sm font-semibold">{t('Record material use')}</p>
                                 <div className="grid gap-4 sm:grid-cols-2">
                                     <label>
-                                        <span className="field-label">Material</span>
+                                        <span className="field-label">{t('Material')}</span>
                                         <ResponsiveSelect
                                             className="field"
                                             value={materialForm.data.inventory_item_id}
@@ -663,19 +669,19 @@ export default function WorkOrderShowPage({
                                                 materialForm.setData('inventory_item_id', event.target.value)
                                             }
                                         >
-                                            <option value="">Select material</option>
+                                            <option value="">{t('Select material')}</option>
                                             {bulkMaterials.map((material) => (
                                                 <option
                                                     key={`${material.inventory_item_id}-${material.warehouse_id}`}
                                                     value={material.inventory_item_id}
                                                 >
-                                                    {material.sku} · {material.name} · {material.quantity} available
+                                                    {material.sku} · {material.name} · {material.quantity} {t('available')}
                                                 </option>
                                             ))}
                                         </ResponsiveSelect>
                                     </label>
                                     <label>
-                                        <span className="field-label">Warehouse</span>
+                                        <span className="field-label">{t('Warehouse')}</span>
                                         <ResponsiveSelect
                                             className="field"
                                             value={materialForm.data.warehouse_id}
@@ -683,7 +689,7 @@ export default function WorkOrderShowPage({
                                                 materialForm.setData('warehouse_id', event.target.value)
                                             }
                                         >
-                                            <option value="">Select warehouse</option>
+                                            <option value="">{t('Select warehouse')}</option>
                                             {bulkMaterials
                                                 .filter(
                                                     (material, index, all) =>
@@ -700,7 +706,7 @@ export default function WorkOrderShowPage({
                                         </ResponsiveSelect>
                                     </label>
                                     <label>
-                                        <span className="field-label">Quantity</span>
+                                        <span className="field-label">{t('Quantity')}</span>
                                         <input
                                             className="field"
                                             inputMode="decimal"
@@ -713,12 +719,12 @@ export default function WorkOrderShowPage({
                                         )}
                                     </label>
                                     <label>
-                                        <span className="field-label">Note</span>
+                                        <span className="field-label">{t('Note')}</span>
                                         <input
                                             className="field"
                                             value={materialForm.data.note}
                                             onChange={(event) => materialForm.setData('note', event.target.value)}
-                                            placeholder="Optional site note"
+                                            placeholder={t('Optional site note')}
                                         />
                                     </label>
                                 </div>
@@ -729,15 +735,15 @@ export default function WorkOrderShowPage({
                                     <p className="field-error">{materialForm.errors.warehouse_id}</p>
                                 )}
                                 <button type="submit" className="button-secondary" disabled={materialForm.processing}>
-                                    Record material
+                                    {t('Record material')}
                                 </button>
                             </form>
                         )}
                     </section>
                     <section className="card p-6">
-                        <h2 className="section-title">Technician readings</h2>
+                        <h2 className="section-title">{t('Technician readings')}</h2>
                         <p className="mt-1 text-sm text-muted">
-                            Record the measurements captured at the customer site.
+                            {t('Record the measurements captured at the customer site.')}
                         </p>
                         <form onSubmit={submitReadings} className="mt-5 space-y-4">
                             <div className="grid gap-4 sm:grid-cols-2">
@@ -761,15 +767,15 @@ export default function WorkOrderShowPage({
                                 <p className="field-error">{readingsForm.errors.readings}</p>
                             )}
                             <button type="submit" className="button-secondary" disabled={readingsForm.processing}>
-                                Save readings
+                                {t('Save readings')}
                             </button>
                         </form>
                     </section>
                     <section className="card p-6">
-                        <h2 className="section-title">Customer signature</h2>
+                        <h2 className="section-title">{t('Customer signature')}</h2>
                         {workOrder.signature ? (
                             <div className="mt-5 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm">
-                                <p className="font-semibold">Signed by {workOrder.signature.signer_name}</p>
+                                <p className="font-semibold">{t('Signed by')} {workOrder.signature.signer_name}</p>
                                 <p className="mt-1 text-xs text-muted">{formatDate(workOrder.signature.signed_at)}</p>
                                 {workOrder.signature.download_url && (
                                     <a
@@ -777,7 +783,7 @@ export default function WorkOrderShowPage({
                                         className="mt-2 inline-flex text-sm font-semibold text-brand hover:underline"
                                         download
                                     >
-                                        Download signature
+                                        {t('Download signature')}
                                     </a>
                                 )}
                             </div>
@@ -786,7 +792,7 @@ export default function WorkOrderShowPage({
                                 <SignaturePad onChange={(file) => signatureForm.setData('file', file)} />
                                 <form onSubmit={submitSignature} className="space-y-3 border-t border-line pt-5">
                                     <label>
-                                        <span className="field-label">Signer name</span>
+                                    <span className="field-label">{t('Signer name')}</span>
                                         <input
                                             className="field"
                                             value={signatureForm.data.signer_name}
@@ -810,7 +816,7 @@ export default function WorkOrderShowPage({
                                             !signatureForm.data.signer_name.trim()
                                         }
                                     >
-                                        Save signature
+                                        {t('Save signature')}
                                     </button>
                                 </form>
                             </div>
@@ -819,7 +825,7 @@ export default function WorkOrderShowPage({
                     <section className="card p-6">
                         <div className="flex items-center gap-2">
                             <Images size={17} className="text-brand" />
-                            <h2 className="section-title">Site evidence</h2>
+                            <h2 className="section-title">{t('Site evidence')}</h2>
                         </div>
                         <div className="mt-5 grid gap-3 sm:grid-cols-2">
                             {workOrder.media.map((media) => (
@@ -835,17 +841,17 @@ export default function WorkOrderShowPage({
                                         </p>
                                     </div>
                                     <a href={media.download_url} className="button-secondary shrink-0" download>
-                                        <Download size={15} /> Download
+                                        <Download size={15} /> {t('Download')}
                                     </a>
                                 </div>
                             ))}
                             {workOrder.media.length === 0 && (
-                                <p className="text-sm text-muted">No site evidence has been uploaded.</p>
+                                <p className="text-sm text-muted">{t('No site evidence has been uploaded.')}</p>
                             )}
                         </div>
                     </section>
                     <section className="card p-6">
-                        <h2 className="section-title">Work-order history</h2>
+                        <h2 className="section-title">{t('Work-order history')}</h2>
                         <div className="mt-5 space-y-4">
                             {workOrder.events.map((event) => (
                                 <div key={event.id} className="flex gap-3 border-s border-line ps-4">
@@ -854,7 +860,7 @@ export default function WorkOrderShowPage({
                                             {event.event_type.replace('_', ' ')}
                                         </p>
                                         <p className="mt-1 text-xs text-muted">
-                                            {event.actor ?? 'System'} · {formatDate(event.created_at)}
+                                            {event.actor ?? t('System')} · {formatDate(event.created_at)}
                                         </p>
                                         {event.from_status && (
                                             <p className="mt-1 text-xs text-muted">
@@ -866,7 +872,7 @@ export default function WorkOrderShowPage({
                                 </div>
                             ))}
                             {workOrder.events.length === 0 && (
-                                <p className="text-sm text-muted">No work-order events yet.</p>
+                                <p className="text-sm text-muted">{t('No work-order events yet.')}</p>
                             )}
                         </div>
                     </section>
