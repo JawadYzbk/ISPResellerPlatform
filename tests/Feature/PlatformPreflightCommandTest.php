@@ -217,7 +217,11 @@ it('rejects a production tenant with an unassigned capability role', function ()
 
 it('ignores platform operators outside a tenant when validating production roles', function (): void {
     $tenant = Tenant::factory()->create();
-    User::factory()->create(['tenant_id' => null, 'role' => 'platform_operator']);
+    User::factory()->create([
+        'tenant_id' => null,
+        'role' => 'platform_operator',
+        'two_factor_confirmed_at' => now(),
+    ]);
     User::factory()->create([
         'tenant_id' => $tenant->id,
         'role' => 'tenant_owner',
@@ -258,6 +262,25 @@ it('ignores platform operators outside a tenant when validating production roles
     $this->artisan('platform:preflight', ['--production' => true])
         ->assertExitCode(Command::SUCCESS)
         ->expectsOutputToContain('Preflight passed.');
+});
+
+it('requires platform operators to finish two-factor enrollment for production', function (): void {
+    Tenant::factory()->create();
+    User::factory()->create(['tenant_id' => null, 'role' => 'platform_operator']);
+    config()->set([
+        'app.key' => 'base64:'.base64_encode(str_repeat('a', 32)),
+        'app.env' => 'production',
+        'app.debug' => false,
+        'app.url' => 'https://portal.isp.internal',
+        'session.secure' => true,
+        'security.enforce_web_two_factor' => true,
+        'queue.default' => 'database',
+        'cache.default' => 'database',
+    ]);
+
+    $this->artisan('platform:preflight', ['--production' => true])
+        ->assertExitCode(Command::FAILURE)
+        ->expectsOutputToContain('Privileged staff two-factor enrollment');
 });
 
 it('requires the private Web.js bridge and callback secret when selected', function (): void {

@@ -186,6 +186,7 @@ final class PlatformPreflightCommand extends Command
     {
         try {
             $tenancy = app(Tenancy::class);
+
             foreach (Tenant::query()->get(['id']) as $tenant) {
                 $ready = $tenancy->run($tenant, function () use ($tenant): bool {
                     foreach (User::query()->where('tenant_id', $tenant->id)->whereNotNull('role')->get() as $user) {
@@ -212,6 +213,11 @@ final class PlatformPreflightCommand extends Command
     {
         try {
             $tenancy = app(Tenancy::class);
+
+            if (User::query()->whereNull('tenant_id')->whereNotNull('role')->where('role', 'platform_operator')->get()
+                ->contains(fn (User $user): bool => $user->requiresTwoFactor() && $user->two_factor_confirmed_at === null)) {
+                return false;
+            }
 
             foreach (Tenant::query()->get(['id']) as $tenant) {
                 $ready = $tenancy->run($tenant, function () use ($tenant): bool {
