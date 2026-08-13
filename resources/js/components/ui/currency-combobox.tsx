@@ -82,7 +82,7 @@ export default function CurrencyCombobox({
             <select
                 id={id}
                 aria-label={ariaLabel}
-                className={className}
+                className={cn('field', className)}
                 disabled={disabled}
                 value={value}
                 onChange={(event) => onChange(event.target.value)}

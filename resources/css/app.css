@@ -27,6 +27,9 @@
     body {
         min-width: 320px;
     }
+    label {
+        min-width: 0;
+    }
     button,
     a,
     input,
@@ -95,6 +98,7 @@
         letter-spacing: -0.02em;
     }
     .field {
+        min-width: 0;
         width: 100%;
         border: 1px solid var(--color-line);
         border-radius: 0.7rem;

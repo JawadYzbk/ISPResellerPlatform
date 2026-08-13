@@ -320,3 +320,32 @@ test('keeps shared keyboard focus paths usable', async ({ page }) => {
     await page.keyboard.press('Escape');
     await expect(mobileNavTrigger).toBeFocused();
 });
+
+test('keeps high-use workspace pages within a phone viewport', async ({ page }) => {
+    test.setTimeout(120_000);
+
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/login');
+    await page.getByLabel('Email address').fill(email);
+    await page.getByRole('textbox', { name: 'Password' }).fill(password);
+    await Promise.all([
+        page.waitForURL(/\/(dashboard|customers|profile)$/),
+        page.getByRole('button', { name: 'Enter workspace' }).click(),
+    ]);
+
+    for (const path of ['/dashboard', '/customers', '/services', '/billing/invoices', '/billing/payments', '/operations/work-orders', '/operations/inventory', '/settings/general']) {
+        await page.goto(path);
+        await expect(page.locator('main#main-content:visible'), `${path} should fit a phone viewport`).toBeVisible();
+
+        const dimensions = await page.evaluate(() => ({
+            body: document.body.scrollWidth,
+            document: document.documentElement.scrollWidth,
+            viewport: window.innerWidth,
+        }));
+
+        expect(dimensions.body, `${path} creates horizontal page overflow`).toBeLessThanOrEqual(dimensions.viewport + 1);
+        expect(dimensions.document, `${path} creates horizontal document overflow`).toBeLessThanOrEqual(
+            dimensions.viewport + 1,
+        );
+    }
+});
