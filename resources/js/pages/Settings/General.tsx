@@ -135,6 +135,16 @@ export default function GeneralSettings({
     const settingsPath = page.url.split('?')[0].replace(/\/+$/, '') || '/';
     const tabClass = (href: string) => (settingsPath === href ? 'button-primary' : 'button-secondary');
     const form = useForm<FormSettings>({ ...settings, name: tenant.name, logo: null });
+    const fieldA11y = (name: keyof FormSettings) => ({
+        'aria-invalid': Boolean(form.errors[name]),
+        'aria-describedby': form.errors[name] ? `${name}-error` : undefined,
+    });
+    const fieldError = (name: keyof FormSettings) =>
+        form.errors[name] ? (
+            <p id={`${name}-error`} className="field-error" role="alert">
+                {t(form.errors[name])}
+            </p>
+        ) : null;
     const availableTimezones = timezones.includes(form.data.timezone) ? timezones : [form.data.timezone, ...timezones];
     const availableDateFormats = dateFormatOptions.some((option) => option.value === form.data.date_format)
         ? dateFormatOptions
@@ -163,7 +173,7 @@ export default function GeneralSettings({
         form.post('/settings/general', {
             forceFormData: form.data.logo !== null,
             preserveScroll: true,
-            preserveState: false,
+            preserveState: 'errors',
         });
     };
 
@@ -314,11 +324,14 @@ export default function GeneralSettings({
                             <label>
                                 <span className="field-label">{t('Workspace name')}</span>
                                 <input
+                                    id="workspace-name"
                                     className="field"
+                                    required
+                                    {...fieldA11y('name')}
                                     value={form.data.name}
                                     onChange={(event) => form.setData('name', event.target.value)}
                                 />
-                                {form.errors.name && <p className="field-error" role="alert">{t(form.errors.name)}</p>}
+                                {fieldError('name')}
                             </label>
                             <label className="sm:col-span-2">
                                 <span className="field-label">{t('Tenant logo')}</span>
@@ -336,8 +349,10 @@ export default function GeneralSettings({
                                     </div>
                                     <div className="min-w-0 flex-1">
                                         <input
+                                            id="workspace-logo"
                                             className="field file:me-3 file:rounded-md file:border-0 file:bg-brand-soft file:px-3 file:py-1.5 file:font-semibold file:text-brand"
                                             type="file"
+                                            {...fieldA11y('logo')}
                                             accept="image/jpeg,image/png,image/webp"
                                             onChange={(event) => form.setData('logo', event.target.files?.[0] ?? null)}
                                         />
@@ -346,7 +361,7 @@ export default function GeneralSettings({
                                                 'JPG, PNG, or WebP up to 2 MB. It appears in the staff shell and customer portal.',
                                             )}
                                         </p>
-                                        {form.errors.logo && <p className="field-error" role="alert">{t(form.errors.logo)}</p>}
+                                        {fieldError('logo')}
                                     </div>
                                 </div>
                             </label>
@@ -362,6 +377,7 @@ export default function GeneralSettings({
                                 <ResponsiveSelect
                                     id="workspace-locale"
                                     className="field"
+                                    {...fieldA11y('locale')}
                                     value={form.data.locale}
                                     onChange={(event) =>
                                         form.setData('locale', event.target.value as Settings['locale'])
@@ -371,6 +387,7 @@ export default function GeneralSettings({
                                     <option value="ar">{t('Arabic')}</option>
                                     <option value="fr">{t('French')}</option>
                                 </ResponsiveSelect>
+                                {fieldError('locale')}
                                 {personalLocale && (
                                     <p className="mt-1 text-xs text-amber-700">
                                         {t('Your personal language preference overrides this workspace default.')}{' '}
@@ -385,6 +402,7 @@ export default function GeneralSettings({
                                 <ResponsiveSelect
                                     id="workspace-timezone"
                                     className="field"
+                                    {...fieldA11y('timezone')}
                                     value={form.data.timezone}
                                     onChange={(event) => form.setData('timezone', event.target.value)}
                                 >
@@ -394,7 +412,7 @@ export default function GeneralSettings({
                                         </option>
                                     ))}
                                 </ResponsiveSelect>
-                                {form.errors.timezone && <p className="field-error" role="alert">{t(form.errors.timezone)}</p>}
+                                {fieldError('timezone')}
                             </label>
                         </div>
                     </section>
@@ -406,32 +424,35 @@ export default function GeneralSettings({
                                 <CurrencyCombobox
                                     id="base_currency"
                                     aria-label={t('Base currency')}
+                                    aria-invalid={Boolean(form.errors.base_currency)}
+                                    aria-describedby={form.errors.base_currency ? 'base_currency-error' : undefined}
                                     currencies={currencies}
                                     value={form.data.base_currency}
                                     onChange={(value) => form.setData('base_currency', value)}
                                 />
-                                {form.errors.base_currency && (
-                                    <p className="field-error" role="alert">{t(form.errors.base_currency)}</p>
-                                )}
+                                {fieldError('base_currency')}
                             </label>
                             <label>
                                 <span className="field-label">{t('Collection currency')}</span>
                                 <CurrencyCombobox
                                     id="collection_currency"
                                     aria-label={t('Collection currency')}
+                                    aria-invalid={Boolean(form.errors.collection_currency)}
+                                    aria-describedby={
+                                        form.errors.collection_currency ? 'collection_currency-error' : undefined
+                                    }
                                     currencies={currencies}
                                     value={form.data.collection_currency}
                                     onChange={(value) => form.setData('collection_currency', value)}
                                 />
-                                {form.errors.collection_currency && (
-                                    <p className="field-error" role="alert">{t(form.errors.collection_currency)}</p>
-                                )}
+                                {fieldError('collection_currency')}
                             </label>
                             <label>
                                 <span className="field-label">{t('Date format')}</span>
                                 <ResponsiveSelect
                                     id="workspace-date-format"
                                     className="field"
+                                    {...fieldA11y('date_format')}
                                     value={form.data.date_format}
                                     onChange={(event) => form.setData('date_format', event.target.value)}
                                 >
@@ -441,12 +462,14 @@ export default function GeneralSettings({
                                         </option>
                                     ))}
                                 </ResponsiveSelect>
+                                {fieldError('date_format')}
                             </label>
                             <label>
                                 <span className="field-label">{t('Time format')}</span>
                                 <ResponsiveSelect
                                     id="workspace-time-format"
                                     className="field"
+                                    {...fieldA11y('time_format')}
                                     value={form.data.time_format}
                                     onChange={(event) => form.setData('time_format', event.target.value)}
                                 >
@@ -456,6 +479,7 @@ export default function GeneralSettings({
                                         </option>
                                     ))}
                                 </ResponsiveSelect>
+                                {fieldError('time_format')}
                             </label>
                         </div>
                         <label className="mt-5 flex items-center gap-3 text-sm font-medium">
@@ -473,46 +497,58 @@ export default function GeneralSettings({
                             <label>
                                 <span className="field-label">{t('Notification quiet start')}</span>
                                 <input
+                                    id="notification-quiet-start"
                                     className="field"
                                     type="time"
+                                    {...fieldA11y('notification_quiet_start')}
                                     value={form.data.notification_quiet_start}
                                     onChange={(event) => form.setData('notification_quiet_start', event.target.value)}
                                 />
+                                {fieldError('notification_quiet_start')}
                             </label>
                             <label>
                                 <span className="field-label">{t('Notification quiet end')}</span>
                                 <input
+                                    id="notification-quiet-end"
                                     className="field"
                                     type="time"
+                                    {...fieldA11y('notification_quiet_end')}
                                     value={form.data.notification_quiet_end}
                                     onChange={(event) => form.setData('notification_quiet_end', event.target.value)}
                                 />
+                                {fieldError('notification_quiet_end')}
                             </label>
                             <label>
                                 <span className="field-label">{t('Resolved ticket auto-close (hours)')}</span>
                                 <input
+                                    id="resolved-ticket-auto-close-hours"
                                     className="field"
                                     type="number"
                                     min={1}
                                     max={720}
+                                    {...fieldA11y('resolved_ticket_auto_close_hours')}
                                     value={form.data.resolved_ticket_auto_close_hours}
                                     onChange={(event) =>
                                         form.setData('resolved_ticket_auto_close_hours', Number(event.target.value))
                                     }
                                 />
+                                {fieldError('resolved_ticket_auto_close_hours')}
                             </label>
                             <label>
                                 <span className="field-label">{t('RADIUS interim interval (seconds)')}</span>
                                 <input
+                                    id="radius-interim-interval-seconds"
                                     className="field"
                                     type="number"
                                     min={30}
                                     max={3600}
+                                    {...fieldA11y('radius_interim_interval_seconds')}
                                     value={form.data.radius_interim_interval_seconds}
                                     onChange={(event) =>
                                         form.setData('radius_interim_interval_seconds', Number(event.target.value))
                                     }
                                 />
+                                {fieldError('radius_interim_interval_seconds')}
                             </label>
                         </div>
                         <label className="mt-5 flex items-center gap-3 text-sm font-medium">
