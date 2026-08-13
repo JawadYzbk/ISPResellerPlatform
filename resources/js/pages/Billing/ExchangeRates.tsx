@@ -122,6 +122,16 @@ export default function ExchangeRatesPage({
         effective_from: new Date().toISOString().slice(0, 10),
         source: 'manual',
     });
+    const fieldA11y = (id: string, error?: string) => ({
+        'aria-invalid': Boolean(error),
+        'aria-describedby': error ? `${id}-error` : undefined,
+    });
+    const fieldError = (id: string, error?: string) =>
+        error ? (
+            <p id={`${id}-error`} className="field-error" role="alert">
+                {t(error)}
+            </p>
+        ) : null;
 
     const applyFilters = (event: React.FormEvent) => {
         event.preventDefault();
@@ -209,69 +219,77 @@ export default function ExchangeRatesPage({
                         <CurrencyCombobox
                             id="base_currency"
                             className="field"
+                            {...fieldA11y('base_currency', form.errors.base_currency)}
                             value={form.data.base_currency}
                             currencies={currencies}
                             onChange={(value) => form.setData('base_currency', value)}
                         />
-                        {form.errors.base_currency && <p className="field-error" role="alert">{t(form.errors.base_currency)}</p>}
+                        {fieldError('base_currency', form.errors.base_currency)}
                     </label>
                     <label>
                         <span className="field-label">{t('Quote currency')}</span>
                         <CurrencyCombobox
                             id="quote_currency"
                             className="field"
+                            {...fieldA11y('quote_currency', form.errors.quote_currency)}
                             value={form.data.quote_currency}
                             currencies={currencies}
                             onChange={(value) => form.setData('quote_currency', value)}
                         />
-                        {form.errors.quote_currency && <p className="field-error" role="alert">{t(form.errors.quote_currency)}</p>}
+                        {fieldError('quote_currency', form.errors.quote_currency)}
                     </label>
                     <label>
                         <span className="field-label">{t('Effective from')}</span>
                         <input
+                            id="effective_from"
                             className="field"
                             type="date"
+                            {...fieldA11y('effective_from', form.errors.effective_from)}
                             value={form.data.effective_from}
                             onChange={(event) => form.setData('effective_from', event.target.value)}
                         />
-                        {form.errors.effective_from && <p className="field-error" role="alert">{t(form.errors.effective_from)}</p>}
+                        {fieldError('effective_from', form.errors.effective_from)}
                     </label>
                     <label>
                         <span className="field-label">{t('Numerator')}</span>
                         <input
+                            id="rate_numerator"
                             className="field"
                             type="number"
                             min={1}
                             step={1}
+                            {...fieldA11y('rate_numerator', form.errors.rate_numerator)}
                             value={form.data.rate_numerator}
                             onChange={(event) => form.setData('rate_numerator', Number(event.target.value))}
                         />
-                        {form.errors.rate_numerator && <p className="field-error" role="alert">{t(form.errors.rate_numerator)}</p>}
+                        {fieldError('rate_numerator', form.errors.rate_numerator)}
                     </label>
                     <label>
                         <span className="field-label">{t('Denominator')}</span>
                         <input
+                            id="rate_denominator"
                             className="field"
                             type="number"
                             min={1}
                             step={1}
+                            {...fieldA11y('rate_denominator', form.errors.rate_denominator)}
                             value={form.data.rate_denominator}
                             onChange={(event) => form.setData('rate_denominator', Number(event.target.value))}
                         />
-                        {form.errors.rate_denominator && (
-                            <p className="field-error" role="alert">{t(form.errors.rate_denominator)}</p>
-                        )}
+                        {fieldError('rate_denominator', form.errors.rate_denominator)}
                     </label>
                     <label>
                         <span className="field-label">{t('Source')}</span>
                         <input
+                            id="source"
                             className="field"
                             maxLength={80}
+                            {...fieldA11y('source', form.errors.source)}
                             value={form.data.source}
                             onChange={(event) => form.setData('source', event.target.value)}
                             placeholder={t('Treasury desk')}
                         />
-                        {form.errors.source && <p className="field-error" role="alert">{t(form.errors.source)}</p>}
+                        {fieldError('source', form.errors.source)}
                     </label>
                 </div>
                 <div className="mt-5 flex justify-end">

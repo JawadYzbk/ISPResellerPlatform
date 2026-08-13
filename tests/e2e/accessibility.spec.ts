@@ -394,6 +394,27 @@ test('connects inventory setup errors to their controls', async ({ page }) => {
     await expect(page.locator('#item-sku-error')).toHaveAttribute('role', 'alert');
 });
 
+test('connects exchange-rate errors to their controls', async ({ page }) => {
+    test.setTimeout(60_000);
+
+    await page.goto('/login');
+    await page.getByLabel('Email address').fill(email);
+    await page.getByRole('textbox', { name: 'Password' }).fill(password);
+    await Promise.all([
+        page.waitForURL(/\/(dashboard|customers|profile)$/),
+        page.getByRole('button', { name: 'Enter workspace' }).click(),
+    ]);
+
+    await page.goto('/billing/exchange-rates');
+    await page.locator('#source').fill('');
+    await page.locator('form').filter({ has: page.locator('#source') }).locator('button[type="submit"]').click();
+
+    const source = page.locator('#source');
+    await expect(source).toHaveAttribute('aria-invalid', 'true');
+    await expect(source).toHaveAttribute('aria-describedby', 'source-error');
+    await expect(page.locator('#source-error')).toHaveAttribute('role', 'alert');
+});
+
 test('connects service validation errors to their controls', async ({ page }) => {
     test.setTimeout(60_000);
 
