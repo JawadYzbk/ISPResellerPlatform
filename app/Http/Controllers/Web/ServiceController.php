@@ -102,6 +102,8 @@ final class ServiceController extends Controller
                 ->get(['id', 'public_id', 'name', 'download_kbps', 'upload_kbps', 'duration_days', 'amount_minor', 'currency']),
             'availableAddons' => Addon::query()
                 ->where('status', 'active')
+                ->whereNotNull('billing_period_days')
+                ->where('billing_period_days', '>', 0)
                 ->orderBy('name')
                 ->get(['public_id', 'name', 'description', 'amount_minor', 'currency', 'billing_period_days'])
                 ->values(),

@@ -21,6 +21,9 @@ final readonly class AttachServiceAddon implements Action
         if ($addon->status !== 'active') {
             throw new DomainException('Only active add-ons can be attached to a service.');
         }
+        if ((int) ($addon->billing_period_days ?? 0) < 1) {
+            throw new DomainException('Only recurring add-ons can be attached to a service. One-off add-ons belong on a manual invoice.');
+        }
         if ($service->status->value === 'terminated') {
             throw new DomainException('Terminated services cannot receive recurring add-ons.');
         }

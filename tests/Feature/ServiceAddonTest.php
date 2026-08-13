@@ -144,3 +144,25 @@ it('rolls back renewal creation when an add-on currency does not match the plan'
         ->toThrow(DomainException::class, 'renewal invoice uses USD');
     expect(Invoice::count())->toBe(0);
 });
+
+it('keeps one-off catalog add-ons out of service renewals', function (): void {
+    ['service' => $service, 'user' => $user] = serviceAddonFixture('southline');
+    $addon = Addon::create([
+        'name' => 'Installation fee',
+        'slug' => 'installation-fee',
+        'amount_minor' => 1000,
+        'currency' => 'USD',
+        'billing_period_days' => null,
+        'status' => 'active',
+    ]);
+
+    $this->actingAs($user)
+        ->post(route('services.addons.attach', $service->public_id), [
+            'addon_id' => $addon->public_id,
+            'quantity' => 1,
+            'starts_at' => now()->toDateString(),
+        ])
+        ->assertSessionHasErrors('addon_id');
+
+    expect(ServiceAddon::count())->toBe(0);
+});

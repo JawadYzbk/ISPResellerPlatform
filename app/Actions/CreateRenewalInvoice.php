@@ -110,9 +110,10 @@ final readonly class CreateRenewalInvoice implements Action
             }
 
             $billingPeriodDays = (int) ($addon->billing_period_days ?? 0);
-            $occurrences = $billingPeriodDays > 0
-                ? (int) ceil($periodDays / $billingPeriodDays)
-                : $periods;
+            if ($billingPeriodDays < 1) {
+                continue;
+            }
+            $occurrences = (int) ceil($periodDays / $billingPeriodDays);
             $quantity = max(1, (int) $serviceAddon->quantity) * max(1, $occurrences);
             $lineTotal = (int) $addon->amount_minor * $quantity;
             $invoice->lines()->create([
