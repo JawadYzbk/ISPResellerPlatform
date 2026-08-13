@@ -1,7 +1,10 @@
 import { LocateFixed, MapPinned } from 'lucide-react';
+import { usePage } from '@inertiajs/react';
 import { useState } from 'react';
 
 import MapPicker from '@/components/MapPicker';
+import { createTranslator } from '@/lib/i18n';
+import type { PageProps } from '@/types';
 
 type Props = {
     latitude: string;
@@ -17,9 +20,13 @@ export default function CustomerLocationFields({
     longitude,
     onLatitudeChange,
     onLongitudeChange,
-    title = 'Service location',
-    description = 'Optional GPS coordinates for field work and dispatch.',
+    title,
+    description,
 }: Props) {
+    const { props } = usePage<PageProps>();
+    const t = createTranslator(props.app.locale);
+    const resolvedTitle = title ?? t('Service location');
+    const resolvedDescription = description ?? t('Optional GPS coordinates for field work and dispatch.');
     const [locating, setLocating] = useState(false);
     const [locationError, setLocationError] = useState<string | null>(null);
     const mapUrl =
@@ -32,7 +39,7 @@ export default function CustomerLocationFields({
 
     const useCurrentLocation = () => {
         if (!navigator.geolocation) {
-            setLocationError('This browser does not provide location access.');
+            setLocationError(t('This browser does not provide location access.'));
             return;
         }
 
@@ -46,7 +53,7 @@ export default function CustomerLocationFields({
             },
             () => {
                 setLocationError(
-                    'Location access was unavailable. Enter coordinates manually or allow browser access.',
+                    t('Location access was unavailable. Enter coordinates manually or allow browser access.'),
                 );
                 setLocating(false);
             },
@@ -60,17 +67,17 @@ export default function CustomerLocationFields({
                 <div className="flex items-center gap-2">
                     <MapPinned size={17} className="text-brand" />
                     <div>
-                        <legend className="text-sm font-semibold">{title}</legend>
-                        <p className="mt-1 text-xs text-muted">{description}</p>
+                        <legend className="text-sm font-semibold">{resolvedTitle}</legend>
+                        <p className="mt-1 text-xs text-muted">{resolvedDescription}</p>
                     </div>
                 </div>
                 <button type="button" className="button-secondary" onClick={useCurrentLocation} disabled={locating}>
-                    <LocateFixed size={15} /> {locating ? 'Locating…' : 'Use current location'}
+                    <LocateFixed size={15} /> {locating ? t('Locating…') : t('Use current location')}
                 </button>
             </div>
             <div className="grid gap-5 sm:grid-cols-2">
                 <label>
-                    <span className="field-label">Latitude</span>
+                    <span className="field-label">{t('Latitude')}</span>
                     <input
                         type="number"
                         step="0.0000001"
@@ -83,7 +90,7 @@ export default function CustomerLocationFields({
                     />
                 </label>
                 <label>
-                    <span className="field-label">Longitude</span>
+                    <span className="field-label">{t('Longitude')}</span>
                     <input
                         type="number"
                         step="0.0000001"
@@ -110,7 +117,7 @@ export default function CustomerLocationFields({
                     rel="noreferrer"
                     className="inline-flex text-sm font-semibold text-brand hover:underline"
                 >
-                    Open coordinates in OpenStreetMap
+                    {t('Open coordinates in OpenStreetMap')}
                 </a>
             )}
         </fieldset>

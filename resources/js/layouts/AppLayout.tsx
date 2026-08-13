@@ -626,7 +626,7 @@ export default function AppLayout({ children }: PropsWithChildren) {
             </div>
             <nav
                 className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-white/95 px-2 pb-[env(safe-area-inset-bottom)] shadow-[0_-6px_20px_rgba(14,31,29,0.08)] backdrop-blur lg:hidden"
-                aria-label="Field navigation"
+                aria-label={t('Field navigation')}
             >
                 <div className="mx-auto flex max-w-lg items-stretch justify-around">
                     {fieldNav.map(({ label, href, icon: Icon }) => {

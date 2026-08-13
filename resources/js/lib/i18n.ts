@@ -912,6 +912,98 @@ const inventoryFrench: Messages = {
     Item: 'Article',
 };
 
+const sharedArabic: Messages = {
+    'Offline. Keep typed changes safe and submit them when the connection returns.':
+        '\u0623\u0646\u062a \u063a\u064a\u0631 \u0645\u062a\u0635\u0644. \u062d\u0627\u0641\u0638 \u0639\u0644\u0649 \u0627\u0644\u062a\u063a\u064a\u064a\u0631\u0627\u062a \u0627\u0644\u0645\u0643\u062a\u0648\u0628\u0629 \u0648\u0623\u0631\u0633\u0644\u0647\u0627 \u0639\u0646\u062f \u0639\u0648\u062f\u0629 \u0627\u0644\u0627\u062a\u0635\u0627\u0644.',
+    'Service location': '\u0645\u0648\u0642\u0639 \u0627\u0644\u062e\u062f\u0645\u0629',
+    'Optional GPS coordinates for field work and dispatch.':
+        '\u0625\u062d\u062f\u0627\u062b\u064a\u0627\u062a GPS \u0627\u062e\u062a\u064a\u0627\u0631\u064a\u0629 \u0644\u0644\u0639\u0645\u0644 \u0627\u0644\u0645\u064a\u062f\u0627\u0646\u064a \u0648\u0627\u0644\u0625\u0631\u0633\u0627\u0644.',
+    'This browser does not provide location access.': '\u0647\u0630\u0627 \u0627\u0644\u0645\u062a\u0635\u0641\u062d \u0644\u0627 \u064a\u0648\u0641\u0631 \u0627\u0644\u0648\u0635\u0648\u0644 \u0625\u0644\u0649 \u0627\u0644\u0645\u0648\u0642\u0639.',
+    'Location access was unavailable. Enter coordinates manually or allow browser access.':
+        '\u062a\u0639\u0630\u0651\u0631 \u0627\u0644\u0648\u0635\u0648\u0644 \u0625\u0644\u0649 \u0627\u0644\u0645\u0648\u0642\u0639. \u0623\u062f\u062e\u0644 \u0627\u0644\u0625\u062d\u062f\u0627\u062b\u064a\u0627\u062a \u064a\u062f\u0648\u064a\u064b\u0627 \u0623\u0648 \u0627\u0633\u0645\u062d \u0644\u0644\u0645\u062a\u0635\u0641\u062d \u0628\u0627\u0644\u0648\u0635\u0648\u0644.',
+    'Locating\u2026': '\u062c\u0627\u0631\u064d \u062a\u062d\u062f\u064a\u062f \u0627\u0644\u0645\u0648\u0642\u0639\u2026',
+    'Use current location': '\u0627\u0633\u062a\u062e\u062f\u0645 \u0627\u0644\u0645\u0648\u0642\u0639 \u0627\u0644\u062d\u0627\u0644\u064a',
+    Latitude: '\u062e\u0637 \u0627\u0644\u0639\u0631\u0636',
+    Longitude: '\u062e\u0637 \u0627\u0644\u0637\u0648\u0644',
+    'Open coordinates in OpenStreetMap': '\u0641\u062a\u062d \u0627\u0644\u0625\u062d\u062f\u0627\u062b\u064a\u0627\u062a \u0641\u064a OpenStreetMap',
+    'Signature pad': '\u0644\u0648\u062d\u0629 \u0627\u0644\u062a\u0648\u0642\u064a\u0639',
+    'Clear signature': '\u0645\u0633\u062d \u0627\u0644\u062a\u0648\u0642\u064a\u0639',
+    'Share securely': '\u0645\u0634\u0627\u0631\u0643\u0629 \u0622\u0645\u0646\u0629',
+    'Create a revocable link without exposing customer login credentials.':
+        '\u0623\u0646\u0634\u0626 \u0631\u0627\u0628\u0637\u064b\u0627 \u0642\u0627\u0628\u0644\u064b\u0627 \u0644\u0644\u0625\u0644\u063a\u0627\u0621 \u062f\u0648\u0646 \u0643\u0634\u0641 \u0628\u064a\u0627\u0646\u0627\u062a \u062f\u062e\u0648\u0644 \u0627\u0644\u0639\u0645\u064a\u0644.',
+    'Public link type': '\u0646\u0648\u0639 \u0627\u0644\u0631\u0627\u0628\u0637 \u0627\u0644\u0639\u0627\u0645',
+    'Link expiry': '\u0627\u0646\u062a\u0647\u0627\u0621 \u0627\u0644\u0631\u0627\u0628\u0637',
+    '1 day': '\u064a\u0648\u0645 \u0648\u0627\u062d\u062f',
+    '7 days': '\u0633\u0628\u0639\u0629 \u0623\u064a\u0627\u0645',
+    '30 days': '\u064a\u0648\u0645\u064b\u0627',
+    '90 days': '\u062a\u0633\u0639\u0648\u0646 \u064a\u0648\u0645\u064b\u0627',
+    'Create link': '\u0625\u0646\u0634\u0627\u0621 \u0627\u0644\u0631\u0627\u0628\u0637',
+    'One-time link': '\u0631\u0627\u0628\u0637 \u0644\u0645\u0631\u0629 \u0648\u0627\u062d\u062f\u0629',
+    Copied: '\u062a\u0645 \u0627\u0644\u0646\u0633\u062e',
+    Copy: '\u0646\u0633\u062e',
+    'Expires': '\u064a\u0646\u062a\u0647\u064a',
+    Active: '\u0646\u0634\u0637',
+    Revoked: '\u0645\u0644\u063a\u0649',
+    'Expired': '\u0645\u0646\u062a\u0647\u064d',
+    'Revoke this public link?': '\u0625\u0644\u063a\u0627\u0621 \u0647\u0630\u0627 \u0627\u0644\u0631\u0627\u0628\u0637 \u0627\u0644\u0639\u0627\u0645\u061f',
+    'Anyone using the existing URL will immediately lose access. A new link can be created later.':
+        '\u0633\u064a\u0641\u0642\u062f \u0623\u064a \u0634\u062e\u0635 \u064a\u0633\u062a\u062e\u062f\u0645 \u0627\u0644\u0631\u0627\u0628\u0637 \u0627\u0644\u062d\u0627\u0644\u064a \u0627\u0644\u0648\u0635\u0648\u0644 \u0641\u0648\u0631\u064b\u0627. \u064a\u0645\u0643\u0646 \u0625\u0646\u0634\u0627\u0621 \u0631\u0627\u0628\u0637 \u062c\u062f\u064a\u062f \u0644\u0627\u062d\u0642\u064b\u0627.',
+    'Revoke link': '\u0625\u0644\u063a\u0627\u0621 \u0627\u0644\u0631\u0627\u0628\u0637',
+    Revoke: '\u0625\u0644\u063a\u0627\u0621',
+    'Dismiss notification': '\u0625\u063a\u0644\u0627\u0642 \u0627\u0644\u0625\u0634\u0639\u0627\u0631',
+    'Field navigation': '\u062a\u0646\u0642\u0644 \u0627\u0644\u0645\u064a\u062f\u0627\u0646',
+    'The token is not stored in readable form.': '\u0644\u0627 \u064a\u062a\u0645 \u062a\u062e\u0632\u064a\u0646 \u0627\u0644\u0631\u0645\u0632 \u0628\u0635\u064a\u063a\u0629 \u0642\u0627\u0628\u0644\u0629 \u0644\u0644\u0642\u0631\u0627\u0621\u0629.',
+    link: '\u0631\u0627\u0628\u0637',
+    'view(s)': '\u0645\u0634\u0627\u0647\u062f\u0629',
+    expires: '\u064a\u0646\u062a\u0647\u064a',
+};
+
+const sharedFrench: Messages = {
+    'Offline. Keep typed changes safe and submit them when the connection returns.':
+        'Hors ligne. Conservez vos modifications et envoyez-les au retour de la connexion.',
+    'Service location': 'Emplacement du service',
+    'Optional GPS coordinates for field work and dispatch.':
+        'Coordonnées GPS facultatives pour le travail terrain et l’intervention.',
+    'This browser does not provide location access.': 'Ce navigateur ne permet pas l’accès à la position.',
+    'Location access was unavailable. Enter coordinates manually or allow browser access.':
+        'La position est indisponible. Saisissez les coordonnées ou autorisez l’accès du navigateur.',
+    'Locating\u2026': 'Localisation…',
+    'Use current location': 'Utiliser la position actuelle',
+    Latitude: 'Latitude',
+    Longitude: 'Longitude',
+    'Open coordinates in OpenStreetMap': 'Ouvrir les coordonnées dans OpenStreetMap',
+    'Signature pad': 'Zone de signature',
+    'Clear signature': 'Effacer la signature',
+    'Share securely': 'Partager en sécurité',
+    'Create a revocable link without exposing customer login credentials.':
+        'Créez un lien révocable sans exposer les identifiants de connexion du client.',
+    'Public link type': 'Type de lien public',
+    'Link expiry': 'Expiration du lien',
+    '1 day': '1 jour',
+    '7 days': '7 jours',
+    '30 days': '30 jours',
+    '90 days': '90 jours',
+    'Create link': 'Créer le lien',
+    'One-time link': 'Lien à usage unique',
+    Copied: 'Copié',
+    Copy: 'Copier',
+    Expires: 'Expire',
+    Active: 'Actif',
+    Revoked: 'Révoqué',
+    Expired: 'Expiré',
+    'Revoke this public link?': 'Révoquer ce lien public ?',
+    'Anyone using the existing URL will immediately lose access. A new link can be created later.':
+        'Toute personne utilisant l’URL actuelle perdra immédiatement l’accès. Un nouveau lien pourra être créé plus tard.',
+    'Revoke link': 'Révoquer le lien',
+    Revoke: 'Révoquer',
+    'Dismiss notification': 'Fermer la notification',
+    'Field navigation': 'Navigation terrain',
+    'The token is not stored in readable form.': 'Le jeton n’est pas stocké sous une forme lisible.',
+    link: 'lien',
+    'view(s)': 'vue(s)',
+    expires: 'expire',
+};
+
 const fieldArabic: Messages = {
     'field.title': '\u0627\u0644\u062a\u062d\u0635\u064a\u0644 \u0627\u0644\u0645\u064a\u062f\u0627\u0646\u064a',
     'field.eyebrow': '\u0627\u0644\u0639\u0645\u0644\u064a\u0627\u062a \u0627\u0644\u0645\u064a\u062f\u0627\u0646\u064a\u0629',
@@ -3199,6 +3291,7 @@ const messages: Record<Exclude<Locale, 'en'>, Messages> = {
         ...partnerCommercialArabic,
         ...inventoryArabic,
         ...fieldArabic,
+        ...sharedArabic,
         ...serviceArabic,
     },
     fr: {
@@ -5169,6 +5262,7 @@ const messages: Record<Exclude<Locale, 'en'>, Messages> = {
         ...partnerCommercialFrench,
         ...inventoryFrench,
         ...fieldFrench,
+        ...sharedFrench,
         ...serviceFrench,
     },
 };

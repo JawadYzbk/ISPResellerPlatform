@@ -1,8 +1,11 @@
 import * as ToastPrimitive from '@radix-ui/react-toast';
+import { usePage } from '@inertiajs/react';
 import { X } from 'lucide-react';
 import * as React from 'react';
 
+import { createTranslator } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
+import type { PageProps } from '@/types';
 
 const ToastProvider = ToastPrimitive.Provider;
 
@@ -62,20 +65,25 @@ ToastDescription.displayName = ToastPrimitive.Description.displayName;
 const ToastClose = React.forwardRef<
     React.ElementRef<typeof ToastPrimitive.Close>,
     React.ComponentPropsWithoutRef<typeof ToastPrimitive.Close>
->(({ className, ...props }, ref) => (
-    <ToastPrimitive.Close
-        ref={ref}
-        className={cn(
-            'absolute end-3 top-3 rounded-md p-1 text-muted opacity-0 transition-opacity hover:bg-sand hover:text-ink focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-brand/30 group-hover:opacity-100',
-            className,
-        )}
-        toast-close=""
-        {...props}
-    >
-        <X size={16} aria-hidden="true" />
-        <span className="sr-only">Dismiss notification</span>
-    </ToastPrimitive.Close>
-));
+>(({ className, ...props }, ref) => {
+    const { props: pageProps } = usePage<PageProps>();
+    const t = createTranslator(pageProps.app.locale);
+
+    return (
+        <ToastPrimitive.Close
+            ref={ref}
+            className={cn(
+                'absolute end-3 top-3 rounded-md p-1 text-muted opacity-0 transition-opacity hover:bg-sand hover:text-ink focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-brand/30 group-hover:opacity-100',
+                className,
+            )}
+            toast-close=""
+            {...props}
+        >
+            <X size={16} aria-hidden="true" />
+            <span className="sr-only">{t('Dismiss notification')}</span>
+        </ToastPrimitive.Close>
+    );
+});
 ToastClose.displayName = ToastPrimitive.Close.displayName;
 
 export { Toast, ToastClose, ToastDescription, ToastProvider, ToastTitle, ToastViewport };

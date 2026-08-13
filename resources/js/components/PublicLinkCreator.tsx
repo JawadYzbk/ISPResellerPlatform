@@ -5,6 +5,7 @@ import { useId, useState } from 'react';
 import ResponsiveSelect from '@/components/ui/responsive-select';
 import ConfirmDialog from '@/components/ui/confirm-dialog';
 import { formatDate } from '@/lib/format';
+import { createTranslator } from '@/lib/i18n';
 import type { PageProps } from '@/types';
 
 type LinkType = 'invoice' | 'payment' | 'statement' | 'receipt';
@@ -28,7 +29,9 @@ export default function PublicLinkCreator({
     title?: string;
     existingLinks?: PublicLinkSummary[];
 }) {
-    const { flash } = usePage<PageProps>().props;
+    const page = usePage<PageProps>();
+    const { flash } = page.props;
+    const t = createTranslator(page.props.app.locale);
     const fieldId = useId();
     const [copied, setCopied] = useState(false);
     const form = useForm({ type: types[0]?.value ?? 'statement', expires_in_days: 7 });
@@ -51,14 +54,14 @@ export default function PublicLinkCreator({
                 <div>
                     <h2 className="text-sm font-semibold text-balance">{title}</h2>
                     <p className="mt-1 text-pretty text-xs text-muted">
-                        Create a revocable link without exposing customer login credentials.
+                        {t('Create a revocable link without exposing customer login credentials.')}
                     </p>
                 </div>
             </div>
             <form className="mt-4 grid gap-3 sm:grid-cols-[1fr_8rem_auto]" onSubmit={submit}>
                 {types.length > 1 ? (
                     <ResponsiveSelect
-                        aria-label="Public link type"
+                        aria-label={t('Public link type')}
                         value={form.data.type}
                         onChange={(event) => form.setData('type', event.target.value as LinkType)}
                     >
@@ -72,28 +75,28 @@ export default function PublicLinkCreator({
                     <input type="hidden" value={form.data.type} readOnly />
                 )}
                 <label className="sr-only" htmlFor={`${fieldId}-expiry`}>
-                    Link expiry
+                    {t('Link expiry')}
                 </label>
                 <ResponsiveSelect
                     id={`${fieldId}-expiry`}
-                    aria-label="Public link expiry"
+                    aria-label={t('Link expiry')}
                     value={form.data.expires_in_days}
                     onChange={(event) => form.setData('expires_in_days', Number(event.target.value))}
                 >
-                    <option value="1">1 day</option>
-                    <option value="7">7 days</option>
-                    <option value="30">30 days</option>
-                    <option value="90">90 days</option>
+                    <option value="1">{t('1 day')}</option>
+                    <option value="7">{t('7 days')}</option>
+                    <option value="30">{t('30 days')}</option>
+                    <option value="90">{t('90 days')}</option>
                 </ResponsiveSelect>
                 <button className="button-secondary justify-center" disabled={form.processing}>
-                    Create link
+                    {t('Create link')}
                 </button>
             </form>
             {form.errors.type && <p className="field-error mt-2">{form.errors.type}</p>}
             {flash.publicLink && (
                 <div className="mt-4 rounded-xl border border-line bg-sand/30 p-3">
                     <label className="field-label" htmlFor={`${fieldId}-url`}>
-                        One-time link
+                        {t('One-time link')}
                     </label>
                     <div className="mt-1 flex gap-2">
                         <input
@@ -104,11 +107,11 @@ export default function PublicLinkCreator({
                         />
                         <button type="button" className="button-primary shrink-0" onClick={copy}>
                             {copied ? <Check size={15} /> : <Copy size={15} />}
-                            <span className="hidden sm:inline">{copied ? 'Copied' : 'Copy'}</span>
+                            <span className="hidden sm:inline">{copied ? t('Copied') : t('Copy')}</span>
                         </button>
                     </div>
                     <p className="mt-2 text-xs text-muted">
-                        Expires {formatDate(flash.publicLink.expires_at)}. The token is not stored in readable form.
+                        {t('Expires')} {formatDate(flash.publicLink.expires_at)}. {t('The token is not stored in readable form.')}
                     </p>
                 </div>
             )}
@@ -119,18 +122,18 @@ export default function PublicLinkCreator({
                             <div key={link.public_id} className="flex items-center justify-between gap-3 py-3">
                                 <div>
                                     <p className="text-xs font-semibold capitalize">
-                                        {link.type} link ·{' '}
-                                        {link.is_active ? 'Active' : link.revoked_at ? 'Revoked' : 'Expired'}
+                                        {link.type} {t('link')} ·{' '}
+                                        {link.is_active ? t('Active') : link.revoked_at ? t('Revoked') : t('Expired')}
                                     </p>
                                     <p className="mt-1 text-xs text-muted tabular-nums">
-                                        {link.access_count} view(s) · expires {formatDate(link.expires_at)}
+                                        {link.access_count} {t('view(s)')} · {t('expires')} {formatDate(link.expires_at)}
                                     </p>
                                 </div>
                                 {link.is_active && (
                                     <ConfirmDialog
-                                        title="Revoke this public link?"
-                                        description="Anyone using the existing URL will immediately lose access. A new link can be created later."
-                                        confirmLabel="Revoke link"
+                                        title={t('Revoke this public link?')}
+                                        description={t('Anyone using the existing URL will immediately lose access. A new link can be created later.')}
+                                        confirmLabel={t('Revoke link')}
                                         destructive
                                         onConfirm={() =>
                                             router.delete(`/billing/public-links/${link.public_id}`, {
@@ -139,7 +142,7 @@ export default function PublicLinkCreator({
                                         }
                                     >
                                         <button type="button" className="button-danger">
-                                            Revoke
+                                            {t('Revoke')}
                                         </button>
                                     </ConfirmDialog>
                                 )}

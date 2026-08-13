@@ -1,11 +1,17 @@
 import { Eraser } from 'lucide-react';
+import { usePage } from '@inertiajs/react';
 import { useEffect, useRef } from 'react';
+
+import { createTranslator } from '@/lib/i18n';
+import type { PageProps } from '@/types';
 
 type Props = {
     onChange: (file: File | null) => void;
 };
 
 export default function SignaturePad({ onChange }: Props) {
+    const { props } = usePage<PageProps>();
+    const t = createTranslator(props.app.locale);
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const drawing = useRef(false);
 
@@ -75,14 +81,14 @@ export default function SignaturePad({ onChange }: Props) {
                 onPointerMove={draw}
                 onPointerUp={finish}
                 onPointerCancel={finish}
-                aria-label="Signature pad"
+                aria-label={t('Signature pad')}
             />
             <button
                 type="button"
                 className="inline-flex items-center gap-1.5 text-sm font-semibold text-muted hover:text-brand"
                 onClick={clear}
             >
-                <Eraser size={14} /> Clear signature
+                <Eraser size={14} /> {t('Clear signature')}
             </button>
         </div>
     );

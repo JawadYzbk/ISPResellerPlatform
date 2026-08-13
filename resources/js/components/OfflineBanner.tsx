@@ -1,7 +1,13 @@
 import { WifiOff } from 'lucide-react';
+import { usePage } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
 
+import { createTranslator } from '@/lib/i18n';
+import type { PageProps } from '@/types';
+
 export default function OfflineBanner() {
+    const { props } = usePage<PageProps>();
+    const t = createTranslator(props.app.locale);
     const [online, setOnline] = useState(() => (typeof navigator === 'undefined' ? true : navigator.onLine));
 
     useEffect(() => {
@@ -27,7 +33,7 @@ export default function OfflineBanner() {
             aria-live="polite"
         >
             <WifiOff size={16} aria-hidden="true" />
-            <span>Offline. Keep typed changes safe and submit them when the connection returns.</span>
+            <span>{t('Offline. Keep typed changes safe and submit them when the connection returns.')}</span>
         </div>
     );
 }
