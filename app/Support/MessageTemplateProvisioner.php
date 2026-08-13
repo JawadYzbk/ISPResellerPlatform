@@ -210,8 +210,14 @@ final class MessageTemplateProvisioner
                     foreach ($channels as $channel) {
                         $subject = $channel === 'email' ? $definition['subjects'][$resolvedLocale] : null;
                         $body = $definition['bodies'][$resolvedLocale];
+                        $isActive = true;
                         if (! $unicodeStorageAvailable && (! $this->isAscii($subject) || ! $this->isAscii($body))) {
-                            continue;
+                            // Keep the locale row editable on legacy WIN1252 databases without
+                            // writing bytes the database cannot represent. It stays disabled
+                            // until the operator saves a real translation on UTF-8 storage.
+                            $subject = $channel === 'email' ? $definition['subjects']['en'] : null;
+                            $body = $definition['bodies']['en'];
+                            $isActive = false;
                         }
                         $templates[] = [
                             'tenant_id' => $tenantId,
@@ -221,7 +227,7 @@ final class MessageTemplateProvisioner
                             'subject' => $subject,
                             'body' => $body,
                             'variables' => json_encode($definition['variables'], JSON_THROW_ON_ERROR),
-                            'is_active' => true,
+                            'is_active' => $isActive,
                             'created_at' => $timestamp,
                             'updated_at' => $timestamp,
                         ];
