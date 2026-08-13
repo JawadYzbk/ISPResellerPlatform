@@ -61,6 +61,16 @@ export default function IpPoolsPage({ pools, selectedPoolId, addresses, routers,
         router_id: selectedPool?.router?.id ? String(selectedPool.router.id) : '',
         is_active: selectedPool?.is_active ?? true,
     });
+    const fieldA11y = (id: string, error?: string) => ({
+        'aria-invalid': Boolean(error),
+        'aria-describedby': error ? `${id}-error` : undefined,
+    });
+    const fieldError = (id: string, error?: string) =>
+        error ? (
+            <p id={`${id}-error`} className="field-error" role="alert">
+                {t(error)}
+            </p>
+        ) : null;
 
     const submitPool = (event: React.FormEvent) => {
         event.preventDefault();
@@ -124,47 +134,59 @@ export default function IpPoolsPage({ pools, selectedPoolId, addresses, routers,
                         <label>
                             <span className="field-label">{t('ip_pools.pool_name')}</span>
                             <input
+                                id="pool-name"
                                 className="field"
+                                {...fieldA11y('pool-name', poolForm.errors.name)}
                                 value={poolForm.data.name}
                                 onChange={(event) => poolForm.setData('name', event.target.value)}
                                 placeholder={t('Subscriber IPv4')}
                             />
-                            {poolForm.errors.name && <p className="field-error" role="alert">{t(poolForm.errors.name)}</p>}
+                            {fieldError('pool-name', poolForm.errors.name)}
                         </label>
                         <label>
                             <span className="field-label">CIDR</span>
                             <input
+                                id="pool-cidr"
                                 className="field"
+                                {...fieldA11y('pool-cidr', poolForm.errors.cidr)}
                                 value={poolForm.data.cidr}
                                 onChange={(event) => poolForm.setData('cidr', event.target.value)}
                                 placeholder="10.20.10.0/24"
                             />
-                            {poolForm.errors.cidr && <p className="field-error" role="alert">{t(poolForm.errors.cidr)}</p>}
+                            {fieldError('pool-cidr', poolForm.errors.cidr)}
                         </label>
                         <label>
                             <span className="field-label">{t('Gateway')}</span>
                             <input
+                                id="pool-gateway"
                                 className="field"
+                                {...fieldA11y('pool-gateway', poolForm.errors.gateway)}
                                 value={poolForm.data.gateway}
                                 onChange={(event) => poolForm.setData('gateway', event.target.value)}
                                 placeholder="10.20.10.1"
                             />
+                            {fieldError('pool-gateway', poolForm.errors.gateway)}
                         </label>
                         <label>
                             <span className="field-label">{t('ip_pools.ip_version')}</span>
                             <ResponsiveSelect
+                                id="pool-version"
                                 className="field"
+                                {...fieldA11y('pool-version', poolForm.errors.version)}
                                 value={poolForm.data.version}
                                 onChange={(event) => poolForm.setData('version', event.target.value)}
                             >
                                 <option value="4">IPv4</option>
                                 <option value="6">IPv6</option>
                             </ResponsiveSelect>
+                            {fieldError('pool-version', poolForm.errors.version)}
                         </label>
                         <label>
                             <span className="field-label">{t('ip_pools.use')}</span>
                             <ResponsiveSelect
+                                id="pool-type"
                                 className="field"
+                                {...fieldA11y('pool-type', poolForm.errors.type)}
                                 value={poolForm.data.type}
                                 onChange={(event) => poolForm.setData('type', event.target.value)}
                             >
@@ -172,11 +194,14 @@ export default function IpPoolsPage({ pools, selectedPoolId, addresses, routers,
                                 <option value="static">{t('Static')}</option>
                                 <option value="blocked">{t('Blocked')}</option>
                             </ResponsiveSelect>
+                            {fieldError('pool-type', poolForm.errors.type)}
                         </label>
                         <label>
                             <span className="field-label">{t('Router')}</span>
                             <ResponsiveSelect
+                                id="pool-router"
                                 className="field"
+                                {...fieldA11y('pool-router', poolForm.errors.router_id)}
                                 value={poolForm.data.router_id}
                                 onChange={(event) => poolForm.setData('router_id', event.target.value)}
                             >
@@ -187,6 +212,7 @@ export default function IpPoolsPage({ pools, selectedPoolId, addresses, routers,
                                     </option>
                                 ))}
                             </ResponsiveSelect>
+                            {fieldError('pool-router', poolForm.errors.router_id)}
                         </label>
                     </div>
                     <div className="flex justify-end">
@@ -272,26 +298,32 @@ export default function IpPoolsPage({ pools, selectedPoolId, addresses, routers,
                             <label>
                                 <span className="field-label">{t('ip_pools.pool_name')}</span>
                                 <input
+                                    id="edit-pool-name"
                                     className="field"
+                                    {...fieldA11y('edit-pool-name', editForm.errors.name)}
                                     value={editForm.data.name}
                                     onChange={(event) => editForm.setData('name', event.target.value)}
                                     required
                                 />
-                                {editForm.errors.name && <p className="field-error" role="alert">{t(editForm.errors.name)}</p>}
+                                {fieldError('edit-pool-name', editForm.errors.name)}
                             </label>
                             <label>
                                 <span className="field-label">{t('Gateway')}</span>
                                 <input
+                                    id="edit-pool-gateway"
                                     className="field"
+                                    {...fieldA11y('edit-pool-gateway', editForm.errors.gateway)}
                                     value={editForm.data.gateway}
                                     onChange={(event) => editForm.setData('gateway', event.target.value)}
                                 />
-                                {editForm.errors.gateway && <p className="field-error" role="alert">{t(editForm.errors.gateway)}</p>}
+                                {fieldError('edit-pool-gateway', editForm.errors.gateway)}
                             </label>
                             <label>
                                 <span className="field-label">{t('ip_pools.use')}</span>
                                 <ResponsiveSelect
+                                    id="edit-pool-type"
                                     className="field"
+                                    {...fieldA11y('edit-pool-type', editForm.errors.type)}
                                     value={editForm.data.type}
                                     onChange={(event) => editForm.setData('type', event.target.value)}
                                 >
@@ -299,12 +331,14 @@ export default function IpPoolsPage({ pools, selectedPoolId, addresses, routers,
                                     <option value="static">{t('Static')}</option>
                                     <option value="blocked">{t('Blocked')}</option>
                                 </ResponsiveSelect>
-                                {editForm.errors.type && <p className="field-error" role="alert">{t(editForm.errors.type)}</p>}
+                                {fieldError('edit-pool-type', editForm.errors.type)}
                             </label>
                             <label>
                                 <span className="field-label">{t('Router')}</span>
                                 <ResponsiveSelect
+                                    id="edit-pool-router"
                                     className="field"
+                                    {...fieldA11y('edit-pool-router', editForm.errors.router_id)}
                                     value={editForm.data.router_id}
                                     onChange={(event) => editForm.setData('router_id', event.target.value)}
                                 >
@@ -315,23 +349,21 @@ export default function IpPoolsPage({ pools, selectedPoolId, addresses, routers,
                                         </option>
                                     ))}
                                 </ResponsiveSelect>
-                                {editForm.errors.router_id && (
-                                    <p className="field-error" role="alert">{t(editForm.errors.router_id)}</p>
-                                )}
+                                {fieldError('edit-pool-router', editForm.errors.router_id)}
                             </label>
                             <label>
                                 <span className="field-label">{t('Status')}</span>
                                 <ResponsiveSelect
+                                    id="edit-pool-status"
                                     className="field"
+                                    {...fieldA11y('edit-pool-status', editForm.errors.is_active)}
                                     value={editForm.data.is_active ? 'active' : 'inactive'}
                                     onChange={(event) => editForm.setData('is_active', event.target.value === 'active')}
                                 >
                                     <option value="active">{t('Active')}</option>
                                     <option value="inactive">{t('Inactive')}</option>
                                 </ResponsiveSelect>
-                                {editForm.errors.is_active && (
-                                    <p className="field-error" role="alert">{t(editForm.errors.is_active)}</p>
-                                )}
+                                {fieldError('edit-pool-status', editForm.errors.is_active)}
                             </label>
                             <div className="flex items-end gap-2">
                                 <button type="submit" className="button-primary" disabled={editForm.processing}>
@@ -356,19 +388,21 @@ export default function IpPoolsPage({ pools, selectedPoolId, addresses, routers,
                             <label className="flex-1">
                                 <span className="field-label">{t('ip_pools.record_address')}</span>
                                 <input
+                                    id="pool-address"
                                     className="field"
+                                    {...fieldA11y('pool-address', addressForm.errors.address)}
                                     value={addressForm.data.address}
                                     onChange={(event) => addressForm.setData('address', event.target.value)}
                                     placeholder={selectedPool.version === 6 ? '2001:db8::10' : '10.20.10.10'}
                                 />
-                                {addressForm.errors.address && (
-                                    <p className="field-error" role="alert">{t(addressForm.errors.address)}</p>
-                                )}
+                                {fieldError('pool-address', addressForm.errors.address)}
                             </label>
                             <label>
                                 <span className="field-label">{t('Status')}</span>
                                 <ResponsiveSelect
+                                    id="pool-address-status"
                                     className="field"
+                                    {...fieldA11y('pool-address-status', addressForm.errors.status)}
                                     value={addressForm.data.status}
                                     onChange={(event) => addressForm.setData('status', event.target.value)}
                                 >
@@ -376,6 +410,7 @@ export default function IpPoolsPage({ pools, selectedPoolId, addresses, routers,
                                     <option value="reserved">{t('Reserved')}</option>
                                     <option value="conflict">{t('Conflict')}</option>
                                 </ResponsiveSelect>
+                                {fieldError('pool-address-status', addressForm.errors.status)}
                             </label>
                             <button type="submit" className="button-primary" disabled={addressForm.processing}>
                                 <Plus size={16} /> {t('ip_pools.record')}

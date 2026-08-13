@@ -484,6 +484,34 @@ test('keeps notification template language tabs keyboard-addressable', async ({ 
     await expect(page.getByRole('tabpanel').first()).toHaveAttribute('aria-labelledby', /-tab-ar$/);
 });
 
+test('connects IP pool creation errors to their controls', async ({ page }) => {
+    test.setTimeout(60_000);
+
+    await page.goto('/login');
+    await page.getByLabel('Email address').fill(email);
+    await page.getByRole('textbox', { name: 'Password' }).fill(password);
+    await Promise.all([
+        page.waitForURL(/\/(dashboard|customers|profile)$/),
+        page.getByRole('button', { name: 'Enter workspace' }).click(),
+    ]);
+
+    await page.goto('/security/reauthenticate');
+    await page.getByRole('textbox', { name: 'Password' }).fill(password);
+    await Promise.all([
+        page.waitForURL(/\/(dashboard|customers|profile)$/),
+        page.getByRole('button', { name: 'Confirm' }).click(),
+    ]);
+
+    await page.goto('/operations/ip-pools');
+    await page.locator('#pool-cidr').fill('10.20.10.0/24');
+    await page.locator('form').filter({ has: page.locator('#pool-name') }).locator('button[type="submit"]').click();
+
+    const name = page.locator('#pool-name');
+    await expect(name).toHaveAttribute('aria-invalid', 'true');
+    await expect(name).toHaveAttribute('aria-describedby', 'pool-name-error');
+    await expect(page.locator('#pool-name-error')).toHaveAttribute('role', 'alert');
+});
+
 test('connects service validation errors to their controls', async ({ page }) => {
     test.setTimeout(60_000);
 
