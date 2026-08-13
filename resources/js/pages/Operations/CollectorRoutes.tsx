@@ -1,12 +1,14 @@
 import ConfirmDialog from '@/components/ui/confirm-dialog';
 import ResponsiveSelect from '@/components/ui/responsive-select';
-import { Head, Link, router, useForm } from '@inertiajs/react';
+import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
 import { ArrowDown, ArrowUp, CalendarRange, MapPinned, Route, Search, UserRoundCheck } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
 import StatusBadge, { type Status } from '@/components/StatusBadge';
 import AppLayout from '@/layouts/AppLayout';
 import { formatMoney } from '@/lib/format';
+import { createTranslator } from '@/lib/i18n';
+import type { PageProps } from '@/types';
 
 type Collector = {
     id: number;
@@ -53,6 +55,8 @@ type Props = {
 };
 
 export default function CollectorRoutes({ date, collectors, customers, routes }: Props) {
+    const { props } = usePage<PageProps>();
+    const t = createTranslator(props.app.locale);
     const [search, setSearch] = useState('');
     const initialCollectorId = collectors[0]?.id ?? 0;
     const initialRoute = routes.find((item) => item.collector.id === initialCollectorId);
@@ -116,18 +120,15 @@ export default function CollectorRoutes({ date, collectors, customers, routes }:
 
     return (
         <AppLayout>
-            <Head title="Collector routes" />
+            <Head title={t('collector_routes.title')} />
             <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
                 <div>
-                    <p className="eyebrow">Jebaya planning</p>
-                    <h1 className="page-title text-balance">Daily collector routes</h1>
-                    <p className="page-subtitle text-pretty">
-                        Build an ordered customer route inside each collector’s assigned territory and follow its visit
-                        outcomes.
-                    </p>
+                    <p className="eyebrow">{t('collector_routes.eyebrow')}</p>
+                    <h1 className="page-title text-balance">{t('collector_routes.title')}</h1>
+                    <p className="page-subtitle text-pretty">{t('collector_routes.subtitle')}</p>
                 </div>
                 <label className="field-label">
-                    Route date
+                    {t('collector_routes.route_date')}
                     <input
                         className="field mt-1"
                         type="date"
@@ -147,10 +148,10 @@ export default function CollectorRoutes({ date, collectors, customers, routes }:
                 <section className="card p-6">
                     <div className="flex items-center gap-2">
                         <Route size={18} className="text-brand" />
-                        <h2 className="section-title">Plan route</h2>
+                        <h2 className="section-title">{t('collector_routes.plan_route')}</h2>
                     </div>
                     <label className="mt-5 block">
-                        <span className="field-label">Collector</span>
+                        <span className="field-label">{t('Collector')}</span>
                         <ResponsiveSelect
                             className="field"
                             value={form.data.collector_id}
@@ -158,7 +159,10 @@ export default function CollectorRoutes({ date, collectors, customers, routes }:
                         >
                             {collectors.map((item) => (
                                 <option key={item.id} value={item.id}>
-                                    {item.name} · {item.all_zones ? 'all zones' : 'restricted'}
+                                    {item.name} ·{' '}
+                                    {item.all_zones
+                                        ? t('collector_routes.all_zones')
+                                        : t('collector_routes.restricted')}
                                 </option>
                             ))}
                         </ResponsiveSelect>
@@ -167,9 +171,9 @@ export default function CollectorRoutes({ date, collectors, customers, routes }:
                     {collectors.length === 0 && (
                         <div className="mt-5 rounded-xl border border-dashed border-line p-8 text-center">
                             <UserRoundCheck className="mx-auto text-muted" size={26} />
-                            <p className="mt-3 text-sm font-semibold">No collector accounts available</p>
+                            <p className="mt-3 text-sm font-semibold">{t('collector_routes.no_collectors')}</p>
                             <Link href="/settings/users" className="button-primary mt-4">
-                                Invite a collector
+                                {t('collector_routes.invite_collector')}
                             </Link>
                         </div>
                     )}
@@ -182,8 +186,8 @@ export default function CollectorRoutes({ date, collectors, customers, routes }:
                                     className="field ps-10"
                                     value={search}
                                     onChange={(event) => setSearch(event.target.value)}
-                                    placeholder="Search eligible customers"
-                                    aria-label="Search eligible customers"
+                                    placeholder={t('collector_routes.search_customers')}
+                                    aria-label={t('collector_routes.search_customers')}
                                 />
                             </div>
                             <div className="mt-3 max-h-80 divide-y divide-line overflow-y-auto rounded-xl border border-line">
@@ -200,7 +204,8 @@ export default function CollectorRoutes({ date, collectors, customers, routes }:
                                                 {customer.name} · {customer.code}
                                             </span>
                                             <span className="mt-1 block truncate text-xs text-muted">
-                                                {customer.zone ?? 'No zone'} · {customer.phone ?? 'No phone'}
+                                                {customer.zone ?? t('collector_routes.no_zone')} ·{' '}
+                                                {customer.phone ?? t('collector_routes.no_phone')}
                                             </span>
                                         </span>
                                         <span className="shrink-0 text-xs font-semibold tabular-nums text-muted">
@@ -211,9 +216,11 @@ export default function CollectorRoutes({ date, collectors, customers, routes }:
                                 {eligibleCustomers.length === 0 && (
                                     <div className="p-8 text-center">
                                         <MapPinned className="mx-auto text-muted" size={25} />
-                                        <p className="mt-3 text-sm font-semibold">No eligible customers found</p>
+                                        <p className="mt-3 text-sm font-semibold">
+                                            {t('collector_routes.no_customers')}
+                                        </p>
                                         <p className="mt-1 text-pretty text-xs text-muted">
-                                            Review the collector territory or clear this search.
+                                            {t('collector_routes.no_customers_description')}
                                         </p>
                                     </div>
                                 )}
@@ -228,8 +235,10 @@ export default function CollectorRoutes({ date, collectors, customers, routes }:
                 <section className="card p-6">
                     <div className="flex items-start justify-between gap-4">
                         <div>
-                            <p className="eyebrow">Planned order</p>
-                            <h2 className="section-title mt-1">{selectedCustomers.length} stop(s)</h2>
+                            <p className="eyebrow">{t('collector_routes.planned_order')}</p>
+                            <h2 className="section-title mt-1">
+                                {selectedCustomers.length} {t('collector_routes.stops')}
+                            </h2>
                         </div>
                         {existingRoute && <StatusBadge status={existingRoute.status} />}
                     </div>
@@ -245,7 +254,7 @@ export default function CollectorRoutes({ date, collectors, customers, routes }:
                                 <span className="min-w-0 flex-1">
                                     <span className="block truncate text-sm font-semibold">{customer.name}</span>
                                     <span className="block truncate text-xs text-muted">
-                                        {customer.address ?? customer.zone ?? 'No address'}
+                                        {customer.address ?? customer.zone ?? t('collector_routes.no_address')}
                                     </span>
                                 </span>
                                 <button
@@ -271,9 +280,9 @@ export default function CollectorRoutes({ date, collectors, customers, routes }:
                         {selectedCustomers.length === 0 && (
                             <div className="rounded-xl border border-dashed border-line p-10 text-center">
                                 <CalendarRange className="mx-auto text-muted" size={28} />
-                                <p className="mt-3 font-semibold">Choose the first route stop</p>
+                                <p className="mt-3 font-semibold">{t('collector_routes.choose_first_stop')}</p>
                                 <p className="mt-1 text-pretty text-sm text-muted">
-                                    Stops appear here in selection order and can be moved before saving.
+                                    {t('collector_routes.order_description')}
                                 </p>
                             </div>
                         )}
@@ -281,9 +290,9 @@ export default function CollectorRoutes({ date, collectors, customers, routes }:
                     <div className="mt-5 flex justify-end border-t border-line pt-5">
                         {existingRoute ? (
                             <ConfirmDialog
-                                title="Replace the planned route?"
-                                description="This replaces the current stop list and planned order. A route that has started cannot be changed."
-                                confirmLabel="Replace route"
+                                title={t('collector_routes.replace_title')}
+                                description={t('collector_routes.replace_description')}
+                                confirmLabel={t('collector_routes.replace_route')}
                                 onConfirm={save}
                             >
                                 <button
@@ -291,7 +300,7 @@ export default function CollectorRoutes({ date, collectors, customers, routes }:
                                     className="button-primary"
                                     disabled={form.processing || selectedCustomers.length === 0}
                                 >
-                                    Save revised route
+                                    {t('collector_routes.save_revised')}
                                 </button>
                             </ConfirmDialog>
                         ) : (
@@ -301,7 +310,7 @@ export default function CollectorRoutes({ date, collectors, customers, routes }:
                                 onClick={save}
                                 disabled={form.processing || selectedCustomers.length === 0}
                             >
-                                Plan route
+                                {t('collector_routes.plan_route')}
                             </button>
                         )}
                     </div>
@@ -317,7 +326,7 @@ export default function CollectorRoutes({ date, collectors, customers, routes }:
                                 <div className="min-w-0">
                                     <h2 className="truncate font-semibold">{route.collector.name}</h2>
                                     <p className="mt-1 text-xs text-muted tabular-nums">
-                                        {route.completed_count}/{route.stop_count} completed
+                                        {route.completed_count}/{route.stop_count} {t('Completed').toLocaleLowerCase()}
                                     </p>
                                 </div>
                             </div>
@@ -341,8 +350,8 @@ export default function CollectorRoutes({ date, collectors, customers, routes }:
                 {routes.length === 0 && (
                     <div className="card p-10 text-center lg:col-span-2">
                         <Route className="mx-auto text-muted" size={28} />
-                        <p className="mt-3 font-semibold">No routes planned for this date</p>
-                        <p className="mt-1 text-sm text-muted">Choose a collector and add the first customer stop.</p>
+                        <p className="mt-3 font-semibold">{t('collector_routes.no_routes')}</p>
+                        <p className="mt-1 text-sm text-muted">{t('collector_routes.no_routes_description')}</p>
                     </div>
                 )}
             </section>

@@ -1,8 +1,10 @@
-import { Head, router } from '@inertiajs/react';
+import { Head, router, usePage } from '@inertiajs/react';
 import { ExternalLink, MapPinned, Navigation, TimerReset } from 'lucide-react';
 
 import AppLayout from '@/layouts/AppLayout';
 import { entriesOrEmpty, formatDate, formatMoney } from '@/lib/format';
+import { createTranslator } from '@/lib/i18n';
+import type { PageProps } from '@/types';
 
 type Location = {
     latitude: number;
@@ -31,20 +33,20 @@ type FieldDay = {
 };
 
 export default function CollectorCheckIns({ date, fieldDays }: { date: string; fieldDays: FieldDay[] }) {
+    const { props } = usePage<PageProps>();
+    const t = createTranslator(props.app.locale);
+
     return (
         <AppLayout>
-            <Head title="Collector check-ins" />
+            <Head title={t('collector_checkins.title')} />
             <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
                 <div>
-                    <p className="eyebrow">Jebaya supervision</p>
-                    <h1 className="page-title text-balance">Collector check-ins</h1>
-                    <p className="page-subtitle text-pretty">
-                        Review explicit field-day starts and finishes. This view does not continuously track a collector
-                        in the background.
-                    </p>
+                    <p className="eyebrow">{t('collector_checkins.eyebrow')}</p>
+                    <h1 className="page-title text-balance">{t('collector_checkins.title')}</h1>
+                    <p className="page-subtitle text-pretty">{t('collector_checkins.subtitle')}</p>
                 </div>
                 <label className="field-label">
-                    Work date
+                    {t('collector_checkins.work_date')}
                     <input
                         className="field mt-1"
                         type="date"
@@ -62,17 +64,17 @@ export default function CollectorCheckIns({ date, fieldDays }: { date: string; f
 
             <div className="mt-6 grid gap-4 sm:grid-cols-3">
                 <div className="card p-5">
-                    <p className="eyebrow">Checked in</p>
+                    <p className="eyebrow">{t('collector_checkins.checked_in')}</p>
                     <p className="mt-2 font-display text-2xl font-semibold tabular-nums">{fieldDays.length}</p>
                 </div>
                 <div className="card p-5">
-                    <p className="eyebrow">In the field</p>
+                    <p className="eyebrow">{t('collector_checkins.in_field')}</p>
                     <p className="mt-2 font-display text-2xl font-semibold tabular-nums">
                         {fieldDays.filter((item) => item.status === 'active').length}
                     </p>
                 </div>
                 <div className="card p-5">
-                    <p className="eyebrow">Completed</p>
+                    <p className="eyebrow">{t('collector_checkins.completed')}</p>
                     <p className="mt-2 font-display text-2xl font-semibold tabular-nums">
                         {fieldDays.filter((item) => item.status === 'completed').length}
                     </p>
@@ -84,14 +86,14 @@ export default function CollectorCheckIns({ date, fieldDays }: { date: string; f
                     <table className="w-full min-w-[1180px] text-start">
                         <thead>
                             <tr className="border-b border-line bg-sand/50 text-xs font-semibold uppercase text-muted">
-                                <th className="px-5 py-3.5 text-start">Collector</th>
-                                <th className="px-5 py-3.5 text-start">Started</th>
-                                <th className="px-5 py-3.5 text-start">Finished</th>
-                                <th className="px-5 py-3.5 text-start">Check-in location</th>
-                                <th className="px-5 py-3.5 text-start">Check-out location</th>
-                                <th className="px-5 py-3.5 text-start">Route</th>
-                                <th className="px-5 py-3.5 text-start">Collections</th>
-                                <th className="px-5 py-3.5 text-start">Tasks / note</th>
+                                <th className="px-5 py-3.5 text-start">{t('Collector')}</th>
+                                <th className="px-5 py-3.5 text-start">{t('collector_checkins.started')}</th>
+                                <th className="px-5 py-3.5 text-start">{t('collector_checkins.finished')}</th>
+                                <th className="px-5 py-3.5 text-start">{t('collector_checkins.check_in_location')}</th>
+                                <th className="px-5 py-3.5 text-start">{t('collector_checkins.check_out_location')}</th>
+                                <th className="px-5 py-3.5 text-start">{t('Route')}</th>
+                                <th className="px-5 py-3.5 text-start">{t('Collections')}</th>
+                                <th className="px-5 py-3.5 text-start">{t('collector_checkins.tasks_note')}</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-line">
@@ -103,7 +105,9 @@ export default function CollectorCheckIns({ date, fieldDays }: { date: string; f
                                     </td>
                                     <td className="px-5 py-4 text-sm">{formatDate(fieldDay.checked_in_at)}</td>
                                     <td className="px-5 py-4 text-sm">
-                                        {fieldDay.checked_out_at ? formatDate(fieldDay.checked_out_at) : 'Still active'}
+                                        {fieldDay.checked_out_at
+                                            ? formatDate(fieldDay.checked_out_at)
+                                            : t('collector_checkins.still_active')}
                                     </td>
                                     <td className="px-5 py-4 text-sm">
                                         <a
@@ -112,11 +116,11 @@ export default function CollectorCheckIns({ date, fieldDays }: { date: string; f
                                             rel="noreferrer"
                                             className="inline-flex items-center gap-1 font-semibold text-brand"
                                         >
-                                            Open map <ExternalLink size={13} />
+                                            {t('collector_checkins.open_map')} <ExternalLink size={13} />
                                         </a>
                                         <p className="mt-1 text-xs text-muted tabular-nums">
                                             {fieldDay.check_in.accuracy_meters === null
-                                                ? 'Accuracy unavailable'
+                                                ? t('collector_checkins.accuracy_unavailable')
                                                 : `±${fieldDay.check_in.accuracy_meters} m`}
                                         </p>
                                     </td>
@@ -128,10 +132,10 @@ export default function CollectorCheckIns({ date, fieldDays }: { date: string; f
                                                 rel="noreferrer"
                                                 className="inline-flex items-center gap-1 font-semibold text-brand"
                                             >
-                                                Open map <ExternalLink size={13} />
+                                                {t('collector_checkins.open_map')} <ExternalLink size={13} />
                                             </a>
                                         ) : (
-                                            <span className="text-muted">Pending</span>
+                                            <span className="text-muted">{t('Pending')}</span>
                                         )}
                                     </td>
                                     <td className="px-5 py-4 text-sm tabular-nums">
@@ -139,26 +143,29 @@ export default function CollectorCheckIns({ date, fieldDays }: { date: string; f
                                             <>
                                                 <p className="font-semibold">
                                                     {fieldDay.summary.route.completed}/{fieldDay.summary.route.stops}{' '}
-                                                    stops
+                                                    {t('collector_checkins.stops')}
                                                 </p>
                                                 <p className="mt-1 text-xs capitalize text-muted">
-                                                    {fieldDay.summary.route.status?.replaceAll('_', ' ') ?? 'No route'}
+                                                    {fieldDay.summary.route.status?.replaceAll('_', ' ') ??
+                                                        t('collector_checkins.no_route')}
                                                 </p>
                                             </>
                                         ) : (
-                                            <span className="text-muted">Pending checkout</span>
+                                            <span className="text-muted">
+                                                {t('collector_checkins.pending_checkout')}
+                                            </span>
                                         )}
                                     </td>
                                     <td className="px-5 py-4 text-sm tabular-nums">
                                         {fieldDay.summary ? (
                                             <>
                                                 <p className="font-semibold">
-                                                    {fieldDay.summary.payments.count} payment(s)
+                                                    {fieldDay.summary.payments.count} {t('collector_checkins.payments')}
                                                 </p>
                                                 <p className="mt-1 text-xs text-muted">
                                                     {entriesOrEmpty(fieldDay.summary.payments.totals)
                                                         .map(([currency, amount]) => formatMoney(amount, currency))
-                                                        .join(' · ') || 'No collections'}
+                                                        .join(' · ') || t('collector_checkins.no_collections')}
                                                 </p>
                                             </>
                                         ) : (
@@ -169,19 +176,21 @@ export default function CollectorCheckIns({ date, fieldDays }: { date: string; f
                                         {fieldDay.summary ? (
                                             <>
                                                 <p className="font-semibold">
-                                                    {fieldDay.summary.tasks.completed} completed ·{' '}
-                                                    {fieldDay.summary.tasks.open} open
+                                                    {fieldDay.summary.tasks.completed}{' '}
+                                                    {t('Completed').toLocaleLowerCase()} · {fieldDay.summary.tasks.open}{' '}
+                                                    {t('collector_checkins.open').toLocaleLowerCase()}
                                                 </p>
                                                 <p className="mt-1 max-w-64 text-pretty text-xs text-muted">
                                                     {fieldDay.summary_note ??
                                                         `${fieldDay.summary.duration_minutes} minutes in field`}
                                                 </p>
                                                 <p className="mt-1 max-w-64 text-xs text-muted">
-                                                    Custody:{' '}
+                                                    {t('collector_checkins.custody')}:{' '}
                                                     {entriesOrEmpty(fieldDay.summary.custody.balances)
                                                         .map(([currency, amount]) => formatMoney(amount, currency))
-                                                        .join(' · ') || 'No physical cash'}{' '}
-                                                    · {fieldDay.summary.custody.pending_count} pending
+                                                        .join(' · ') || t('collector_checkins.no_physical_cash')}{' '}
+                                                    · {fieldDay.summary.custody.pending_count}{' '}
+                                                    {t('Pending').toLocaleLowerCase()}
                                                 </p>
                                             </>
                                         ) : (
@@ -194,9 +203,9 @@ export default function CollectorCheckIns({ date, fieldDays }: { date: string; f
                                 <tr>
                                     <td colSpan={8} className="px-5 py-14 text-center">
                                         <MapPinned className="mx-auto text-muted" size={28} />
-                                        <p className="mt-3 font-semibold">No field check-ins for this date</p>
+                                        <p className="mt-3 font-semibold">{t('collector_checkins.no_checkins')}</p>
                                         <p className="mt-1 text-sm text-muted">
-                                            Collector check-ins will appear after location capture is confirmed.
+                                            {t('collector_checkins.no_checkins_description')}
                                         </p>
                                     </td>
                                 </tr>
@@ -209,16 +218,11 @@ export default function CollectorCheckIns({ date, fieldDays }: { date: string; f
             <section className="mt-6 grid gap-4 md:grid-cols-2">
                 <div className="card flex items-start gap-3 p-5">
                     <Navigation className="mt-0.5 shrink-0 text-brand" size={18} />
-                    <p className="text-pretty text-sm text-muted">
-                        Coordinates are captured only when the collector presses start or finish and grants browser
-                        permission.
-                    </p>
+                    <p className="text-pretty text-sm text-muted">{t('collector_checkins.coordinates_description')}</p>
                 </div>
                 <div className="card flex items-start gap-3 p-5">
                     <TimerReset className="mt-0.5 shrink-0 text-brand" size={18} />
-                    <p className="text-pretty text-sm text-muted">
-                        Route stops and visit outcomes will build on these bounded field-day records.
-                    </p>
+                    <p className="text-pretty text-sm text-muted">{t('collector_checkins.route_description')}</p>
                 </div>
             </section>
         </AppLayout>

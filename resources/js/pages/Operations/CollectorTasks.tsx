@@ -3,8 +3,11 @@ import CustomerCombobox, { type CustomerOption } from '@/components/ui/customer-
 import ResponsiveSelect from '@/components/ui/responsive-select';
 import AppLayout from '@/layouts/AppLayout';
 import { formatDate } from '@/lib/format';
-import { Head, Link, router, useForm } from '@inertiajs/react';
+import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
 import { ClipboardCheck, MessageSquare, Paperclip, Plus, UserRound } from 'lucide-react';
+
+import { createTranslator } from '@/lib/i18n';
+import type { PageProps } from '@/types';
 
 type Collector = { id: number; name: string; email: string };
 type Customer = { id: number; code: string; name: string; phone: string | null };
@@ -48,6 +51,8 @@ const statusOptions = [
 ];
 
 export default function CollectorTasks({ filters, collectors, customers, tasks, selectedTask, timezone }: Props) {
+    const { props } = usePage<PageProps>();
+    const t = createTranslator(props.app.locale);
     const createForm = useForm({
         collector_id: collectors[0]?.id ?? 0,
         customer_id: '',
@@ -78,36 +83,33 @@ export default function CollectorTasks({ filters, collectors, customers, tasks, 
 
     return (
         <AppLayout>
-            <Head title="Collector tasks" />
+            <Head title={t('collector_tasks.title')} />
             <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-end">
                 <div>
-                    <p className="eyebrow">Jebaya collaboration</p>
-                    <h1 className="page-title text-balance">Collector tasks and messages</h1>
-                    <p className="page-subtitle text-pretty">
-                        Assign field work, keep customer context attached, and resolve questions in one auditable
-                        thread.
-                    </p>
+                    <p className="eyebrow">{t('collector_tasks.eyebrow')}</p>
+                    <h1 className="page-title text-balance">{t('collector_tasks.title')}</h1>
+                    <p className="page-subtitle text-pretty">{t('collector_tasks.subtitle')}</p>
                 </div>
                 <div className="grid gap-3 sm:grid-cols-2">
                     <ResponsiveSelect
-                        aria-label="Task status filter"
+                        aria-label={t('collector_tasks.status_filter')}
                         value={filters.status}
                         onChange={(event) => applyFilter({ status: event.target.value })}
                     >
                         {statusOptions.map((item) => (
                             <option key={item.value} value={item.value}>
-                                {item.label}
+                                {t(item.label)}
                             </option>
                         ))}
                     </ResponsiveSelect>
                     <ResponsiveSelect
-                        aria-label="Collector filter"
+                        aria-label={t('collector_tasks.collector_filter')}
                         value={filters.collector === null ? '' : String(filters.collector)}
                         onChange={(event) =>
                             applyFilter({ collector: event.target.value === '' ? null : Number(event.target.value) })
                         }
                     >
-                        <option value="">All collectors</option>
+                        <option value="">{t('collector_tasks.all_collectors')}</option>
                         {collectors.map((item) => (
                             <option key={item.id} value={item.id}>
                                 {item.name}
@@ -123,9 +125,9 @@ export default function CollectorTasks({ filters, collectors, customers, tasks, 
                         <Plus size={18} />
                     </span>
                     <div>
-                        <h2 className="section-title">Assign field work</h2>
+                        <h2 className="section-title">{t('collector_tasks.assign_work')}</h2>
                         <p className="mt-1 text-pretty text-sm text-muted">
-                            Tasks appear immediately in the collector field desk.
+                            {t('collector_tasks.assign_work_description')}
                         </p>
                     </div>
                 </div>
@@ -139,7 +141,7 @@ export default function CollectorTasks({ filters, collectors, customers, tasks, 
                     }}
                 >
                     <label className="field-label">
-                        Collector
+                        {t('Collector')}
                         <ResponsiveSelect
                             className="mt-1"
                             value={String(createForm.data.collector_id)}
@@ -153,17 +155,17 @@ export default function CollectorTasks({ filters, collectors, customers, tasks, 
                         </ResponsiveSelect>
                     </label>
                     <label className="field-label">
-                        Customer (optional)
+                        {t('Customer')} ({t('Optional').toLocaleLowerCase()})
                         <CustomerCombobox
                             className="field mt-1"
                             value={createForm.data.customer_id}
                             customers={customerOptions}
-                            placeholder="No customer attached"
+                            placeholder={t('collector_tasks.no_customer')}
                             onChange={(value) => createForm.setData('customer_id', value)}
                         />
                     </label>
                     <label className="field-label">
-                        Priority
+                        {t('Priority')}
                         <ResponsiveSelect
                             className="mt-1"
                             value={createForm.data.priority}
@@ -171,13 +173,13 @@ export default function CollectorTasks({ filters, collectors, customers, tasks, 
                         >
                             {['low', 'normal', 'high', 'urgent'].map((value) => (
                                 <option key={value} value={value}>
-                                    {value[0].toUpperCase() + value.slice(1)}
+                                    {t('collector_tasks.priority_' + value)}
                                 </option>
                             ))}
                         </ResponsiveSelect>
                     </label>
                     <label className="field-label lg:col-span-2">
-                        Title
+                        {t('Title')}
                         <input
                             className="field mt-1"
                             value={createForm.data.title}
@@ -186,7 +188,7 @@ export default function CollectorTasks({ filters, collectors, customers, tasks, 
                         />
                     </label>
                     <label className="field-label">
-                        Due at ({timezone})
+                        {t('collector_tasks.due_at')} ({timezone})
                         <input
                             className="field mt-1"
                             type="datetime-local"
@@ -195,7 +197,7 @@ export default function CollectorTasks({ filters, collectors, customers, tasks, 
                         />
                     </label>
                     <label className="field-label lg:col-span-3">
-                        Instructions
+                        {t('Instructions')}
                         <textarea
                             className="field mt-1 min-h-24"
                             value={createForm.data.description}
@@ -213,7 +215,7 @@ export default function CollectorTasks({ filters, collectors, customers, tasks, 
                             className="button-primary"
                             disabled={createForm.processing || createForm.data.title.trim() === ''}
                         >
-                            Create task
+                            {t('collector_tasks.create_task')}
                         </button>
                     </div>
                 </form>
@@ -222,8 +224,10 @@ export default function CollectorTasks({ filters, collectors, customers, tasks, 
             <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(20rem,0.85fr)_minmax(30rem,1.35fr)]">
                 <section className="card overflow-hidden">
                     <div className="border-b border-line px-5 py-4">
-                        <h2 className="section-title">Work queue</h2>
-                        <p className="mt-1 text-xs text-muted tabular-nums">{tasks.length} task(s)</p>
+                        <h2 className="section-title">{t('collector_tasks.work_queue')}</h2>
+                        <p className="mt-1 text-xs text-muted tabular-nums">
+                            {tasks.length} {t('collector_tasks.tasks')}
+                        </p>
                     </div>
                     <div className="divide-y divide-line">
                         {tasks.map((task) => (
@@ -238,7 +242,7 @@ export default function CollectorTasks({ filters, collectors, customers, tasks, 
                                     {task.unread && (
                                         <span
                                             className="mt-1 size-2 shrink-0 rounded-full bg-brand"
-                                            aria-label="Unread messages"
+                                            aria-label={t('collector_tasks.unread_messages')}
                                         />
                                     )}
                                 </div>
@@ -255,9 +259,9 @@ export default function CollectorTasks({ filters, collectors, customers, tasks, 
                         {tasks.length === 0 && (
                             <div className="p-10 text-center">
                                 <ClipboardCheck className="mx-auto text-muted" size={28} />
-                                <p className="mt-3 font-semibold">No matching tasks</p>
+                                <p className="mt-3 font-semibold">{t('collector_tasks.no_matching_tasks')}</p>
                                 <p className="mt-1 text-pretty text-sm text-muted">
-                                    Create a task above or change the queue filter.
+                                    {t('collector_tasks.no_matching_tasks_description')}
                                 </p>
                             </div>
                         )}
@@ -272,18 +276,20 @@ export default function CollectorTasks({ filters, collectors, customers, tasks, 
                                     <div className="flex flex-wrap items-center gap-2">
                                         <StatusBadge status={selectedTask.status} />
                                         <span className="text-xs font-semibold capitalize text-muted">
-                                            {selectedTask.priority} priority
+                                            {t('collector_tasks.priority_' + selectedTask.priority)}{' '}
+                                            {t('Priority').toLocaleLowerCase()}
                                         </span>
                                     </div>
                                     <h2 className="mt-3 text-balance font-display text-2xl font-semibold">
                                         {selectedTask.title}
                                     </h2>
                                     <p className="mt-2 text-pretty text-sm text-muted">
-                                        Assigned to {selectedTask.collector.name} by {selectedTask.created_by.name}
+                                        {t('collector_tasks.assigned_to')} {selectedTask.collector.name}{' '}
+                                        {t('collector_tasks.by')} {selectedTask.created_by.name}
                                     </p>
                                 </div>
                                 <ResponsiveSelect
-                                    aria-label="Update task status"
+                                    aria-label={t('collector_tasks.update_status')}
                                     value={selectedTask.status}
                                     onChange={(event) =>
                                         router.patch(
@@ -309,13 +315,15 @@ export default function CollectorTasks({ filters, collectors, customers, tasks, 
                             )}
                             <div className="mt-5 grid gap-3 sm:grid-cols-2">
                                 <div className="rounded-xl border border-line p-4">
-                                    <p className="eyebrow">Due</p>
+                                    <p className="eyebrow">{t('Due')}</p>
                                     <p className="mt-2 text-sm font-semibold">
-                                        {selectedTask.due_at ? formatDate(selectedTask.due_at) : 'No deadline'}
+                                        {selectedTask.due_at
+                                            ? formatDate(selectedTask.due_at)
+                                            : t('collector_tasks.no_deadline')}
                                     </p>
                                 </div>
                                 <div className="rounded-xl border border-line p-4">
-                                    <p className="eyebrow">Customer</p>
+                                    <p className="eyebrow">{t('Customer')}</p>
                                     {selectedTask.customer ? (
                                         <Link
                                             href={`/customers/${selectedTask.customer.id}`}
@@ -324,14 +332,14 @@ export default function CollectorTasks({ filters, collectors, customers, tasks, 
                                             {selectedTask.customer.name} · {selectedTask.customer.code}
                                         </Link>
                                     ) : (
-                                        <p className="mt-2 text-sm text-muted">No customer attached</p>
+                                        <p className="mt-2 text-sm text-muted">{t('collector_tasks.no_customer')}</p>
                                     )}
                                 </div>
                             </div>
                             <div className="mt-6 border-t border-line pt-6">
                                 <div className="flex items-center gap-2">
                                     <MessageSquare className="text-brand" size={18} />
-                                    <h3 className="section-title">Task conversation</h3>
+                                    <h3 className="section-title">{t('collector_tasks.conversation')}</h3>
                                 </div>
                                 <div className="mt-4 space-y-3">
                                     {selectedTask.messages.map((message) => (
@@ -362,7 +370,7 @@ export default function CollectorTasks({ filters, collectors, customers, tasks, 
                                     ))}
                                     {selectedTask.messages.length === 0 && (
                                         <p className="rounded-xl border border-dashed border-line p-6 text-center text-sm text-muted">
-                                            No messages yet. Send the collector useful context or a question.
+                                            {t('collector_tasks.no_messages')}
                                         </p>
                                     )}
                                 </div>
@@ -378,7 +386,7 @@ export default function CollectorTasks({ filters, collectors, customers, tasks, 
                                     }}
                                 >
                                     <label className="field-label">
-                                        New message
+                                        {t('collector_tasks.new_message')}
                                         <textarea
                                             className="field mt-1 min-h-24"
                                             value={messageForm.data.body}
@@ -387,7 +395,7 @@ export default function CollectorTasks({ filters, collectors, customers, tasks, 
                                         />
                                     </label>
                                     <label className="field-label mt-3 block">
-                                        Attachment (optional)
+                                        {t('Attachment')} ({t('Optional').toLocaleLowerCase()})
                                         <input
                                             key={messageForm.data.attachment?.name ?? 'empty'}
                                             className="field mt-1"
@@ -409,7 +417,7 @@ export default function CollectorTasks({ filters, collectors, customers, tasks, 
                                             className="button-primary"
                                             disabled={messageForm.processing || messageForm.data.body.trim() === ''}
                                         >
-                                            Send message
+                                            {t('Send message')}
                                         </button>
                                     </div>
                                 </form>
@@ -419,9 +427,9 @@ export default function CollectorTasks({ filters, collectors, customers, tasks, 
                         <div className="grid min-h-72 place-items-center text-center">
                             <div>
                                 <UserRound className="mx-auto text-muted" size={30} />
-                                <p className="mt-3 font-semibold">Select a collector task</p>
+                                <p className="mt-3 font-semibold">{t('collector_tasks.select_task')}</p>
                                 <p className="mt-1 text-pretty text-sm text-muted">
-                                    The assignment, customer context, and conversation will appear here.
+                                    {t('collector_tasks.select_task_description')}
                                 </p>
                             </div>
                         </div>
