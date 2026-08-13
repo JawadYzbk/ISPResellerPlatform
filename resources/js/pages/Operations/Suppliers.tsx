@@ -288,7 +288,7 @@ function SupplierCard({
                             onChange={(event) => editForm.setData('name', event.target.value)}
                             required
                         />
-                        {editForm.errors.name && <p className="field-error">{editForm.errors.name}</p>}
+                        {editForm.errors.name && <p className="field-error">{t(editForm.errors.name)}</p>}
                     </label>
                     <label>
                         <span className="field-label">{t('Code')}</span>
@@ -298,7 +298,7 @@ function SupplierCard({
                             onChange={(event) => editForm.setData('code', event.target.value)}
                             required
                         />
-                        {editForm.errors.code && <p className="field-error">{editForm.errors.code}</p>}
+                        {editForm.errors.code && <p className="field-error">{t(editForm.errors.code)}</p>}
                     </label>
                     <label>
                         <span className="field-label">{t('Contact email')}</span>
@@ -309,7 +309,7 @@ function SupplierCard({
                             onChange={(event) => editForm.setData('contact_email', event.target.value)}
                         />
                         {editForm.errors.contact_email && (
-                            <p className="field-error">{editForm.errors.contact_email}</p>
+                            <p className="field-error">{t(editForm.errors.contact_email)}</p>
                         )}
                     </label>
                     <label>
@@ -322,7 +322,7 @@ function SupplierCard({
                             <option value="active">{t('Active')}</option>
                             <option value="inactive">{t('Inactive')}</option>
                         </ResponsiveSelect>
-                        {editForm.errors.is_active && <p className="field-error">{editForm.errors.is_active}</p>}
+                        {editForm.errors.is_active && <p className="field-error">{t(editForm.errors.is_active)}</p>}
                     </label>
                     <div className="flex items-end gap-2">
                         <button type="submit" className="button-primary" disabled={editForm.processing}>
@@ -495,7 +495,7 @@ function SupplierCard({
                                                 required
                                             />
                                             {contractEditForm.errors.service_type && (
-                                                <p className="field-error">{contractEditForm.errors.service_type}</p>
+                                                <p className="field-error">{t(contractEditForm.errors.service_type)}</p>
                                             )}
                                         </label>
                                         <label>
@@ -510,7 +510,7 @@ function SupplierCard({
                                             />
                                             {contractEditForm.errors.wholesale_currency && (
                                                 <p className="field-error">
-                                                    {contractEditForm.errors.wholesale_currency}
+                                                    {t(contractEditForm.errors.wholesale_currency)}
                                                 </p>
                                             )}
                                         </label>
@@ -526,7 +526,7 @@ function SupplierCard({
                                                 required
                                             />
                                             {contractEditForm.errors.effective_from && (
-                                                <p className="field-error">{contractEditForm.errors.effective_from}</p>
+                                                <p className="field-error">{t(contractEditForm.errors.effective_from)}</p>
                                             )}
                                         </label>
                                         <label>
@@ -540,7 +540,7 @@ function SupplierCard({
                                                 }
                                             />
                                             {contractEditForm.errors.effective_to && (
-                                                <p className="field-error">{contractEditForm.errors.effective_to}</p>
+                                                <p className="field-error">{t(contractEditForm.errors.effective_to)}</p>
                                             )}
                                         </label>
                                         <label>
@@ -557,7 +557,7 @@ function SupplierCard({
                                                 <option value="expired">{t('Expired')}</option>
                                             </ResponsiveSelect>
                                             {contractEditForm.errors.status && (
-                                                <p className="field-error">{contractEditForm.errors.status}</p>
+                                                <p className="field-error">{t(contractEditForm.errors.status)}</p>
                                             )}
                                         </label>
                                         <div className="flex items-end gap-2">

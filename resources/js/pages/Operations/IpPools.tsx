@@ -129,7 +129,7 @@ export default function IpPoolsPage({ pools, selectedPoolId, addresses, routers,
                                 onChange={(event) => poolForm.setData('name', event.target.value)}
                                 placeholder={t('Subscriber IPv4')}
                             />
-                            {poolForm.errors.name && <p className="field-error">{poolForm.errors.name}</p>}
+                            {poolForm.errors.name && <p className="field-error">{t(poolForm.errors.name)}</p>}
                         </label>
                         <label>
                             <span className="field-label">CIDR</span>
@@ -139,7 +139,7 @@ export default function IpPoolsPage({ pools, selectedPoolId, addresses, routers,
                                 onChange={(event) => poolForm.setData('cidr', event.target.value)}
                                 placeholder="10.20.10.0/24"
                             />
-                            {poolForm.errors.cidr && <p className="field-error">{poolForm.errors.cidr}</p>}
+                            {poolForm.errors.cidr && <p className="field-error">{t(poolForm.errors.cidr)}</p>}
                         </label>
                         <label>
                             <span className="field-label">{t('Gateway')}</span>
@@ -277,7 +277,7 @@ export default function IpPoolsPage({ pools, selectedPoolId, addresses, routers,
                                     onChange={(event) => editForm.setData('name', event.target.value)}
                                     required
                                 />
-                                {editForm.errors.name && <p className="field-error">{editForm.errors.name}</p>}
+                                {editForm.errors.name && <p className="field-error">{t(editForm.errors.name)}</p>}
                             </label>
                             <label>
                                 <span className="field-label">{t('Gateway')}</span>
@@ -286,7 +286,7 @@ export default function IpPoolsPage({ pools, selectedPoolId, addresses, routers,
                                     value={editForm.data.gateway}
                                     onChange={(event) => editForm.setData('gateway', event.target.value)}
                                 />
-                                {editForm.errors.gateway && <p className="field-error">{editForm.errors.gateway}</p>}
+                                {editForm.errors.gateway && <p className="field-error">{t(editForm.errors.gateway)}</p>}
                             </label>
                             <label>
                                 <span className="field-label">{t('ip_pools.use')}</span>
@@ -299,7 +299,7 @@ export default function IpPoolsPage({ pools, selectedPoolId, addresses, routers,
                                     <option value="static">{t('Static')}</option>
                                     <option value="blocked">{t('Blocked')}</option>
                                 </ResponsiveSelect>
-                                {editForm.errors.type && <p className="field-error">{editForm.errors.type}</p>}
+                                {editForm.errors.type && <p className="field-error">{t(editForm.errors.type)}</p>}
                             </label>
                             <label>
                                 <span className="field-label">{t('Router')}</span>
@@ -316,7 +316,7 @@ export default function IpPoolsPage({ pools, selectedPoolId, addresses, routers,
                                     ))}
                                 </ResponsiveSelect>
                                 {editForm.errors.router_id && (
-                                    <p className="field-error">{editForm.errors.router_id}</p>
+                                    <p className="field-error">{t(editForm.errors.router_id)}</p>
                                 )}
                             </label>
                             <label>
@@ -330,7 +330,7 @@ export default function IpPoolsPage({ pools, selectedPoolId, addresses, routers,
                                     <option value="inactive">{t('Inactive')}</option>
                                 </ResponsiveSelect>
                                 {editForm.errors.is_active && (
-                                    <p className="field-error">{editForm.errors.is_active}</p>
+                                    <p className="field-error">{t(editForm.errors.is_active)}</p>
                                 )}
                             </label>
                             <div className="flex items-end gap-2">
@@ -362,7 +362,7 @@ export default function IpPoolsPage({ pools, selectedPoolId, addresses, routers,
                                     placeholder={selectedPool.version === 6 ? '2001:db8::10' : '10.20.10.10'}
                                 />
                                 {addressForm.errors.address && (
-                                    <p className="field-error">{addressForm.errors.address}</p>
+                                    <p className="field-error">{t(addressForm.errors.address)}</p>
                                 )}
                             </label>
                             <label>

@@ -207,7 +207,7 @@ export default function CollectorTasks({ filters, collectors, customers, tasks, 
                     </label>
                     {(createForm.errors.title || createForm.errors.collector_id) && (
                         <p className="field-error lg:col-span-3">
-                            {createForm.errors.title ?? createForm.errors.collector_id}
+                            {t(createForm.errors.title ?? createForm.errors.collector_id ?? '')}
                         </p>
                     )}
                     <div className="flex justify-end lg:col-span-3">
@@ -407,10 +407,10 @@ export default function CollectorTasks({ filters, collectors, customers, tasks, 
                                         />
                                     </label>
                                     {messageForm.errors.body && (
-                                        <p className="field-error mt-1">{messageForm.errors.body}</p>
+                                        <p className="field-error mt-1">{t(messageForm.errors.body)}</p>
                                     )}
                                     {messageForm.errors.attachment && (
-                                        <p className="field-error mt-1">{messageForm.errors.attachment}</p>
+                                        <p className="field-error mt-1">{t(messageForm.errors.attachment)}</p>
                                     )}
                                     <div className="mt-3 flex justify-end">
                                         <button

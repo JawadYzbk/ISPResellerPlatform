@@ -72,7 +72,7 @@ export default function PopsPage({ pops, filters, canManage, statuses }: Props) 
                                 onChange={(event) => popForm.setData('name', event.target.value)}
                                 placeholder={t('pops.name_placeholder')}
                             />
-                            {popForm.errors.name && <p className="field-error">{popForm.errors.name}</p>}
+                            {popForm.errors.name && <p className="field-error">{t(popForm.errors.name)}</p>}
                         </label>
                         <label>
                             <span className="field-label">{t('Code')}</span>
@@ -82,7 +82,7 @@ export default function PopsPage({ pops, filters, canManage, statuses }: Props) 
                                 onChange={(event) => popForm.setData('code', event.target.value)}
                                 placeholder="CENTRAL"
                             />
-                            {popForm.errors.code && <p className="field-error">{popForm.errors.code}</p>}
+                            {popForm.errors.code && <p className="field-error">{t(popForm.errors.code)}</p>}
                         </label>
                         <label>
                             <span className="field-label">{t('Address')}</span>
@@ -92,7 +92,7 @@ export default function PopsPage({ pops, filters, canManage, statuses }: Props) 
                                 onChange={(event) => popForm.setData('address', event.target.value)}
                                 placeholder={t('pops.address_placeholder')}
                             />
-                            {popForm.errors.address && <p className="field-error">{popForm.errors.address}</p>}
+                            {popForm.errors.address && <p className="field-error">{t(popForm.errors.address)}</p>}
                         </label>
                         <label>
                             <span className="field-label">{t('Status')}</span>
@@ -107,7 +107,7 @@ export default function PopsPage({ pops, filters, canManage, statuses }: Props) 
                                     </option>
                                 ))}
                             </ResponsiveSelect>
-                            {popForm.errors.status && <p className="field-error">{popForm.errors.status}</p>}
+                            {popForm.errors.status && <p className="field-error">{t(popForm.errors.status)}</p>}
                         </label>
                     </div>
                     <div className="flex justify-end">

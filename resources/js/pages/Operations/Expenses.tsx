@@ -557,7 +557,7 @@ export default function Expenses({
                                 onChange={(event) => setRecurringAmount(event.target.value)}
                             />
                             {recurringForm.errors.amount && (
-                                <span className="field-error">{recurringForm.errors.amount}</span>
+                                <span className="field-error">{t(recurringForm.errors.amount)}</span>
                             )}
                         </label>
                         <label className="field-label">

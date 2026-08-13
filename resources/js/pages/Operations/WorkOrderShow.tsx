@@ -329,7 +329,7 @@ export default function WorkOrderShowPage({
                                         onChange={(event) => scheduleForm.setData('scheduled_at', event.target.value)}
                                     />
                                     {scheduleForm.errors.scheduled_at && (
-                                        <p className="field-error">{scheduleForm.errors.scheduled_at}</p>
+                                        <p className="field-error">{t(scheduleForm.errors.scheduled_at)}</p>
                                     )}
                                 </label>
                                 <button
@@ -381,7 +381,7 @@ export default function WorkOrderShowPage({
                                             ))}
                                         </ResponsiveSelect>
                                         {installationForm.errors.network_building_id && (
-                                            <p className="field-error">{installationForm.errors.network_building_id}</p>
+                                            <p className="field-error">{t(installationForm.errors.network_building_id)}</p>
                                         )}
                                     </label>
                                     <label>
@@ -403,7 +403,7 @@ export default function WorkOrderShowPage({
                                             ))}
                                         </ResponsiveSelect>
                                         {installationForm.errors.distribution_box_id && (
-                                            <p className="field-error">{installationForm.errors.distribution_box_id}</p>
+                                            <p className="field-error">{t(installationForm.errors.distribution_box_id)}</p>
                                         )}
                                     </label>
                                     <label>
@@ -423,7 +423,7 @@ export default function WorkOrderShowPage({
                                             disabled={!selectedBox}
                                         />
                                         {installationForm.errors.network_port && (
-                                            <p className="field-error">{installationForm.errors.network_port}</p>
+                                            <p className="field-error">{t(installationForm.errors.network_port)}</p>
                                         )}
                                     </label>
                                     <label>
@@ -440,7 +440,7 @@ export default function WorkOrderShowPage({
                                             placeholder={t('Scan or enter the ONU serial')}
                                         />
                                         {installationForm.errors.onu_serial && (
-                                            <p className="field-error">{installationForm.errors.onu_serial}</p>
+                                            <p className="field-error">{t(installationForm.errors.onu_serial)}</p>
                                         )}
                                     </label>
                                 </div>
@@ -517,7 +517,7 @@ export default function WorkOrderShowPage({
                                     <p className="field-error">{installationErrors.installation}</p>
                                 )}
                                 {installationForm.errors.survey && (
-                                    <p className="field-error">{installationForm.errors.survey}</p>
+                                    <p className="field-error">{t(installationForm.errors.survey)}</p>
                                 )}
                                 <button
                                     type="submit"
@@ -711,7 +711,7 @@ export default function WorkOrderShowPage({
                                             placeholder="0.000"
                                         />
                                         {materialForm.errors.quantity && (
-                                            <p className="field-error">{materialForm.errors.quantity}</p>
+                                            <p className="field-error">{t(materialForm.errors.quantity)}</p>
                                         )}
                                     </label>
                                     <label>
@@ -725,10 +725,10 @@ export default function WorkOrderShowPage({
                                     </label>
                                 </div>
                                 {materialForm.errors.inventory_item_id && (
-                                    <p className="field-error">{materialForm.errors.inventory_item_id}</p>
+                                    <p className="field-error">{t(materialForm.errors.inventory_item_id)}</p>
                                 )}
                                 {materialForm.errors.warehouse_id && (
-                                    <p className="field-error">{materialForm.errors.warehouse_id}</p>
+                                    <p className="field-error">{t(materialForm.errors.warehouse_id)}</p>
                                 )}
                                 <button type="submit" className="button-secondary" disabled={materialForm.processing}>
                                     {t('Record material')}
@@ -760,7 +760,7 @@ export default function WorkOrderShowPage({
                                 ))}
                             </div>
                             {readingsForm.errors.readings && (
-                                <p className="field-error">{readingsForm.errors.readings}</p>
+                                <p className="field-error">{t(readingsForm.errors.readings)}</p>
                             )}
                             <button type="submit" className="button-secondary" disabled={readingsForm.processing}>
                                 {t('Save readings')}
@@ -797,11 +797,11 @@ export default function WorkOrderShowPage({
                                             }
                                         />
                                         {signatureForm.errors.signer_name && (
-                                            <p className="field-error">{signatureForm.errors.signer_name}</p>
+                                            <p className="field-error">{t(signatureForm.errors.signer_name)}</p>
                                         )}
                                     </label>
                                     {signatureForm.errors.file && (
-                                        <p className="field-error">{signatureForm.errors.file}</p>
+                                        <p className="field-error">{t(signatureForm.errors.file)}</p>
                                     )}
                                     <button
                                         type="submit"
