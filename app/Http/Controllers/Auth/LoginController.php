@@ -34,6 +34,12 @@ final class LoginController extends Controller
 
         $user = $request->user();
         $destination = $user instanceof User ? $pages->defaultDestination($user) : route('dashboard');
+        $intended = $request->session()->get('url.intended');
+        $intendedPath = is_string($intended) ? parse_url($intended, PHP_URL_PATH) : null;
+
+        if (in_array($intendedPath, ['/', route('dashboard', absolute: false)], true)) {
+            $request->session()->forget('url.intended');
+        }
 
         return redirect()->intended($destination)
             ->with('success_title', 'Welcome back')
