@@ -1,12 +1,13 @@
 import ConfirmDialog from '@/components/ui/confirm-dialog';
 import CurrencyCombobox, { type CurrencyOption } from '@/components/ui/currency-combobox';
 import ResponsiveSelect from '@/components/ui/responsive-select';
-import { Head, useForm } from '@inertiajs/react';
+import { Head, useForm, usePage } from '@inertiajs/react';
 import { Building2, Edit3, Save, ShieldCheck, Users, Wifi } from 'lucide-react';
 import { useState } from 'react';
 
 import AppLayout from '@/layouts/AppLayout';
 import { formatDate } from '@/lib/format';
+import { createTranslator } from '@/lib/i18n';
 import type { PageProps } from '@/types';
 
 type TenantRow = {
@@ -41,6 +42,8 @@ type NewTenant = {
 const statusOptions = ['active', 'suspended', 'archived'];
 
 export default function TenantIndex({ tenants, currencies }: Props) {
+    const page = usePage<Props>();
+    const t = createTranslator(page.props.app.locale);
     const createForm = useForm<NewTenant>({
         name: '',
         slug: '',
@@ -74,13 +77,12 @@ export default function TenantIndex({ tenants, currencies }: Props) {
 
     return (
         <AppLayout>
-            <Head title="Tenant administration" />
+            <Head title={t('Tenant administration')} />
             <div>
-                <p className="eyebrow">Platform administration</p>
-                <h1 className="page-title">Tenant workspaces</h1>
+                <p className="eyebrow">{t('Platform administration')}</p>
+                <h1 className="page-title">{t('Tenant workspaces')}</h1>
                 <p className="page-subtitle">
-                    Provision isolated ISP workspaces, create their first owner, and control lifecycle status from one
-                    audited control plane.
+                    {t('Provision isolated ISP workspaces, create their first owner, and control lifecycle status from one audited control plane.')}
                 </p>
             </div>
 
@@ -91,9 +93,9 @@ export default function TenantIndex({ tenants, currencies }: Props) {
                             <Building2 size={18} />
                         </span>
                         <div>
-                            <h2 className="section-title">Create workspace</h2>
+                            <h2 className="section-title">{t('Create workspace')}</h2>
                             <p className="mt-1 text-sm text-muted">
-                                Defaults, currencies, core sequences, and a tenant owner are created together.
+                                {t('Defaults, currencies, core sequences, and a tenant owner are created together.')}
                             </p>
                         </div>
                     </div>
@@ -106,7 +108,7 @@ export default function TenantIndex({ tenants, currencies }: Props) {
                     >
                         <div className="grid gap-4 sm:grid-cols-2">
                             <label className="sm:col-span-2">
-                                <span className="field-label">Workspace name</span>
+                                <span className="field-label">{t('Workspace name')}</span>
                                 <input
                                     className="field"
                                     value={createForm.data.name}
@@ -116,7 +118,7 @@ export default function TenantIndex({ tenants, currencies }: Props) {
                                 {createForm.errors.name && <p className="field-error">{createForm.errors.name}</p>}
                             </label>
                             <label>
-                                <span className="field-label">Tenant slug</span>
+                                <span className="field-label">{t('Tenant slug')}</span>
                                 <input
                                     className="field"
                                     value={createForm.data.slug}
@@ -126,20 +128,20 @@ export default function TenantIndex({ tenants, currencies }: Props) {
                                 {createForm.errors.slug && <p className="field-error">{createForm.errors.slug}</p>}
                             </label>
                             <label>
-                                <span className="field-label">Locale</span>
+                                <span className="field-label">{t('Locale')}</span>
                                 <ResponsiveSelect
                                     className="field"
                                     value={createForm.data.locale}
                                     onChange={(event) => createForm.setData('locale', event.target.value)}
                                 >
-                                    <option value="en">English</option>
-                                    <option value="ar">Arabic</option>
-                                    <option value="fr">French</option>
+                                    <option value="en">{t('English')}</option>
+                                    <option value="ar">{t('Arabic')}</option>
+                                    <option value="fr">{t('French')}</option>
                                 </ResponsiveSelect>
                                 {createForm.errors.locale && <p className="field-error">{createForm.errors.locale}</p>}
                             </label>
                             <label className="sm:col-span-2">
-                                <span className="field-label">Timezone</span>
+                                <span className="field-label">{t('Timezone')}</span>
                                 <input
                                     className="field"
                                     value={createForm.data.timezone}
@@ -151,10 +153,10 @@ export default function TenantIndex({ tenants, currencies }: Props) {
                                 )}
                             </label>
                             <label>
-                                <span className="field-label">Base currency</span>
+                                <span className="field-label">{t('Base currency')}</span>
                                 <CurrencyCombobox
                                     id="base_currency"
-                                    aria-label="Base currency"
+                                    aria-label={t('Base currency')}
                                     value={createForm.data.base_currency}
                                     currencies={currencies}
                                     onChange={(value) => createForm.setData('base_currency', value)}
@@ -164,10 +166,10 @@ export default function TenantIndex({ tenants, currencies }: Props) {
                                 )}
                             </label>
                             <label>
-                                <span className="field-label">Collection currency</span>
+                                <span className="field-label">{t('Collection currency')}</span>
                                 <CurrencyCombobox
                                     id="collection_currency"
-                                    aria-label="Collection currency"
+                                    aria-label={t('Collection currency')}
                                     value={createForm.data.collection_currency}
                                     currencies={currencies}
                                     onChange={(value) => createForm.setData('collection_currency', value)}
@@ -179,10 +181,10 @@ export default function TenantIndex({ tenants, currencies }: Props) {
                         </div>
 
                         <div className="border-t border-line pt-5">
-                            <p className="text-sm font-semibold">First tenant owner</p>
+                            <p className="text-sm font-semibold">{t('First tenant owner')}</p>
                             <div className="mt-4 grid gap-4 sm:grid-cols-2">
                                 <label>
-                                    <span className="field-label">Owner name</span>
+                                    <span className="field-label">{t('Owner name')}</span>
                                     <input
                                         className="field"
                                         value={createForm.data.owner_name}
@@ -194,7 +196,7 @@ export default function TenantIndex({ tenants, currencies }: Props) {
                                     )}
                                 </label>
                                 <label>
-                                    <span className="field-label">Owner email</span>
+                                    <span className="field-label">{t('Owner email')}</span>
                                     <input
                                         type="email"
                                         className="field"
@@ -207,7 +209,7 @@ export default function TenantIndex({ tenants, currencies }: Props) {
                                     )}
                                 </label>
                                 <label>
-                                    <span className="field-label">Temporary password</span>
+                                    <span className="field-label">{t('Temporary password')}</span>
                                     <input
                                         type="password"
                                         className="field"
@@ -219,7 +221,7 @@ export default function TenantIndex({ tenants, currencies }: Props) {
                                     )}
                                 </label>
                                 <label>
-                                    <span className="field-label">Confirm password</span>
+                                    <span className="field-label">{t('Confirm password')}</span>
                                     <input
                                         type="password"
                                         className="field"
@@ -231,7 +233,7 @@ export default function TenantIndex({ tenants, currencies }: Props) {
                                 </label>
                             </div>
                             <p className="mt-3 text-xs leading-5 text-muted">
-                                Use a one-time password for local provisioning and rotate it before handoff.
+                                {t('Use a one-time password for local provisioning and rotate it before handoff.')}
                             </p>
                         </div>
 
@@ -241,7 +243,7 @@ export default function TenantIndex({ tenants, currencies }: Props) {
                             disabled={createForm.processing}
                         >
                             <ShieldCheck size={16} />
-                            {createForm.processing ? 'Creating workspace…' : 'Create workspace'}
+                            {createForm.processing ? t('Creating workspace…') : t('Create workspace')}
                         </button>
                     </form>
                 </section>
@@ -249,8 +251,10 @@ export default function TenantIndex({ tenants, currencies }: Props) {
                 <section className="space-y-4">
                     <div className="card flex items-center justify-between gap-4 p-6">
                         <div>
-                            <p className="eyebrow">Control plane</p>
-                            <h2 className="section-title mt-1">{tenants.length} workspace(s)</h2>
+                            <p className="eyebrow">{t('Control plane')}</p>
+                            <h2 className="section-title mt-1">
+                                {tenants.length} {t('workspace(s)')}
+                            </h2>
                         </div>
                         <Building2 className="text-brand" size={22} />
                     </div>
@@ -272,7 +276,7 @@ export default function TenantIndex({ tenants, currencies }: Props) {
                                 <span
                                     className={`inline-flex w-fit rounded-full px-2.5 py-1 text-xs font-semibold capitalize ${tenant.status === 'active' ? 'bg-emerald-50 text-emerald-700' : tenant.status === 'suspended' ? 'bg-amber-50 text-amber-700' : 'bg-slate-100 text-slate-600'}`}
                                 >
-                                    {tenant.status}
+                                    {t(tenant.status)}
                                 </span>
                             </div>
 
@@ -280,17 +284,17 @@ export default function TenantIndex({ tenants, currencies }: Props) {
                                 <div className="rounded-xl bg-sand/60 p-3">
                                     <Users size={15} className="text-brand" />
                                     <p className="mt-2 text-lg font-semibold">{tenant.users_count}</p>
-                                    <p className="text-xs text-muted">Operators</p>
+                                    <p className="text-xs text-muted">{t('Operators')}</p>
                                 </div>
                                 <div className="rounded-xl bg-sand/60 p-3">
                                     <Building2 size={15} className="text-brand" />
                                     <p className="mt-2 text-lg font-semibold">{tenant.customers_count}</p>
-                                    <p className="text-xs text-muted">Customers</p>
+                                    <p className="text-xs text-muted">{t('Customers')}</p>
                                 </div>
                                 <div className="rounded-xl bg-sand/60 p-3">
                                     <Wifi size={15} className="text-brand" />
                                     <p className="mt-2 text-lg font-semibold">{tenant.services_count}</p>
-                                    <p className="text-xs text-muted">Services</p>
+                                    <p className="text-xs text-muted">{t('Services')}</p>
                                 </div>
                             </div>
 
@@ -299,12 +303,12 @@ export default function TenantIndex({ tenants, currencies }: Props) {
                                     {tenant.base_currency} base · {tenant.collection_currency} collection
                                 </span>
                                 <span>{tenant.timezone}</span>
-                                <span>Created {formatDate(tenant.created_at)}</span>
+                                <span>{t('Created')} {formatDate(tenant.created_at)}</span>
                             </div>
 
                             {editingId === tenant.id && (
                                 <div className="mt-5 max-w-xs">
-                                    <span className="field-label">Lifecycle status</span>
+                                    <span className="field-label">{t('Lifecycle status')}</span>
                                     <ResponsiveSelect
                                         className="field"
                                         value={editForm.data.status}
@@ -312,7 +316,7 @@ export default function TenantIndex({ tenants, currencies }: Props) {
                                     >
                                         {statusOptions.map((status) => (
                                             <option key={status} value={status}>
-                                                {status[0].toUpperCase() + status.slice(1)}
+                                                {t(status)}
                                             </option>
                                         ))}
                                     </ResponsiveSelect>
@@ -324,12 +328,14 @@ export default function TenantIndex({ tenants, currencies }: Props) {
                                 {editingId === tenant.id ? (
                                     <>
                                         <button type="button" className="button-quiet" onClick={cancelEdit}>
-                                            Cancel
+                                            {t('Cancel')}
                                         </button>
                                         <ConfirmDialog
-                                            title="Save tenant changes?"
-                                            description="The workspace name and lifecycle status will be updated and recorded in the platform audit log."
-                                            confirmLabel="Save changes"
+                                            title={t('Save tenant changes?')}
+                                            description={t(
+                                                'The workspace name and lifecycle status will be updated and recorded in the platform audit log.',
+                                            )}
+                                            confirmLabel={t('Save changes')}
                                             onConfirm={() => saveTenant(tenant)}
                                         >
                                             <button
@@ -337,7 +343,7 @@ export default function TenantIndex({ tenants, currencies }: Props) {
                                                 className="button-primary"
                                                 disabled={editForm.processing}
                                             >
-                                                <Save size={15} /> Save changes
+                                                <Save size={15} /> {t('Save changes')}
                                             </button>
                                         </ConfirmDialog>
                                     </>
@@ -347,7 +353,7 @@ export default function TenantIndex({ tenants, currencies }: Props) {
                                         className="button-secondary"
                                         onClick={() => editTenant(tenant)}
                                     >
-                                        <Edit3 size={15} /> Edit workspace
+                                        <Edit3 size={15} /> {t('Edit workspace')}
                                     </button>
                                 )}
                             </div>
