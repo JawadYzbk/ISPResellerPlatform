@@ -65,6 +65,7 @@ final class SettingsController extends Controller
                 'resolved_ticket_auto_close_hours' => (int) ($settings->settings['resolved_ticket_auto_close_hours'] ?? 72),
                 'radius_interim_interval_seconds' => (int) ($settings->settings['radius_interim_interval_seconds'] ?? 300),
             ],
+            'personalLocale' => $user->locale,
             'currencies' => $currencyCatalog->handle(),
             'timezones' => \DateTimeZone::listIdentifiers(),
             'payments' => $paymentStatus->handle(),

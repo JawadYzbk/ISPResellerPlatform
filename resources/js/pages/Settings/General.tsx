@@ -36,6 +36,7 @@ type SetupSignals = {
 type Props = {
     tenant: Tenant;
     settings: Settings;
+    personalLocale: 'en' | 'ar' | 'fr' | null;
     currencies: CurrencyOption[];
     timezones: string[];
     payments: Payments;
@@ -119,7 +120,15 @@ function SetupSignal({
     );
 }
 
-export default function GeneralSettings({ tenant, settings, currencies, timezones, payments, setup }: Props) {
+export default function GeneralSettings({
+    tenant,
+    settings,
+    personalLocale,
+    currencies,
+    timezones,
+    payments,
+    setup,
+}: Props) {
     const page = usePage<PageProps>();
     const { app } = page.props;
     const t = createTranslator(app.locale);
@@ -154,6 +163,7 @@ export default function GeneralSettings({ tenant, settings, currencies, timezone
         form.post('/settings/general', {
             forceFormData: form.data.logo !== null,
             preserveScroll: true,
+            preserveState: false,
         });
     };
 
@@ -360,6 +370,14 @@ export default function GeneralSettings({ tenant, settings, currencies, timezone
                                     <option value="ar">{t('Arabic')}</option>
                                     <option value="fr">{t('French')}</option>
                                 </ResponsiveSelect>
+                                {personalLocale && (
+                                    <p className="mt-1 text-xs text-amber-700">
+                                        {t('Your personal language preference overrides this workspace default.')}{' '}
+                                        <Link href="/profile" className="font-semibold underline underline-offset-2">
+                                            {t('Change personal language')}
+                                        </Link>
+                                    </p>
+                                )}
                             </label>
                             <label>
                                 <span className="field-label">{t('Timezone')}</span>

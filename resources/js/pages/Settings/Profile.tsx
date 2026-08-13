@@ -23,7 +23,7 @@ export default function ProfilePage({ profile, workspaceLocale }: Props) {
 
     const submit = (event: React.FormEvent) => {
         event.preventDefault();
-        form.patch('/profile');
+        form.patch('/profile', { preserveState: false, preserveScroll: true });
     };
 
     return (
