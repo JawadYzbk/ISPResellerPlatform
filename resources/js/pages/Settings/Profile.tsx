@@ -26,6 +26,25 @@ export default function ProfilePage({ profile, workspaceLocale, defaultViews }: 
     const pageErrors = page.props.errors ?? {};
     const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
+    const errorFor = (name: keyof Profile) => form.errors[name] ?? validationErrors[name] ?? pageErrors[name];
+    const fieldA11y = (name: keyof Profile) => {
+        const error = errorFor(name);
+
+        return {
+            'aria-invalid': Boolean(error),
+            'aria-describedby': error ? `${name}-error` : undefined,
+        };
+    };
+    const fieldError = (name: keyof Profile) => {
+        const error = errorFor(name);
+
+        return error ? (
+            <p id={`${name}-error`} className="field-error" role="alert">
+                {t(error)}
+            </p>
+        ) : null;
+    };
+
     const submit = (event: React.FormEvent) => {
         event.preventDefault();
         form.patch('/profile', {
@@ -60,16 +79,14 @@ export default function ProfilePage({ profile, workspaceLocale, defaultViews }: 
                             <label>
                                 <span className="field-label">{t('Name')}</span>
                                 <input
+                                    id="name"
                                     className="field"
+                                    {...fieldA11y('name')}
                                     value={form.data.name}
                                     onChange={(event) => form.setData('name', event.target.value)}
                                     autoComplete="name"
                                 />
-                                {(form.errors.name ?? validationErrors.name ?? pageErrors.name) && (
-                                    <p className="field-error" role="alert">
-                                        {t(form.errors.name ?? validationErrors.name ?? pageErrors.name ?? '')}
-                                    </p>
-                                )}
+                                {fieldError('name')}
                             </label>
                             <label>
                                 <span className="field-label">{t('Email')}</span>
@@ -89,8 +106,9 @@ export default function ProfilePage({ profile, workspaceLocale, defaultViews }: 
                             <label>
                                 <span className="field-label">{t('Language')}</span>
                                 <ResponsiveSelect
-                                    id="profile-locale"
+                                    id="locale"
                                     className="field"
+                                    {...fieldA11y('locale')}
                                     value={form.data.locale ?? ''}
                                     onChange={(event) =>
                                         form.setData('locale', event.target.value as Profile['locale'])
@@ -103,32 +121,27 @@ export default function ProfilePage({ profile, workspaceLocale, defaultViews }: 
                                     <option value="ar">{t('Arabic')}</option>
                                     <option value="fr">{t('French')}</option>
                                 </ResponsiveSelect>
+                                {fieldError('locale')}
                             </label>
                             <label className="sm:col-span-2">
                                 <span className="field-label">{t('Personal timezone')}</span>
                                 <input
+                                    id="timezone"
                                     className="field"
+                                    {...fieldA11y('timezone')}
                                     value={form.data.timezone ?? ''}
                                     onChange={(event) => form.setData('timezone', event.target.value || null)}
                                     placeholder={t('Leave blank to use the workspace timezone')}
                                     autoComplete="off"
                                 />
-                                {(form.errors.timezone ?? validationErrors.timezone ?? pageErrors.timezone) && (
-                                    <p className="field-error" role="alert">
-                                        {t(
-                                            form.errors.timezone ??
-                                                validationErrors.timezone ??
-                                                pageErrors.timezone ??
-                                                '',
-                                        )}
-                                    </p>
-                                )}
+                                {fieldError('timezone')}
                             </label>
                             <label className="sm:col-span-2">
                                 <span className="field-label">{t('Default view after sign in')}</span>
                                 <ResponsiveSelect
-                                    id="profile-default-view"
+                                    id="default_view"
                                     className="field"
+                                    {...fieldA11y('default_view')}
                                     value={form.data.default_view}
                                     onChange={(event) => form.setData('default_view', event.target.value)}
                                 >
@@ -141,9 +154,7 @@ export default function ProfilePage({ profile, workspaceLocale, defaultViews }: 
                                 <p className="mt-1 text-xs text-muted">
                                     {t('This is used when there is no page you were trying to open before signing in.')}
                                 </p>
-                                {form.errors.default_view && (
-                                    <p className="field-error" role="alert">{t(form.errors.default_view)}</p>
-                                )}
+                                {fieldError('default_view')}
                             </label>
                         </div>
                     </section>

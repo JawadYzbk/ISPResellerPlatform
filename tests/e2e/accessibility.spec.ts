@@ -322,6 +322,27 @@ test('connects workspace settings errors to their controls', async ({ page }) =>
     await expect(page.locator('#name-error')).toHaveAttribute('role', 'alert');
 });
 
+test('connects profile validation errors to their controls', async ({ page }) => {
+    test.setTimeout(60_000);
+
+    await page.goto('/login');
+    await page.getByLabel('Email address').fill(email);
+    await page.getByRole('textbox', { name: 'Password' }).fill(password);
+    await Promise.all([
+        page.waitForURL(/\/(dashboard|customers|profile)$/),
+        page.getByRole('button', { name: 'Enter workspace' }).click(),
+    ]);
+
+    await page.goto('/profile');
+    await page.locator('#name').fill('a'.repeat(256));
+    await page.locator('#save-profile').click();
+
+    const name = page.locator('#name');
+    await expect(name).toHaveAttribute('aria-invalid', 'true');
+    await expect(name).toHaveAttribute('aria-describedby', 'name-error');
+    await expect(page.locator('#name-error')).toHaveAttribute('role', 'alert');
+});
+
 test('connects service validation errors to their controls', async ({ page }) => {
     test.setTimeout(60_000);
 
