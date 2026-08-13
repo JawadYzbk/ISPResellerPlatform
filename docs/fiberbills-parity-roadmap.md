@@ -64,7 +64,7 @@ Sources:
 | Network integrations | Exceeds reference in RouterOS/RADIUS; gap in optical access | Complete RouterOS/CoA lab acceptance, then add OLT/ONU installation inventory and a vendor-neutral optical driver boundary. |
 | Installations | Delivered/partial | Work orders now support tenant-safe surveys, building/box/port/ONU assignment, guarded completion and activation acceptance; OLT/ONU registry, optical readings and vendor-neutral optical drivers remain. |
 | Activity log, security and trusted devices | Delivered | Keep audit events, re-authentication, 2FA and session-device controls; expose any missing owner-facing audit filters. |
-| Backup/export controls | Backend delivered; UI partial | Add owner-visible backup health, last verified restore metadata and safe export controls without exposing secrets. |
+| Backup/export controls | Backend and health UI delivered; restore/export partial | Add owner-visible last verified restore metadata and safe export controls without exposing secrets. |
 | Electricity/generator meter and odometer billing | Deferred vertical | Build after core ISP/Jebaya parity as a modular reading, approval, rating and billing capability. |
 | Satellite/cable subscriptions | Deferred vertical | Build after core ISP/Jebaya parity using the shared subscription engine, without polluting ISP network concepts. |
 | Native collector/admin mobile application | Deferred | Implement after web production acceptance against the existing versioned APIs and offline sync contract. |
