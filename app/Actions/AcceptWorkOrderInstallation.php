@@ -16,12 +16,12 @@ final readonly class AcceptWorkOrderInstallation implements Action
     {
         return DB::transaction(function () use ($workOrder, $actor, $note): WorkOrder {
             $locked = WorkOrder::query()->lockForUpdate()->findOrFail($workOrder->id);
-            if ($locked->tenant_id !== $actor->tenant_id) {
+            if ((int) $locked->tenant_id !== (int) $actor->tenant_id) {
                 throw new DomainException('The work order and operator must belong to the same tenant.');
             }
             $canManageAllInstallations = $actor->can('network.provision') || $actor->can('reports.operations');
 
-            if (! $canManageAllInstallations && $locked->assigned_to !== $actor->id) {
+            if (! $canManageAllInstallations && (int) $locked->assigned_to !== (int) $actor->id) {
                 throw new DomainException('Only the assigned technician can accept this installation.');
             }
             if (! in_array($locked->type, ['installation', 'fiber'], true)) {

@@ -56,7 +56,7 @@ final readonly class SaveWorkOrderInstallation implements Action
 
     private function assertCanEdit(WorkOrder $workOrder, User $actor): void
     {
-        if ($workOrder->tenant_id !== $actor->tenant_id) {
+        if ((int) $workOrder->tenant_id !== (int) $actor->tenant_id) {
             throw new DomainException('The work order and technician must belong to the same tenant.');
         }
         if (in_array($workOrder->status, [WorkOrderStatus::Completed, WorkOrderStatus::Cancelled], true)) {
@@ -64,7 +64,7 @@ final readonly class SaveWorkOrderInstallation implements Action
         }
         $canManageAllInstallations = $actor->can('network.provision') || $actor->can('reports.operations');
 
-        if (! $canManageAllInstallations && $workOrder->assigned_to !== $actor->id) {
+        if (! $canManageAllInstallations && (int) $workOrder->assigned_to !== (int) $actor->id) {
             throw new DomainException('Only the assigned technician can update this installation.');
         }
     }

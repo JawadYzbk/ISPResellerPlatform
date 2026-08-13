@@ -135,7 +135,7 @@ final class WorkOrderOperationsController extends Controller
             'survey.*' => ['nullable', 'string', 'max:500'],
         ]);
         $box = DistributionBox::query()->where('public_id', $validated['distribution_box_id'])->firstOrFail();
-        abort_unless($box->network_building_id === (int) $validated['network_building_id'], 422, 'The selected box does not belong to the selected building.');
+        abort_unless((int) $box->network_building_id === (int) $validated['network_building_id'], 422, 'The selected box does not belong to the selected building.');
 
         try {
             $save->handle(
