@@ -48,5 +48,11 @@ test('keeps representative workspace controls named for assistive technology', a
             });
 
         expect(unnamed, `${path} has unnamed controls`).toEqual([]);
+
+        const implicitSubmitButtons = await page
+            .locator('form button:visible:not([type])')
+            .evaluateAll((elements) => elements.map((element) => element.outerHTML.slice(0, 180)));
+
+        expect(implicitSubmitButtons, `${path} has buttons without an explicit type`).toEqual([]);
     }
 });
