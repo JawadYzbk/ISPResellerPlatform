@@ -76,6 +76,16 @@ export default function Expenses({
 }: Props) {
     const page = usePage<PageProps>();
     const t = createTranslator(page.props.app.locale);
+    const fieldA11y = (id: string, error?: string) => ({
+        'aria-invalid': Boolean(error),
+        'aria-describedby': error ? `${id}-error` : undefined,
+    });
+    const fieldError = (id: string, error?: string) =>
+        error ? (
+            <p id={`${id}-error`} className="field-error" role="alert">
+                {t(error)}
+            </p>
+        ) : null;
     const [amount, setAmount] = useState('');
     const [recurringAmount, setRecurringAmount] = useState('');
     const [reviewNotes, setReviewNotes] = useState<Record<string, string>>({});
@@ -201,7 +211,9 @@ export default function Expenses({
                         <label className="field-label">
                             {t('Category')}
                             <ResponsiveSelect
+                                id="expense-category"
                                 className="mt-1"
+                                {...fieldA11y('expense-category', form.errors.expense_category_id)}
                                 value={form.data.expense_category_id}
                                 onChange={(event) => form.setData('expense_category_id', Number(event.target.value))}
                             >
@@ -211,11 +223,14 @@ export default function Expenses({
                                     </option>
                                 ))}
                             </ResponsiveSelect>
+                            {fieldError('expense-category', form.errors.expense_category_id)}
                         </label>
                         <label className="field-label">
                             {t('Vendor')} ({t('optional')})
                             <ResponsiveSelect
+                                id="expense-vendor"
                                 className="mt-1"
+                                {...fieldA11y('expense-vendor', form.errors.expense_vendor_id)}
                                 value={form.data.expense_vendor_id}
                                 onChange={(event) => form.setData('expense_vendor_id', event.target.value)}
                             >
@@ -226,11 +241,14 @@ export default function Expenses({
                                     </option>
                                 ))}
                             </ResponsiveSelect>
+                            {fieldError('expense-vendor', form.errors.expense_vendor_id)}
                         </label>
                         <label className="field-label">
                             {t('Paid from')}
                             <ResponsiveSelect
+                                id="expense-payment-source"
                                 className="mt-1"
+                                {...fieldA11y('expense-payment-source', form.errors.payment_source)}
                                 value={form.data.payment_source}
                                 onChange={(event) => form.setData('payment_source', event.target.value)}
                             >
@@ -238,12 +256,15 @@ export default function Expenses({
                                 <option value="bank">{t('Bank account')}</option>
                                 <option value="collector">{t('Collector custody')}</option>
                             </ResponsiveSelect>
+                            {fieldError('expense-payment-source', form.errors.payment_source)}
                         </label>
                         {form.data.payment_source === 'collector' && (
                             <label className="field-label">
                                 {t('Collector')}
                                 <ResponsiveSelect
+                                    id="expense-collector"
                                     className="mt-1"
+                                    {...fieldA11y('expense-collector', form.errors.collector_id)}
                                     value={form.data.collector_id}
                                     onChange={(event) => form.setData('collector_id', event.target.value)}
                                 >
@@ -254,68 +275,81 @@ export default function Expenses({
                                         </option>
                                     ))}
                                 </ResponsiveSelect>
+                                {fieldError('expense-collector', form.errors.collector_id)}
                             </label>
                         )}
                         <label className="field-label">
                             {t('Currency')}
                             <CurrencyCombobox
+                                id="expense-currency"
                                 className="field mt-1"
+                                {...fieldA11y('expense-currency', form.errors.currency)}
                                 value={form.data.currency}
                                 currencies={currencies}
                                 onChange={(value) => form.setData('currency', value)}
                             />
+                            {fieldError('expense-currency', form.errors.currency)}
                         </label>
                         <label className="field-label">
                             {t('Amount')}
                             <input
+                                id="expense-amount"
                                 className="field mt-1 tabular-nums"
                                 inputMode="decimal"
+                                {...fieldA11y('expense-amount', form.errors.amount)}
                                 value={amount}
                                 onChange={(event) => setAmount(event.target.value)}
                             />
-                            {form.errors.amount && <span className="field-error" role="alert">{t(form.errors.amount)}</span>}
+                            {fieldError('expense-amount', form.errors.amount)}
                         </label>
                         <label className="field-label">
                             {t('Date')}
                             <input
+                                id="expense-date"
                                 className="field mt-1"
                                 type="date"
+                                {...fieldA11y('expense-date', form.errors.incurred_at)}
                                 value={form.data.incurred_at}
                                 onChange={(event) => form.setData('incurred_at', event.target.value)}
                             />
+                            {fieldError('expense-date', form.errors.incurred_at)}
                         </label>
                         <label className="field-label">
                             {t('Reference')} ({t('optional')})
                             <input
+                                id="expense-reference"
                                 className="field mt-1"
                                 maxLength={120}
+                                {...fieldA11y('expense-reference', form.errors.reference)}
                                 value={form.data.reference}
                                 onChange={(event) => form.setData('reference', event.target.value)}
                             />
+                            {fieldError('expense-reference', form.errors.reference)}
                         </label>
                         <label className="field-label md:col-span-2">
                             {t('Description')}
                             <textarea
+                                id="expense-description"
                                 className="field mt-1 min-h-20"
                                 maxLength={2000}
+                                {...fieldA11y('expense-description', form.errors.description)}
                                 value={form.data.description}
                                 onChange={(event) => form.setData('description', event.target.value)}
                             />
+                            {fieldError('expense-description', form.errors.description)}
                         </label>
                         <label className="field-label md:col-span-2">
                             {t('Receipt (PDF or image)')}
                             <input
+                                id="expense-attachment"
                                 className="field mt-1 file:me-3 file:rounded-lg file:border-0 file:bg-brand-soft file:px-3 file:py-1.5 file:font-semibold file:text-brand"
                                 type="file"
                                 accept="application/pdf,image/jpeg,image/png,image/webp"
+                                {...fieldA11y('expense-attachment', form.errors.attachment)}
                                 onChange={(event) => form.setData('attachment', event.target.files?.[0] ?? null)}
                             />
+                            {fieldError('expense-attachment', form.errors.attachment)}
                         </label>
-                        {(form.errors.description || form.errors.attachment) && (
-                            <p className="field-error md:col-span-2 xl:col-span-4" role="alert">
-                                {t(form.errors.description ?? form.errors.attachment ?? '')}
-                            </p>
-                        )}
                         <div className="flex justify-end md:col-span-2 xl:col-span-4">
                             <button
                                 type="submit"
@@ -477,7 +511,9 @@ export default function Expenses({
                         <label className="field-label">
                             {t('Category')}
                             <ResponsiveSelect
+                                id="recurring-category"
                                 className="mt-1"
+                                {...fieldA11y('recurring-category', recurringForm.errors.expense_category_id)}
                                 value={recurringForm.data.expense_category_id}
                                 onChange={(event) =>
                                     recurringForm.setData('expense_category_id', Number(event.target.value))
@@ -489,11 +525,14 @@ export default function Expenses({
                                     </option>
                                 ))}
                             </ResponsiveSelect>
+                            {fieldError('recurring-category', recurringForm.errors.expense_category_id)}
                         </label>
                         <label className="field-label">
                             {t('Vendor')} ({t('optional')})
                             <ResponsiveSelect
+                                id="recurring-vendor"
                                 className="mt-1"
+                                {...fieldA11y('recurring-vendor', recurringForm.errors.expense_vendor_id)}
                                 value={recurringForm.data.expense_vendor_id}
                                 onChange={(event) => recurringForm.setData('expense_vendor_id', event.target.value)}
                             >
@@ -504,11 +543,14 @@ export default function Expenses({
                                     </option>
                                 ))}
                             </ResponsiveSelect>
+                            {fieldError('recurring-vendor', recurringForm.errors.expense_vendor_id)}
                         </label>
                         <label className="field-label">
                             {t('Frequency')}
                             <ResponsiveSelect
+                                id="recurring-frequency"
                                 className="mt-1"
+                                {...fieldA11y('recurring-frequency', recurringForm.errors.frequency)}
                                 value={recurringForm.data.frequency}
                                 onChange={(event) => recurringForm.setData('frequency', event.target.value)}
                             >
@@ -517,75 +559,94 @@ export default function Expenses({
                                 <option value="quarterly">{t('Quarterly')}</option>
                                 <option value="yearly">{t('Yearly')}</option>
                             </ResponsiveSelect>
+                            {fieldError('recurring-frequency', recurringForm.errors.frequency)}
                         </label>
                         <label className="field-label">
                             {t('Every')}
                             <input
+                                id="recurring-interval"
                                 className="field mt-1 tabular-nums"
                                 type="number"
                                 min="1"
                                 max="24"
+                                {...fieldA11y('recurring-interval', recurringForm.errors.interval)}
                                 value={recurringForm.data.interval}
                                 onChange={(event) => recurringForm.setData('interval', Number(event.target.value))}
                             />
+                            {fieldError('recurring-interval', recurringForm.errors.interval)}
                         </label>
                         <label className="field-label">
                             {t('Paid from')}
                             <ResponsiveSelect
+                                id="recurring-payment-source"
                                 className="mt-1"
+                                {...fieldA11y('recurring-payment-source', recurringForm.errors.payment_source)}
                                 value={recurringForm.data.payment_source}
                                 onChange={(event) => recurringForm.setData('payment_source', event.target.value)}
                             >
                                 <option value="bank">{t('Bank account')}</option>
                                 <option value="cash">{t('Workspace cash')}</option>
                             </ResponsiveSelect>
+                            {fieldError('recurring-payment-source', recurringForm.errors.payment_source)}
                         </label>
                         <label className="field-label">
                             {t('Currency')}
                             <CurrencyCombobox
+                                id="recurring-currency"
                                 className="field mt-1"
+                                {...fieldA11y('recurring-currency', recurringForm.errors.currency)}
                                 value={recurringForm.data.currency}
                                 currencies={currencies}
                                 onChange={(value) => recurringForm.setData('currency', value)}
                             />
+                            {fieldError('recurring-currency', recurringForm.errors.currency)}
                         </label>
                         <label className="field-label">
                             {t('Amount')}
                             <input
+                                id="recurring-amount"
                                 className="field mt-1 tabular-nums"
                                 inputMode="decimal"
+                                {...fieldA11y('recurring-amount', recurringForm.errors.amount)}
                                 value={recurringAmount}
                                 onChange={(event) => setRecurringAmount(event.target.value)}
                             />
-                            {recurringForm.errors.amount && (
-                                <span className="field-error" role="alert">{t(recurringForm.errors.amount)}</span>
-                            )}
+                            {fieldError('recurring-amount', recurringForm.errors.amount)}
                         </label>
                         <label className="field-label">
                             {t('First due date')}
                             <input
+                                id="recurring-starts-on"
                                 className="field mt-1"
                                 type="date"
+                                {...fieldA11y('recurring-starts-on', recurringForm.errors.starts_on)}
                                 value={recurringForm.data.starts_on}
                                 onChange={(event) => recurringForm.setData('starts_on', event.target.value)}
                             />
+                            {fieldError('recurring-starts-on', recurringForm.errors.starts_on)}
                         </label>
                         <label className="field-label xl:col-span-2">
                             {t('Description')}
                             <input
+                                id="recurring-description"
                                 className="field mt-1"
+                                {...fieldA11y('recurring-description', recurringForm.errors.description)}
                                 value={recurringForm.data.description}
                                 onChange={(event) => recurringForm.setData('description', event.target.value)}
                             />
+                            {fieldError('recurring-description', recurringForm.errors.description)}
                         </label>
                         <label className="field-label">
                             {t('End date')} ({t('optional')})
                             <input
+                                id="recurring-ends-on"
                                 className="field mt-1"
                                 type="date"
+                                {...fieldA11y('recurring-ends-on', recurringForm.errors.ends_on)}
                                 value={recurringForm.data.ends_on}
                                 onChange={(event) => recurringForm.setData('ends_on', event.target.value)}
                             />
+                            {fieldError('recurring-ends-on', recurringForm.errors.ends_on)}
                         </label>
                         <div className="flex items-end justify-end">
                             <button
@@ -669,17 +730,23 @@ export default function Expenses({
                             }}
                         >
                             <input
+                                id="expense-category-name"
                                 className="field"
+                                {...fieldA11y('expense-category-name', categoryForm.errors.name)}
                                 placeholder={t('Category name')}
                                 value={categoryForm.data.name}
                                 onChange={(event) => categoryForm.setData('name', event.target.value)}
                             />
+                            {fieldError('expense-category-name', categoryForm.errors.name)}
                             <input
+                                id="expense-category-code"
                                 className="field uppercase"
+                                {...fieldA11y('expense-category-code', categoryForm.errors.code)}
                                 placeholder={t('CODE')}
                                 value={categoryForm.data.code}
                                 onChange={(event) => categoryForm.setData('code', event.target.value)}
                             />
+                            {fieldError('expense-category-code', categoryForm.errors.code)}
                             <button type="submit" className="button-secondary">{t('Add category')}</button>
                         </form>
                         <div className="mt-4 flex flex-wrap gap-2">
@@ -714,30 +781,42 @@ export default function Expenses({
                             }}
                         >
                             <input
+                                id="expense-vendor-name"
                                 className="field"
+                                {...fieldA11y('expense-vendor-name', vendorForm.errors.name)}
                                 placeholder={t('Vendor name')}
                                 value={vendorForm.data.name}
                                 onChange={(event) => vendorForm.setData('name', event.target.value)}
                             />
+                            {fieldError('expense-vendor-name', vendorForm.errors.name)}
                             <input
+                                id="expense-vendor-phone"
                                 className="field"
+                                {...fieldA11y('expense-vendor-phone', vendorForm.errors.phone)}
                                 placeholder={t('Phone')}
                                 value={vendorForm.data.phone}
                                 onChange={(event) => vendorForm.setData('phone', event.target.value)}
                             />
+                            {fieldError('expense-vendor-phone', vendorForm.errors.phone)}
                             <input
+                                id="expense-vendor-email"
                                 className="field"
                                 type="email"
+                                {...fieldA11y('expense-vendor-email', vendorForm.errors.email)}
                                 placeholder={t('Email')}
                                 value={vendorForm.data.email}
                                 onChange={(event) => vendorForm.setData('email', event.target.value)}
                             />
+                            {fieldError('expense-vendor-email', vendorForm.errors.email)}
                             <input
+                                id="expense-vendor-tax-number"
                                 className="field"
+                                {...fieldA11y('expense-vendor-tax-number', vendorForm.errors.tax_number)}
                                 placeholder={t('Tax number')}
                                 value={vendorForm.data.tax_number}
                                 onChange={(event) => vendorForm.setData('tax_number', event.target.value)}
                             />
+                            {fieldError('expense-vendor-tax-number', vendorForm.errors.tax_number)}
                             <div className="flex justify-end sm:col-span-2">
                                 <button type="submit" className="button-secondary">{t('Add vendor')}</button>
                             </div>
