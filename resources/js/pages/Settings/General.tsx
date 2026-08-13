@@ -229,7 +229,7 @@ export default function GeneralSettings({
                     <div className="mt-5 grid gap-4 md:grid-cols-3">
                         <div className="rounded-xl border border-line bg-sand/50 p-4">
                             <p className="text-sm font-semibold">{t('Cash collection')}</p>
-                            <p className="mt-1 text-xs text-muted">{payments.cash.detail}</p>
+                            <p className="mt-1 text-xs text-muted">{t(payments.cash.detail)}</p>
                             <Link href="/billing/shifts" className="mt-3 inline-flex text-xs font-semibold text-brand">
                                 {t('Open cash shifts')} →
                             </Link>
@@ -239,7 +239,7 @@ export default function GeneralSettings({
                             <p
                                 className={`mt-1 text-xs ${payments.whish.ready ? 'text-emerald-700' : 'text-amber-700'}`}
                             >
-                                {payments.whish.detail}
+                                {t(payments.whish.detail)}
                             </p>
                             <Link
                                 href={payments.whish.ready ? '/customers' : '/settings/integrations#whish'}
@@ -253,7 +253,7 @@ export default function GeneralSettings({
                             <p
                                 className={`mt-1 text-xs ${payments.stripe.ready ? 'text-emerald-700' : 'text-amber-700'}`}
                             >
-                                {payments.stripe.detail}
+                                {t(payments.stripe.detail)}
                             </p>
                             <Link
                                 href={payments.stripe.ready ? '#payment-channels' : '/settings/integrations#stripe'}
@@ -318,7 +318,7 @@ export default function GeneralSettings({
                                     value={form.data.name}
                                     onChange={(event) => form.setData('name', event.target.value)}
                                 />
-                                {form.errors.name && <p className="field-error">{form.errors.name}</p>}
+                                {form.errors.name && <p className="field-error">{t(form.errors.name)}</p>}
                             </label>
                             <label className="sm:col-span-2">
                                 <span className="field-label">{t('Tenant logo')}</span>
@@ -344,7 +344,7 @@ export default function GeneralSettings({
                                         <p className="mt-1 text-xs text-muted">
                                             {t('JPG, PNG, or WebP up to 2 MB. It appears in the staff shell and customer portal.')}
                                         </p>
-                                        {form.errors.logo && <p className="field-error">{form.errors.logo}</p>}
+                                        {form.errors.logo && <p className="field-error">{t(form.errors.logo)}</p>}
                                     </div>
                                 </div>
                             </label>
@@ -392,7 +392,7 @@ export default function GeneralSettings({
                                         </option>
                                     ))}
                                 </ResponsiveSelect>
-                                {form.errors.timezone && <p className="field-error">{form.errors.timezone}</p>}
+                                {form.errors.timezone && <p className="field-error">{t(form.errors.timezone)}</p>}
                             </label>
                         </div>
                     </section>
@@ -409,7 +409,7 @@ export default function GeneralSettings({
                                     onChange={(value) => form.setData('base_currency', value)}
                                 />
                                 {form.errors.base_currency && (
-                                    <p className="field-error">{form.errors.base_currency}</p>
+                                    <p className="field-error">{t(form.errors.base_currency)}</p>
                                 )}
                             </label>
                             <label>
@@ -422,7 +422,7 @@ export default function GeneralSettings({
                                     onChange={(value) => form.setData('collection_currency', value)}
                                 />
                                 {form.errors.collection_currency && (
-                                    <p className="field-error">{form.errors.collection_currency}</p>
+                                    <p className="field-error">{t(form.errors.collection_currency)}</p>
                                 )}
                             </label>
                             <label>
@@ -435,7 +435,7 @@ export default function GeneralSettings({
                                 >
                                     {availableDateFormats.map((option) => (
                                         <option key={option.value} value={option.value}>
-                                            {option.label}
+                                            {t(option.label)}
                                         </option>
                                     ))}
                                 </ResponsiveSelect>
@@ -450,7 +450,7 @@ export default function GeneralSettings({
                                 >
                                     {availableTimeFormats.map((option) => (
                                         <option key={option.value} value={option.value}>
-                                            {option.label}
+                                            {t(option.label)}
                                         </option>
                                     ))}
                                 </ResponsiveSelect>

@@ -21,7 +21,7 @@ export type PublicLinkSummary = {
 export default function PublicLinkCreator({
     endpoint,
     types,
-    title = 'Share securely',
+    title,
     existingLinks = [],
 }: {
     endpoint: string;
@@ -52,7 +52,7 @@ export default function PublicLinkCreator({
                     <Link2 size={17} />
                 </span>
                 <div>
-                    <h2 className="text-sm font-semibold text-balance">{title}</h2>
+                    <h2 className="text-sm font-semibold text-balance">{title ?? t('Share securely')}</h2>
                     <p className="mt-1 text-pretty text-xs text-muted">
                         {t('Create a revocable link without exposing customer login credentials.')}
                     </p>
@@ -92,7 +92,7 @@ export default function PublicLinkCreator({
                     {t('Create link')}
                 </button>
             </form>
-            {form.errors.type && <p className="field-error mt-2">{form.errors.type}</p>}
+            {form.errors.type && <p className="field-error mt-2">{t(form.errors.type)}</p>}
             {flash.publicLink && (
                 <div className="mt-4 rounded-xl border border-line bg-sand/30 p-3">
                     <label className="field-label" htmlFor={`${fieldId}-url`}>

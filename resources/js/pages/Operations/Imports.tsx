@@ -43,14 +43,16 @@ type PagePropsWithImportFlash = PageProps & {
     flash: PageProps['flash'] & { importResult?: ImportBatchResult };
 };
 
-const labelForType = (type: string, types: ImportType[]) => types.find((item) => item.value === type)?.label ?? type;
+const labelForType = (type: string, types: ImportType[], t: (key: string) => string) =>
+    t(types.find((item) => item.value === type)?.label ?? type);
 
 const formatDate = (value: string | null) =>
     value
         ? new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value))
         : '—';
 
-const rowErrorText = (row: ImportBatchReportRow) => (row.errors.length > 0 ? row.errors.join('; ') : 'Ready to import');
+const rowErrorText = (row: ImportBatchReportRow, t: (key: string) => string) =>
+    row.errors.length > 0 ? row.errors.map((error) => t(error)).join('; ') : t('Ready to import');
 
 export default function Imports({ types, routers, batches }: Props) {
     const { props } = usePage<PagePropsWithImportFlash>();
@@ -106,11 +108,11 @@ export default function Imports({ types, routers, batches }: Props) {
                         >
                             {types.map((type) => (
                                 <option key={type.value} value={type.value}>
-                                    {type.label}
+                                    {t(type.label)}
                                 </option>
                             ))}
                         </ResponsiveSelect>
-                        {form.errors.type && <p className="field-error">{form.errors.type}</p>}
+                        {form.errors.type && <p className="field-error">{t(form.errors.type)}</p>}
                     </label>
 
                     {isRouterDiscovery ? (
@@ -129,7 +131,7 @@ export default function Imports({ types, routers, batches }: Props) {
                                 ))}
                             </ResponsiveSelect>
                             {form.errors.router_public_id && (
-                                <p className="field-error">{form.errors.router_public_id}</p>
+                                <p className="field-error">{t(form.errors.router_public_id)}</p>
                             )}
                             <p className="mt-2 text-xs leading-5 text-muted">{t('imports.discovery_description')}</p>
                         </label>
@@ -142,7 +144,7 @@ export default function Imports({ types, routers, batches }: Props) {
                                 accept=".csv,.txt,.xlsx"
                                 onChange={(event) => form.setData('file', event.target.files?.[0] ?? null)}
                             />
-                            {form.errors.file && <p className="field-error">{form.errors.file}</p>}
+                            {form.errors.file && <p className="field-error">{t(form.errors.file)}</p>}
                             <p className="mt-2 text-xs leading-5 text-muted">
                                 {t('imports.required_columns')}: {selectedType?.columns ?? t('imports.choose_type')}
                             </p>
@@ -186,7 +188,7 @@ export default function Imports({ types, routers, batches }: Props) {
                     {result ? (
                         <div>
                             <div className="grid gap-3 border-b border-line p-6 sm:grid-cols-4">
-                                <Metric label={t('Type')} value={labelForType(result.type, types)} />
+                                <Metric label={t('Type')} value={labelForType(result.type, types, t)} />
                                 <Metric label={t('Rows')} value={result.total_rows.toLocaleString()} />
                                 <Metric
                                     label={t('Accepted')}
@@ -306,7 +308,7 @@ function ReportRow({ row, t }: { row: ImportBatchReportRow; t: (key: string) => 
                     {t(row.status)}
                 </span>
             </td>
-            <td className="px-6 py-3 text-sm text-muted">{rowErrorText(row)}</td>
+            <td className="px-6 py-3 text-sm text-muted">{rowErrorText(row, t)}</td>
         </tr>
     );
 }
@@ -326,7 +328,7 @@ function HistoryRow({
     return (
         <tr>
             <td className="px-6 py-4">
-                <p className="text-sm font-semibold">{labelForType(batch.type, types)}</p>
+                <p className="text-sm font-semibold">{labelForType(batch.type, types, t)}</p>
                 <p className="mt-1 text-xs text-muted">{batch.filename}</p>
             </td>
             <td className="px-6 py-4">

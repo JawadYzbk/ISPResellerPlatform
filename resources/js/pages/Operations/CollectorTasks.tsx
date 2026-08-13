@@ -303,7 +303,7 @@ export default function CollectorTasks({ filters, collectors, customers, tasks, 
                                         .filter((item) => item.value !== 'open')
                                         .map((item) => (
                                             <option key={item.value} value={item.value}>
-                                                {item.label}
+                                                {t(item.label)}
                                             </option>
                                         ))}
                                 </ResponsiveSelect>

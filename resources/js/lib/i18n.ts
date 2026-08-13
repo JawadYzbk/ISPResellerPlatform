@@ -1210,6 +1210,28 @@ const sharedArabic: Messages = {
     'Each account has its own private bridge session. Assign a job so billing, support, or operations messages use the intended phone number.':
         'لكل حساب جلسة جسر خاصة به. عيّن وظيفة لتستخدم رسائل الفوترة والدعم والعمليات رقم الهاتف المقصود.',
     'A verified application backup was created successfully.': 'تم إنشاء نسخة احتياطية موثقة للتطبيق بنجاح.',
+    'At least one WhatsApp account is waiting for a QR scan.': 'يوجد حساب WhatsApp واحد على الأقل بانتظار مسح QR.',
+    'At least one WhatsApp account needs to be paired.': 'يحتاج حساب WhatsApp واحد على الأقل إلى الاقتران.',
+    'Bridge configuration is present. Open WhatsApp setup to check pairing status.':
+        'إعداد الجسر موجود. افتح إعداد WhatsApp للتحقق من حالة الاقتران.',
+    'The Web.js bridge still needs its endpoint, token, and signed webhook settings.':
+        'لا يزال جسر Web.js يحتاج إلى نقطة النهاية والرمز وإعدادات webhook الموقعة.',
+    'The private WhatsApp bridge could not be reached for one or more accounts.':
+        'تعذّر الوصول إلى جسر WhatsApp الخاص لحساب واحد أو أكثر.',
+    'No WhatsApp delivery accounts are configured. Add an account to begin QR pairing.':
+        'لا توجد حسابات تسليم WhatsApp مضبوطة. أضف حسابًا لبدء الاقتران عبر QR.',
+    'Missing deployment values:': 'قيم النشر المفقودة:',
+    'WHISH_ENDPOINT must be a valid HTTPS URL in production.': 'يجب أن يكون WHISH_ENDPOINT رابط HTTPS صالحًا في بيئة الإنتاج.',
+    '2026-08-13 (Y-m-d)': '2026-08-13 (Y-m-d)',
+    '13/08/2026 (d/m/Y)': '13/08/2026 (d/m/Y)',
+    '08/13/2026 (m/d/Y)': '08/13/2026 (m/d/Y)',
+    '13.08.2026 (d.m.Y)': '13.08.2026 (d.m.Y)',
+    'Thu, 13 Aug 2026 (D, d M Y)': 'الخميس، 13 أغسطس 2026 (D, d M Y)',
+    '14:30 (24-hour)': '14:30 (24 ساعة)',
+    '14:30:45 (24-hour with seconds)': '14:30:45 (24 ساعة مع الثواني)',
+    '02:30 PM (12-hour)': '02:30 م (12 ساعة)',
+    '02:30:45 PM (12-hour with seconds)': '02:30:45 م (12 ساعة مع الثواني)',
+    'Ready to import': 'جاهز للاستيراد',
     'A tenant logo is available on the configured storage disk.': 'شعار مساحة العمل متاح على قرص التخزين المضبوط.',
     'Account is ready for operations.': 'الحساب جاهز للعمليات.',
     'Add a tenant logo before the pilot handoff.': 'أضف شعار مساحة العمل قبل تسليم التجربة.',
@@ -1385,7 +1407,6 @@ const sharedFrench: Messages = {
     'Open coordinates in OpenStreetMap': 'Ouvrir les coordonnées dans OpenStreetMap',
     'Signature pad': 'Zone de signature',
     'Clear signature': 'Effacer la signature',
-    'Share securely': 'Partager en sécurité',
     'Create a revocable link without exposing customer login credentials.':
         'Créez un lien révocable sans exposer les identifiants de connexion du client.',
     'Public link type': 'Type de lien public',
@@ -1667,6 +1688,29 @@ const sharedFrench: Messages = {
     'Each account has its own private bridge session. Assign a job so billing, support, or operations messages use the intended phone number.':
         'Chaque compte possède sa propre session privée du pont. Attribuez une fonction pour que les messages de facturation, de support et d’opérations utilisent le bon numéro.',
     'A verified application backup was created successfully.': 'Une sauvegarde vérifiée de l’application a été créée avec succès.',
+    'At least one WhatsApp account is waiting for a QR scan.': 'Au moins un compte WhatsApp attend un scan QR.',
+    'At least one WhatsApp account needs to be paired.': 'Au moins un compte WhatsApp doit être appairé.',
+    'Bridge configuration is present. Open WhatsApp setup to check pairing status.':
+        'La configuration du pont est présente. Ouvrez la configuration WhatsApp pour vérifier l’appairage.',
+    'The Web.js bridge still needs its endpoint, token, and signed webhook settings.':
+        'Le pont Web.js nécessite encore son point de terminaison, son jeton et ses webhooks signés.',
+    'The private WhatsApp bridge could not be reached for one or more accounts.':
+        'Le pont WhatsApp privé est inaccessible pour un ou plusieurs comptes.',
+    'No WhatsApp delivery accounts are configured. Add an account to begin QR pairing.':
+        'Aucun compte de distribution WhatsApp n’est configuré. Ajoutez-en un pour commencer l’appairage QR.',
+    'Missing deployment values:': 'Valeurs de déploiement manquantes :',
+    'WHISH_ENDPOINT must be a valid HTTPS URL in production.': 'WHISH_ENDPOINT doit être une URL HTTPS valide en production.',
+    '2026-08-13 (Y-m-d)': '2026-08-13 (Y-m-d)',
+    '13/08/2026 (d/m/Y)': '13/08/2026 (d/m/Y)',
+    '08/13/2026 (m/d/Y)': '08/13/2026 (m/d/Y)',
+    '13.08.2026 (d.m.Y)': '13.08.2026 (d.m.Y)',
+    'Thu, 13 Aug 2026 (D, d M Y)': 'jeu. 13 août 2026 (D, d M Y)',
+    '14:30 (24-hour)': '14:30 (24 heures)',
+    '14:30:45 (24-hour with seconds)': '14:30:45 (24 heures avec secondes)',
+    '02:30 PM (12-hour)': '14:30 (12 heures)',
+    '02:30:45 PM (12-hour with seconds)': '14:30:45 (12 heures avec secondes)',
+    'Ready to import': 'Prêt à importer',
+    'Share securely': 'Partager en sécurité',
     'A tenant logo is available on the configured storage disk.': 'Un logo d’espace est disponible sur le disque configuré.',
     'Account is ready for operations.': 'Le compte est prêt pour les opérations.',
     'Add a tenant logo before the pilot handoff.': 'Ajoutez un logo d’espace avant la mise en production pilote.',
@@ -3262,6 +3306,7 @@ const messages: Record<Exclude<Locale, 'en'>, Messages> = {
         'Signed callback': 'الاستدعاء الموقع',
         Configured: 'مهيأ',
         Disabled: 'معطّل',
+        Attention: 'يحتاج إلى انتباه',
         'Needs configuration': 'يحتاج إلى إعداد',
         Starting: 'جارٍ البدء',
         'Waiting to start': 'بانتظار البدء',
@@ -5199,6 +5244,7 @@ const messages: Record<Exclude<Locale, 'en'>, Messages> = {
         'Signed callback': 'Callback signé',
         Configured: 'Configuré',
         Disabled: 'Désactivé',
+        Attention: 'Attention requise',
         'Needs configuration': 'Configuration requise',
         Starting: 'Démarrage',
         'Waiting to start': 'En attente de démarrage',
@@ -6123,6 +6169,39 @@ function runtimeTranslation(locale: Locale, key: string): string | null {
         suspended: 'suspendu',
     };
     const status = locale === 'ar' ? statusArabic : statusFrench;
+    const fieldLabel = (value: string): string => {
+        const normalized = value.replaceAll('_', ' ').toLowerCase();
+        const labels =
+            locale === 'ar'
+                ? {
+                      email: 'البريد الإلكتروني',
+                      password: 'كلمة المرور',
+                      name: 'الاسم',
+                      currency: 'العملة',
+                      'base currency': 'العملة الأساسية',
+                      'collection currency': 'عملة التحصيل',
+                      timezone: 'المنطقة الزمنية',
+                      locale: 'اللغة',
+                      amount: 'المبلغ',
+                      rate: 'السعر',
+                      code: 'الرمز',
+                  }
+                : {
+                      email: 'L’adresse e-mail',
+                      password: 'Le mot de passe',
+                      name: 'Le nom',
+                      currency: 'La devise',
+                      'base currency': 'La devise de base',
+                      'collection currency': 'La devise d’encaissement',
+                      timezone: 'Le fuseau horaire',
+                      locale: 'La langue',
+                      amount: 'Le montant',
+                      rate: 'Le taux',
+                      code: 'Le code',
+                  };
+
+        return labels[normalized as keyof typeof labels] ?? value.replaceAll('_', ' ');
+    };
     const entity = (value: string): string => {
         const prefixes =
             locale === 'ar'
@@ -6235,6 +6314,19 @@ function runtimeTranslation(locale: Locale, key: string): string | null {
                   [/^It is (\d+) hour\(s\) old; refresh it or approve a current manual treasury rate\.$/, (m) => `عمره ${m[1]} ساعة؛ حدّثه أو وافق على سعر خزينة يدوي حالي.`],
                   [/^The configured tenant logo could not be verified on the (.+) storage disk\.$/, (m) => `تعذّر التحقق من شعار مساحة العمل على قرص التخزين ${m[1]}.`],
                   [/^The tenant logo path is configured, but the stored file is missing from the (.+) storage disk\.$/, (m) => `مسار الشعار مضبوط، لكن الملف مفقود من قرص التخزين ${m[1]}.`],
+                  [/^(\d+) backup destination\(s\) are reachable and pass the monitored health checks\.$/, (m) => `وجهة/وجهات النسخ الاحتياطي المتاحة وعددها ${m[1]} تجتاز فحوصات الصحة المراقبة.`],
+                  [/^Stripe configuration is missing: (.+)\.$/, (m) => `إعداد Stripe ناقص: ${m[1]}.`],
+                  [/^Stripe account API returned HTTP (\d+)\.$/, (m) => `أعادت واجهة حساب Stripe حالة HTTP ${m[1]}.`],
+                  [/^WhatsApp Web\.js bridge returned HTTP (\d+)\.$/, (m) => `أعاد جسر WhatsApp Web.js حالة HTTP ${m[1]}.`],
+                  [/^Frankfurter synchronization is disabled\.$/, () => 'مزامنة Frankfurter معطّلة.'],
+                  [/^The (.+) field is required\.$/, (m) => `${fieldLabel(m[1])} مطلوب.`],
+                  [/^The selected (.+) is invalid\.$/, (m) => `${fieldLabel(m[1])} المحددة غير صالحة.`],
+                  [/^The (.+) field must be a valid email address\.$/, (m) => `${fieldLabel(m[1])} يجب أن يكون عنوان بريد إلكتروني صالحًا.`],
+                  [/^The (.+) field must be at least (\d+) characters\.$/, (m) => `${fieldLabel(m[1])} يجب ألا يقل عن ${m[2]} أحرف.`],
+                  [/^The (.+) field must be a number\.$/, (m) => `${fieldLabel(m[1])} يجب أن يكون رقمًا.`],
+                  [/^The (.+) field must be an integer\.$/, (m) => `${fieldLabel(m[1])} يجب أن يكون عددًا صحيحًا.`],
+                  [/^The (.+) has already been taken\.$/, (m) => `${fieldLabel(m[1])} مستخدم بالفعل.`],
+                  [/^Missing deployment values: (.+)\.$/, (m) => `قيم النشر المفقودة: ${m[1]}.`],
                   [/^The service is not available in this workspace\.$/, () => 'الخدمة غير متاحة في مساحة العمل هذه.'],
               ]
             : [
@@ -6283,6 +6375,19 @@ function runtimeTranslation(locale: Locale, key: string): string | null {
                   [/^It is (\d+) hour\(s\) old; refresh it or approve a current manual treasury rate\.$/, (m) => `Il date de ${m[1]} heure(s) ; actualisez-le ou approuvez un taux manuel actuel.`],
                   [/^The configured tenant logo could not be verified on the (.+) storage disk\.$/, (m) => `Le logo d’espace n’a pas pu être vérifié sur le disque ${m[1]}.`],
                   [/^The tenant logo path is configured, but the stored file is missing from the (.+) storage disk\.$/, (m) => `Le chemin du logo est configuré, mais le fichier manque sur le disque ${m[1]}.`],
+                  [/^(\d+) backup destination\(s\) are reachable and pass the monitored health checks\.$/, (m) => `${m[1]} destination(s) de sauvegarde sont accessibles et réussissent les contrôles surveillés.`],
+                  [/^Stripe configuration is missing: (.+)\.$/, (m) => `Configuration Stripe manquante : ${m[1]}.`],
+                  [/^Stripe account API returned HTTP (\d+)\.$/, (m) => `L’API du compte Stripe a renvoyé HTTP ${m[1]}.`],
+                  [/^WhatsApp Web\.js bridge returned HTTP (\d+)\.$/, (m) => `Le pont WhatsApp Web.js a renvoyé HTTP ${m[1]}.`],
+                  [/^Frankfurter synchronization is disabled\.$/, () => 'La synchronisation Frankfurter est désactivée.'],
+                  [/^The (.+) field is required\.$/, (m) => `${fieldLabel(m[1])} est obligatoire.`],
+                  [/^The selected (.+) is invalid\.$/, (m) => `${fieldLabel(m[1])} sélectionnée n’est pas valide.`],
+                  [/^The (.+) field must be a valid email address\.$/, (m) => `${fieldLabel(m[1])} doit être une adresse e-mail valide.`],
+                  [/^The (.+) field must be at least (\d+) characters\.$/, (m) => `${fieldLabel(m[1])} doit comporter au moins ${m[2]} caractères.`],
+                  [/^The (.+) field must be a number\.$/, (m) => `${fieldLabel(m[1])} doit être un nombre.`],
+                  [/^The (.+) field must be an integer\.$/, (m) => `${fieldLabel(m[1])} doit être un entier.`],
+                  [/^The (.+) has already been taken\.$/, (m) => `${fieldLabel(m[1])} est déjà utilisé.`],
+                  [/^Missing deployment values: (.+)\.$/, (m) => `Valeurs de déploiement manquantes : ${m[1]}.`],
                   [/^The service is not available in this workspace\.$/, () => 'Le service n’est pas disponible dans cet espace.'],
               ];
 

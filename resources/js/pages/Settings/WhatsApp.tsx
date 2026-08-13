@@ -256,7 +256,9 @@ export default function WhatsAppSettings({ setup }: Props) {
                                   )}
                         </p>
                         {setup.detail && (
-                            <p className="mt-4 rounded-xl bg-sand px-4 py-3 text-sm text-muted">{setup.detail}</p>
+                            <p className="mt-4 rounded-xl bg-sand px-4 py-3 text-sm text-muted">
+                                {setup.detail ? t(setup.detail) : null}
+                            </p>
                         )}
                         <div className="mt-5 flex flex-wrap gap-2">
                             <Link href="/settings/whatsapp" className="button-secondary">

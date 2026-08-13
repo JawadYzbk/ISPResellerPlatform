@@ -49,7 +49,7 @@ function Pager({ shifts, t }: { shifts: Paginator<Shift>; t: (key: string) => st
                     if (!link.url) {
                         return (
                             <span key={index} className="grid size-8 place-items-center text-muted/40">
-                                {previous ? <ChevronLeft size={16} /> : next ? <ChevronRight size={16} /> : link.label}
+                                {previous ? <ChevronLeft size={16} /> : next ? <ChevronRight size={16} /> : t(link.label)}
                             </span>
                         );
                     }
@@ -59,7 +59,7 @@ function Pager({ shifts, t }: { shifts: Paginator<Shift>; t: (key: string) => st
                             href={link.url}
                             className={`grid size-8 place-items-center rounded-lg text-xs ${link.active ? 'bg-brand text-white' : 'text-muted hover:bg-sand'}`}
                         >
-                            {previous ? <ChevronLeft size={16} /> : next ? <ChevronRight size={16} /> : link.label}
+                                {previous ? <ChevronLeft size={16} /> : next ? <ChevronRight size={16} /> : t(link.label)}
                         </Link>
                     );
                 })}
@@ -181,7 +181,7 @@ export default function ShiftsPage({ shifts, currentShift, currencies, canViewRe
                             />
                         </label>
                         {form.errors.declared_totals && (
-                            <p className="field-error mt-2">{form.errors.declared_totals}</p>
+                            <p className="field-error mt-2">{t(form.errors.declared_totals)}</p>
                         )}
                         <div className="mt-5 flex justify-end">
                             <button className="button-primary" disabled={form.processing}>

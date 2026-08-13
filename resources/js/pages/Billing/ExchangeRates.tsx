@@ -66,7 +66,7 @@ function Pagination({ rates, t }: { rates: Paginator<ExchangeRate>; t: (key: str
                             href={link.url}
                             className={`grid size-8 place-items-center rounded-lg text-xs ${link.active ? 'bg-brand text-white' : 'text-muted hover:bg-sand'}`}
                         >
-                            {isPrevious ? <ChevronLeft size={16} /> : isNext ? <ChevronRight size={16} /> : link.label}
+                            {isPrevious ? <ChevronLeft size={16} /> : isNext ? <ChevronRight size={16} /> : t(link.label)}
                         </Link>
                     );
                 })}
@@ -185,7 +185,7 @@ export default function ExchangeRatesPage({
                             currencies={currencies}
                             onChange={(value) => form.setData('base_currency', value)}
                         />
-                        {form.errors.base_currency && <p className="field-error">{form.errors.base_currency}</p>}
+                        {form.errors.base_currency && <p className="field-error">{t(form.errors.base_currency)}</p>}
                     </label>
                     <label>
                         <span className="field-label">{t('Quote currency')}</span>
@@ -196,7 +196,7 @@ export default function ExchangeRatesPage({
                             currencies={currencies}
                             onChange={(value) => form.setData('quote_currency', value)}
                         />
-                        {form.errors.quote_currency && <p className="field-error">{form.errors.quote_currency}</p>}
+                        {form.errors.quote_currency && <p className="field-error">{t(form.errors.quote_currency)}</p>}
                     </label>
                     <label>
                         <span className="field-label">{t('Effective from')}</span>
@@ -206,7 +206,7 @@ export default function ExchangeRatesPage({
                             value={form.data.effective_from}
                             onChange={(event) => form.setData('effective_from', event.target.value)}
                         />
-                        {form.errors.effective_from && <p className="field-error">{form.errors.effective_from}</p>}
+                        {form.errors.effective_from && <p className="field-error">{t(form.errors.effective_from)}</p>}
                     </label>
                     <label>
                         <span className="field-label">{t('Numerator')}</span>
@@ -218,7 +218,7 @@ export default function ExchangeRatesPage({
                             value={form.data.rate_numerator}
                             onChange={(event) => form.setData('rate_numerator', Number(event.target.value))}
                         />
-                        {form.errors.rate_numerator && <p className="field-error">{form.errors.rate_numerator}</p>}
+                        {form.errors.rate_numerator && <p className="field-error">{t(form.errors.rate_numerator)}</p>}
                     </label>
                     <label>
                         <span className="field-label">{t('Denominator')}</span>
@@ -230,7 +230,7 @@ export default function ExchangeRatesPage({
                             value={form.data.rate_denominator}
                             onChange={(event) => form.setData('rate_denominator', Number(event.target.value))}
                         />
-                        {form.errors.rate_denominator && <p className="field-error">{form.errors.rate_denominator}</p>}
+                        {form.errors.rate_denominator && <p className="field-error">{t(form.errors.rate_denominator)}</p>}
                     </label>
                     <label>
                         <span className="field-label">{t('Source')}</span>
@@ -241,7 +241,7 @@ export default function ExchangeRatesPage({
                             onChange={(event) => form.setData('source', event.target.value)}
                             placeholder={t('Treasury desk')}
                         />
-                        {form.errors.source && <p className="field-error">{form.errors.source}</p>}
+                        {form.errors.source && <p className="field-error">{t(form.errors.source)}</p>}
                     </label>
                 </div>
                 <div className="mt-5 flex justify-end">

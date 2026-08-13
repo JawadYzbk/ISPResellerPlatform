@@ -200,7 +200,7 @@ export default function BulkRenewalsPage({ asOf, timezone, filters, rows, summar
                                         className="flex flex-col gap-1 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm sm:flex-row sm:items-center sm:justify-between"
                                     >
                                         <span className="font-semibold">{row.username ?? row.service_id}</span>
-                                        <span className="text-amber-800 text-pretty">{row.message}</span>
+                                        <span className="text-amber-800 text-pretty">{t(row.message)}</span>
                                     </div>
                                 ))}
                         </div>
@@ -226,7 +226,7 @@ export default function BulkRenewalsPage({ asOf, timezone, filters, rows, summar
                         {allSelected ? t('Clear selection') : t('Select all ready rows')}
                     </button>
                 </div>
-                {form.errors.service_ids && <p className="field-error px-5 pt-4">{form.errors.service_ids}</p>}
+                {form.errors.service_ids && <p className="field-error px-5 pt-4">{t(form.errors.service_ids)}</p>}
                 <div className="overflow-x-auto">
                     <table className="w-full min-w-[1040px] text-start">
                         <thead>

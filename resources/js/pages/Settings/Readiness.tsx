@@ -94,6 +94,16 @@ const providerLabels: Record<string, string> = {
     whatsapp_web: 'WhatsApp Web.js',
 };
 
+const statusLabels: Record<string, string> = {
+    PASS: 'Ready',
+    WARN: 'Attention',
+    FAIL: 'Failed',
+    ready: 'Ready',
+    disabled: 'Disabled',
+    not_configured: 'Not configured',
+    failed: 'Failed',
+};
+
 function ProviderIcon({ status }: { status: ProviderStatus }) {
     if (status === 'ready') return <CheckCircle2 size={18} className="shrink-0 text-emerald-700" />;
     if (status === 'disabled') return <AlertTriangle size={18} className="shrink-0 text-muted" />;
@@ -180,7 +190,7 @@ export default function Readiness({ overall, checks, providerChecks = null, back
                                               : 'text-coral'
                                     }`}
                                 >
-                                    {check.status}
+                                    {t(statusLabels[check.status] ?? check.status)}
                                 </span>
                             </div>
                         );
@@ -198,7 +208,7 @@ export default function Readiness({ overall, checks, providerChecks = null, back
                             </div>
                         </div>
                         <span className={`text-xs font-semibold ${statusCopy[backupHealth.status].className}`}>
-                            {backupHealth.status}
+                            {t(statusLabels[backupHealth.status] ?? backupHealth.status)}
                         </span>
                     </div>
                     <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line bg-sand/30 px-5 py-4">
@@ -320,7 +330,7 @@ export default function Readiness({ overall, checks, providerChecks = null, back
                                         <p className="text-sm font-semibold">
                                             {t(providerLabels[provider] ?? provider)}
                                         </p>
-                                        <p className="mt-1 text-sm text-muted">{check.detail}</p>
+                                        <p className="mt-1 text-sm text-muted">{t(check.detail)}</p>
                                     </div>
                                     <span
                                         className={`shrink-0 text-xs font-semibold ${
@@ -333,7 +343,7 @@ export default function Readiness({ overall, checks, providerChecks = null, back
                                                     : 'text-coral'
                                         }`}
                                     >
-                                        {check.status.replace('_', ' ').toUpperCase()}
+                                        {t(statusLabels[check.status] ?? check.status)}
                                     </span>
                                 </div>
                             ))}
