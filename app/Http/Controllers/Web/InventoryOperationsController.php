@@ -16,6 +16,7 @@ use App\Actions\UpdateInventoryItem;
 use App\Actions\UpdateWarehouse;
 use App\Http\Controllers\Controller;
 use App\Models\InventoryItem;
+use App\Models\InventoryTransferRequest;
 use App\Models\InventoryUnit;
 use App\Models\Service;
 use App\Models\User;
@@ -140,6 +141,27 @@ final class InventoryOperationsController extends Controller
                     ->orderBy('name')
                     ->get(['id', 'name', 'role'])
                     ->values()
+                : [],
+            'transferRequests' => $canTransfer
+                ? InventoryTransferRequest::query()
+                    ->with(['requester:id,name,role', 'item:id,sku,name', 'sourceWarehouse:id,code,name', 'destinationWarehouse:id,code,name'])
+                    ->orderByRaw("case status when 'pending' then 1 else 2 end")
+                    ->latest()
+                    ->limit(50)
+                    ->get()
+                    ->map(fn (InventoryTransferRequest $stockRequest): array => [
+                        'id' => $stockRequest->public_id,
+                        'type' => $stockRequest->type,
+                        'status' => $stockRequest->status,
+                        'quantity' => (string) $stockRequest->quantity,
+                        'note' => $stockRequest->note,
+                        'review_note' => $stockRequest->review_note,
+                        'created_at' => $this->isoDate($stockRequest->created_at),
+                        'requester' => $stockRequest->requester?->only(['name', 'role']),
+                        'item' => $stockRequest->item?->only(['sku', 'name']),
+                        'source' => $stockRequest->sourceWarehouse?->only(['code', 'name']),
+                        'destination' => $stockRequest->destinationWarehouse?->only(['code', 'name']),
+                    ])->values()
                 : [],
         ]);
     }

@@ -13,8 +13,11 @@ use App\Models\CollectorCustodyEntry;
 use App\Models\CollectorFieldDay;
 use App\Models\CollectorRoute;
 use App\Models\CollectorTask;
+use App\Models\InventoryItem;
+use App\Models\InventoryTransferRequest;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Models\Warehouse;
 use App\Support\CollectorCustodyPresenter;
 use App\Support\CollectorRoutePresenter;
 use App\Support\CollectorTaskPresenter;
@@ -73,6 +76,7 @@ final class FieldController extends Controller
                     ->map(fn (CollectorCustodyEntry $entry): array => $custodyPresenter->entry($entry))
                     ->values(),
             ],
+            'stock' => $this->stock($user),
             'currencies' => $currencyCatalog->handle(),
             'defaultCurrency' => $tenant->collection_currency,
             'storageKey' => 'field:'.$tenant->public_id.':'.$user->id,
@@ -121,6 +125,53 @@ final class FieldController extends Controller
     private function tenant(): Tenant
     {
         return Tenant::query()->findOrFail(app(Tenancy::class)->requireId());
+    }
+
+    /** @return array<string, mixed> */
+    private function stock(User $user): array
+    {
+        $locations = Warehouse::query()
+            ->where('assigned_user_id', $user->id)
+            ->where('is_active', true)
+            ->with(['stockBalances.item'])
+            ->orderBy('code')
+            ->get();
+
+        return [
+            'locations' => $locations->map(fn (Warehouse $warehouse): array => [
+                'id' => $warehouse->id,
+                'code' => $warehouse->code,
+                'name' => $warehouse->name,
+                'balances' => $warehouse->stockBalances
+                    ->filter(fn ($balance): bool => $balance->item?->is_active === true && ! $balance->item->is_serialized)
+                    ->map(fn ($balance): array => [
+                        'item_id' => $balance->inventory_item_id,
+                        'sku' => $balance->item?->sku,
+                        'name' => $balance->item?->name,
+                        'quantity' => (string) $balance->quantity,
+                    ])->values()->all(),
+            ])->values()->all(),
+            'central_locations' => Warehouse::query()->where('type', 'warehouse')->where('is_active', true)->orderBy('code')->get(['id', 'code', 'name'])->values(),
+            'items' => InventoryItem::query()->where('is_serialized', false)->where('is_active', true)->orderBy('name')->get(['id', 'sku', 'name'])->values(),
+            'requests' => InventoryTransferRequest::query()
+                ->where('requested_by_id', $user->id)
+                ->with(['item:id,sku,name', 'sourceWarehouse:id,code,name', 'destinationWarehouse:id,code,name'])
+                ->latest()
+                ->limit(20)
+                ->get()
+                ->map(fn (InventoryTransferRequest $stockRequest): array => [
+                    'id' => $stockRequest->public_id,
+                    'type' => $stockRequest->type,
+                    'status' => $stockRequest->status,
+                    'quantity' => (string) $stockRequest->quantity,
+                    'note' => $stockRequest->note,
+                    'review_note' => $stockRequest->review_note,
+                    'created_at' => $stockRequest->created_at?->toIso8601String(),
+                    'item' => $stockRequest->item?->only(['sku', 'name']),
+                    'source' => $stockRequest->sourceWarehouse?->only(['code', 'name']),
+                    'destination' => $stockRequest->destinationWarehouse?->only(['code', 'name']),
+                ])->values(),
+        ];
     }
 
     /** @return array<string, mixed>|null */
