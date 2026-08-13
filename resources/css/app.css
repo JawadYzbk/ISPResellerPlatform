@@ -39,7 +39,7 @@
             opacity 160ms ease;
     }
     :focus-visible {
-        outline: 3px solid color-mix(in srgb, var(--color-brand) 72%, white);
+        outline: 3px solid var(--color-brand);
         outline-offset: 2px;
     }
     .field:focus-visible {

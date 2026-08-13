@@ -194,6 +194,8 @@ test('keeps shared keyboard focus paths usable', async ({ page }) => {
 
     await page.keyboard.press('Tab');
     await expect(page.locator('a[href="#main-content"]')).toBeFocused();
+    await expect(page.locator('a[href="#main-content"]')).toHaveCSS('outline-style', 'solid');
+    await expect(page.locator('a[href="#main-content"]')).toHaveCSS('outline-width', '3px');
     await page.keyboard.press('Enter');
     await expect(page.locator('main#main-content')).toBeFocused();
 
