@@ -63,7 +63,7 @@ async function signIn(page: Page): Promise<void> {
 
     await page.goto('/login');
     await page.getByLabel('Email address').fill(adminEmail);
-    await page.getByLabel('Password').fill(adminPassword);
+    await page.getByRole('textbox', { name: 'Password' }).fill(adminPassword);
     await Promise.all([page.waitForURL('**/dashboard'), page.getByRole('button', { name: 'Enter workspace' }).click()]);
     authenticatedState = await page.context().storageState();
 }
@@ -71,7 +71,7 @@ async function signIn(page: Page): Promise<void> {
 async function signInAs(page: Page, email: string): Promise<void> {
     await page.goto('/login');
     await page.getByLabel('Email address').fill(email);
-    await page.getByLabel('Password').fill(adminPassword);
+    await page.getByRole('textbox', { name: 'Password' }).fill(adminPassword);
     await Promise.all([page.waitForURL('**/dashboard'), page.getByRole('button', { name: 'Enter workspace' }).click()]);
     await restoreEnglishProfile(page);
     await page.goto('/dashboard');
@@ -80,7 +80,7 @@ async function signInAs(page: Page, email: string): Promise<void> {
 async function signInAsPlatformOperator(page: Page): Promise<void> {
     await page.goto('/login');
     await page.getByLabel('Email address').fill(platformEmail);
-    await page.getByLabel('Password').fill(adminPassword);
+    await page.getByRole('textbox', { name: 'Password' }).fill(adminPassword);
     await Promise.all([
         page.waitForURL('**/admin/tenants'),
         page.getByRole('button', { name: 'Enter workspace' }).click(),
@@ -117,6 +117,27 @@ test.describe('staff core journeys', () => {
         await expect(page.locator('.auth-root')).toHaveAttribute('dir', 'ltr');
         await expect(page.locator('.auth-ambient')).toBeVisible();
         await expect(page.locator('.auth-orb-one')).toBeVisible();
+    });
+
+    test('keeps the full workspace navigation available on small screens', async ({ page }) => {
+        await page.setViewportSize({ width: 390, height: 844 });
+        await page.goto('/login');
+        await page.getByLabel('Email address').fill(adminEmail);
+        await page.getByRole('textbox', { name: 'Password' }).fill(adminPassword);
+        await Promise.all([
+            page.waitForURL(/\/(dashboard|customers)$/),
+            page.getByRole('button', { name: 'Enter workspace' }).click(),
+        ]);
+
+        await page.locator('button[aria-controls="mobile-navigation"]').click();
+        const navigation = page.locator('#mobile-navigation');
+
+        await expect(navigation).toBeVisible();
+        await expect(navigation.locator('a[href="/customers"]')).toBeVisible();
+        await expect(navigation.locator('button').first()).toBeFocused();
+        const settingsGroup = navigation.locator('nav > div').last();
+        await settingsGroup.getByRole('button').click();
+        await expect(settingsGroup.locator('a[href="/settings"]')).toBeVisible();
     });
 
     test('routes the platform operator to the tenant administration workspace', async ({ page }) => {
@@ -603,7 +624,7 @@ test.describe('staff core journeys', () => {
     test('saves workspace settings together with a logo upload', async ({ page }) => {
         await signIn(page);
         await page.goto('/security/reauthenticate');
-        await page.getByLabel('Password').fill(adminPassword);
+        await page.getByRole('textbox', { name: 'Password' }).fill(adminPassword);
         await Promise.all([page.waitForURL('**/dashboard'), page.getByRole('button', { name: 'Confirm' }).click()]);
 
         await page.goto('/settings/general');
@@ -630,7 +651,7 @@ test.describe('staff core journeys', () => {
         test.setTimeout(90_000);
         await signIn(page);
         await page.goto('/security/reauthenticate');
-        await page.getByLabel('Password').fill(adminPassword);
+        await page.getByRole('textbox', { name: 'Password' }).fill(adminPassword);
         await Promise.all([page.waitForURL('**/dashboard'), page.getByRole('button', { name: 'Confirm' }).click()]);
 
         try {
@@ -716,7 +737,9 @@ test.describe('staff core journeys', () => {
             await page.getByRole('option', { name: /^(French|Français|الفرنسية)$/ }).click();
             await page.getByRole('button', { name: /^(Save profile|Enregistrer le profil|حفظ الملف الشخصي)$/ }).click();
             await expect(page.getByTestId('flash-toast')).toContainText(/^(?:Updated|Mis à jour|تم التحديث)/);
-            await expect(page.getByTestId('flash-toast')).toContainText(/(?:Profile updated\.|Profil mis à jour\.|تم تحديث الملف الشخصي\.)/);
+            await expect(page.getByTestId('flash-toast')).toContainText(
+                /(?:Profile updated\.|Profil mis à jour\.|تم تحديث الملف الشخصي\.)/,
+            );
             await expect(page.getByRole('combobox')).toContainText(/^(French|Français|الفرنسية)$/);
         } finally {
             await restoreEnglishProfile(page);
@@ -919,7 +942,7 @@ test.describe('staff core journeys', () => {
         await signIn(page);
         await page.goto('/settings/general');
         await page.goto('/security/reauthenticate');
-        await page.getByLabel('Password').fill(adminPassword);
+        await page.getByRole('textbox', { name: 'Password' }).fill(adminPassword);
         await Promise.all([page.waitForURL('**/dashboard'), page.getByRole('button', { name: 'Confirm' }).click()]);
 
         await page.goto('/settings/general');
