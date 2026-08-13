@@ -53,8 +53,14 @@ export default function Login() {
                                 onChange={(event) => form.setData('email', event.target.value)}
                                 className="field ps-10"
                                 autoComplete="email"
+                                aria-invalid={Boolean(form.errors.email)}
+                                aria-describedby={form.errors.email ? 'login-email-error' : undefined}
                             />
-                            {form.errors.email && <p className="mt-1.5 text-xs text-coral">{t(form.errors.email)}</p>}
+                            {form.errors.email && (
+                                <p id="login-email-error" className="mt-1.5 text-xs text-coral" role="alert">
+                                    {t(form.errors.email)}
+                                </p>
+                            )}
                         </div>
                     </div>
                     <div>
@@ -73,16 +79,26 @@ export default function Login() {
                                 onChange={(event) => form.setData('password', event.target.value)}
                                 className="field ps-10 pe-10"
                                 autoComplete="current-password"
+                                aria-invalid={Boolean(form.errors.password)}
+                                aria-describedby={form.errors.password ? 'login-password-error' : undefined}
                             />
                             <button
                                 type="button"
                                 onClick={() => setShowPassword(!showPassword)}
                                 className="absolute end-3 top-3.5 text-muted hover:text-ink"
+                                aria-label={t(showPassword ? 'Hide password' : 'Show password')}
+                                aria-pressed={showPassword}
                             >
-                                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                {showPassword ? (
+                                    <EyeOff size={18} aria-hidden="true" />
+                                ) : (
+                                    <Eye size={18} aria-hidden="true" />
+                                )}
                             </button>
                             {form.errors.password && (
-                                <p className="mt-1.5 text-xs text-coral">{t(form.errors.password)}</p>
+                                <p id="login-password-error" className="mt-1.5 text-xs text-coral" role="alert">
+                                    {t(form.errors.password)}
+                                </p>
                             )}
                         </div>
                     </div>
