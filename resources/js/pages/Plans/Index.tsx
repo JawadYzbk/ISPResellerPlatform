@@ -1,6 +1,6 @@
 import CurrencyCombobox, { type CurrencyOption } from '@/components/ui/currency-combobox';
 import ResponsiveSelect from '@/components/ui/responsive-select';
-import { Head, Link, router, useForm } from '@inertiajs/react';
+import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
 import { Archive, ChevronLeft, ChevronRight, Edit3, Gauge, Plus, Search, Tags } from 'lucide-react';
 import { useState } from 'react';
 
@@ -8,6 +8,7 @@ import StatusBadge from '@/components/StatusBadge';
 import AppLayout from '@/layouts/AppLayout';
 import ConfirmDialog from '@/components/ui/confirm-dialog';
 import { currencyFractionDigits, formatDate, formatMoney, parseMoneyToMinor } from '@/lib/format';
+import { createTranslator } from '@/lib/i18n';
 import type { PageProps, Paginator } from '@/types';
 
 type Plan = {
@@ -71,7 +72,17 @@ type Props = PageProps & {
     currencies: CurrencyOption[];
 };
 
-export default function PlansIndex({ plans, filters, addons, usageRates, promotions, availablePlans, currencies }: Props) {
+export default function PlansIndex({
+    plans,
+    filters,
+    addons,
+    usageRates,
+    promotions,
+    availablePlans,
+    currencies,
+}: Props) {
+    const { props } = usePage<PageProps>();
+    const t = createTranslator(props.app.locale);
     const [search, setSearch] = useState(filters.search ?? '');
     const [status, setStatus] = useState(filters.status ?? '');
     const [selectedPromoPlans, setSelectedPromoPlans] = useState<string[]>([]);
@@ -123,7 +134,7 @@ export default function PlansIndex({ plans, filters, addons, usageRates, promoti
         event.preventDefault();
         const amountMinor = parseMoneyToMinor(addonForm.data.amount, addonForm.data.currency);
         if (amountMinor === null) {
-            addonForm.setError('amount', 'Enter a valid non-negative amount.');
+            addonForm.setError('amount', t('plan.valid_non_negative_amount'));
             return;
         }
         addonForm.transform((data) => ({ ...data, amount_minor: amountMinor }));
@@ -144,7 +155,7 @@ export default function PlansIndex({ plans, filters, addons, usageRates, promoti
         event.preventDefault();
         const rawValue = Number(promotionForm.data.value);
         if (!Number.isFinite(rawValue) || rawValue <= 0) {
-            promotionForm.setError('value', 'Enter a positive promotion value.');
+            promotionForm.setError('value', t('plan.positive_promotion_value'));
             return;
         }
         promotionForm.transform((data) => ({
@@ -170,7 +181,7 @@ export default function PlansIndex({ plans, filters, addons, usageRates, promoti
         event.preventDefault();
         const amountMinor = parseMoneyToMinor(usageRateForm.data.amount, usageRateForm.data.currency);
         if (amountMinor === null) {
-            usageRateForm.setError('amount', 'Enter a valid non-negative amount.');
+            usageRateForm.setError('amount', t('plan.valid_non_negative_amount'));
             return;
         }
         usageRateForm.transform((data) => ({ ...data, amount_minor: amountMinor }));
@@ -233,47 +244,45 @@ export default function PlansIndex({ plans, filters, addons, usageRates, promoti
 
     return (
         <AppLayout>
-            <Head title="Plans" />
+            <Head title={t('Plans')} />
             <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
                 <div>
-                    <p className="eyebrow">Commercial catalog</p>
-                    <h1 className="page-title">Plans</h1>
-                    <p className="page-subtitle">
-                        Manage service speeds, billing duration, and effective catalog prices.
-                    </p>
+                    <p className="eyebrow">{t('plan.commercial_catalog')}</p>
+                    <h1 className="page-title">{t('Plans')}</h1>
+                    <p className="page-subtitle">{t('plan.manage_catalog_prices')}</p>
                 </div>
                 <Link href="/plans/create" className="button-primary">
-                    <Plus size={16} /> New plan
+                    <Plus size={16} /> {t('plan.new_plan')}
                 </Link>
             </div>
 
             <form onSubmit={applyFilters} className="card mt-8 flex flex-col gap-4 p-5 sm:flex-row sm:items-end">
                 <label className="block sm:min-w-80">
-                    <span className="field-label">Search plans</span>
+                    <span className="field-label">{t('plan.search_plans')}</span>
                     <div className="relative">
                         <Search size={17} className="pointer-events-none absolute start-3 top-3 text-muted" />
                         <input
                             className="field ps-10"
                             value={search}
                             onChange={(event) => setSearch(event.target.value)}
-                            placeholder="Plan name or slug"
+                            placeholder={t('plan.plan_name_or_slug')}
                         />
                     </div>
                 </label>
                 <label className="block sm:min-w-48">
-                    <span className="field-label">Status</span>
+                    <span className="field-label">{t('Status')}</span>
                     <ResponsiveSelect
                         className="field"
                         value={status}
                         onChange={(event) => setStatus(event.target.value)}
                     >
-                        <option value="">All statuses</option>
-                        <option value="active">Active</option>
-                        <option value="inactive">Inactive</option>
+                        <option value="">{t('plan.all_statuses')}</option>
+                        <option value="active">{t('Active')}</option>
+                        <option value="inactive">{t('Inactive')}</option>
                     </ResponsiveSelect>
                 </label>
                 <button type="submit" className="button-primary">
-                    Apply filters
+                    {t('plan.apply_filters')}
                 </button>
             </form>
 
@@ -281,26 +290,26 @@ export default function PlansIndex({ plans, filters, addons, usageRates, promoti
                 <section className="card p-6">
                     <div className="flex items-center justify-between">
                         <div>
-                            <h2 className="section-title">{editingAddonId ? 'Edit add-on' : 'Add-ons'}</h2>
-                            <p className="mt-1 text-sm text-muted">
-                                Recurring or one-off extras such as static IPs and equipment rental.
-                            </p>
+                            <h2 className="section-title">
+                                {editingAddonId ? t('plan.edit_addon') : t('plan.addons')}
+                            </h2>
+                            <p className="mt-1 text-sm text-muted">{t('plan.addon_description')}</p>
                         </div>
                         <Tags size={17} className="text-brand" />
                     </div>
                     <form onSubmit={submitAddon} className="mt-5 grid gap-3 sm:grid-cols-2">
                         <label>
-                            <span className="field-label">Name</span>
+                            <span className="field-label">{t('Name')}</span>
                             <input
                                 className="field"
                                 value={addonForm.data.name}
                                 onChange={(event) => addonForm.setData('name', event.target.value)}
-                                placeholder="Static IP"
+                                placeholder={t('plan.static_ip')}
                             />
                             {addonForm.errors.name && <p className="field-error">{addonForm.errors.name}</p>}
                         </label>
                         <label>
-                            <span className="field-label">Price</span>
+                            <span className="field-label">{t('Price')}</span>
                             <input
                                 className="field"
                                 inputMode="decimal"
@@ -311,7 +320,7 @@ export default function PlansIndex({ plans, filters, addons, usageRates, promoti
                             {addonForm.errors.amount && <p className="field-error">{addonForm.errors.amount}</p>}
                         </label>
                         <label>
-                            <span className="field-label">Currency</span>
+                            <span className="field-label">{t('Currency')}</span>
                             <CurrencyCombobox
                                 id="addon_currency"
                                 className="field uppercase"
@@ -321,30 +330,30 @@ export default function PlansIndex({ plans, filters, addons, usageRates, promoti
                             />
                         </label>
                         <label>
-                            <span className="field-label">Billing period days</span>
+                            <span className="field-label">{t('plan.billing_period_days')}</span>
                             <input
                                 className="field"
                                 type="number"
                                 min="1"
                                 value={addonForm.data.billing_period_days}
                                 onChange={(event) => addonForm.setData('billing_period_days', event.target.value)}
-                                placeholder="One-off if blank"
+                                placeholder={t('plan.one_off_if_blank')}
                             />
                         </label>
                         <label>
-                            <span className="field-label">Status</span>
+                            <span className="field-label">{t('Status')}</span>
                             <ResponsiveSelect
                                 className="field"
                                 value={addonForm.data.status}
                                 onChange={(event) => addonForm.setData('status', event.target.value)}
                             >
-                                <option value="active">Active</option>
-                                <option value="inactive">Archived</option>
+                                <option value="active">{t('Active')}</option>
+                                <option value="inactive">{t('Archived')}</option>
                             </ResponsiveSelect>
                             {addonForm.errors.status && <p className="field-error">{addonForm.errors.status}</p>}
                         </label>
                         <label className="sm:col-span-2">
-                            <span className="field-label">Description</span>
+                            <span className="field-label">{t('Description')}</span>
                             <input
                                 className="field"
                                 value={addonForm.data.description}
@@ -356,7 +365,7 @@ export default function PlansIndex({ plans, filters, addons, usageRates, promoti
                             className="button-secondary sm:col-span-2"
                             disabled={addonForm.processing}
                         >
-                            <Plus size={15} /> {editingAddonId ? 'Save add-on' : 'Add add-on'}
+                            <Plus size={15} /> {editingAddonId ? t('plan.save_addon') : t('plan.add_addon')}
                         </button>
                     </form>
                     <div className="mt-5 space-y-2 border-t border-line pt-5">
@@ -370,9 +379,9 @@ export default function PlansIndex({ plans, filters, addons, usageRates, promoti
                                     <p className="text-xs text-muted">
                                         {formatMoney(addon.amount_minor, addon.currency)} ·{' '}
                                         {addon.billing_period_days
-                                            ? `${addon.billing_period_days}-day recurring`
-                                            : 'one-off'}{' '}
-                                        · {addon.status}
+                                            ? `${addon.billing_period_days}-day ${t('plan.recurring')}`
+                                            : t('plan.one_off')}
+                                        · {t(addon.status === 'active' ? 'Active' : 'Archived')}
                                     </p>
                                 </div>
                                 <div className="flex items-center gap-3">
@@ -380,22 +389,22 @@ export default function PlansIndex({ plans, filters, addons, usageRates, promoti
                                         type="button"
                                         className="text-muted hover:text-brand"
                                         onClick={() => editAddon(addon)}
-                                        aria-label={`Edit ${addon.name}`}
+                                        aria-label={t('Edit') + ' ' + addon.name}
                                     >
                                         <Edit3 size={15} />
                                     </button>
                                     {addon.status === 'active' && (
                                         <ConfirmDialog
-                                            title={`Archive ${addon.name}?`}
-                                            description="It will no longer be available for new service changes. Existing records keep their snapshot."
-                                            confirmLabel="Archive add-on"
+                                            title={`${t('Archive')} ${addon.name}?`}
+                                            description={t('plan.archive_addon_description')}
+                                            confirmLabel={t('plan.archive_addon')}
                                             destructive
                                             onConfirm={() => router.delete(`/plans/addons/${addon.public_id}`)}
                                         >
                                             <button
                                                 type="button"
                                                 className="text-muted hover:text-coral"
-                                                aria-label={`Archive ${addon.name}`}
+                                                aria-label={t('Archive') + ' ' + addon.name}
                                             >
                                                 <Archive size={15} />
                                             </button>
@@ -404,31 +413,31 @@ export default function PlansIndex({ plans, filters, addons, usageRates, promoti
                                 </div>
                             </div>
                         ))}
-                        {addons.length === 0 && <p className="text-sm text-muted">No add-ons yet.</p>}
+                        {addons.length === 0 && <p className="text-sm text-muted">{t('plan.no_addons')}</p>}
                     </div>
                 </section>
                 <section className="card p-6">
                     <div className="flex items-center justify-between">
                         <div>
-                            <h2 className="section-title">{editingPromotionId ? 'Edit promotion' : 'Promotions'}</h2>
-                            <p className="mt-1 text-sm text-muted">
-                                Use basis points for percentage discounts: 1000 equals 10%.
-                            </p>
+                            <h2 className="section-title">
+                                {editingPromotionId ? t('plan.edit_promotion') : t('plan.promotions')}
+                            </h2>
+                            <p className="mt-1 text-sm text-muted">{t('plan.promotion_description')}</p>
                         </div>
                         <Tags size={17} className="text-brand" />
                     </div>
                     <form onSubmit={submitPromotion} className="mt-5 grid gap-3 sm:grid-cols-2">
                         <label>
-                            <span className="field-label">Name</span>
+                            <span className="field-label">{t('Name')}</span>
                             <input
                                 className="field"
                                 value={promotionForm.data.name}
                                 onChange={(event) => promotionForm.setData('name', event.target.value)}
-                                placeholder="Summer discount"
+                                placeholder={t('plan.summer_discount')}
                             />
                         </label>
                         <label>
-                            <span className="field-label">Code</span>
+                            <span className="field-label">{t('Code')}</span>
                             <input
                                 className="field uppercase"
                                 value={promotionForm.data.code}
@@ -437,20 +446,20 @@ export default function PlansIndex({ plans, filters, addons, usageRates, promoti
                             />
                         </label>
                         <label>
-                            <span className="field-label">Type</span>
+                            <span className="field-label">{t('Type')}</span>
                             <ResponsiveSelect
                                 className="field"
                                 value={promotionForm.data.type}
                                 onChange={(event) => promotionForm.setData('type', event.target.value)}
                             >
-                                <option value="percent">Percent</option>
-                                <option value="fixed">Fixed minor units</option>
-                                <option value="free_days">Free days</option>
+                                <option value="percent">{t('plan.percent')}</option>
+                                <option value="fixed">{t('plan.fixed_minor_units')}</option>
+                                <option value="free_days">{t('plan.free_days')}</option>
                             </ResponsiveSelect>
                         </label>
                         <label>
                             <span className="field-label">
-                                Value {promotionForm.data.type === 'percent' ? '(%)' : ''}
+                                {t('Value')} {promotionForm.data.type === 'percent' ? '(%)' : ''}
                             </span>
                             <input
                                 className="field"
@@ -463,7 +472,7 @@ export default function PlansIndex({ plans, filters, addons, usageRates, promoti
                             {promotionForm.errors.value && <p className="field-error">{promotionForm.errors.value}</p>}
                         </label>
                         <label>
-                            <span className="field-label">Starts</span>
+                            <span className="field-label">{t('plan.starts')}</span>
                             <input
                                 className="field"
                                 type="date"
@@ -472,7 +481,7 @@ export default function PlansIndex({ plans, filters, addons, usageRates, promoti
                             />
                         </label>
                         <label>
-                            <span className="field-label">Ends (optional)</span>
+                            <span className="field-label">{t('plan.ends_optional')}</span>
                             <input
                                 className="field"
                                 type="date"
@@ -481,18 +490,18 @@ export default function PlansIndex({ plans, filters, addons, usageRates, promoti
                             />
                         </label>
                         <label>
-                            <span className="field-label">Max redemptions</span>
+                            <span className="field-label">{t('plan.max_redemptions')}</span>
                             <input
                                 className="field"
                                 type="number"
                                 min="1"
                                 value={promotionForm.data.max_redemptions}
                                 onChange={(event) => promotionForm.setData('max_redemptions', event.target.value)}
-                                placeholder="Unlimited"
+                                placeholder={t('Unlimited')}
                             />
                         </label>
                         <label>
-                            <span className="field-label">Status</span>
+                            <span className="field-label">{t('Status')}</span>
                             <ResponsiveSelect
                                 className="field"
                                 value={promotionForm.data.is_active ? 'active' : 'inactive'}
@@ -500,12 +509,12 @@ export default function PlansIndex({ plans, filters, addons, usageRates, promoti
                                     promotionForm.setData('is_active', event.target.value === 'active')
                                 }
                             >
-                                <option value="active">Active</option>
-                                <option value="inactive">Archived</option>
+                                <option value="active">{t('Active')}</option>
+                                <option value="inactive">{t('Archived')}</option>
                             </ResponsiveSelect>
                         </label>
                         <fieldset className="sm:col-span-2">
-                            <legend className="field-label">Apply to plans (blank means all plans)</legend>
+                            <legend className="field-label">{t('plan.apply_to_plans')}</legend>
                             <div className="mt-2 flex flex-wrap gap-3">
                                 {availablePlans.map((plan) => (
                                     <label
@@ -533,7 +542,7 @@ export default function PlansIndex({ plans, filters, addons, usageRates, promoti
                             className="button-secondary sm:col-span-2"
                             disabled={promotionForm.processing}
                         >
-                            <Plus size={15} /> {editingPromotionId ? 'Save promotion' : 'Add promotion'}
+                            <Plus size={15} /> {editingPromotionId ? t('plan.save_promotion') : t('plan.add_promotion')}
                         </button>
                     </form>
                     <div className="mt-5 space-y-2 border-t border-line pt-5">
@@ -550,7 +559,7 @@ export default function PlansIndex({ plans, filters, addons, usageRates, promoti
                                         {promotion.type === 'percent' ? `${promotion.value / 100}%` : promotion.value} ·{' '}
                                         {formatDate(promotion.starts_at)}
                                         {promotion.ends_at ? ` → ${formatDate(promotion.ends_at)}` : ''} ·{' '}
-                                        {promotion.is_active ? 'active' : 'archived'}
+                                        {t(promotion.is_active ? 'Active' : 'Archived')}
                                     </p>
                                 </div>
                                 <div className="flex items-center gap-3">
@@ -558,22 +567,22 @@ export default function PlansIndex({ plans, filters, addons, usageRates, promoti
                                         type="button"
                                         className="text-muted hover:text-brand"
                                         onClick={() => editPromotion(promotion)}
-                                        aria-label={`Edit ${promotion.code}`}
+                                        aria-label={t('Edit') + ' ' + promotion.code}
                                     >
                                         <Edit3 size={15} />
                                     </button>
                                     {promotion.is_active && (
                                         <ConfirmDialog
-                                            title={`Archive ${promotion.code}?`}
-                                            description="The promotion will no longer be available for new renewals. Existing redemptions remain recorded."
-                                            confirmLabel="Archive promotion"
+                                            title={`${t('Archive')} ${promotion.code}?`}
+                                            description={t('plan.archive_promotion_description')}
+                                            confirmLabel={t('plan.archive_promotion')}
                                             destructive
                                             onConfirm={() => router.delete(`/plans/promotions/${promotion.public_id}`)}
                                         >
                                             <button
                                                 type="button"
                                                 className="text-muted hover:text-coral"
-                                                aria-label={`Archive ${promotion.code}`}
+                                                aria-label={t('Archive') + ' ' + promotion.code}
                                             >
                                                 <Archive size={15} />
                                             </button>
@@ -582,7 +591,7 @@ export default function PlansIndex({ plans, filters, addons, usageRates, promoti
                                 </div>
                             </div>
                         ))}
-                        {promotions.length === 0 && <p className="text-sm text-muted">No promotions yet.</p>}
+                        {promotions.length === 0 && <p className="text-sm text-muted">{t('plan.no_promotions')}</p>}
                     </div>
                 </section>
             </div>
@@ -590,17 +599,14 @@ export default function PlansIndex({ plans, filters, addons, usageRates, promoti
             <section className="card mt-6 p-6">
                 <div className="flex items-start justify-between gap-4">
                     <div>
-                        <h2 className="section-title text-balance">Usage-based billing</h2>
-                        <p className="mt-1 text-sm text-muted text-pretty">
-                            Charge data overage on renewal after each plan's included allowance. Rates are effective-dated
-                            and usage is copied into the invoice snapshot.
-                        </p>
+                        <h2 className="section-title text-balance">{t('plan.usage_billing')}</h2>
+                        <p className="mt-1 text-sm text-muted text-pretty">{t('plan.usage_description')}</p>
                     </div>
                     <Gauge size={18} className="text-brand" />
                 </div>
                 <form onSubmit={submitUsageRate} className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                     <label>
-                        <span className="field-label">Plan</span>
+                        <span className="field-label">{t('Plan')}</span>
                         <ResponsiveSelect
                             className="field"
                             value={usageRateForm.data.plan_public_id}
@@ -617,17 +623,17 @@ export default function PlansIndex({ plans, filters, addons, usageRates, promoti
                         )}
                     </label>
                     <label>
-                        <span className="field-label">Rate name</span>
+                        <span className="field-label">{t('plan.rate_name')}</span>
                         <input
                             className="field"
                             value={usageRateForm.data.name}
                             onChange={(event) => usageRateForm.setData('name', event.target.value)}
-                            placeholder="Data overage"
+                            placeholder={t('plan.data_overage')}
                         />
                         {usageRateForm.errors.name && <p className="field-error">{usageRateForm.errors.name}</p>}
                     </label>
                     <label>
-                        <span className="field-label">Included GB</span>
+                        <span className="field-label">{t('plan.included_gb')}</span>
                         <input
                             className="field"
                             type="number"
@@ -641,7 +647,7 @@ export default function PlansIndex({ plans, filters, addons, usageRates, promoti
                         )}
                     </label>
                     <label>
-                        <span className="field-label">Price per GB</span>
+                        <span className="field-label">{t('plan.price_per_gb')}</span>
                         <input
                             className="field"
                             inputMode="decimal"
@@ -652,7 +658,7 @@ export default function PlansIndex({ plans, filters, addons, usageRates, promoti
                         {usageRateForm.errors.amount && <p className="field-error">{usageRateForm.errors.amount}</p>}
                     </label>
                     <label>
-                        <span className="field-label">Billing unit (GB)</span>
+                        <span className="field-label">{t('plan.billing_unit_gb')}</span>
                         <input
                             className="field"
                             type="number"
@@ -664,7 +670,7 @@ export default function PlansIndex({ plans, filters, addons, usageRates, promoti
                         {usageRateForm.errors.unit_gb && <p className="field-error">{usageRateForm.errors.unit_gb}</p>}
                     </label>
                     <label>
-                        <span className="field-label">Currency</span>
+                        <span className="field-label">{t('Currency')}</span>
                         <CurrencyCombobox
                             id="usage_rate_currency"
                             className="field uppercase"
@@ -672,22 +678,24 @@ export default function PlansIndex({ plans, filters, addons, usageRates, promoti
                             currencies={currencies}
                             onChange={(value) => usageRateForm.setData('currency', value)}
                         />
-                        {usageRateForm.errors.currency && <p className="field-error">{usageRateForm.errors.currency}</p>}
+                        {usageRateForm.errors.currency && (
+                            <p className="field-error">{usageRateForm.errors.currency}</p>
+                        )}
                     </label>
                     <label>
-                        <span className="field-label">Rounding</span>
+                        <span className="field-label">{t('Rounding')}</span>
                         <ResponsiveSelect
                             className="field"
                             value={usageRateForm.data.rounding}
                             onChange={(event) => usageRateForm.setData('rounding', event.target.value)}
                         >
-                            <option value="ceil">Round up</option>
-                            <option value="half_up">Half up</option>
-                            <option value="floor">Round down</option>
+                            <option value="ceil">{t('Round up')}</option>
+                            <option value="half_up">{t('Half up')}</option>
+                            <option value="floor">{t('Round down')}</option>
                         </ResponsiveSelect>
                     </label>
                     <label>
-                        <span className="field-label">Effective from</span>
+                        <span className="field-label">{t('plan.effective_from')}</span>
                         <input
                             className="field"
                             type="date"
@@ -699,7 +707,7 @@ export default function PlansIndex({ plans, filters, addons, usageRates, promoti
                         )}
                     </label>
                     <label>
-                        <span className="field-label">Effective to (optional)</span>
+                        <span className="field-label">{t('plan.effective_to_optional')}</span>
                         <input
                             className="field"
                             type="date"
@@ -711,18 +719,18 @@ export default function PlansIndex({ plans, filters, addons, usageRates, promoti
                         )}
                     </label>
                     <label>
-                        <span className="field-label">Status</span>
+                        <span className="field-label">{t('Status')}</span>
                         <ResponsiveSelect
                             className="field"
                             value={usageRateForm.data.status}
                             onChange={(event) => usageRateForm.setData('status', event.target.value)}
                         >
-                            <option value="active">Active</option>
-                            <option value="inactive">Archived</option>
+                            <option value="active">{t('Active')}</option>
+                            <option value="inactive">{t('Archived')}</option>
                         </ResponsiveSelect>
                     </label>
                     <button type="submit" className="button-secondary self-end" disabled={usageRateForm.processing}>
-                        <Plus size={15} /> {editingUsageRateId ? 'Save usage rate' : 'Add usage rate'}
+                        <Plus size={15} /> {editingUsageRateId ? t('plan.save_usage_rate') : t('plan.add_usage_rate')}
                     </button>
                 </form>
                 <div className="mt-5 space-y-2 border-t border-line pt-5">
@@ -732,9 +740,14 @@ export default function PlansIndex({ plans, filters, addons, usageRates, promoti
                             className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-line px-3 py-2 text-sm"
                         >
                             <div>
-                                <p className="font-semibold">{rate.plan_name} · {rate.name}</p>
+                                <p className="font-semibold">
+                                    {rate.plan_name} · {rate.name}
+                                </p>
                                 <p className="text-xs text-muted">
-                                    {rate.included_bytes / 1_000_000_000} GB included · {formatMoney(rate.amount_minor, rate.currency)} / {rate.unit_bytes / 1_000_000_000} GB · {rate.rounding} · from {formatDate(rate.effective_from)} · {rate.status}
+                                    {rate.included_bytes / 1_000_000_000} GB {t('plan.included')} ·{' '}
+                                    {formatMoney(rate.amount_minor, rate.currency)} / {rate.unit_bytes / 1_000_000_000}{' '}
+                                    GB · {rate.rounding} · {t('from')} {formatDate(rate.effective_from)} ·{' '}
+                                    {t(rate.status === 'active' ? 'Active' : 'Archived')}
                                 </p>
                             </div>
                             <div className="flex items-center gap-3">
@@ -742,19 +755,23 @@ export default function PlansIndex({ plans, filters, addons, usageRates, promoti
                                     type="button"
                                     className="button-quiet"
                                     onClick={() => editUsageRate(rate)}
-                                    aria-label={`Edit ${rate.name}`}
+                                    aria-label={t('Edit') + ' ' + rate.name}
                                 >
-                                    <Edit3 size={15} /> Edit
+                                    <Edit3 size={15} /> {t('Edit')}
                                 </button>
                                 {rate.status === 'active' && (
                                     <ConfirmDialog
-                                        title={`Archive ${rate.name}?`}
-                                        description="The rate will no longer be used for new renewal invoices. Existing invoice snapshots remain unchanged."
-                                        confirmLabel="Archive usage rate"
+                                        title={`${t('Archive')} ${rate.name}?`}
+                                        description={t('plan.archive_usage_rate_description')}
+                                        confirmLabel={t('plan.archive_usage_rate')}
                                         destructive
                                         onConfirm={() => router.delete(`/plans/usage-rates/${rate.public_id}`)}
                                     >
-                                        <button type="button" className="button-quiet text-danger" aria-label={`Archive ${rate.name}`}>
+                                        <button
+                                            type="button"
+                                            className="button-quiet text-danger"
+                                            aria-label={t('Archive') + ' ' + rate.name}
+                                        >
                                             <Archive size={15} />
                                         </button>
                                     </ConfirmDialog>
@@ -762,7 +779,7 @@ export default function PlansIndex({ plans, filters, addons, usageRates, promoti
                             </div>
                         </div>
                     ))}
-                    {usageRates.length === 0 && <p className="text-sm text-muted">No usage rates configured.</p>}
+                    {usageRates.length === 0 && <p className="text-sm text-muted">{t('plan.no_usage_rates')}</p>}
                 </div>
             </section>
 
@@ -770,21 +787,23 @@ export default function PlansIndex({ plans, filters, addons, usageRates, promoti
                 <div className="flex items-center justify-between border-b border-line px-5 py-4">
                     <div className="flex items-center gap-2">
                         <Tags size={17} className="text-brand" />
-                        <p className="text-sm font-semibold">{plans.total.toLocaleString()} plan(s)</p>
+                        <p className="text-sm font-semibold">
+                            {plans.total.toLocaleString()} {t('plan.count')}
+                        </p>
                     </div>
-                    <p className="text-xs text-muted">Historical prices stay attached to their effective dates.</p>
+                    <p className="text-xs text-muted">{t('plan.historical_prices')}</p>
                 </div>
                 <div className="overflow-x-auto">
                     <table className="w-full min-w-[980px] text-start">
                         <thead>
                             <tr className="border-b border-line bg-sand/50 text-xs font-semibold uppercase tracking-wider text-muted">
-                                <th className="px-5 py-3.5 text-start">Plan</th>
-                                <th className="px-5 py-3.5 text-start">Speed</th>
-                                <th className="px-5 py-3.5 text-start">Current price</th>
-                                <th className="px-5 py-3.5 text-start">Term</th>
-                                <th className="px-5 py-3.5 text-start">Services</th>
-                                <th className="px-5 py-3.5 text-start">Status</th>
-                                <th className="px-5 py-3.5 text-end">Actions</th>
+                                <th className="px-5 py-3.5 text-start">{t('Plan')}</th>
+                                <th className="px-5 py-3.5 text-start">{t('plan.speed')}</th>
+                                <th className="px-5 py-3.5 text-start">{t('plan.current_price')}</th>
+                                <th className="px-5 py-3.5 text-start">{t('plan.term')}</th>
+                                <th className="px-5 py-3.5 text-start">{t('Services')}</th>
+                                <th className="px-5 py-3.5 text-start">{t('Status')}</th>
+                                <th className="px-5 py-3.5 text-end">{t('Actions')}</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-line">
@@ -800,16 +819,18 @@ export default function PlansIndex({ plans, filters, addons, usageRates, promoti
                                     <td className="px-5 py-4 text-sm font-semibold">
                                         {plan.price
                                             ? formatMoney(plan.price.amount_minor, plan.price.currency)
-                                            : 'No effective price'}
+                                            : t('plan.no_effective_price')}
                                     </td>
-                                    <td className="px-5 py-4 text-sm text-muted">{plan.duration_days} days</td>
+                                    <td className="px-5 py-4 text-sm text-muted">
+                                        {plan.duration_days} {t('days')}
+                                    </td>
                                     <td className="px-5 py-4 text-sm text-muted">{plan.services_count}</td>
                                     <td className="px-5 py-4">
                                         <StatusBadge status={plan.status} />
                                     </td>
                                     <td className="px-5 py-4 text-end">
                                         <Link href={`/plans/${plan.public_id}/edit`} className="button-quiet">
-                                            <Edit3 size={15} /> Edit
+                                            <Edit3 size={15} /> {t('Edit')}
                                         </Link>
                                     </td>
                                 </tr>
@@ -818,7 +839,7 @@ export default function PlansIndex({ plans, filters, addons, usageRates, promoti
                                 <tr>
                                     <td colSpan={7} className="px-5 py-16 text-center">
                                         <Tags className="mx-auto text-muted" size={28} />
-                                        <p className="mt-3 font-semibold">No plans match these filters</p>
+                                        <p className="mt-3 font-semibold">{t('plan.no_matching_plans')}</p>
                                     </td>
                                 </tr>
                             )}
@@ -827,7 +848,7 @@ export default function PlansIndex({ plans, filters, addons, usageRates, promoti
                 </div>
                 <div className="flex items-center justify-between border-t border-line px-5 py-4">
                     <p className="text-xs text-muted">
-                        Page {plans.current_page} of {plans.last_page}
+                        {t('Page')} {plans.current_page} {t('of')} {plans.last_page}
                     </p>
                     <div className="flex items-center gap-1">
                         {plans.links.map((link, index) => {
