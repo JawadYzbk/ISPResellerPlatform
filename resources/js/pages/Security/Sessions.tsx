@@ -1,7 +1,9 @@
-import { Head, router } from '@inertiajs/react';
+import { Head, router, usePage } from '@inertiajs/react';
 import { Monitor, Smartphone, Trash2 } from 'lucide-react';
 
 import AppLayout from '@/layouts/AppLayout';
+import { createTranslator } from '@/lib/i18n';
+import type { PageProps } from '@/types';
 
 type Session = {
     id: string;
@@ -12,13 +14,15 @@ type Session = {
 };
 
 export default function Sessions({ sessions }: { sessions: Session[] }) {
+    const { props } = usePage<PageProps>();
+    const t = createTranslator(props.app.locale);
     return (
         <AppLayout>
-            <Head title="Sessions" />
+            <Head title={t('Active sessions')} />
             <div className="max-w-3xl">
-                <p className="eyebrow">Security</p>
-                <h1 className="page-title">Active sessions</h1>
-                <p className="page-subtitle">Review and revoke devices that have access to this account.</p>
+                <p className="eyebrow">{t('Security')}</p>
+                <h1 className="page-title">{t('Active sessions')}</h1>
+                <p className="page-subtitle">{t('security.sessions_description')}</p>
                 <div className="card mt-8 divide-y divide-line overflow-hidden">
                     {sessions.map((session) => {
                         const mobile = /mobile|android|iphone/i.test(session.user_agent ?? '');
@@ -29,7 +33,7 @@ export default function Sessions({ sessions }: { sessions: Session[] }) {
                                 </div>
                                 <div className="min-w-0 flex-1">
                                     <p className="truncate text-sm font-semibold">
-                                        {session.user_agent ?? 'Unknown device'}
+                                        {session.user_agent ?? t('security.unknown_device')}
                                     </p>
                                     <p className="mt-1 text-xs text-muted">
                                         {session.ip_address ?? 'Unknown IP'}{' '}
@@ -40,7 +44,7 @@ export default function Sessions({ sessions }: { sessions: Session[] }) {
                                     <button
                                         onClick={() => router.delete(`/security/sessions/${session.id}`)}
                                         className="rounded-lg p-2 text-muted hover:bg-rose-50 hover:text-coral"
-                                        title="Revoke session"
+                                        title={t('security.revoke_session')}
                                     >
                                         <Trash2 size={16} />
                                     </button>
