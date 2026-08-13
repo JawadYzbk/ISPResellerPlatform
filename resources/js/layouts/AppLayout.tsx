@@ -71,6 +71,9 @@ export default function AppLayout({ children }: PropsWithChildren) {
         Array.isArray(permission)
             ? permission.some((item) => auth.permissions.includes(item))
             : auth.permissions.includes(permission);
+    const canUseCollectorDesk = can('customers.view') && can('payments.collect');
+    const pathname = url.split('?')[0].replace(/\/+$/, '') || '/';
+    const matchesPath = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
 
     useEffect(() => {
         const handleShortcut = (event: KeyboardEvent) => {
@@ -210,30 +213,30 @@ export default function AppLayout({ children }: PropsWithChildren) {
         { label: 'IP pools', href: '/operations/ip-pools', icon: Network, permission: 'network.view' },
         { label: 'Settings', href: '/settings', icon: Wrench, permission: 'settings.manage' },
     ];
-    const nav: NavigationItem[] = isPlatformOperator
-        ? [{ label: 'Tenants', href: '/admin/tenants', icon: Building2 }]
-        : workspaceNav.filter((item) => item.permission === undefined || can(item.permission));
-
     const fieldNav: NavigationItem[] = [
-        { label: 'Home', href: '/dashboard', icon: LayoutDashboard },
+        { label: 'Operations', href: '/dashboard', icon: LayoutDashboard },
         { label: 'Collect', href: '/field', icon: HandCoins, permission: 'payments.collect' },
         { label: 'Customers', href: '/customers', icon: Users, permission: 'customers.view' },
         { label: 'Payments', href: '/billing/payments', icon: CreditCard, permission: 'payments.collect' },
         { label: 'Shifts', href: '/billing/shifts', icon: WalletCards, permission: 'payments.collect' },
         { label: 'Work', href: '/operations/work-orders', icon: ClipboardList, permission: 'workorders.complete' },
     ].filter((item) => item.permission === undefined || can(item.permission));
-    const pathname = url.split('?')[0].replace(/\/+$/, '') || '/';
-    const matchesPath = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
+    const collectorMode = matchesPath('/field');
+    const nav: NavigationItem[] = isPlatformOperator
+        ? [{ label: 'Tenants', href: '/admin/tenants', icon: Building2 }]
+        : collectorMode
+          ? fieldNav
+          : workspaceNav.filter((item) => item.permission === undefined || can(item.permission));
     const activeNavHref = nav
         .filter((item) => matchesPath(item.href))
         .sort((left, right) => right.href.length - left.href.length)[0]?.href;
 
     return (
-        <div className="min-h-screen bg-canvas text-ink" dir={app.direction}>
+        <div className="min-h-dvh bg-canvas text-ink" dir={app.direction}>
             <RealtimeBridge />
             <Toaster />
             <aside className="fixed inset-y-0 start-0 z-20 hidden w-64 flex-col border-e border-line bg-white lg:flex">
-                <div className="flex h-20 items-center gap-3 border-b border-line px-6">
+                <div className="flex h-20 shrink-0 items-center gap-3 border-b border-line px-6">
                     <div className="grid size-9 place-items-center overflow-hidden rounded-xl bg-brand text-white shadow-sm">
                         {auth.tenant?.logo_url ? (
                             <img src={auth.tenant.logo_url} alt="" className="size-full object-cover" />
@@ -246,7 +249,7 @@ export default function AppLayout({ children }: PropsWithChildren) {
                         <p className="text-xs text-muted">{t('Operations desk')}</p>
                     </div>
                 </div>
-                <div className="px-4 py-5">
+                <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-5">
                     <div className="mb-5 rounded-xl bg-sand px-3 py-3">
                         <p className="text-[11px] font-semibold uppercase tracking-wider text-muted">
                             {t('Workspace')}
@@ -255,6 +258,28 @@ export default function AppLayout({ children }: PropsWithChildren) {
                             {auth.tenant?.name ?? (isPlatformOperator ? 'Platform administration' : 'Platform')}
                         </p>
                     </div>
+                    {canUseCollectorDesk && (
+                        <Link
+                            href={collectorMode ? '/dashboard' : '/field'}
+                            className={`mb-5 flex items-center gap-3 rounded-xl border px-3 py-3 text-sm transition ${collectorMode ? 'border-brand bg-brand-soft text-brand' : 'border-line bg-white text-ink hover:border-brand/40 hover:bg-sand/60'}`}
+                        >
+                            <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-brand-soft text-brand">
+                                {collectorMode ? <LayoutDashboard size={18} /> : <HandCoins size={18} />}
+                            </span>
+                            <span className="min-w-0">
+                                <span className="block font-semibold">
+                                    {t(collectorMode ? 'Operations desk' : 'Collector desk')}
+                                </span>
+                                <span className="mt-0.5 block truncate text-xs text-muted">
+                                    {t(
+                                        collectorMode
+                                            ? 'Return to workspace management'
+                                            : 'Routes, dues, cash and stock',
+                                    )}
+                                </span>
+                            </span>
+                        </Link>
+                    )}
                     <nav className="space-y-1">
                         {nav.map(({ label, href, icon: Icon }) => {
                             const active = href === activeNavHref;
@@ -273,7 +298,6 @@ export default function AppLayout({ children }: PropsWithChildren) {
                         })}
                     </nav>
                 </div>
-                <div className="mt-auto border-t border-line p-4"></div>
             </aside>
 
             <div className="lg:ps-64">
@@ -359,6 +383,15 @@ export default function AppLayout({ children }: PropsWithChildren) {
                                             >
                                                 <KeyRound size={16} className="text-brand" /> {t('Active sessions')}
                                             </Link>
+                                            {canUseCollectorDesk && (
+                                                <Link
+                                                    href="/field"
+                                                    role="menuitem"
+                                                    className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold hover:bg-sand"
+                                                >
+                                                    <HandCoins size={16} className="text-brand" /> {t('Collector desk')}
+                                                </Link>
+                                            )}
                                             {can('settings.manage') && (
                                                 <Link
                                                     href="/settings/general"
