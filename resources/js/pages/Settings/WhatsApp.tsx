@@ -100,6 +100,16 @@ export default function WhatsAppSettings({ setup }: Props) {
     const [accountJobs, setAccountJobs] = useState<Record<string, string>>({});
     const [accountToDelete, setAccountToDelete] = useState<WhatsAppAccount | null>(null);
     const [accountMutationPending, setAccountMutationPending] = useState(false);
+    const fieldA11y = (id: string, error?: string) => ({
+        'aria-invalid': Boolean(error),
+        'aria-describedby': error ? `${id}-error` : undefined,
+    });
+    const fieldError = (id: string, error?: string) =>
+        error ? (
+            <p id={`${id}-error`} className="field-error" role="alert">
+                {t(error)}
+            </p>
+        ) : null;
 
     useEffect(() => {
         if (
@@ -311,17 +321,21 @@ export default function WhatsAppSettings({ setup }: Props) {
                             <label>
                                 <span className="field-label">{t('Account label')}</span>
                                 <input
+                                    id="account-label"
                                     className="field"
+                                    {...fieldA11y('account-label', createForm.errors.label)}
                                     placeholder={t('Billing phone')}
                                     value={createForm.data.label}
                                     onChange={(event) => createForm.setData('label', event.target.value)}
                                 />
-                                {createForm.errors.label && <p className="field-error" role="alert">{t(createForm.errors.label)}</p>}
+                                {fieldError('account-label', createForm.errors.label)}
                             </label>
                             <label>
                                 <span className="field-label">{t('Assigned job')}</span>
                                 <ResponsiveSelect
+                                    id="account-job"
                                     name="job"
+                                    {...fieldA11y('account-job', createForm.errors.job)}
                                     value={createForm.data.job}
                                     onChange={(event) => createForm.setData('job', event.target.value)}
                                 >
@@ -331,7 +345,7 @@ export default function WhatsAppSettings({ setup }: Props) {
                                         </option>
                                     ))}
                                 </ResponsiveSelect>
-                                {createForm.errors.job && <p className="field-error" role="alert">{t(createForm.errors.job)}</p>}
+                                {fieldError('account-job', createForm.errors.job)}
                             </label>
                             <button type="submit" className="button-primary" disabled={createForm.processing}>
                                 <Plus size={16} /> {t('Add account')}
@@ -492,19 +506,22 @@ export default function WhatsAppSettings({ setup }: Props) {
                         <label className="min-w-0 flex-1">
                             <span className="field-label">{t('Recipient phone with country code')}</span>
                             <input
+                                id="test-phone"
                                 className="field"
                                 type="tel"
                                 inputMode="tel"
+                                {...fieldA11y('test-phone', testForm.errors.phone)}
                                 placeholder="+961 70 123 456"
                                 value={testForm.data.phone}
                                 onChange={(event) => testForm.setData('phone', event.target.value)}
                             />
-                            {testForm.errors.phone && <p className="field-error" role="alert">{t(testForm.errors.phone)}</p>}
+                            {fieldError('test-phone', testForm.errors.phone)}
                         </label>
                         {setup.accounts.length > 0 && (
                             <label>
                                 <span className="field-label">{t('Send through')}</span>
                                 <ResponsiveSelect
+                                    id="test-account"
                                     name="account_id"
                                     value={testForm.data.account_id}
                                     onChange={(event) => testForm.setData('account_id', event.target.value)}
