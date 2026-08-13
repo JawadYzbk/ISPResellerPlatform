@@ -29,6 +29,16 @@ export default function CustomersEdit({ customer, zones }: Props) {
         latitude: customer.latitude?.toString() ?? '',
         longitude: customer.longitude?.toString() ?? '',
     });
+    const fieldA11y = (name: keyof typeof form.data) => ({
+        'aria-invalid': Boolean(form.errors[name]),
+        'aria-describedby': form.errors[name] ? `${name}-error` : undefined,
+    });
+    const fieldError = (name: keyof typeof form.data) =>
+        form.errors[name] ? (
+            <p id={`${name}-error`} className="field-error" role="alert">
+                {t(form.errors[name])}
+            </p>
+        ) : null;
 
     return (
         <AppLayout>
@@ -60,10 +70,12 @@ export default function CustomersEdit({ customer, zones }: Props) {
                             <input
                                 id="first_name"
                                 className="field"
+                                required
+                                {...fieldA11y('first_name')}
                                 value={form.data.first_name}
                                 onChange={(event) => form.setData('first_name', event.target.value)}
                             />
-                            {form.errors.first_name && <p className="field-error" role="alert">{t(form.errors.first_name)}</p>}
+                            {fieldError('first_name')}
                         </div>
                         <div>
                             <label className="field-label" htmlFor="last_name">
@@ -72,10 +84,11 @@ export default function CustomersEdit({ customer, zones }: Props) {
                             <input
                                 id="last_name"
                                 className="field"
+                                {...fieldA11y('last_name')}
                                 value={form.data.last_name}
                                 onChange={(event) => form.setData('last_name', event.target.value)}
                             />
-                            {form.errors.last_name && <p className="field-error" role="alert">{t(form.errors.last_name)}</p>}
+                            {fieldError('last_name')}
                         </div>
                         <div>
                             <label className="field-label" htmlFor="phone">
@@ -84,10 +97,12 @@ export default function CustomersEdit({ customer, zones }: Props) {
                             <input
                                 id="phone"
                                 className="field"
+                                required
+                                {...fieldA11y('phone')}
                                 value={form.data.phone}
                                 onChange={(event) => form.setData('phone', event.target.value)}
                             />
-                            {form.errors.phone && <p className="field-error" role="alert">{t(form.errors.phone)}</p>}
+                            {fieldError('phone')}
                         </div>
                         <div>
                             <label className="field-label" htmlFor="email">
@@ -97,10 +112,11 @@ export default function CustomersEdit({ customer, zones }: Props) {
                                 id="email"
                                 type="email"
                                 className="field"
+                                {...fieldA11y('email')}
                                 value={form.data.email}
                                 onChange={(event) => form.setData('email', event.target.value)}
                             />
-                            {form.errors.email && <p className="field-error" role="alert">{t(form.errors.email)}</p>}
+                            {fieldError('email')}
                         </div>
                         <div>
                             <label className="field-label" htmlFor="zone_id">
@@ -109,6 +125,7 @@ export default function CustomersEdit({ customer, zones }: Props) {
                             <ResponsiveSelect
                                 id="zone_id"
                                 className="field"
+                                {...fieldA11y('zone_id')}
                                 value={form.data.zone_id}
                                 onChange={(event) => form.setData('zone_id', event.target.value)}
                             >
@@ -119,7 +136,7 @@ export default function CustomersEdit({ customer, zones }: Props) {
                                     </option>
                                 ))}
                             </ResponsiveSelect>
-                            {form.errors.zone_id && <p className="field-error" role="alert">{t(form.errors.zone_id)}</p>}
+                            {fieldError('zone_id')}
                         </div>
                         <div>
                             <label className="field-label" htmlFor="address">
@@ -128,10 +145,11 @@ export default function CustomersEdit({ customer, zones }: Props) {
                             <input
                                 id="address"
                                 className="field"
+                                {...fieldA11y('address')}
                                 value={form.data.address}
                                 onChange={(event) => form.setData('address', event.target.value)}
                             />
-                            {form.errors.address && <p className="field-error" role="alert">{t(form.errors.address)}</p>}
+                            {fieldError('address')}
                         </div>
                     </div>
                     <CustomerLocationFields
