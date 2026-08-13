@@ -13,6 +13,8 @@ type Props = {
     onLongitudeChange: (value: string) => void;
     title?: string;
     description?: string;
+    errors?: Record<string, string>;
+    fieldPrefix?: string;
 };
 
 export default function CustomerLocationFields({
@@ -22,11 +24,19 @@ export default function CustomerLocationFields({
     onLongitudeChange,
     title,
     description,
+    errors = {},
+    fieldPrefix = 'location',
 }: Props) {
     const { props } = usePage<PageProps>();
     const t = createTranslator(props.app.locale);
     const resolvedTitle = title ?? t('Service location');
     const resolvedDescription = description ?? t('Optional GPS coordinates for field work and dispatch.');
+    const fieldError = (name: 'latitude' | 'longitude') =>
+        errors[name] ? (
+            <p id={`${fieldPrefix}-${name}-error`} className="field-error" role="alert">
+                {t(errors[name])}
+            </p>
+        ) : null;
     const [locating, setLocating] = useState(false);
     const [locationError, setLocationError] = useState<string | null>(null);
     const mapUrl =
@@ -79,28 +89,36 @@ export default function CustomerLocationFields({
                 <label>
                     <span className="field-label">{t('Latitude')}</span>
                     <input
+                        id={`${fieldPrefix}-latitude`}
                         type="number"
                         step="0.0000001"
                         min="-90"
                         max="90"
+                        aria-invalid={Boolean(errors.latitude)}
+                        aria-describedby={errors.latitude ? `${fieldPrefix}-latitude-error` : undefined}
                         className="field"
                         value={latitude}
                         onChange={(event) => onLatitudeChange(event.target.value)}
                         placeholder="33.8938"
                     />
+                    {fieldError('latitude')}
                 </label>
                 <label>
                     <span className="field-label">{t('Longitude')}</span>
                     <input
+                        id={`${fieldPrefix}-longitude`}
                         type="number"
                         step="0.0000001"
                         min="-180"
                         max="180"
+                        aria-invalid={Boolean(errors.longitude)}
+                        aria-describedby={errors.longitude ? `${fieldPrefix}-longitude-error` : undefined}
                         className="field"
                         value={longitude}
                         onChange={(event) => onLongitudeChange(event.target.value)}
                         placeholder="35.5018"
                     />
+                    {fieldError('longitude')}
                 </label>
             </div>
             <MapPicker

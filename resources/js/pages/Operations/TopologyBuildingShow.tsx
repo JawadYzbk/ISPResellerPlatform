@@ -241,6 +241,8 @@ function BoxCard({
                         <CustomerLocationFields
                             latitude={editForm.data.latitude}
                             longitude={editForm.data.longitude}
+                            errors={editForm.errors}
+                            fieldPrefix="box-edit-location"
                             onLatitudeChange={(value) => editForm.setData('latitude', value)}
                             onLongitudeChange={(value) => editForm.setData('longitude', value)}
                             title={t('Box location')}
@@ -539,6 +541,8 @@ export default function TopologyBuildingShowPage({
                     <CustomerLocationFields
                         latitude={buildingForm.data.latitude}
                         longitude={buildingForm.data.longitude}
+                        errors={buildingForm.errors}
+                        fieldPrefix="building-location"
                         onLatitudeChange={(value) => buildingForm.setData('latitude', value)}
                         onLongitudeChange={(value) => buildingForm.setData('longitude', value)}
                         title={t('Building location')}
@@ -639,6 +643,8 @@ export default function TopologyBuildingShowPage({
                     <CustomerLocationFields
                         latitude={boxForm.data.latitude}
                         longitude={boxForm.data.longitude}
+                        errors={boxForm.errors}
+                        fieldPrefix="box-location"
                         onLatitudeChange={(value) => boxForm.setData('latitude', value)}
                         onLongitudeChange={(value) => boxForm.setData('longitude', value)}
                         title={t('Box location')}

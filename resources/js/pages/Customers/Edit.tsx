@@ -155,6 +155,8 @@ export default function CustomersEdit({ customer, zones }: Props) {
                     <CustomerLocationFields
                         latitude={form.data.latitude}
                         longitude={form.data.longitude}
+                        errors={form.errors}
+                        fieldPrefix="customer-location"
                         onLatitudeChange={(value) => form.setData('latitude', value)}
                         onLongitudeChange={(value) => form.setData('longitude', value)}
                     />

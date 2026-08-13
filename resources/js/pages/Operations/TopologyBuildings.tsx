@@ -156,6 +156,8 @@ export default function TopologyBuildingsPage({ buildings, canManage, statuses }
                     <CustomerLocationFields
                         latitude={form.data.latitude}
                         longitude={form.data.longitude}
+                        errors={form.errors}
+                        fieldPrefix="building-location"
                         onLatitudeChange={(value) => form.setData('latitude', value)}
                         onLongitudeChange={(value) => form.setData('longitude', value)}
                         title={t('topology_buildings.location')}
