@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react';
 import StatusBadge, { type Status } from '@/components/StatusBadge';
 import AppLayout from '@/layouts/AppLayout';
 import { formatDate } from '@/lib/format';
-import { createTranslator } from '@/lib/i18n';
+import { createTranslator, enumLabel } from '@/lib/i18n';
 import type { PageProps, Paginator } from '@/types';
 
 type Incident = {
@@ -152,7 +152,7 @@ export default function IncidentsPage({ incidents, filters }: Props) {
                                             {incident.title}
                                         </Link>
                                         <p className="mt-1 text-xs capitalize text-muted">
-                                            {incident.type.replaceAll('_', ' ')}
+                                            {enumLabel(incident.type, t)}
                                         </p>
                                     </td>
                                     <td className="px-5 py-4 text-sm">

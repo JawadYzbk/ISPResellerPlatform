@@ -8,7 +8,7 @@ import AppLayout from '@/layouts/AppLayout';
 import ConfirmDialog from '@/components/ui/confirm-dialog';
 import { formatDate } from '@/lib/format';
 import type { PageProps, Paginator } from '@/types';
-import { createTranslator } from '@/lib/i18n';
+import { createTranslator, enumLabel } from '@/lib/i18n';
 
 type InventoryUnit = {
     id: number;
@@ -894,7 +894,7 @@ export default function InventoryPage({
                                             <span
                                                 className={`rounded-full px-2 py-1 text-xs font-semibold capitalize ${count.status === 'posted' ? 'bg-emerald-50 text-emerald-700' : count.status === 'rejected' ? 'bg-rose-50 text-rose-700' : 'bg-amber-50 text-amber-700'}`}
                                             >
-                                                {count.status}
+                                                {enumLabel(count.status, t)}
                                             </span>
                                         </div>
                                         <div className="mt-3 overflow-x-auto">
@@ -1010,7 +1010,7 @@ export default function InventoryPage({
                                             <span
                                                 className={`rounded-full px-2 py-1 text-xs font-semibold capitalize ${request.status === 'approved' ? 'bg-emerald-50 text-emerald-700' : request.status === 'rejected' ? 'bg-rose-50 text-rose-700' : 'bg-amber-50 text-amber-700'}`}
                                             >
-                                                {request.status}
+                                                {enumLabel(request.status, t)}
                                             </span>
                                         </div>
                                         <p className="mt-2 text-sm">

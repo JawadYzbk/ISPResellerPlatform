@@ -6,7 +6,7 @@ import { formatDate } from '@/lib/format';
 import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
 import { ClipboardCheck, MessageSquare, Paperclip, Plus, UserRound } from 'lucide-react';
 
-import { createTranslator } from '@/lib/i18n';
+import { createTranslator, enumLabel } from '@/lib/i18n';
 import type { PageProps } from '@/types';
 
 type Collector = { id: number; name: string; email: string };
@@ -248,7 +248,7 @@ export default function CollectorTasks({ filters, collectors, customers, tasks, 
                                 </div>
                                 <div className="mt-3 flex flex-wrap items-center gap-2">
                                     <StatusBadge status={task.status} />
-                                    <span className="text-xs font-semibold capitalize text-muted">{task.priority}</span>
+                                    <span className="text-xs font-semibold capitalize text-muted">{enumLabel(task.priority, t)}</span>
                                 </div>
                                 <p className="mt-3 truncate text-xs text-muted">
                                     {task.collector.name}

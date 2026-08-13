@@ -6,7 +6,7 @@ import { useState } from 'react';
 import StatusBadge from '@/components/StatusBadge';
 import AppLayout from '@/layouts/AppLayout';
 import { formatDate } from '@/lib/format';
-import { createTranslator } from '@/lib/i18n';
+import { createTranslator, enumLabel } from '@/lib/i18n';
 import type { PageProps, Paginator } from '@/types';
 
 type TicketRow = {
@@ -152,7 +152,7 @@ export default function TicketsPage({ tickets, filters }: Props) {
                                         )}
                                         <p className="mt-1 text-xs text-muted">{ticket.customer?.code ?? '—'}</p>
                                     </td>
-                                    <td className="px-5 py-4 text-sm font-semibold capitalize">{ticket.priority}</td>
+                                    <td className="px-5 py-4 text-sm font-semibold capitalize">{enumLabel(ticket.priority, t)}</td>
                                     <td className="px-5 py-4">
                                         <StatusBadge status={ticket.status} />
                                     </td>

@@ -7,7 +7,7 @@ import StatusBadge from '@/components/StatusBadge';
 import AppLayout from '@/layouts/AppLayout';
 import ConfirmDialog from '@/components/ui/confirm-dialog';
 import { formatDate } from '@/lib/format';
-import { createTranslator } from '@/lib/i18n';
+import { createTranslator, enumLabel } from '@/lib/i18n';
 import type { PageProps, Paginator } from '@/types';
 import CurrencyCombobox, { type CurrencyOption } from '@/components/ui/currency-combobox';
 
@@ -169,7 +169,7 @@ export default function CredentialsPage({
                                 <option value="">{t('credentials.no_contract')}</option>
                                 {selectedSupplier?.contracts.map((contract) => (
                                     <option key={contract.id} value={contract.id}>
-                                        {contract.service_type} · {contract.wholesale_currency} · {contract.status}
+                                        {t(contract.service_type)} · {contract.wholesale_currency} · {enumLabel(contract.status, t)}
                                     </option>
                                 ))}
                             </ResponsiveSelect>

@@ -8,7 +8,7 @@ import { Head, router, useForm, usePage } from '@inertiajs/react';
 import { ArrowDownToLine, ArrowUpFromLine, CircleDollarSign, ReceiptText, Scale } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
-import { createTranslator } from '@/lib/i18n';
+import { createTranslator, enumLabel } from '@/lib/i18n';
 import type { PageProps } from '@/types';
 
 type Position = { balances: Record<string, number>; cash_payment_count: number; pending_count: number };
@@ -282,7 +282,7 @@ export default function CollectorCustody({ filters, collectors, entries, currenc
                                     </span>
                                     <div className="min-w-0">
                                         <div className="flex flex-wrap items-center gap-2">
-                                            <h3 className="font-semibold capitalize">{entry.type}</h3>
+                                            <h3 className="font-semibold capitalize">{enumLabel(entry.type, t)}</h3>
                                             <StatusBadge status={entry.status} />
                                         </div>
                                         <p className="mt-1 text-pretty text-sm text-muted">{entry.description}</p>

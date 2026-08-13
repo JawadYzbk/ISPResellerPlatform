@@ -3,7 +3,7 @@ import { ExternalLink, MapPinned, Navigation, TimerReset } from 'lucide-react';
 
 import AppLayout from '@/layouts/AppLayout';
 import { entriesOrEmpty, formatDate, formatMoney } from '@/lib/format';
-import { createTranslator } from '@/lib/i18n';
+import { createTranslator, enumLabel } from '@/lib/i18n';
 import type { PageProps } from '@/types';
 
 type Location = {
@@ -146,7 +146,7 @@ export default function CollectorCheckIns({ date, fieldDays }: { date: string; f
                                                     {t('collector_checkins.stops')}
                                                 </p>
                                                 <p className="mt-1 text-xs capitalize text-muted">
-                                                    {fieldDay.summary.route.status?.replaceAll('_', ' ') ??
+                                                    {enumLabel(fieldDay.summary.route.status, t) ||
                                                         t('collector_checkins.no_route')}
                                                 </p>
                                             </>

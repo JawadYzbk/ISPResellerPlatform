@@ -96,7 +96,7 @@ export default function WorkOrderCalendarPage({ weekStart, timezone, workOrders 
             </Link>
             <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
                 <div>
-                    <p className="eyebrow">Field operations · {timezone}</p>
+                    <p className="eyebrow">{t('Field operations')} · {timezone}</p>
                     <h1 className="page-title">{t('Work-order calendar')}</h1>
                     <p className="page-subtitle">{t('calendar.subtitle')}</p>
                 </div>

@@ -7,7 +7,7 @@ import StatusBadge from '@/components/StatusBadge';
 import AppLayout from '@/layouts/AppLayout';
 import { formatDate } from '@/lib/format';
 import { createIdempotencyKey } from '@/lib/idempotency';
-import { createTranslator } from '@/lib/i18n';
+import { createTranslator, enumLabel } from '@/lib/i18n';
 import type { PageProps, Paginator } from '@/types';
 
 type WorkOrder = {
@@ -135,7 +135,7 @@ export default function WorkOrdersPage({ workOrders, filters }: Props) {
                                             {order.number}
                                         </Link>
                                         <p className="mt-1 text-xs capitalize text-muted">
-                                            {order.type.replace('_', ' ')}
+                                            {enumLabel(order.type, t)}
                                         </p>
                                         <p className="mt-1 text-xs text-muted">
                                             {order.service?.username ?? t('work_orders.no_service')}

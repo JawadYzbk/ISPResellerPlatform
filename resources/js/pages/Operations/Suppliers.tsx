@@ -6,7 +6,7 @@ import { useState } from 'react';
 
 import AppLayout from '@/layouts/AppLayout';
 import { formatMoney } from '@/lib/format';
-import { createTranslator } from '@/lib/i18n';
+import { createTranslator, enumLabel } from '@/lib/i18n';
 import type { PageProps } from '@/types';
 
 type Contract = {
@@ -584,7 +584,7 @@ function SupplierCard({
                                         <div className="flex items-start justify-between gap-3">
                                             <span className="font-semibold">{contract.service_type}</span>
                                             <div className="flex items-center gap-2">
-                                                <span className="status-badge">{contract.status}</span>
+                                                <span className="status-badge">{enumLabel(contract.status, t)}</span>
                                                 {canManage && (
                                                     <button
                                                         type="button"

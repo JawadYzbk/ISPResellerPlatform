@@ -7,7 +7,7 @@ import { useMemo, useState } from 'react';
 import StatusBadge, { type Status } from '@/components/StatusBadge';
 import AppLayout from '@/layouts/AppLayout';
 import { formatMoney } from '@/lib/format';
-import { createTranslator } from '@/lib/i18n';
+import { createTranslator, enumLabel } from '@/lib/i18n';
 import type { PageProps } from '@/types';
 
 type Collector = {
@@ -340,7 +340,7 @@ export default function CollectorRoutes({ date, collectors, customers, routes }:
                                         {stop.customer.name}
                                     </span>
                                     <span className="text-xs capitalize text-muted">
-                                        {stop.outcome.replaceAll('_', ' ')}
+                                        {enumLabel(stop.outcome, t)}
                                     </span>
                                 </div>
                             ))}

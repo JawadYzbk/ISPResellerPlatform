@@ -20,7 +20,7 @@ import SignaturePad from '@/components/SignaturePad';
 import AppLayout from '@/layouts/AppLayout';
 import { entriesOrEmpty, formatDate, keysOrEmpty } from '@/lib/format';
 import { createIdempotencyKey } from '@/lib/idempotency';
-import { createTranslator } from '@/lib/i18n';
+import { createTranslator, enumLabel } from '@/lib/i18n';
 import type { PageProps } from '@/types';
 
 type WorkOrder = {
@@ -97,10 +97,6 @@ type NetworkBuilding = {
     code: string;
     boxes: { id: number; public_id: string; name: string; code: string; capacity_ports: number }[];
 };
-
-function checklistLabel(key: string): string {
-    return key.replaceAll('_', ' ');
-}
 
 function isChecked(value: boolean | string): boolean {
     return value === true || value === 'true';
@@ -402,7 +398,7 @@ export default function WorkOrderShowPage({
                                             <option value="">{t('Select box')}</option>
                                             {selectedBuilding?.boxes.map((box) => (
                                                 <option key={box.public_id} value={box.public_id}>
-                                                    {box.name} · {box.code} · {box.capacity_ports} ports
+                                                    {box.name} · {box.code} · {box.capacity_ports} {t('ports')}
                                                 </option>
                                             ))}
                                         </ResponsiveSelect>
@@ -614,7 +610,7 @@ export default function WorkOrderShowPage({
                                     key={key}
                                     className="flex items-center justify-between gap-4 rounded-lg border border-line px-4 py-3 text-sm"
                                 >
-                                    <span className="capitalize text-muted">{checklistLabel(key)}</span>
+                                    <span className="capitalize text-muted">{enumLabel(key, t)}</span>
                                     <span
                                         className={
                                             isChecked(value)
@@ -749,7 +745,7 @@ export default function WorkOrderShowPage({
                             <div className="grid gap-4 sm:grid-cols-2">
                                 {keysOrEmpty(readingsForm.data.readings).map((key) => (
                                     <label key={key}>
-                                        <span className="field-label capitalize">{key.replaceAll('_', ' ')}</span>
+                                        <span className="field-label capitalize">{enumLabel(key, t)}</span>
                                         <input
                                             className="field"
                                             value={readingsForm.data.readings[key]}
@@ -836,7 +832,7 @@ export default function WorkOrderShowPage({
                                     <div className="min-w-0">
                                         <p className="truncate text-sm font-semibold">{media.filename}</p>
                                         <p className="mt-1 text-xs capitalize text-muted">
-                                            {media.purpose.replace('_', ' ')} · {formatBytes(media.size_bytes)} ·{' '}
+                                            {enumLabel(media.purpose, t)} · {formatBytes(media.size_bytes)} ·{' '}
                                             {formatDate(media.created_at)}
                                         </p>
                                     </div>
@@ -857,15 +853,15 @@ export default function WorkOrderShowPage({
                                 <div key={event.id} className="flex gap-3 border-s border-line ps-4">
                                     <div>
                                         <p className="text-sm font-semibold capitalize">
-                                            {event.event_type.replace('_', ' ')}
+                                            {enumLabel(event.event_type, t)}
                                         </p>
                                         <p className="mt-1 text-xs text-muted">
                                             {event.actor ?? t('System')} · {formatDate(event.created_at)}
                                         </p>
                                         {event.from_status && (
                                             <p className="mt-1 text-xs text-muted">
-                                                {event.from_status.replace('_', ' ')} →{' '}
-                                                {event.to_status?.replace('_', ' ')}
+                                                {enumLabel(event.from_status, t)} →{' '}
+                                                {enumLabel(event.to_status, t)}
                                             </p>
                                         )}
                                     </div>

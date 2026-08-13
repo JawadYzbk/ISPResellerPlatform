@@ -151,7 +151,7 @@ export default function Setup({ checks }: Props) {
                                 <span
                                     className={`shrink-0 text-xs font-semibold ${check.status === 'PASS' ? 'text-emerald-700' : check.status === 'WARN' ? 'text-amber-700' : 'text-coral'}`}
                                 >
-                                    {check.status}
+                                    {t(check.status === 'PASS' ? 'Ready' : check.status === 'WARN' ? 'Attention' : 'Failed')}
                                 </span>
                             </div>
                         ))}

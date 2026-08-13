@@ -92,7 +92,7 @@ export default function Locations({ branches, zones, tenant }: Props) {
                 <ArrowLeft size={16} /> {t('Back to workspace settings')}
             </Link>
             <div className="max-w-5xl">
-                <p className="eyebrow">Workspace setup · {tenant?.slug}</p>
+                <p className="eyebrow">{t('Workspace setup')} · {tenant?.slug}</p>
                 <h1 className="page-title">{t('locations.title')}</h1>
                 <p className="page-subtitle">{t('locations.subtitle')}</p>
                 <div className="mt-5 flex flex-wrap gap-2">

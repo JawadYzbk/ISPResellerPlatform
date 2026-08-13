@@ -6,7 +6,7 @@ import { useState } from 'react';
 import StatusBadge from '@/components/StatusBadge';
 import AppLayout from '@/layouts/AppLayout';
 import { formatDate } from '@/lib/format';
-import { createTranslator, roleLabel } from '@/lib/i18n';
+import { createTranslator, enumLabel, roleLabel } from '@/lib/i18n';
 import type { PageProps } from '@/types';
 
 type TicketMessage = {
@@ -126,7 +126,7 @@ export default function TicketShow({
                         <dl className="mt-5 space-y-4 text-sm">
                             <div>
                                 <dt className="text-xs text-muted">{t('Priority')}</dt>
-                                <dd className="mt-1 font-semibold capitalize">{ticket.priority}</dd>
+                                <dd className="mt-1 font-semibold capitalize">{enumLabel(ticket.priority, t)}</dd>
                             </div>
                             <div>
                                 <dt className="text-xs text-muted">{t('SLA due')}</dt>

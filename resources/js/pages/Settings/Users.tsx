@@ -6,7 +6,7 @@ import { useState } from 'react';
 
 import AppLayout from '@/layouts/AppLayout';
 import { formatDate } from '@/lib/format';
-import { createTranslator } from '@/lib/i18n';
+import { createTranslator, enumLabel } from '@/lib/i18n';
 import type { PageProps, Paginator } from '@/types';
 
 type UserRow = {
@@ -174,7 +174,7 @@ export default function UsersPage({
                                                     >
                                                         {roles.map((role) => (
                                                             <option key={role} value={role}>
-                                                                {role.replaceAll('_', ' ')}
+                                                                {enumLabel(role, t)}
                                                             </option>
                                                         ))}
                                                     </ResponsiveSelect>
@@ -183,7 +183,7 @@ export default function UsersPage({
                                                     )}
                                                 </div>
                                             ) : (
-                                                member.role.replaceAll('_', ' ')
+                                                enumLabel(member.role, t)
                                             )}
                                         </td>
                                         <td className="px-5 py-4 text-sm text-muted">
@@ -324,7 +324,7 @@ export default function UsersPage({
                             >
                                 {roles.map((role) => (
                                     <option key={role} value={role}>
-                                        {role.replaceAll('_', ' ')}
+                                        {enumLabel(role, t)}
                                     </option>
                                 ))}
                             </ResponsiveSelect>
@@ -344,7 +344,7 @@ export default function UsersPage({
                                 >
                                     <p className="text-sm font-semibold">{pending.email}</p>
                                     <p className="mt-1 text-xs capitalize text-muted">
-                                        {pending.role.replaceAll('_', ' ')} · {t('users.expires')}{' '}
+                                        {enumLabel(pending.role, t)} · {t('users.expires')}{' '}
                                         {formatDate(pending.expires_at)}
                                     </p>
                                 </div>

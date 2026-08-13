@@ -4,7 +4,7 @@ import { AlertTriangle, ArrowLeft, CalendarClock, Router, Server, UserRound } fr
 import StatusBadge, { type Status } from '@/components/StatusBadge';
 import AppLayout from '@/layouts/AppLayout';
 import { entriesOrEmpty, formatDate, keysOrEmpty } from '@/lib/format';
-import { createTranslator } from '@/lib/i18n';
+import { createTranslator, enumLabel } from '@/lib/i18n';
 import type { PageProps } from '@/types';
 
 type Incident = {
@@ -50,7 +50,7 @@ export default function IncidentShow({ incident }: Props) {
                         {t('incident_detail.eyebrow')} · {incident.public_id}
                     </p>
                     <h1 className="page-title">{incident.title}</h1>
-                    <p className="mt-2 text-sm capitalize text-muted">{incident.type.replaceAll('_', ' ')}</p>
+                    <p className="mt-2 text-sm capitalize text-muted">{enumLabel(incident.type, t)}</p>
                 </div>
                 <div className="flex items-center gap-2">
                     <span
@@ -168,7 +168,7 @@ export default function IncidentShow({ incident }: Props) {
                                     key={key}
                                     className="flex justify-between gap-4 border-b border-line pb-3 last:border-0 last:pb-0"
                                 >
-                                    <dt className="capitalize text-muted">{key.replaceAll('_', ' ')}</dt>
+                                    <dt className="capitalize text-muted">{enumLabel(key, t)}</dt>
                                     <dd className="text-end font-semibold">{String(value)}</dd>
                                 </div>
                             ))}
