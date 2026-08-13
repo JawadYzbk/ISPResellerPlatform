@@ -814,9 +814,9 @@ export default function CustomerShow({
                                     <span
                                         className={`absolute -start-[21px] top-1 size-2 rounded-full ring-4 ${index === 0 ? 'bg-brand ring-brand-soft' : 'bg-line ring-canvas'}`}
                                     />
-                                    <p className="text-sm font-semibold">{item.title}</p>
+                                    <p className="text-sm font-semibold">{t(item.title)}</p>
                                     <p className="mt-1 text-xs text-muted">
-                                        {item.detail}
+                                        {t(item.detail)}
                                         {item.amount !== undefined && item.currency
                                             ? ` · ${formatMoney(item.amount, item.currency)}`
                                             : ''}

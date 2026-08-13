@@ -255,9 +255,9 @@ export default function Dashboard({ metrics, attentionQueue }: Props) {
                                                 <CircleAlert size={16} />
                                             </span>
                                             <span className="min-w-0 flex-1">
-                                                <span className="block text-sm font-semibold">{item.title}</span>
+                                                <span className="block text-sm font-semibold">{t(item.title)}</span>
                                                 <span className="mt-1 block truncate text-xs text-muted">
-                                                    {item.detail}
+                                                    {t(item.detail)}
                                                 </span>
                                             </span>
                                             <ArrowUpRight size={16} className="shrink-0 text-muted" />
@@ -346,12 +346,12 @@ function OwnerFinancePanel({ owner }: { owner: NonNullable<DashboardMetrics['own
                                     <span
                                         className="w-3 rounded-t bg-brand"
                                         style={{ height: `${Math.max(4, (month.active / maxServices) * 100)}%` }}
-                                        title={`${month.active} active`}
+                                        title={`${month.active} ${t('active')}`}
                                     />
                                     <span
                                         className="w-3 rounded-t bg-rose-300"
                                         style={{ height: `${Math.max(4, (month.suspended / maxServices) * 100)}%` }}
-                                        title={`${month.suspended} suspended`}
+                                        title={`${month.suspended} ${t('suspended')}`}
                                     />
                                 </div>
                                 <p className="mt-2 truncate text-[11px] text-muted">{month.month}</p>
