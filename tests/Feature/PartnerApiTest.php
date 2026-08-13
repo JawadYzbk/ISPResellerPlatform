@@ -46,7 +46,7 @@ it('limits reseller partner APIs to descendants and funds a visible wallet idemp
         ->assertJsonPath('data.0.id', $first->json('wallet_transaction_id'))
         ->assertJsonPath('data.0.type', 'top_up');
     $this->withToken($token)->getJson('/api/v1/partners/'.$sibling->public_id.'/wallets')->assertNotFound();
-    $user->forceFill(['last_authenticated_at' => now()->subMinutes(11)])->save();
+    $user->forceFill(['last_authenticated_at' => now()->subSeconds((int) config('auth.password_timeout') + 60)])->save();
     app('auth')->forgetGuards();
     $this->withToken($token)->withHeaders(['X-Idempotency-Key' => 'partner-top-up-stale'])->postJson('/api/v1/partners/'.$child->public_id.'/wallet-top-ups', ['amount' => 100])->assertUnauthorized();
     app(Tenancy::class)->set($tenant);

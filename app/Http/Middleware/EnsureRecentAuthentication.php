@@ -15,7 +15,9 @@ final class EnsureRecentAuthentication
         $user = $request->user();
         abort_unless($user instanceof User, 401);
 
-        if ($user->last_authenticated_at !== null && CarbonImmutable::parse((string) $user->last_authenticated_at)->greaterThanOrEqualTo(now()->subMinutes(10))) {
+        $timeoutSeconds = max(1, (int) config('auth.password_timeout', 10800));
+
+        if ($user->last_authenticated_at !== null && CarbonImmutable::parse((string) $user->last_authenticated_at)->greaterThanOrEqualTo(now()->subSeconds($timeoutSeconds))) {
             return $next($request);
         }
 
