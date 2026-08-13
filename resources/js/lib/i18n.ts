@@ -1088,7 +1088,6 @@ const sharedArabic: Messages = {
     Scheduled: 'مجدول',
     Disconnected: 'غير متصل',
     Queued: 'في قائمة الانتظار',
-    Completed: 'مكتمل',
     Saved: 'محفوظ',
     Abandoned: 'متروك',
     'Accept activation before completing this installation.': 'قبول التفعيل قبل إكمال هذا التثبيت.',
@@ -1809,6 +1808,43 @@ const sharedArabic: Messages = {
     'Journal entries are append-only.': 'قيود اليومية قابلة للإضافة فقط.',
     'Journal lines are append-only.': 'سطور اليومية قابلة للإضافة فقط.',
     'Ledger projections are append-only.': 'إسقاطات دفتر الأستاذ قابلة للإضافة فقط.',
+    base: 'الأساس',
+    collection: 'التحصيل',
+    balance: 'الرصيد',
+    'rate(s)': 'سعر/أسعار',
+    Flagged: 'معلّمة',
+    purchased: 'تم الشراء',
+    ports: 'منافذ',
+    'bill(s)': 'فاتورة/فواتير',
+    'No issued invoices are currently open for this customer.': 'لا توجد فواتير صادرة مفتوحة حاليًا لهذا العميل.',
+    'The first renewal invoice is prorated from its issue date to this day. Days 29–31 clamp to shorter months.':
+        'تُحتسب فاتورة التجديد الأولى بنسبة من تاريخ إصدارها حتى هذا اليوم. وتُضبط الأيام 29–31 لتناسب الأشهر الأقصر.',
+    'ticket_responses.archive_disappear': 'سيختفي من محرر التذاكر.',
+    'ticket_responses.archive_restore': 'يمكنك استعادته لاحقًا.',
+    downstream: 'تنزيل',
+    upstream: 'رفع',
+    'Open work': 'عمل مفتوح',
+    Acknowledged: 'تم التأكيد',
+    'In progress': 'قيد التنفيذ',
+    Completed: 'مكتمل',
+    Cancelled: 'ملغى',
+    Low: 'منخفض',
+    Normal: 'عادي',
+    High: 'مرتفع',
+    Urgent: 'عاجل',
+    'No answer': 'لا إجابة',
+    Refused: 'مرفوض',
+    Reschedule: 'إعادة جدولة',
+    'Address issue': 'مشكلة عنوان',
+    Advance: 'سلفة',
+    Expense: 'مصروف',
+    Handover: 'تسليم',
+    Adjustment: 'تعديل',
+    Credit: 'دائن',
+    Debit: 'مدين',
+    Suspended: 'معلّق',
+    Terminated: 'منتهية',
+    Paused: 'متوقف مؤقتًا',
 };
 
 const sharedFrench: Messages = {
@@ -1986,7 +2022,6 @@ const sharedFrench: Messages = {
     Scheduled: 'Planifié',
     Disconnected: 'Déconnecté',
     Queued: 'En file d’attente',
-    Completed: 'Terminé',
     Saved: 'Enregistré',
     Abandoned: 'Abandonné',
     'Accept activation before completing this installation.': 'Accepter l’activation avant de terminer cette installation.',
@@ -2635,6 +2670,43 @@ const sharedFrench: Messages = {
     'The selected router is not available for this tenant.': 'Le routeur sélectionné n’est pas disponible pour cet espace.',
     'The selected service does not belong to this customer.': 'Le service sélectionné n’appartient pas à ce client.',
     'Keep at least one default branch configured.': 'Conservez au moins une agence par défaut configurée.',
+    base: 'base',
+    collection: 'encaissement',
+    balance: 'solde',
+    'rate(s)': 'taux',
+    Flagged: 'Signalé',
+    purchased: 'acheté(s)',
+    ports: 'ports',
+    'bill(s)': 'facture(s)',
+    'No issued invoices are currently open for this customer.': 'Aucune facture émise n’est actuellement ouverte pour ce client.',
+    'The first renewal invoice is prorated from its issue date to this day. Days 29–31 clamp to shorter months.':
+        'La première facture de renouvellement est calculée au prorata de sa date d’émission jusqu’à ce jour. Les jours 29 à 31 sont ajustés aux mois plus courts.',
+    'ticket_responses.archive_disappear': 'disparaîtra du compositeur de tickets.',
+    'ticket_responses.archive_restore': 'Vous pourrez le restaurer plus tard.',
+    downstream: 'descendant',
+    upstream: 'montant',
+    'Open work': 'Travail ouvert',
+    Acknowledged: 'Confirmé',
+    'In progress': 'En cours',
+    Completed: 'Terminé',
+    Cancelled: 'Annulé',
+    Low: 'Faible',
+    Normal: 'Normal',
+    High: 'Élevé',
+    Urgent: 'Urgent',
+    'No answer': 'Sans réponse',
+    Refused: 'Refusé',
+    Reschedule: 'Replanifier',
+    'Address issue': 'Problème d’adresse',
+    Advance: 'Avance',
+    Expense: 'Dépense',
+    Handover: 'Remise',
+    Adjustment: 'Ajustement',
+    Credit: 'Crédit',
+    Debit: 'Débit',
+    Suspended: 'Suspendu',
+    Terminated: 'Terminé',
+    Paused: 'En pause',
 };
 
 const fieldArabic: Messages = {
@@ -7306,4 +7378,13 @@ export function roleLabel(role: string, translate: (key: string) => string): str
     const key = role.replaceAll('_', ' ').replace(/\b\w/g, (letter) => letter.toUpperCase());
 
     return translate(key);
+}
+
+export function enumLabel(value: string | null | undefined, translate: (key: string) => string): string {
+    if (!value) return '';
+
+    const key = value.replaceAll('_', ' ').replace(/\b\w/g, (letter) => letter.toUpperCase());
+    const translated = translate(key);
+
+    return translated === key ? translate(value) : translated;
 }

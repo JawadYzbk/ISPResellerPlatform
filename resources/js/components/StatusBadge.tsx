@@ -1,6 +1,6 @@
 import { usePage } from '@inertiajs/react';
 
-import { createTranslator } from '@/lib/i18n';
+import { createTranslator, enumLabel } from '@/lib/i18n';
 import type { PageProps } from '@/types';
 
 export type Status =
@@ -110,12 +110,12 @@ const styles: Record<Status, string> = {
 export function StatusBadge({ status }: { status: Status }) {
     const { props } = usePage<PageProps>();
     const t = createTranslator(props.app.locale);
-    const label = status.replace('_', ' ').replace(/\b\w/g, (letter) => letter.toUpperCase());
+    const label = enumLabel(status, t);
     return (
         <span
             className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold capitalize ring-1 ring-inset ${styles[status]}`}
         >
-            {t(label)}
+            {label}
         </span>
     );
 }
