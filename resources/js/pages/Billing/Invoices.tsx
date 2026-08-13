@@ -58,9 +58,14 @@ export default function InvoicesPage({ invoices, filters, canIssue = false }: Pr
                 </div>
                 <div className="flex flex-wrap gap-2">
                     {canIssue && (
-                        <Link href="/billing/invoices/create" className="button-primary">
-                            <Plus size={16} /> {t('Create invoice')}
-                        </Link>
+                        <>
+                            <Link href="/billing/bulk-renewals" className="button-secondary">
+                                {t('Bulk renewals')}
+                            </Link>
+                            <Link href="/billing/invoices/create" className="button-primary">
+                                <Plus size={16} /> {t('Create invoice')}
+                            </Link>
+                        </>
                     )}
                     <Link href="/reports/finance" className="button-secondary">
                         {t('Finance report')}
