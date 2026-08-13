@@ -43,7 +43,10 @@ final readonly class CreateCustomer implements Action
                     'service_id' => $service->id,
                     'status' => WorkOrderStatus::Pending,
                     'checklist' => [],
-                    'metadata' => ['source' => 'subscriber_registration'],
+                    'metadata' => [
+                        'source' => 'subscriber_registration',
+                        'requires_installation_acceptance' => true,
+                    ],
                 ]);
                 $workOrder->events()->create([
                     'actor_id' => $actor?->id,

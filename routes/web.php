@@ -282,6 +282,8 @@ Route::middleware(['auth', 'tenant', '2fa'])->group(function (): void {
     Route::get('/operations/work-orders/{workOrder:public_id}', [WorkOrderOperationsController::class, 'show'])->name('operations.work-orders.show');
     Route::get('/operations/media/{media}/download', MediaDownloadController::class)->name('operations.media.download');
     Route::post('/operations/work-orders/{workOrder:public_id}/complete', [WorkOrderOperationsController::class, 'complete'])->name('operations.work-orders.complete');
+    Route::post('/operations/work-orders/{workOrder:public_id}/installation', [WorkOrderOperationsController::class, 'saveInstallation'])->middleware('recent-auth')->name('operations.work-orders.installation.save');
+    Route::post('/operations/work-orders/{workOrder:public_id}/activation-acceptance', [WorkOrderOperationsController::class, 'acceptActivation'])->middleware('recent-auth')->name('operations.work-orders.activation.accept');
     Route::post('/operations/work-orders/{workOrder:public_id}/schedule', [WorkOrderOperationsController::class, 'schedule'])->middleware('recent-auth')->name('operations.work-orders.schedule');
     Route::post('/operations/work-orders/{workOrder:public_id}/signature', [WorkOrderOperationsController::class, 'storeSignature'])->middleware('recent-auth')->name('operations.work-orders.signature.store');
     Route::post('/operations/work-orders/{workOrder:public_id}/readings', [WorkOrderOperationsController::class, 'readings'])->middleware('recent-auth')->name('operations.work-orders.readings.store');

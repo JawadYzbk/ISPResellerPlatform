@@ -31,6 +31,11 @@ final readonly class CompleteWorkOrder implements Action
             if (! in_array($locked->status, [WorkOrderStatus::Assigned, WorkOrderStatus::InProgress], true)) {
                 throw new DomainException('Only assigned or in-progress work orders can be completed.');
             }
+            if ($locked->type === 'installation'
+                && (bool) ($locked->metadata['requires_installation_acceptance'] ?? false)
+                && $locked->activation_accepted_at === null) {
+                throw new DomainException('Record topology and accept activation before completing this installation.');
+            }
             $fromStatus = $locked->status;
             $locked->forceFill(['status' => WorkOrderStatus::Completed, 'completed_at' => now(), 'completion_idempotency_key' => $idempotencyKey])->save();
             WorkOrderEvent::create(['work_order_id' => $locked->id, 'actor_id' => $actor?->id, 'event_type' => 'completed', 'from_status' => $fromStatus->value, 'to_status' => WorkOrderStatus::Completed->value]);

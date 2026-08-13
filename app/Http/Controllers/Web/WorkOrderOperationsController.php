@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Web;
 
+use App\Actions\AcceptWorkOrderInstallation;
 use App\Actions\CaptureWorkOrderSignature;
 use App\Actions\CompleteWorkOrder;
 use App\Actions\ConsumeWorkOrderMaterial;
@@ -10,10 +11,13 @@ use App\Actions\ListBulkStock;
 use App\Actions\ListWorkOrderCalendar;
 use App\Actions\ListWorkOrders;
 use App\Actions\RecordWorkOrderReadings;
+use App\Actions\SaveWorkOrderInstallation;
 use App\Actions\ScheduleWorkOrder;
 use App\Http\Controllers\Controller;
+use App\Models\DistributionBox;
 use App\Models\InventoryItem;
 use App\Models\MediaUpload;
+use App\Models\NetworkBuilding;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Models\Warehouse;
@@ -109,9 +113,59 @@ final class WorkOrderOperationsController extends Controller
         $user = $request->user();
         abort_unless($user instanceof User && $user->can('workorders.complete'), 403);
         $validated = $request->validate(['idempotency_key' => ['nullable', 'uuid']]);
-        $complete->handle($workOrder, $user, $validated['idempotency_key'] ?? null);
+        try {
+            $complete->handle($workOrder, $user, $validated['idempotency_key'] ?? null);
+        } catch (DomainException $exception) {
+            throw ValidationException::withMessages(['completion' => $exception->getMessage()]);
+        }
 
         return redirect()->route('operations.work-orders')->with('success', "Work order {$workOrder->number} completed.");
+    }
+
+    public function saveInstallation(Request $request, WorkOrder $workOrder, SaveWorkOrderInstallation $save): RedirectResponse
+    {
+        $user = $request->user();
+        abort_unless($user instanceof User && $user->can('workorders.complete'), 403);
+        $validated = $request->validate([
+            'network_building_id' => ['required', 'integer'],
+            'distribution_box_id' => ['required', 'string'],
+            'network_port' => ['required', 'integer', 'min:1'],
+            'onu_serial' => ['nullable', 'string', 'max:128'],
+            'survey' => ['nullable', 'array', 'max:20'],
+            'survey.*' => ['nullable', 'string', 'max:500'],
+        ]);
+        $box = DistributionBox::query()->where('public_id', $validated['distribution_box_id'])->firstOrFail();
+        abort_unless($box->network_building_id === (int) $validated['network_building_id'], 422, 'The selected box does not belong to the selected building.');
+
+        try {
+            $save->handle(
+                $workOrder,
+                $box,
+                (int) $validated['network_port'],
+                array_map('strval', $validated['survey'] ?? []),
+                $validated['onu_serial'] ?? null,
+                $user,
+            );
+        } catch (DomainException $exception) {
+            throw ValidationException::withMessages(['installation' => $exception->getMessage()]);
+        }
+
+        return redirect()->route('operations.work-orders.show', $workOrder->public_id)->with('success', 'Installation details saved.');
+    }
+
+    public function acceptActivation(Request $request, WorkOrder $workOrder, AcceptWorkOrderInstallation $accept): RedirectResponse
+    {
+        $user = $request->user();
+        abort_unless($user instanceof User && $user->can('workorders.complete'), 403);
+        $validated = $request->validate(['note' => ['nullable', 'string', 'max:1000']]);
+
+        try {
+            $accept->handle($workOrder, $user, $validated['note'] ?? null);
+        } catch (DomainException $exception) {
+            throw ValidationException::withMessages(['activation' => $exception->getMessage()]);
+        }
+
+        return redirect()->route('operations.work-orders.show', $workOrder->public_id)->with('success', 'Activation accepted.');
     }
 
     public function schedule(Request $request, WorkOrder $workOrder, ScheduleWorkOrder $schedule): RedirectResponse
@@ -202,7 +256,12 @@ final class WorkOrderOperationsController extends Controller
         $user = $request->user();
         abort_unless($user instanceof User && $user->can('workorders.complete'), 403);
         $workOrder = $getDetails->handle($workOrder);
+        $workOrder->loadMissing(['networkBuilding', 'distributionBox', 'activationAcceptedBy']);
         $timezone = $this->tenantTimezone($user);
+        $installationEnabled = in_array($workOrder->type, ['installation', 'fiber'], true);
+        $networkBuildings = $installationEnabled
+            ? NetworkBuilding::query()->with(['distributionBoxes' => fn ($query) => $query->where('status', 'active')->orderBy('name')])->orderBy('name')->get()
+            : collect();
 
         return Inertia::render('Operations/WorkOrderShow', [
             'workOrder' => [
@@ -217,6 +276,21 @@ final class WorkOrderOperationsController extends Controller
                 'checklist' => $workOrder->checklist ?? [],
                 'metadata' => $workOrder->metadata ?? [],
                 'readings' => $workOrder->readings ?? [],
+                'installation' => [
+                    'enabled' => $installationEnabled,
+                    'requires_acceptance' => (bool) ($workOrder->metadata['requires_installation_acceptance'] ?? false),
+                    'network_building_id' => $workOrder->network_building_id,
+                    'distribution_box_id' => $workOrder->distribution_box_id,
+                    'network_building_code' => $workOrder->networkBuilding?->code,
+                    'distribution_box_public_id' => $workOrder->distributionBox?->public_id,
+                    'distribution_box_code' => $workOrder->distributionBox?->code,
+                    'network_port' => $workOrder->network_port,
+                    'onu_serial' => $workOrder->onu_serial,
+                    'survey' => $workOrder->installation_survey ?? [],
+                    'activation_accepted_at' => $workOrder->activation_accepted_at?->toIso8601String(),
+                    'activation_accepted_by' => $workOrder->activationAcceptedBy?->name,
+                    'activation_acceptance_note' => $workOrder->activation_acceptance_note,
+                ],
                 'customer' => $workOrder->customer === null ? null : ['public_id' => $workOrder->customer->public_id, 'code' => $workOrder->customer->code, 'name' => $workOrder->customer->full_name],
                 'service' => $workOrder->service === null ? null : ['public_id' => $workOrder->service->public_id, 'username' => $workOrder->service->username],
                 'assignee' => $workOrder->assignee === null ? null : ['name' => $workOrder->assignee->name],
@@ -263,6 +337,19 @@ final class WorkOrderOperationsController extends Controller
             ])->values(),
             'scheduledAtLocal' => $this->localDate($workOrder->scheduled_at, $timezone),
             'timezone' => $timezone,
+            'canManageInstallation' => $user->can('workorders.complete'),
+            'networkBuildings' => $networkBuildings->map(fn (NetworkBuilding $building): array => [
+                'id' => $building->id,
+                'name' => $building->name,
+                'code' => $building->code,
+                'boxes' => $building->distributionBoxes->map(fn (DistributionBox $box): array => [
+                    'id' => $box->id,
+                    'public_id' => $box->public_id,
+                    'name' => $box->name,
+                    'code' => $box->code,
+                    'capacity_ports' => $box->capacity_ports,
+                ])->values(),
+            ])->values(),
         ]);
     }
 
