@@ -1,6 +1,6 @@
 import { Head, usePage } from '@inertiajs/react';
 import { ArrowRight, LockKeyhole, Wifi } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { createTranslator } from '@/lib/i18n';
 import type { PageProps, PublicTenant } from '@/types';
@@ -9,7 +9,11 @@ type Props = { tenant: PublicTenant };
 
 export default function PortalSignIn({ tenant }: Props) {
     const { props } = usePage<PageProps>();
-    const t = createTranslator(props.app.locale);
+   const t = createTranslator(tenant.locale || props.app.locale);
+    useEffect(() => {
+        document.documentElement.lang = tenant.locale;
+        document.documentElement.dir = tenant.locale === 'ar' ? 'rtl' : 'ltr';
+    }, [tenant.locale]);
     const [phone, setPhone] = useState('');
     const [code, setCode] = useState('');
     const [challengeId, setChallengeId] = useState<number | null>(null);

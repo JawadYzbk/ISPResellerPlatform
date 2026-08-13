@@ -7,6 +7,7 @@ import { useEffect, useMemo, useState } from 'react';
 
 import { StatusBadge } from '@/components/StatusBadge';
 import { formatDate, formatMoney } from '@/lib/format';
+import { createTranslator } from '@/lib/i18n';
 import { createIdempotencyKey } from '@/lib/idempotency';
 import type { Customer, PortalBalance, PortalBilling, PortalNotice, PortalTicket, PublicTenant } from '@/types';
 
@@ -14,7 +15,13 @@ type Props = { tenant: PublicTenant };
 type StripeIntent = { clientSecret: string; publishableKey: string; invoiceId: string };
 
 export default function PortalDashboard({ tenant }: Props) {
-    const [customer, setCustomer] = useState<Customer | null>(null);
+   const t = createTranslator(tenant.locale);
+
+    useEffect(() => {
+        document.documentElement.lang = tenant.locale;
+        document.documentElement.dir = tenant.locale === 'ar' ? 'rtl' : 'ltr';
+    }, [tenant.locale]);
+   const [customer, setCustomer] = useState<Customer | null>(null);
     const [balance, setBalance] = useState<PortalBalance | null>(null);
     const [billing, setBilling] = useState<PortalBilling | null>(null);
     const [notices, setNotices] = useState<PortalNotice[]>([]);
@@ -66,7 +73,7 @@ export default function PortalDashboard({ tenant }: Props) {
                 setNotices((await noticesResponse.json()).data ?? []);
                 setTickets((await ticketsResponse.json()).data ?? []);
             })
-            .catch(() => setError('The portal could not be loaded.'));
+            .catch(() => setError(t('portal.dashboard.load_error')));
     }, [tenant.slug, tokenKey]);
 
     const signOut = async () => {
@@ -99,7 +106,7 @@ export default function PortalDashboard({ tenant }: Props) {
             setProfileSaved(true);
         } else {
             const payload = await response.json();
-            setError(payload.detail ?? payload.message ?? 'We could not update your profile.');
+            setError(payload.detail ?? payload.message ?? t('portal.dashboard.profile_error'));
         }
         setProfileBusy(false);
     };
@@ -118,7 +125,7 @@ export default function PortalDashboard({ tenant }: Props) {
         });
         if (!response.ok) {
             const payload = await response.json();
-            setError(payload.detail ?? payload.message ?? 'We could not restart this connection.');
+            setError(payload.detail ?? payload.message ?? t('portal.dashboard.restart_error'));
         }
         setRestartBusy(null);
     };
@@ -142,14 +149,14 @@ export default function PortalDashboard({ tenant }: Props) {
         });
         const payload = await response.json();
         if (!response.ok) {
-            setPaymentMessage(payload.detail ?? payload.message ?? 'We could not start the payment.');
+            setPaymentMessage(payload.detail ?? payload.message ?? t('portal.dashboard.payment_start_error'));
             setPaymentBusy(false);
             return;
         }
         const clientSecret = payload.payload?.client_secret;
         const publishableKey = payload.payload?.publishable_key;
         if (typeof clientSecret !== 'string' || typeof publishableKey !== 'string') {
-            setPaymentMessage('The payment provider returned an incomplete checkout session.');
+            setPaymentMessage(t('portal.dashboard.incomplete_checkout'));
             setPaymentBusy(false);
             return;
         }
@@ -158,7 +165,7 @@ export default function PortalDashboard({ tenant }: Props) {
     };
 
     const paymentSubmitted = async () => {
-        setPaymentMessage('Payment submitted. Your balance will update after provider confirmation.');
+        setPaymentMessage(t('portal.dashboard.payment_submitted'));
         setPaymentIntent(null);
         const token = sessionStorage.getItem(tokenKey);
         if (!token) return;
@@ -188,7 +195,7 @@ export default function PortalDashboard({ tenant }: Props) {
             setTicketForm({ category: 'other', subject: '', description: '' });
         } else {
             const payload = await response.json();
-            setError(payload.detail ?? 'We could not open your ticket.');
+            setError(payload.detail ?? t('portal.dashboard.ticket_error'));
         }
         setTicketBusy(false);
     };
@@ -213,16 +220,16 @@ export default function PortalDashboard({ tenant }: Props) {
                         : ticket,
                 ),
             );
-            setSupportMessage('Thanks for rating the support you received.');
+            setSupportMessage(t('portal.dashboard.rating_thanks'));
         } else {
-            setError(payload.detail ?? payload.message ?? 'We could not save your rating.');
+            setError(payload.detail ?? payload.message ?? t('portal.dashboard.rating_error'));
         }
         setRatingBusy(null);
     };
 
     return (
         <div className="min-h-screen bg-canvas px-5 py-8 text-ink">
-            <Head title="Customer portal" />
+            <Head title={t('portal.dashboard.title')} />
             <main className="mx-auto max-w-3xl">
                 <header className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
@@ -235,27 +242,27 @@ export default function PortalDashboard({ tenant }: Props) {
                         </div>
                         <div>
                             <p className="font-display font-bold">{tenant.name}</p>
-                            <p className="text-sm text-muted">Customer portal</p>
+                        <p className="text-sm text-muted">{t('portal.dashboard.customer_portal')}</p>
                         </div>
                     </div>
                     <button onClick={signOut} className="button-secondary">
                         <LogOut size={16} />
-                        Sign out
+                        {t('portal.dashboard.sign_out')}
                     </button>
                 </header>
                 {error && <p className="mt-8 field-error">{error}</p>}
                 {customer && (
                     <>
                         <div className="mt-12">
-                            <p className="eyebrow">Welcome back</p>
+                            <p className="eyebrow">{t('portal.dashboard.welcome_back')}</p>
                             <h1 className="page-title">
                                 {customer.first_name} {customer.last_name ?? ''}
                             </h1>
-                            <p className="page-subtitle">Your connections and service status at a glance.</p>
+                            <p className="page-subtitle">{t('portal.dashboard.subtitle')}</p>
                         </div>
-                        <section className="mt-8 grid gap-4 sm:grid-cols-2" aria-label="Account summary">
+                        <section className="mt-8 grid gap-4 sm:grid-cols-2" aria-label={t('portal.dashboard.account_summary')}>
                             <div className="card p-6">
-                                <p className="eyebrow">Current balance</p>
+                                <p className="eyebrow">{t('portal.dashboard.current_balance')}</p>
                                 <p
                                     className={`mt-3 text-3xl font-semibold ${customer.balance_amount > 0 ? 'text-rose-700' : 'text-ink'}`}
                                 >
@@ -263,17 +270,17 @@ export default function PortalDashboard({ tenant }: Props) {
                                 </p>
                                 <p className="mt-2 text-sm text-muted">
                                     {balance?.next_due
-                                        ? `Next due ${formatDate(balance.next_due.due_at)}`
-                                        : 'No outstanding balance'}
+                                        ? `${t('portal.dashboard.next_due')} ${formatDate(balance.next_due.due_at)}`
+                                        : t('portal.dashboard.no_outstanding_balance')}
                                 </p>
                             </div>
                             <div className="card p-6">
-                                <p className="eyebrow">Account</p>
+                                <p className="eyebrow">{t('portal.dashboard.account')}</p>
                                 <p className="mt-3 text-3xl font-semibold">{customer.services.length}</p>
                                 <p className="mt-2 text-sm text-muted">
                                     {customer.services.length === 1
-                                        ? 'active connection'
-                                        : 'connections linked to this account'}
+                                        ? t('portal.dashboard.active_connection')
+                                        : t('portal.dashboard.connections_linked')}
                                 </p>
                             </div>
                         </section>
@@ -282,7 +289,7 @@ export default function PortalDashboard({ tenant }: Props) {
                                 <div className="flex items-center gap-2">
                                     <AlertTriangle size={17} className="text-amber-600" />
                                     <h2 id="notices-heading" className="section-title">
-                                        Service notices
+                                        {t('portal.dashboard.service_notices')}
                                     </h2>
                                 </div>
                                 {notices.map((notice) => (
@@ -322,7 +329,7 @@ export default function PortalDashboard({ tenant }: Props) {
                                     <div className="mt-5 grid gap-4 border-t border-line pt-4 sm:grid-cols-[1fr_auto] sm:items-center">
                                         <div>
                                             <div className="flex items-center justify-between text-sm">
-                                                <span className="text-muted">Usage this period</span>
+                                                <span className="text-muted">{t('portal.dashboard.usage_this_period')}</span>
                                                 <span className="font-semibold">
                                                     {Math.round((service.usage.used_bytes / 1_000_000_000) * 10) / 10} /{' '}
                                                     {service.usage.quota_bytes > 0
@@ -341,7 +348,7 @@ export default function PortalDashboard({ tenant }: Props) {
                                                 />
                                             </div>
                                             <p className="mt-2 text-sm text-muted">
-                                                Expires {formatDate(service.expires_at)}
+                                                    {t('portal.dashboard.expires')} {formatDate(service.expires_at)}
                                             </p>
                                         </div>
                                         <div className="flex flex-wrap items-center gap-3 sm:justify-end">
@@ -358,8 +365,8 @@ export default function PortalDashboard({ tenant }: Props) {
                                                 >
                                                     <RefreshCw size={15} />
                                                     {restartBusy === service.public_id
-                                                        ? 'Restarting…'
-                                                        : 'Restart connection'}
+                                                        ? t('portal.dashboard.restarting')
+                                                        : t('portal.dashboard.restart_connection')}
                                                 </button>
                                             )}
                                         </div>
@@ -368,9 +375,9 @@ export default function PortalDashboard({ tenant }: Props) {
                             ))}
                             {customer.services.length === 0 && (
                                 <div className="card p-10 text-center">
-                                    <p className="font-semibold">No services are linked to this account.</p>
+                                    <p className="font-semibold">{t('portal.dashboard.no_services')}</p>
                                     <p className="mt-1 text-sm text-muted">
-                                        Contact your provider if this looks incorrect.
+                                        {t('portal.dashboard.contact_provider')}
                                     </p>
                                 </div>
                             )}
@@ -378,7 +385,7 @@ export default function PortalDashboard({ tenant }: Props) {
                         {billing && (
                             <section className="mt-8 grid gap-6 md:grid-cols-2">
                                 <div className="card p-6">
-                                    <h2 className="section-title">Invoices</h2>
+                                    <h2 className="section-title">{t('portal.dashboard.invoices')}</h2>
                                     <div className="mt-4 divide-y divide-line">
                                         {billing.invoices.map((invoice) => (
                                             <div
@@ -395,12 +402,12 @@ export default function PortalDashboard({ tenant }: Props) {
                                             </div>
                                         ))}
                                         {billing.invoices.length === 0 && (
-                                            <p className="py-3 text-sm text-muted">No invoices yet.</p>
+                                            <p className="py-3 text-sm text-muted">{t('portal.dashboard.no_invoices')}</p>
                                         )}
                                     </div>
                                 </div>
                                 <div className="card p-6">
-                                    <h2 className="section-title">Payment history</h2>
+                                    <h2 className="section-title">{t('portal.dashboard.payment_history')}</h2>
                                     <div className="mt-4 divide-y divide-line">
                                         {billing.payments.map((payment) => (
                                             <div
@@ -417,7 +424,7 @@ export default function PortalDashboard({ tenant }: Props) {
                                             </div>
                                         ))}
                                         {billing.payments.length === 0 && (
-                                            <p className="py-3 text-sm text-muted">No payments yet.</p>
+                                            <p className="py-3 text-sm text-muted">{t('portal.dashboard.no_payments')}</p>
                                         )}
                                     </div>
                                 </div>
@@ -431,16 +438,16 @@ export default function PortalDashboard({ tenant }: Props) {
                                     <div className="flex items-center gap-2">
                                         <CreditCard size={17} className="text-brand" />
                                         <h2 id="online-payment-heading" className="section-title">
-                                            Pay an invoice
+                                            {t('portal.dashboard.pay_invoice')}
                                         </h2>
                                     </div>
                                     <p className="mt-2 text-sm text-muted">
-                                        Payments are confirmed by the provider before your account is updated.
+                                        {t('portal.dashboard.payment_confirmation_note')}
                                     </p>
                                     {!paymentIntent ? (
                                         <div className="mt-5 flex flex-col gap-4 sm:flex-row sm:items-end">
                                             <label className="block flex-1">
-                                                <span className="field-label">Invoice</span>
+                                                <span className="field-label">{t('portal.dashboard.invoice')}</span>
                                                 <ResponsiveSelect
                                                     className="field"
                                                     value={
@@ -481,14 +488,15 @@ export default function PortalDashboard({ tenant }: Props) {
                                                 className="button-primary"
                                             >
                                                 <CreditCard size={16} />
-                                                {paymentBusy ? 'Opening checkout…' : 'Continue to payment'}
+                                                {paymentBusy ? t('portal.dashboard.opening_checkout') : t('portal.dashboard.continue_payment')}
                                             </button>
                                         </div>
                                     ) : (
                                         <StripeCheckout
                                             clientSecret={paymentIntent.clientSecret}
-                                            publishableKey={paymentIntent.publishableKey}
-                                            onSubmitted={paymentSubmitted}
+                                           publishableKey={paymentIntent.publishableKey}
+                                            t={t}
+                                           onSubmitted={paymentSubmitted}
                                             onError={setPaymentMessage}
                                         />
                                     )}
@@ -503,12 +511,12 @@ export default function PortalDashboard({ tenant }: Props) {
                             <div className="flex items-center gap-2">
                                 <UserRound size={17} className="text-brand" />
                                 <h2 id="profile-heading" className="section-title">
-                                    Contact details
+                                    {t('portal.dashboard.contact_details')}
                                 </h2>
                             </div>
                             <div className="grid gap-5 sm:grid-cols-2">
                                 <label className="block">
-                                    <span className="field-label">Email</span>
+                                    <span className="field-label">{t('Email')}</span>
                                     <input
                                         type="email"
                                         className="field"
@@ -519,7 +527,7 @@ export default function PortalDashboard({ tenant }: Props) {
                                     />
                                 </label>
                                 <label className="block">
-                                    <span className="field-label">Address</span>
+                                    <span className="field-label">{t('Address')}</span>
                                     <input
                                         className="field"
                                         value={profileForm.address}
@@ -530,17 +538,17 @@ export default function PortalDashboard({ tenant }: Props) {
                                 </label>
                             </div>
                             <div className="flex items-center justify-between gap-4">
-                                <p className="text-sm text-muted">Phone: {customer.phone}</p>
+                                <p className="text-sm text-muted">{t('Phone')}: {customer.phone}</p>
                                 <button disabled={profileBusy} className="button-primary">
                                     {profileSaved ? <Check size={16} /> : null}
-                                    {profileBusy ? 'Saving…' : profileSaved ? 'Saved' : 'Save details'}
+                                    {profileBusy ? t('portal.dashboard.saving') : profileSaved ? t('portal.dashboard.saved') : t('portal.dashboard.save_details')}
                                 </button>
                             </div>
                         </form>
                         <section className="mt-8 grid gap-6 md:grid-cols-[1fr_0.9fr]" aria-labelledby="support-heading">
                             <div className="card p-6">
                                 <h2 id="support-heading" className="section-title">
-                                    Support tickets
+                                    {t('portal.dashboard.support_tickets')}
                                 </h2>
                                 <div className="mt-4 divide-y divide-line">
                                     {tickets.map((ticket) => (
@@ -552,13 +560,13 @@ export default function PortalDashboard({ tenant }: Props) {
                                                         {ticket.number} · {ticket.status}
                                                     </small>
                                                 </span>
-                                                <span className="text-xs text-muted">
-                                                    {ticket.message_count} messages
+                                                    <span className="text-xs text-muted">
+                                                        {ticket.message_count} {t('portal.dashboard.messages')}
                                                 </span>
                                             </div>
                                             {(ticket.status === 'resolved' || ticket.status === 'closed') && (
                                                 <label className="block max-w-xs">
-                                                    <span className="field-label">Rate this support</span>
+                                                    <span className="field-label">{t('portal.dashboard.rate_support')}</span>
                                                     <ResponsiveSelect
                                                         className="field"
                                                         value={ticket.satisfaction_rating?.toString() ?? ''}
@@ -567,7 +575,7 @@ export default function PortalDashboard({ tenant }: Props) {
                                                             rateTicket(ticket.uuid, Number(event.target.value))
                                                         }
                                                     >
-                                                        <option value="">Choose a rating</option>
+                                                        <option value="">{t('portal.dashboard.choose_rating')}</option>
                                                         {[1, 2, 3, 4, 5].map((rating) => (
                                                             <option key={rating} value={rating}>
                                                                 {rating}/5
@@ -579,15 +587,15 @@ export default function PortalDashboard({ tenant }: Props) {
                                         </div>
                                     ))}
                                     {tickets.length === 0 && (
-                                        <p className="py-3 text-sm text-muted">No support tickets yet.</p>
+                                        <p className="py-3 text-sm text-muted">{t('portal.dashboard.no_tickets')}</p>
                                     )}
                                 </div>
                                 {supportMessage && <p className="mt-3 text-sm text-brand">{supportMessage}</p>}
                             </div>
                             <form onSubmit={submitTicket} className="card space-y-4 p-6">
-                                <h2 className="section-title">Open a ticket</h2>
+                                <h2 className="section-title">{t('portal.dashboard.open_ticket')}</h2>
                                 <label className="block">
-                                    <span className="field-label">Category</span>
+                                    <span className="field-label">{t('portal.dashboard.category')}</span>
                                     <ResponsiveSelect
                                         className="field"
                                         value={ticketForm.category}
@@ -595,15 +603,15 @@ export default function PortalDashboard({ tenant }: Props) {
                                             setTicketForm({ ...ticketForm, category: event.target.value })
                                         }
                                     >
-                                        <option value="no_service">No service</option>
-                                        <option value="slow">Slow connection</option>
-                                        <option value="billing">Billing</option>
-                                        <option value="relocation">Relocation</option>
-                                        <option value="other">Other</option>
+                                        <option value="no_service">{t('portal.category.no_service')}</option>
+                                        <option value="slow">{t('portal.category.slow')}</option>
+                                        <option value="billing">{t('portal.category.billing')}</option>
+                                        <option value="relocation">{t('portal.category.relocation')}</option>
+                                        <option value="other">{t('portal.category.other')}</option>
                                     </ResponsiveSelect>
                                 </label>
                                 <label className="block">
-                                    <span className="field-label">Subject</span>
+                                    <span className="field-label">{t('portal.dashboard.subject')}</span>
                                     <input
                                         required
                                         className="field"
@@ -614,7 +622,7 @@ export default function PortalDashboard({ tenant }: Props) {
                                     />
                                 </label>
                                 <label className="block">
-                                    <span className="field-label">What happened?</span>
+                                    <span className="field-label">{t('portal.dashboard.what_happened')}</span>
                                     <textarea
                                         required
                                         rows={4}
@@ -627,7 +635,7 @@ export default function PortalDashboard({ tenant }: Props) {
                                 </label>
                                 <button disabled={ticketBusy} className="button-primary w-full justify-center">
                                     <Send size={16} />
-                                    {ticketBusy ? 'Sending…' : 'Send ticket'}
+                                    {ticketBusy ? t('portal.dashboard.sending') : t('portal.dashboard.send_ticket')}
                                 </button>
                             </form>
                         </section>
@@ -635,7 +643,7 @@ export default function PortalDashboard({ tenant }: Props) {
                 )}
             </main>
             <Link href={`/portal/${tenant.slug}`} className="sr-only">
-                Return to portal sign in
+                {t('portal.dashboard.return_to_sign_in')}
             </Link>
         </div>
     );
@@ -643,12 +651,14 @@ export default function PortalDashboard({ tenant }: Props) {
 
 function StripeCheckout({
     clientSecret,
-    publishableKey,
-    onSubmitted,
+   publishableKey,
+    t,
+   onSubmitted,
     onError,
 }: {
     clientSecret: string;
-    publishableKey: string;
+   publishableKey: string;
+    t: (key: string) => string;
     onSubmitted: () => void;
     onError: (message: string) => void;
 }) {
@@ -657,13 +667,13 @@ function StripeCheckout({
     return (
         <div className="mt-5 rounded-2xl border border-line p-4">
             <Elements stripe={stripePromise} options={{ clientSecret }}>
-                <StripePaymentForm onSubmitted={onSubmitted} onError={onError} />
+                <StripePaymentForm t={t} onSubmitted={onSubmitted} onError={onError} />
             </Elements>
         </div>
     );
 }
 
-function StripePaymentForm({ onSubmitted, onError }: { onSubmitted: () => void; onError: (message: string) => void }) {
+function StripePaymentForm({ t, onSubmitted, onError }: { t: (key: string) => string; onSubmitted: () => void; onError: (message: string) => void }) {
     const stripe = useStripe();
     const elements = useElements();
     const [busy, setBusy] = useState(false);
@@ -678,7 +688,7 @@ function StripePaymentForm({ onSubmitted, onError }: { onSubmitted: () => void; 
             redirect: 'if_required',
         });
         if (result.error) {
-            onError(result.error.message ?? 'The payment could not be confirmed.');
+            onError(result.error.message ?? t('portal.dashboard.payment_confirm_error'));
         } else {
             onSubmitted();
         }
@@ -694,7 +704,7 @@ function StripePaymentForm({ onSubmitted, onError }: { onSubmitted: () => void; 
                 className="button-primary w-full justify-center"
             >
                 <CreditCard size={16} />
-                {busy ? 'Confirming payment…' : 'Pay securely'}
+                {busy ? t('portal.dashboard.confirming_payment') : t('portal.dashboard.pay_securely')}
             </button>
         </form>
     );

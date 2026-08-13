@@ -1,3 +1,5 @@
+export type Locale = 'en' | 'ar' | 'fr';
+
 export type User = {
     id: number;
     name: string;
@@ -221,7 +223,7 @@ export type OperationsReport = {
     };
 };
 
-export type PublicTenant = { slug: string; name: string; logo_url: string | null };
+export type PublicTenant = { slug: string; name: string; logo_url: string | null; locale: Locale };
 
 export type PortalBilling = {
     invoices: {

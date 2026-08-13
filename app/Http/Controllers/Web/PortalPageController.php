@@ -18,13 +18,14 @@ final class PortalPageController
         return Inertia::render('Portal/Dashboard', ['tenant' => $this->tenant($tenant)]);
     }
 
-    /** @return array{slug: string, name: string, logo_url: string|null} */
+    /** @return array{slug: string, name: string, logo_url: string|null, locale: string} */
     private function tenant(Tenant $tenant): array
     {
         return [
             'slug' => $tenant->slug,
             'name' => $tenant->name,
             'logo_url' => $tenant->logoUrl(),
+            'locale' => $tenant->settingsData()->locale,
         ];
     }
 }
