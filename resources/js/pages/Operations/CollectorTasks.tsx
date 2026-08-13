@@ -62,6 +62,16 @@ export default function CollectorTasks({ filters, collectors, customers, tasks, 
         due_at: '',
     });
     const messageForm = useForm<{ body: string; attachment: File | null }>({ body: '', attachment: null });
+    const fieldA11y = (id: string, error?: string) => ({
+        'aria-invalid': Boolean(error),
+        'aria-describedby': error ? `${id}-error` : undefined,
+    });
+    const fieldError = (id: string, error?: string) =>
+        error ? (
+            <p id={`${id}-error`} className="field-error" role="alert">
+                {t(error)}
+            </p>
+        ) : null;
     const customerOptions: CustomerOption[] = customers.map((customer) => ({
         id: String(customer.id),
         code: customer.code,
@@ -143,7 +153,9 @@ export default function CollectorTasks({ filters, collectors, customers, tasks, 
                     <label className="field-label">
                         {t('Collector')}
                         <ResponsiveSelect
+                            id="task-collector"
                             className="mt-1"
+                            {...fieldA11y('task-collector', createForm.errors.collector_id)}
                             value={String(createForm.data.collector_id)}
                             onChange={(event) => createForm.setData('collector_id', Number(event.target.value))}
                         >
@@ -153,21 +165,27 @@ export default function CollectorTasks({ filters, collectors, customers, tasks, 
                                 </option>
                             ))}
                         </ResponsiveSelect>
+                        {fieldError('task-collector', createForm.errors.collector_id)}
                     </label>
                     <label className="field-label">
                         {t('Customer')} ({t('Optional').toLocaleLowerCase()})
                         <CustomerCombobox
+                            id="task-customer"
                             className="field mt-1"
+                            {...fieldA11y('task-customer', createForm.errors.customer_id)}
                             value={createForm.data.customer_id}
                             customers={customerOptions}
                             placeholder={t('collector_tasks.no_customer')}
                             onChange={(value) => createForm.setData('customer_id', value)}
                         />
+                        {fieldError('task-customer', createForm.errors.customer_id)}
                     </label>
                     <label className="field-label">
                         {t('Priority')}
                         <ResponsiveSelect
+                            id="task-priority"
                             className="mt-1"
+                            {...fieldA11y('task-priority', createForm.errors.priority)}
                             value={createForm.data.priority}
                             onChange={(event) => createForm.setData('priority', event.target.value)}
                         >
@@ -177,39 +195,44 @@ export default function CollectorTasks({ filters, collectors, customers, tasks, 
                                 </option>
                             ))}
                         </ResponsiveSelect>
+                        {fieldError('task-priority', createForm.errors.priority)}
                     </label>
                     <label className="field-label lg:col-span-2">
                         {t('Title')}
                         <input
+                            id="task-title"
                             className="field mt-1"
+                            {...fieldA11y('task-title', createForm.errors.title)}
                             value={createForm.data.title}
                             maxLength={160}
                             onChange={(event) => createForm.setData('title', event.target.value)}
                         />
+                        {fieldError('task-title', createForm.errors.title)}
                     </label>
                     <label className="field-label">
                         {t('collector_tasks.due_at')} ({timezone})
                         <input
+                            id="task-due-at"
                             className="field mt-1"
                             type="datetime-local"
+                            {...fieldA11y('task-due-at', createForm.errors.due_at)}
                             value={createForm.data.due_at}
                             onChange={(event) => createForm.setData('due_at', event.target.value)}
                         />
+                        {fieldError('task-due-at', createForm.errors.due_at)}
                     </label>
                     <label className="field-label lg:col-span-3">
                         {t('Instructions')}
                         <textarea
+                            id="task-description"
                             className="field mt-1 min-h-24"
+                            {...fieldA11y('task-description', createForm.errors.description)}
                             value={createForm.data.description}
                             maxLength={5000}
                             onChange={(event) => createForm.setData('description', event.target.value)}
                         />
+                        {fieldError('task-description', createForm.errors.description)}
                     </label>
-                    {(createForm.errors.title || createForm.errors.collector_id) && (
-                        <p className="field-error lg:col-span-3" role="alert">
-                            {t(createForm.errors.title ?? createForm.errors.collector_id ?? '')}
-                        </p>
-                    )}
                     <div className="flex justify-end lg:col-span-3">
                         <button
                             type="submit"
@@ -389,7 +412,9 @@ export default function CollectorTasks({ filters, collectors, customers, tasks, 
                                     <label className="field-label">
                                         {t('collector_tasks.new_message')}
                                         <textarea
+                                            id="message-body"
                                             className="field mt-1 min-h-24"
+                                            {...fieldA11y('message-body', messageForm.errors.body)}
                                             value={messageForm.data.body}
                                             maxLength={5000}
                                             onChange={(event) => messageForm.setData('body', event.target.value)}
@@ -398,21 +423,19 @@ export default function CollectorTasks({ filters, collectors, customers, tasks, 
                                     <label className="field-label mt-3 block">
                                         {t('Attachment')} ({t('Optional').toLocaleLowerCase()})
                                         <input
+                                            id="message-attachment"
                                             key={messageForm.data.attachment?.name ?? 'empty'}
                                             className="field mt-1"
                                             type="file"
                                             accept=".pdf,.jpg,.jpeg,.png,.webp,.txt"
+                                            {...fieldA11y('message-attachment', messageForm.errors.attachment)}
                                             onChange={(event) =>
                                                 messageForm.setData('attachment', event.target.files?.[0] ?? null)
                                             }
                                         />
                                     </label>
-                                    {messageForm.errors.body && (
-                                        <p className="field-error mt-1" role="alert">{t(messageForm.errors.body)}</p>
-                                    )}
-                                    {messageForm.errors.attachment && (
-                                        <p className="field-error mt-1" role="alert">{t(messageForm.errors.attachment)}</p>
-                                    )}
+                                    {fieldError('message-body', messageForm.errors.body)}
+                                    {fieldError('message-attachment', messageForm.errors.attachment)}
                                     <div className="mt-3 flex justify-end">
                                         <button
                                             type="submit"
