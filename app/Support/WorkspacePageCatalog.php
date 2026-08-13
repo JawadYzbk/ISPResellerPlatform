@@ -6,6 +6,61 @@ use App\Models\User;
 
 final class WorkspacePageCatalog
 {
+    /** @var array<string, list<string>> */
+    private const SEARCH_ALIASES = [
+        'Overview' => ['نظرة عامة', 'Vue d’ensemble'],
+        'Customers' => ['العملاء', 'Clients'],
+        'Plans' => ['الباقات', 'Forfaits'],
+        'Services' => ['الخدمات', 'Services'],
+        'Billing' => ['الفوترة', 'Facturation'],
+        'Credit notes' => ['إشعارات الدائن', 'Avoirs'],
+        'Payments' => ['الدفعات', 'Paiements'],
+        'Cash shifts' => ['ورديات النقد', 'Caisses'],
+        'FX rates' => ['أسعار الصرف', 'Taux de change'],
+        'Expenses' => ['المصروفات', 'Dépenses'],
+        'Collector desk' => ['مكتب المحصل', 'Bureau du collecteur'],
+        'Collector check-ins' => ['تسجيلات حضور المحصلين', 'Présences des collecteurs'],
+        'Collector routes' => ['مسارات المحصلين', 'Tournées des collecteurs'],
+        'Collector tasks' => ['مهام المحصلين', 'Tâches des collecteurs'],
+        'Collector custody' => ['عهدة المحصل', 'Caisse du collecteur'],
+        'Tickets' => ['التذاكر', 'Tickets'],
+        'Work orders' => ['أوامر العمل', 'Ordres de travail'],
+        'Work-order calendar' => ['تقويم أوامر العمل', 'Calendrier des ordres de travail'],
+        'Buildings & boxes' => ['المباني والصناديق', 'Bâtiments et boîtiers'],
+        'Optical access' => ['الوصول البصري', 'Accès optique'],
+        'Live sessions' => ['الجلسات المباشرة', 'Sessions en direct'],
+        'Incidents' => ['الحوادث', 'Incidents'],
+        'Network queue' => ['قائمة الشبكة', 'File réseau'],
+        'Routers' => ['الموجهات', 'Routeurs'],
+        'POPs' => ['نقاط الحضور', 'Points de présence'],
+        'IP pools' => ['مجموعات عناوين IP', 'Pools IP'],
+        'Inventory' => ['المخزون', 'Stock'],
+        'Imports' => ['الاستيراد', 'Imports'],
+        'Credentials' => ['بيانات الاعتماد', 'Identifiants'],
+        'Suppliers' => ['الموردون', 'Fournisseurs'],
+        'Partners' => ['الشركاء', 'Partenaires'],
+        'Reports' => ['التقارير', 'Rapports'],
+        'Settings' => ['الإعدادات', 'Paramètres'],
+        'Integrations' => ['التكاملات', 'Intégrations'],
+        'Pilot readiness' => ['جاهزية التشغيل', 'Préparation au pilote'],
+        'Users and invitations' => ['المستخدمون والدعوات', 'Utilisateurs et invitations'],
+        'Collector territories' => ['مناطق المحصلين', 'Territoires des collecteurs'],
+        'Branches and zones' => ['الفروع والمناطق', 'Agences et zones'],
+        'WhatsApp setup' => ['إعداد واتساب', 'Configuration WhatsApp'],
+        'Ticket responses' => ['ردود التذاكر', 'Réponses des tickets'],
+        'Notification templates' => ['قوالب الإشعارات', 'Modèles de notification'],
+        'Profile' => ['الملف الشخصي', 'Profil'],
+        'Notifications' => ['الإشعارات', 'Notifications'],
+        'Active sessions' => ['الجلسات النشطة', 'Sessions actives'],
+        'Workspace' => ['مساحة العمل', 'Espace de travail'],
+        'Field operations' => ['العمليات الميدانية', 'Opérations terrain'],
+        'Support & work' => ['الدعم والعمل', 'Support et interventions'],
+        'Network' => ['الشبكة', 'Réseau'],
+        'Inventory & partners' => ['المخزون والشركاء', 'Stock et partenaires'],
+        'Insights' => ['التحليلات', 'Analyses'],
+        'Account' => ['الحساب', 'Compte'],
+    ];
+
     /** @var list<array{label: string, detail: string, href: string, permission?: string|list<string>, role?: string, defaultable: bool}> */
     private const PAGES = [
         ['label' => 'Overview', 'detail' => 'Workspace', 'href' => '/dashboard', 'defaultable' => true],
@@ -70,6 +125,18 @@ final class WorkspacePageCatalog
     public function defaultViewsFor(User $user): array
     {
         return array_values(array_filter($this->availableFor($user), fn (array $page): bool => $page['defaultable']));
+    }
+
+    /** @param array{label: string, detail: string, href: string} $page */
+    public function matchesSearch(array $page, string $needle): bool
+    {
+        $terms = array_merge(
+            [$page['label'], $page['detail'], $page['href']],
+            self::SEARCH_ALIASES[$page['label']] ?? [],
+            self::SEARCH_ALIASES[$page['detail']] ?? [],
+        );
+
+        return str_contains(mb_strtolower(implode(' ', $terms)), mb_strtolower($needle));
     }
 
     public function defaultDestination(User $user): string

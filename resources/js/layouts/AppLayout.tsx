@@ -57,7 +57,7 @@ type NavigationGroup = {
     items: NavigationItem[];
 };
 
-type SearchResult = { type: string; label: string; detail: string; href: string };
+type SearchResult = { type: string; label: string; detail: string; href: string; localized?: boolean };
 
 export default function AppLayout({ children }: PropsWithChildren) {
     const page = usePage<PageProps>();
@@ -574,7 +574,7 @@ export default function AppLayout({ children }: PropsWithChildren) {
                                     onChange={(event) => setSearch(event.target.value)}
                                     onKeyDown={(event) => event.key === 'Escape' && setSearchOpen(false)}
                                     className="min-w-0 flex-1 border-0 bg-transparent text-base outline-none placeholder:text-muted"
-                                    placeholder={t('Search customer, service, IP, invoice, ticket…')}
+                                    placeholder={t('Search pages, settings, customers, services…')}
                                     aria-label={t('Search workspace')}
                                 />
                                 <kbd className="rounded border border-line px-1.5 py-0.5 text-[10px] text-muted">
@@ -607,14 +607,15 @@ export default function AppLayout({ children }: PropsWithChildren) {
                                             className="flex items-center gap-3 rounded-xl px-3 py-3 hover:bg-sand"
                                         >
                                             <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-brand-soft text-xs font-bold uppercase text-brand">
-                                                {result.type.slice(0, 2)}
+                                                {(result.localized ? t('Page') : result.type).slice(0, 2)}
                                             </span>
                                             <span className="min-w-0 flex-1">
                                                 <span className="block truncate text-sm font-semibold">
-                                                    {result.label}
+                                                    {result.localized ? t(result.label) : result.label}
                                                 </span>
                                                 <span className="mt-0.5 block truncate text-xs capitalize text-muted">
-                                                    {result.detail} · {result.type}
+                                                    {result.localized ? t(result.detail) : result.detail} ·{' '}
+                                                    {result.localized ? t('Page') : result.type}
                                                 </span>
                                             </span>
                                         </Link>

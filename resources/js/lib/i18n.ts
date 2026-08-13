@@ -913,6 +913,9 @@ const inventoryFrench: Messages = {
 };
 
 const sharedArabic: Messages = {
+    'Search pages, settings, customers, services…': 'البحث في الصفحات والإعدادات والعملاء والخدمات…',
+    'Default view after sign in': 'الواجهة الافتراضية بعد تسجيل الدخول',
+    'This is used when there is no page you were trying to open before signing in.': 'يُستخدم هذا الخيار عندما لا تكون قد حاولت فتح صفحة قبل تسجيل الدخول.',
     Custom: 'مخصص',
     Ceil: 'تقريب للأعلى',
     'Ceil 5000': 'تقريب للأعلى 5000',
@@ -1996,6 +1999,9 @@ const sharedArabic: Messages = {
 };
 
 const sharedFrench: Messages = {
+    'Search pages, settings, customers, services…': 'Rechercher des pages, paramètres, clients et services…',
+    'Default view after sign in': 'Vue par défaut après connexion',
+    'This is used when there is no page you were trying to open before signing in.': 'Cette vue est utilisée si vous n’aviez pas de page à ouvrir avant la connexion.',
     Custom: 'Personnalisé',
     Ceil: 'Arrondi supérieur',
     'Ceil 5000': 'Arrondi supérieur 5000',
