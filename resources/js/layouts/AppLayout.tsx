@@ -1,4 +1,4 @@
-import { Form, Link, usePage } from '@inertiajs/react';
+import { Form, Link, router, usePage } from '@inertiajs/react';
 import {
     Activity,
     BarChart3,
@@ -102,6 +102,7 @@ export default function AppLayout({ children }: PropsWithChildren) {
     const [searching, setSearching] = useState(false);
     const [accountOpen, setAccountOpen] = useState(false);
     const [mobileNavOpen, setMobileNavOpen] = useState(false);
+    const [navigationBusy, setNavigationBusy] = useState(false);
     const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
     const searchInput = useRef<HTMLInputElement>(null);
     const searchDialog = useRef<HTMLDivElement>(null);
@@ -133,6 +134,16 @@ export default function AppLayout({ children }: PropsWithChildren) {
         window.addEventListener('keydown', handleShortcut);
 
         return () => window.removeEventListener('keydown', handleShortcut);
+    }, []);
+
+    useEffect(() => {
+        const removeStartListener = router.on('start', () => setNavigationBusy(true));
+        const removeFinishListener = router.on('finish', () => setNavigationBusy(false));
+
+        return () => {
+            removeStartListener();
+            removeFinishListener();
+        };
     }, []);
 
     useEffect(() => {
@@ -727,6 +738,11 @@ export default function AppLayout({ children }: PropsWithChildren) {
                     </div>
                 </header>
                 <OfflineBanner />
+                {navigationBusy && (
+                    <div className="sr-only" role="status" aria-live="polite">
+                        {t('Loading page…')}
+                    </div>
+                )}
                 {searchOpen && (
                     <div
                         className="fixed inset-0 z-50 bg-ink/20 p-4 sm:p-8"
@@ -814,6 +830,7 @@ export default function AppLayout({ children }: PropsWithChildren) {
                 <main
                     id="main-content"
                     tabIndex={-1}
+                    aria-busy={navigationBusy}
                     className="mx-auto max-w-[1440px] px-5 py-8 pb-24 outline-none lg:px-8 lg:pb-8"
                 >
                     {children}

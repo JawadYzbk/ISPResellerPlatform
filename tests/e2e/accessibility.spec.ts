@@ -269,6 +269,23 @@ test('keeps shared keyboard focus paths usable', async ({ page }) => {
     await page.keyboard.press('Escape');
     await expect(accountTrigger).toBeFocused();
 
+    let releaseCustomersRequest = () => {};
+    const customersRequestGate = new Promise<void>((resolve) => {
+        releaseCustomersRequest = resolve;
+    });
+    await page.route('**/customers', async (route) => {
+        const response = await route.fetch();
+        await customersRequestGate;
+        await route.fulfill({ response });
+    });
+    const customerVisit = page.getByRole('link', { name: 'Customers' }).first().click();
+    await expect(page.locator('[role="status"][aria-live="polite"]')).toHaveText('Loading page…');
+    await expect(page.locator('main#main-content')).toHaveAttribute('aria-busy', 'true');
+    releaseCustomersRequest();
+    await customerVisit;
+    await expect(page.locator('main#main-content')).toHaveAttribute('aria-busy', 'false');
+    await page.unroute('**/customers');
+
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto('/dashboard');
     const mobileNavTrigger = page.locator('button[aria-controls="mobile-navigation"]');
