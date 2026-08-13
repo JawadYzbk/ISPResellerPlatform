@@ -27,16 +27,20 @@ export default function NotificationsPage({ attentionQueue }: Props) {
                 <ArrowLeft size={16} /> {t('Back to dashboard')}
             </Link>
             <div className="max-w-4xl">
-                <p className="eyebrow">{t('notifications.workspace_signals')}</p>
-                <h1 className="page-title">{t('notifications.title')}</h1>
-                <p className="page-subtitle">{t('notifications.subtitle')}</p>
+                <p className="eyebrow">{t('Workspace signals')}</p>
+                <h1 className="page-title">{t('Notifications and attention')}</h1>
+                <p className="page-subtitle">
+                    {t(
+                        'Current operational items needing follow-up. The list respects permissions and comes from the active workspace queue.',
+                    )}
+                </p>
 
                 <div className="card mt-8 overflow-hidden">
                     {attentionQueue.length === 0 ? (
                         <div className="px-6 py-14 text-center">
                             <Bell size={26} className="mx-auto text-brand" />
-                            <h2 className="mt-4 section-title">{t('notifications.all_caught_up')}</h2>
-                            <p className="mt-2 text-sm text-muted">{t('notifications.none_for_role')}</p>
+                            <h2 className="mt-4 section-title">{t("You're all caught up")}</h2>
+                            <p className="mt-2 text-sm text-muted">{t('No current notifications for your role.')}</p>
                         </div>
                     ) : (
                         <div className="divide-y divide-line">
