@@ -32,6 +32,8 @@ The WhatsApp Web.js bridge is deliberately behind the `whatsapp` Compose profile
 
 Frankfurter synchronization is disabled by default. For a tenant whose base currency is USD and collection currency is LBP, set `FRANKFURTER_ENABLED=true`, confirm the approved quote policy, and run `php artisan fx:sync-frankfurter` once before enabling the scheduler. Imported quotes are append-only effective-dated ratios. Manual rates remain available for treasury or street-rate policy, and payment receipts preserve the selected rate, source, effective date, and rounding mode.
 
+Keep `FRANKFURTER_CONNECT_TIMEOUT` shorter than `FRANKFURTER_TIMEOUT` (the defaults are 2 and 10 seconds). The connection bound makes a provider or DNS outage fail quickly while the response bound still allows a reachable API to return normally. Treat a failed sync as an operational alert; do not promote the seeded demo rate to production.
+
 The owner readiness checklist treats a `demo`-source FX rate as a local development warning and fails production readiness until it is replaced by a Frankfurter rate or an approved manual treasury rate. Never carry the seeded demo rate into a live tenant.
 
 Set `FX_RATE_MAX_AGE_HOURS` to the approved treasury freshness window for the market (72 hours by default). The owner-facing **Settings → Pilot readiness** checklist warns when the effective collection rate is older than that window, and current payments fail closed until the rate is refreshed or an approved operator override is recorded; historical conversions remain available.
