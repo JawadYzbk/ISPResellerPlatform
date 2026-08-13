@@ -43,6 +43,7 @@ final class NotificationTemplateController extends Controller
             'templates' => $templates,
             'catalog' => $provisioner->catalog(),
             'locales' => $provisioner->supportedLocales(),
+            'storageWarning' => $provisioner->storageWarning(),
         ]);
     }
 
@@ -57,6 +58,9 @@ final class NotificationTemplateController extends Controller
             'subject' => ['nullable', 'string', 'max:255'],
             'body' => ['required', 'string', 'max:10000'],
         ]);
+        if ($provisioner->storageWarning() !== null && (! $this->isAscii((string) ($validated['subject'] ?? '')) || ! $this->isAscii((string) $validated['body']))) {
+            throw ValidationException::withMessages(['body' => 'This database encoding cannot store Arabic or French characters. Recreate PostgreSQL with UTF-8 before saving translated text.']);
+        }
         $definition = collect($provisioner->catalog())->firstWhere('key', $template->key) ?? [];
         $variables = is_array($definition['variables'] ?? null) ? $definition['variables'] : [];
         preg_match_all('/\{\{\s*([a-zA-Z0-9_.-]+)\s*\}\}/', (string) $validated['body'], $matches);
@@ -88,5 +92,10 @@ final class NotificationTemplateController extends Controller
     private function assertTenant(User $user, int $tenantId): void
     {
         abort_unless($user->tenant_id === $tenantId, 404);
+    }
+
+    private function isAscii(string $value): bool
+    {
+        return preg_match('/[^\x00-\x7F]/', $value) !== 1;
     }
 }

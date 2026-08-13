@@ -1,5 +1,5 @@
 import { Head, useForm } from '@inertiajs/react';
-import { Check, Copy, MessageSquare, Save } from 'lucide-react';
+import { AlertTriangle, Check, Copy, MessageSquare, Save } from 'lucide-react';
 import { useState } from 'react';
 
 import AppLayout from '@/layouts/AppLayout';
@@ -25,6 +25,7 @@ type Props = {
     templates: Template[];
     catalog: CatalogItem[];
     locales: string[];
+    storageWarning?: string | null;
 };
 
 const localeLabels: Record<string, string> = { en: 'English', ar: 'العربية', fr: 'Français' };
@@ -144,7 +145,7 @@ function TemplateCard({
     );
 }
 
-export default function NotificationTemplatesPage({ templates, catalog, locales }: Props) {
+export default function NotificationTemplatesPage({ templates, catalog, locales, storageWarning }: Props) {
     return (
         <AppLayout>
             <Head title="WhatsApp message templates" />
@@ -156,6 +157,12 @@ export default function NotificationTemplatesPage({ templates, catalog, locales 
                     replaced from the sending record at delivery time.
                 </p>
             </div>
+            {storageWarning && (
+                <div className="mt-6 flex items-start gap-3 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+                    <AlertTriangle className="mt-0.5 shrink-0" size={17} />
+                    <p className="text-pretty">{storageWarning}</p>
+                </div>
+            )}
             <div className="mt-8 grid gap-5 xl:grid-cols-2">
                 {catalog.map((definition) => (
                     <TemplateCard

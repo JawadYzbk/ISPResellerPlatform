@@ -4,6 +4,7 @@ namespace App\Support;
 
 use App\Models\Tenant;
 use Illuminate\Support\Facades\DB;
+use Throwable;
 
 final class MessageTemplateProvisioner
 {
@@ -154,6 +155,16 @@ final class MessageTemplateProvisioner
         return self::SUPPORTED_LOCALES;
     }
 
+    public function storageWarning(): ?string
+    {
+        $encoding = $this->databaseEncoding();
+        if ($encoding === null || in_array($encoding, ['UTF8', 'UNICODE'], true)) {
+            return null;
+        }
+
+        return "This database uses {$encoding}. English templates remain available, but Arabic and French text require a UTF-8 PostgreSQL database.";
+    }
+
     /** @return list<array{key: string, label: string, variables: list<string>}> */
     public function catalog(): array
     {
@@ -188,6 +199,7 @@ final class MessageTemplateProvisioner
                 ? self::DEFAULT_TEMPLATES
                 : (array_key_exists($templateKey, self::DEFAULT_TEMPLATES) ? [$templateKey => self::DEFAULT_TEMPLATES[$templateKey]] : []);
             $channels = $channel === null ? self::CHANNELS : [$channel];
+            $unicodeStorageAvailable = $this->storageWarning() === null;
 
             if ($definitions === [] || array_diff($channels, self::CHANNELS) !== [] || $locales === []) {
                 return;
@@ -196,13 +208,18 @@ final class MessageTemplateProvisioner
             foreach ($definitions as $key => $definition) {
                 foreach ($locales as $resolvedLocale) {
                     foreach ($channels as $channel) {
+                        $subject = $channel === 'email' ? $definition['subjects'][$resolvedLocale] : null;
+                        $body = $definition['bodies'][$resolvedLocale];
+                        if (! $unicodeStorageAvailable && (! $this->isAscii($subject) || ! $this->isAscii($body))) {
+                            continue;
+                        }
                         $templates[] = [
                             'tenant_id' => $tenantId,
                             'key' => $key,
                             'channel' => $channel,
                             'locale' => $resolvedLocale,
-                            'subject' => $channel === 'email' ? $definition['subjects'][$resolvedLocale] : null,
-                            'body' => $definition['bodies'][$resolvedLocale],
+                            'subject' => $subject,
+                            'body' => $body,
                             'variables' => json_encode($definition['variables'], JSON_THROW_ON_ERROR),
                             'is_active' => true,
                             'created_at' => $timestamp,
@@ -214,5 +231,23 @@ final class MessageTemplateProvisioner
 
             DB::table('message_templates')->insertOrIgnore($templates);
         });
+    }
+
+    private function databaseEncoding(): ?string
+    {
+        if (DB::connection()->getDriverName() !== 'pgsql') {
+            return null;
+        }
+
+        try {
+            return strtoupper(trim((string) (DB::selectOne('show server_encoding')->server_encoding ?? '')));
+        } catch (Throwable) {
+            return null;
+        }
+    }
+
+    private function isAscii(?string $value): bool
+    {
+        return $value === null || preg_match('/[^\x00-\x7F]/', $value) !== 1;
     }
 }
