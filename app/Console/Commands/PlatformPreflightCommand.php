@@ -18,7 +18,7 @@ final class PlatformPreflightCommand extends Command
         'Debug mode disabled' => 'Set APP_DEBUG=false and clear the application config cache.',
         'Public HTTPS application URL' => 'Set APP_URL to the public HTTPS portal URL.',
         'Secure session cookies' => 'Set SESSION_SECURE_COOKIE=true behind the HTTPS proxy.',
-        'Web two-factor enforcement' => 'Set ENFORCE_WEB_TWO_FACTOR=true for production.',
+        'Web two-factor enforcement' => 'Set SECURITY_ENFORCE_TWO_FACTOR=true for production.',
         'Privileged staff two-factor enrollment' => 'Finish 2FA enrollment for every privileged tenant operator.',
         'Database credentials' => 'Set a non-placeholder production database URL or password.',
         'Redis credentials' => 'Set non-placeholder Redis credentials when Redis is used for cache, queue, or sessions.',
