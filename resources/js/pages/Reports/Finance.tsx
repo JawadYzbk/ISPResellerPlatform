@@ -70,7 +70,7 @@ export default function FinanceReportPage({ report }: Props) {
                         {t('Operations report')}
                     </Link>
                     <Link href="/reports/supplier-payables" className="button-quiet">
-                        Supplier payables
+                        {t('Supplier payables')}
                     </Link>
                     <a href={`/reports/finance?format=csv&${query}`} className="button-quiet">
                         <Download size={15} />
@@ -243,9 +243,9 @@ export default function FinanceReportPage({ report }: Props) {
             <div className="mt-6 card p-6">
                 <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-start">
                     <div>
-                        <h2 className="section-title">Supplier payables</h2>
+                        <h2 className="section-title">{t('Supplier payables')}</h2>
                         <p className="mt-1 text-sm text-muted">
-                            Open supplier bills and payments through {report.to}; aging uses each bill period end.
+                            {t('Open supplier bills and payments through')} {report.to}; {t('aging uses each bill period end.')}
                         </p>
                     </div>
                     <p className="text-sm text-muted">
@@ -255,19 +255,19 @@ export default function FinanceReportPage({ report }: Props) {
                 </div>
                 <div className="mt-4 grid gap-4 md:grid-cols-3">
                     <div className="rounded-lg bg-sand/50 p-4">
-                        <p className="text-xs font-semibold uppercase tracking-wider text-muted">Billed</p>
+                        <p className="text-xs font-semibold uppercase tracking-wider text-muted">{t('Billed')}</p>
                         <p className="mt-1 text-sm text-muted">
                             {formatAmounts(report.supplier_payables.billed_by_currency)}
                         </p>
                     </div>
                     <div className="rounded-lg bg-sand/50 p-4">
-                        <p className="text-xs font-semibold uppercase tracking-wider text-muted">Paid</p>
+                        <p className="text-xs font-semibold uppercase tracking-wider text-muted">{t('Paid')}</p>
                         <p className="mt-1 text-sm text-muted">
                             {formatAmounts(report.supplier_payables.paid_by_currency)}
                         </p>
                     </div>
                     <div className="rounded-lg bg-sand/50 p-4">
-                        <p className="text-xs font-semibold uppercase tracking-wider text-muted">Outstanding</p>
+                        <p className="text-xs font-semibold uppercase tracking-wider text-muted">{t('Outstanding')}</p>
                         <p className="mt-1 text-sm text-muted">
                             {formatAmounts(report.supplier_payables.outstanding_by_currency)}
                         </p>
@@ -277,8 +277,8 @@ export default function FinanceReportPage({ report }: Props) {
                     <table className="w-full min-w-[720px] text-left text-sm">
                         <thead className="text-xs uppercase tracking-[0.14em] text-muted">
                             <tr>
-                                <th className="pb-3">Currency</th>
-                                <th className="pb-3">Current</th>
+                                <th className="pb-3">{t('Currency')}</th>
+                                <th className="pb-3">{t('Current')}</th>
                                 <th className="pb-3">1–30 days</th>
                                 <th className="pb-3">31–60 days</th>
                                 <th className="pb-3">61–90 days</th>
@@ -299,7 +299,7 @@ export default function FinanceReportPage({ report }: Props) {
                         </tbody>
                     </table>
                     {keysOrEmpty(report.supplier_payables.aging_by_currency).length === 0 && (
-                        <p className="py-3 text-sm text-muted">No supplier balances are outstanding.</p>
+                        <p className="py-3 text-sm text-muted">{t('No supplier balances are outstanding.')}</p>
                     )}
                 </div>
             </div>

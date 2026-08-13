@@ -488,7 +488,7 @@ export default function GeneralSettings({
                                 />
                             </label>
                             <label>
-                                <span className="field-label">Resolved ticket auto-close (hours)</span>
+                                <span className="field-label">{t('Resolved ticket auto-close (hours)')}</span>
                                 <input
                                     className="field"
                                     type="number"
@@ -501,7 +501,7 @@ export default function GeneralSettings({
                                 />
                             </label>
                             <label>
-                                <span className="field-label">RADIUS interim interval (seconds)</span>
+                                <span className="field-label">{t('RADIUS interim interval (seconds)')}</span>
                                 <input
                                     className="field"
                                     type="number"

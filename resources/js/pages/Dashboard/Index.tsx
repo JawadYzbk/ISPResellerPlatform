@@ -274,11 +274,15 @@ export default function Dashboard({ metrics, attentionQueue }: Props) {
 }
 
 function DashboardMetricsFallback() {
-    return <div className="mt-8 h-80 animate-pulse rounded-2xl bg-sand/60" aria-label="Loading dashboard metrics" />;
+    const { app } = usePage<PageProps>().props;
+    const t = createTranslator(app.locale);
+    return <div className="mt-8 h-80 animate-pulse rounded-2xl bg-sand/60" aria-label={t('Loading dashboard metrics')} />;
 }
 
 function DashboardAttentionFallback() {
-    return <div className="card mt-6 h-32 animate-pulse bg-sand/60" aria-label="Loading manager attention queue" />;
+    const { app } = usePage<PageProps>().props;
+    const t = createTranslator(app.locale);
+    return <div className="card mt-6 h-32 animate-pulse bg-sand/60" aria-label={t('Loading manager attention queue')} />;
 }
 
 function OwnerFinancePanel({ owner }: { owner: NonNullable<DashboardMetrics['owner']> }) {
@@ -300,7 +304,7 @@ function OwnerFinancePanel({ owner }: { owner: NonNullable<DashboardMetrics['own
     const currencies = entriesOrEmpty(currencyMetrics);
 
     return (
-        <section className="card mt-6 overflow-hidden" aria-label="Owner finance metrics">
+        <section className="card mt-6 overflow-hidden" aria-label={t('Owner finance metrics')}>
             <div className="flex flex-col justify-between gap-3 border-b border-line px-6 py-5 sm:flex-row sm:items-center">
                 <div>
                     <h2 className="section-title">{t('Owner finance')}</h2>
@@ -361,9 +365,9 @@ function OwnerFinancePanel({ owner }: { owner: NonNullable<DashboardMetrics['own
                     <div className="mt-4 divide-y divide-line rounded-xl border border-line">
                         <div className="grid grid-cols-[auto_1fr_1fr_1fr] gap-3 border-b border-line bg-sand/30 px-4 py-2 text-[11px] font-semibold uppercase tracking-wider text-muted">
                             <span>{t('Code')}</span>
-                            <span>Revenue</span>
-                            <span>Collected</span>
-                            <span className="text-end">Margin</span>
+                            <span>{t('Revenue')}</span>
+                            <span>{t('Collected')}</span>
+                            <span className="text-end">{t('Margin')}</span>
                         </div>
                         {currencies.length === 0 ? (
                             <p className="px-4 py-4 text-sm text-muted">{t('No finance activity this month.')}</p>

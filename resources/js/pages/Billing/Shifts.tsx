@@ -139,7 +139,7 @@ export default function ShiftsPage({ shifts, currentShift, currencies, canViewRe
                         {currencies.map((currency) => (
                             <div key={currency} className="rounded-xl bg-sand p-4">
                                 <p className="text-xs font-semibold uppercase tracking-wider text-muted">
-                                    System total · {currency}
+                                    {t('System total')} · {currency}
                                 </p>
                                 <p className="mt-2 font-display text-2xl font-semibold">
                                     {formatMoney(currentShift.system_totals[currency] ?? 0, currency)}
@@ -201,10 +201,10 @@ export default function ShiftsPage({ shifts, currentShift, currencies, canViewRe
                     <div className="flex flex-col justify-between gap-4 border-b border-line px-5 py-4 sm:flex-row sm:items-end">
                         <div>
                             <p className="eyebrow">{t('shifts.manager_report')}</p>
-                            <h2 className="section-title mt-1">Collector totals · {dailyReport.date}</h2>
+                            <h2 className="section-title mt-1">{t('Collector totals')} · {dailyReport.date}</h2>
                             <p className="mt-1 text-xs text-muted">
-                                {dailyReport.payment_count} posted payment(s) · {dailyReport.variance_shift_count}{' '}
-                                variance shift(s)
+                                {dailyReport.payment_count} {t('posted payment(s)')} · {dailyReport.variance_shift_count}{' '}
+                                {t('variance shift(s)')}
                             </p>
                         </div>
                         <form onSubmit={applyReportDate}>
@@ -218,9 +218,9 @@ export default function ShiftsPage({ shifts, currentShift, currencies, canViewRe
                         <table className="w-full min-w-[640px] text-start">
                             <thead>
                                 <tr className="border-b border-line bg-sand/50 text-xs font-semibold uppercase tracking-wider text-muted">
-                                    <th className="px-5 py-3.5 text-start">Collector</th>
-                                    <th className="px-5 py-3.5 text-start">Payments</th>
-                                    <th className="px-5 py-3.5 text-start">Totals</th>
+                                    <th className="px-5 py-3.5 text-start">{t('Collector')}</th>
+                                    <th className="px-5 py-3.5 text-start">{t('Payments')}</th>
+                                    <th className="px-5 py-3.5 text-start">{t('Totals')}</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-line">

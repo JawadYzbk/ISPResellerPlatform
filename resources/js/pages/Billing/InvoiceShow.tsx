@@ -62,9 +62,19 @@ export default function InvoiceShowPage({
     canCredit: boolean;
     publicLinks: PublicLinkSummary[];
 }) {
-    const { props } = usePage<PageProps>();
-    const t = createTranslator(props.app.locale);
-    const creditForm = useForm({ amount: '', reason: '' });
+   const { props } = usePage<PageProps>();
+   const t = createTranslator(props.app.locale);
+    const methodLabel = (method: string) =>
+        t(
+            method === 'bank_transfer'
+                ? 'Bank transfer'
+                : method === 'mobile_wallet'
+                  ? 'Mobile wallet'
+                  : method === 'cash'
+                    ? 'Cash'
+                    : 'Card',
+        );
+   const creditForm = useForm({ amount: '', reason: '' });
 
     const submitCreditNote = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -132,7 +142,7 @@ export default function InvoiceShowPage({
                                             <p className="text-sm font-semibold">{line.description}</p>
                                             {(line.plan || line.service) && (
                                                 <p className="mt-1 text-xs text-muted">
-                                                    {line.plan?.name ?? 'Plan removed'}
+                                                    {line.plan?.name ?? t('Plan removed')}
                                                     {line.service ? ` · ${line.service.username}` : ''}
                                                 </p>
                                             )}
@@ -216,7 +226,7 @@ export default function InvoiceShowPage({
                                     className="field min-h-20"
                                     value={creditForm.data.reason}
                                     onChange={(event) => creditForm.setData('reason', event.target.value)}
-                                    placeholder="Service interruption"
+                                    placeholder={t('Service interruption')}
                                 />
                                 {creditForm.errors.reason && <p className="field-error">{creditForm.errors.reason}</p>}
                             </label>
@@ -243,7 +253,7 @@ export default function InvoiceShowPage({
                             <div>
                                 <p className="text-sm font-semibold">{payment.number}</p>
                                 <p className="mt-1 text-xs capitalize text-muted">
-                                    {payment.method.replace('_', ' ')} · {payment.collector ?? 'System'} ·{' '}
+                                    {methodLabel(payment.method)} · {payment.collector ?? t('System')} ·{' '}
                                     {formatDate(payment.received_at)}
                                 </p>
                             </div>
@@ -284,7 +294,7 @@ export default function InvoiceShowPage({
                             <div>
                                 <p className="text-sm font-semibold">{note.number}</p>
                                 <p className="mt-1 text-xs text-muted">
-                                    {note.reason} · {note.creator ?? 'System'} · {formatDate(note.issued_at)}
+                                    {note.reason} · {note.creator ?? t('System')} · {formatDate(note.issued_at)}
                                 </p>
                             </div>
                             <p className="text-sm font-semibold text-emerald-700">

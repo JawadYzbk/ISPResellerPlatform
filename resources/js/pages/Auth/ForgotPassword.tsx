@@ -25,7 +25,7 @@ export default function ForgotPassword() {
             </div>
             <p className="eyebrow">{t('auth.account_recovery')}</p>
             <h1 className="page-title">{t('auth.reset_password')}</h1>
-            <p className="page-subtitle">Enter your staff email and we’ll send a secure reset link.</p>
+            <p className="page-subtitle">{t('Enter your staff email and we’ll send a secure reset link.')}</p>
             <form onSubmit={submit} className="card mt-8 space-y-5 p-6">
                 <label>
                     <span className="field-label">{t('Email address')}</span>

@@ -75,7 +75,7 @@ export default function OperationsReportPage({ report }: Props) {
             </div>
             <form onSubmit={applyPeriod} className="card mt-6 flex flex-col gap-4 p-5 sm:flex-row sm:items-end">
                 <label className="block sm:min-w-48">
-                    <span className="field-label">Purchased from</span>
+                    <span className="field-label">{t('Purchased from')}</span>
                     <input
                         className="field"
                         type="date"
@@ -84,11 +84,11 @@ export default function OperationsReportPage({ report }: Props) {
                     />
                 </label>
                 <label className="block sm:min-w-48">
-                    <span className="field-label">Purchased through</span>
+                    <span className="field-label">{t('Purchased through')}</span>
                     <input className="field" type="date" value={to} onChange={(event) => setTo(event.target.value)} />
                 </label>
                 <button type="submit" className="button-primary">
-                    Apply period
+                    {t('Apply period')}
                 </button>
             </form>
             <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
@@ -154,19 +154,21 @@ export default function OperationsReportPage({ report }: Props) {
             <div className="card mt-6 p-6">
                 <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-start">
                     <div>
-                        <h2 className="section-title">Supplier credential reconciliation</h2>
+                        <h2 className="section-title">{t('Supplier credential reconciliation')}</h2>
                         <p className="mt-1 text-sm text-muted">
-                            Purchased batches imported from {supplierCredentials.from} through {supplierCredentials.to};
-                            live state is current.
+                            {t('Purchased batches imported from')} {supplierCredentials.from} {t('through')}{' '}
+                            {supplierCredentials.to}; {t('live state is current.')}
                         </p>
                     </div>
-                    <span className="text-xs text-muted">Expiring within {supplierCredentials.expiring_days} days</span>
+                            <span className="text-xs text-muted">
+                                {t('Expiring within')} {supplierCredentials.expiring_days} {t('days')}
+                            </span>
                 </div>
                 <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
                     {entriesOrEmpty(supplierCredentials.totals).map(([metric, total]) => (
                         <div key={metric} className="rounded-lg bg-sand/50 p-4">
                             <p className="text-xs font-semibold uppercase tracking-wider text-muted">
-                                {titleize(metric)}
+                                {metric === 'revoked_invalid' ? t('Revoked / invalid') : t(titleize(metric))}
                             </p>
                             <p className="mt-1 font-display text-2xl font-semibold">{total}</p>
                         </div>
@@ -176,13 +178,13 @@ export default function OperationsReportPage({ report }: Props) {
                     <table className="w-full min-w-[760px] text-start text-sm">
                         <thead>
                             <tr className="border-b border-line text-xs font-semibold uppercase tracking-wider text-muted">
-                                <th className="py-3 text-start">Supplier</th>
-                                <th className="py-3 text-end">Purchased</th>
-                                <th className="py-3 text-end">Assigned</th>
-                                <th className="py-3 text-end">Available</th>
-                                <th className="py-3 text-end">Expiring</th>
-                                <th className="py-3 text-end">Revoked / invalid</th>
-                                <th className="py-3 text-end">Recorded cost</th>
+                                <th className="py-3 text-start">{t('Supplier')}</th>
+                                <th className="py-3 text-end">{t('Purchased')}</th>
+                                <th className="py-3 text-end">{t('Assigned')}</th>
+                                <th className="py-3 text-end">{t('Available')}</th>
+                                <th className="py-3 text-end">{t('Expiring')}</th>
+                                <th className="py-3 text-end">{t('Revoked / invalid')}</th>
+                                <th className="py-3 text-end">{t('Recorded cost')}</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-line">
@@ -210,12 +212,12 @@ export default function OperationsReportPage({ report }: Props) {
                         </tbody>
                     </table>
                     {supplierCredentials.by_supplier.length === 0 && (
-                        <p className="py-4 text-sm text-muted">No supplier credential batches have been recorded.</p>
+                        <p className="py-4 text-sm text-muted">{t('No supplier credential batches have been recorded.')}</p>
                     )}
                 </div>
                 {supplierCredentials.by_supplier.some((supplier) => supplier.contracts.length > 0) && (
                     <div className="mt-6 border-t border-line pt-5">
-                        <h3 className="text-sm font-semibold">Cost by supplier / contract</h3>
+                        <h3 className="text-sm font-semibold">{t('Cost by supplier / contract')}</h3>
                         <div className="mt-3 divide-y divide-line text-sm">
                             {supplierCredentials.by_supplier.flatMap((supplier) =>
                                 supplier.contracts.map((contract) => (
@@ -226,14 +228,14 @@ export default function OperationsReportPage({ report }: Props) {
                                         <span>
                                             <b>{supplier.name}</b>
                                             <span className="ms-2 text-muted">
-                                                {contract.reference ?? contract.service_type ?? 'Unspecified contract'}
+                                                {contract.reference ?? contract.service_type ?? t('Unspecified contract')}
                                             </span>
                                         </span>
                                         <span className="text-muted">
                                             {contract.purchased} purchased ·{' '}
                                             {entriesOrEmpty(contract.cost_by_currency)
                                                 .map(([currency, amount]) => formatMoney(amount, currency))
-                                                .join(' · ') || 'No cost recorded'}
+                                                .join(' · ') || t('No cost recorded')}
                                         </span>
                                     </div>
                                 )),

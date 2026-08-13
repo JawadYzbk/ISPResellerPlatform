@@ -285,7 +285,7 @@ export default function ExchangeRatesPage({
                         <Scale size={17} className="text-brand" />
                         <p className="text-sm font-semibold">{rates.total.toLocaleString()} rate(s)</p>
                     </div>
-                    <p className="text-xs text-muted">Newest effective rates appear first.</p>
+                    <p className="text-xs text-muted">{t('Newest effective rates appear first.')}</p>
                 </div>
                 <div className="overflow-x-auto">
                     <table className="w-full min-w-[900px] text-start">

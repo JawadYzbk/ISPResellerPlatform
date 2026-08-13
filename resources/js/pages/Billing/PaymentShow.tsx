@@ -42,6 +42,16 @@ type Props = { payment: Payment; canReverse: boolean; canShare: boolean; publicL
 export default function PaymentShowPage({ payment, canReverse, canShare, publicLinks }: Props) {
     const { props } = usePage<PageProps>();
     const t = createTranslator(props.app.locale);
+    const methodLabel = (method: string) =>
+        t(
+            method === 'bank_transfer'
+                ? 'Bank transfer'
+                : method === 'mobile_wallet'
+                  ? 'Mobile wallet'
+                  : method === 'cash'
+                    ? 'Cash'
+                    : 'Card',
+        );
     const reverse = () => {
         router.post(`/billing/payments/${payment.public_id}/reverse`);
     };
@@ -77,7 +87,7 @@ export default function PaymentShowPage({ payment, canReverse, canShare, publicL
                     <p className="eyebrow">{t('payment.collection_receipt')}</p>
                     <h1 className="page-title">{payment.number}</h1>
                     <p className="page-subtitle">
-                        Received {formatDate(payment.received_at)} · {payment.collector ?? 'System posted'}
+                        {t('Received')} {formatDate(payment.received_at)} · {payment.collector ?? t('System posted')}
                     </p>
                 </div>
                 <StatusBadge status={payment.status} />
@@ -111,7 +121,7 @@ export default function PaymentShowPage({ payment, canReverse, canShare, publicL
                         <div>
                             <dt className="field-label">{t('Method')}</dt>
                             <dd className="mt-1 text-sm font-semibold capitalize">
-                                {payment.method.replace('_', ' ')}
+                                {methodLabel(payment.method)}
                             </dd>
                         </div>
                         <div>
@@ -172,10 +182,10 @@ export default function PaymentShowPage({ payment, canReverse, canShare, publicL
                                 <dd className="mt-1 text-sm font-semibold">
                                     {payment.fx_rounding_mode.replace('_', ' ')}
                                     <span className="mt-1 block text-xs font-normal text-muted">
-                                        {payment.fx_rate_source ?? 'stored rate'}
+                                        {payment.fx_rate_source ?? t('stored rate')}
                                         {payment.fx_rate_effective_from
-                                            ? ` · effective ${formatDate(payment.fx_rate_effective_from)}`
-                                            : ''}
+                                            ? ` · ${t('effective')} ${formatDate(payment.fx_rate_effective_from)}`
+                                           : ''}
                                     </span>
                                 </dd>
                             </div>

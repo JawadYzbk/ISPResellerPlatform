@@ -269,7 +269,7 @@ export default function WhatsAppSettings({ setup }: Props) {
                     </div>
                     {setup.qr_code ? (
                         <div className="mx-auto rounded-2xl border border-line bg-white p-3 shadow-sm">
-                            <img src={setup.qr_code} alt="Scan to pair WhatsApp Web.js" className="block size-48" />
+                            <img src={setup.qr_code} alt={t('Scan to pair WhatsApp Web.js')} className="block size-48" />
                             <p className="mt-2 text-center text-xs text-muted">
                                 {t('QR expires when the bridge refreshes it.')}
                             </p>
@@ -428,7 +428,7 @@ export default function WhatsAppSettings({ setup }: Props) {
                                         <div className="mt-4 flex items-center gap-4 rounded-xl border border-line bg-sand/50 p-3">
                                             <img
                                                 src={account.qr_code}
-                                                alt={`Scan to pair ${account.label}`}
+                                                alt={t('Scan to pair') + ' ' + account.label}
                                                 className="size-36 rounded-lg bg-white p-2"
                                             />
                                             <p className="text-xs text-muted">

@@ -49,8 +49,8 @@ type Props = PageProps & {
     lastRun: BulkRun | null;
 };
 
-function statusLabel(status: BulkRow['status']): string {
-    return status === 'ready' ? 'Ready' : status === 'open' ? 'Open invoice' : 'Blocked';
+function statusLabel(status: BulkRow['status'], t: (key: string) => string): string {
+    return status === 'ready' ? t('Ready') : status === 'open' ? t('Open invoice') : t('Blocked');
 }
 
 function statusClass(status: BulkRow['status']): string {
@@ -120,8 +120,7 @@ export default function BulkRenewalsPage({ asOf, timezone, filters, rows, summar
                     <p className="eyebrow">{t('Billing operations')}</p>
                     <h1 className="page-title text-balance">{t('Bulk renewals')}</h1>
                     <p className="page-subtitle text-pretty">
-                        Preview due services, issue renewal invoices in one controlled batch, and retry the same batch
-                        safely when a row needs attention.
+                        {t('Preview due services, issue renewal invoices in one controlled batch, and retry the same batch safely when a row needs attention.')}
                     </p>
                 </div>
                 <WalletCards className="text-brand" size={24} />
@@ -129,7 +128,7 @@ export default function BulkRenewalsPage({ asOf, timezone, filters, rows, summar
 
             <form onSubmit={applyFilters} className="card mt-8 flex flex-col gap-4 p-5 sm:flex-row sm:items-end">
                 <label className="block sm:min-w-56">
-                    <span className="field-label">Due through</span>
+                    <span className="field-label">{t('Due through')}</span>
                     <input
                         type="date"
                         className="field"
@@ -138,19 +137,19 @@ export default function BulkRenewalsPage({ asOf, timezone, filters, rows, summar
                     />
                 </label>
                 <label className="block sm:min-w-72 sm:flex-1">
-                    <span className="field-label">Search customer or service</span>
+                    <span className="field-label">{t('Search customer or service')}</span>
                     <div className="relative">
                         <Search size={17} className="pointer-events-none absolute start-3 top-3 text-muted" />
                         <input
                             className="field ps-10"
                             value={search}
                             onChange={(event) => setSearch(event.target.value)}
-                            placeholder="Username, customer name, or phone"
+                            placeholder={t('Username, customer name, or phone')}
                         />
                     </div>
                 </label>
                 <button type="submit" className="button-secondary">
-                    Refresh preview
+                    {t('Refresh preview')}
                 </button>
             </form>
 
@@ -162,7 +161,7 @@ export default function BulkRenewalsPage({ asOf, timezone, filters, rows, summar
                     ['Blocked', summary.blocked],
                 ].map(([label, value]) => (
                     <div key={label} className="card p-5">
-                        <p className="text-xs font-semibold uppercase text-muted">{label}</p>
+                        <p className="text-xs font-semibold uppercase text-muted">{t(String(label))}</p>
                         <p className="mt-2 text-2xl font-semibold tabular-nums">{value}</p>
                     </div>
                 ))}
@@ -178,16 +177,16 @@ export default function BulkRenewalsPage({ asOf, timezone, filters, rows, summar
                                 <CheckCircle2 className="mt-0.5 text-emerald-700" size={18} />
                             )}
                             <div>
-                                <h2 className="text-sm font-semibold text-balance">Last batch outcome</h2>
+                                <h2 className="text-sm font-semibold text-balance">{t('Last batch outcome')}</h2>
                                 <p className="mt-1 text-sm text-muted text-pretty">
-                                    {lastRun.processed_count} processed and {lastRun.failed_count} failed ·{' '}
+                                    {lastRun.processed_count} {t('processed')} · {lastRun.failed_count} {t('failed')} ·{' '}
                                     {formatDate(lastRun.completed_at)}
                                 </p>
                             </div>
                         </div>
                         {lastRun.failed_count > 0 && (
                             <button type="button" className="button-secondary" onClick={selectRetryBatch}>
-                                <RefreshCw size={15} /> {retrySelected ? 'Failed rows selected' : 'Retry failed batch'}
+                                <RefreshCw size={15} /> {retrySelected ? t('Failed rows selected') : t('Retry failed batch')}
                             </button>
                         )}
                     </div>
@@ -220,11 +219,11 @@ export default function BulkRenewalsPage({ asOf, timezone, filters, rows, summar
                     <div className="flex items-center gap-2">
                         <FileText size={17} className="text-brand" />
                         <h2 className="text-sm font-semibold text-balance">
-                            {selected.size} of {selectableIds.length} selectable service(s) selected
+                            {selected.size} / {selectableIds.length} {t('selectable service(s) selected')}
                         </h2>
                     </div>
                     <button type="button" className="text-sm font-semibold text-brand" onClick={toggleAll}>
-                        {allSelected ? 'Clear selection' : 'Select all ready rows'}
+                        {allSelected ? t('Clear selection') : t('Select all ready rows')}
                     </button>
                 </div>
                 {form.errors.service_ids && <p className="field-error px-5 pt-4">{form.errors.service_ids}</p>}
@@ -235,17 +234,17 @@ export default function BulkRenewalsPage({ asOf, timezone, filters, rows, summar
                                 <th className="w-12 px-5 py-3">
                                     <input
                                         type="checkbox"
-                                        aria-label="Select all ready rows"
+                                        aria-label={t('Select all ready rows')}
                                         checked={allSelected}
                                         onChange={toggleAll}
                                         disabled={selectableIds.length === 0}
                                     />
                                 </th>
-                                <th className="px-5 py-3 text-start">Customer</th>
-                                <th className="px-5 py-3 text-start">Service</th>
-                                <th className="px-5 py-3 text-start">Expires</th>
-                                <th className="px-5 py-3 text-start">Renewal price</th>
-                                <th className="px-5 py-3 text-start">Decision</th>
+                                <th className="px-5 py-3 text-start">{t('Customer')}</th>
+                                <th className="px-5 py-3 text-start">{t('Service')}</th>
+                                <th className="px-5 py-3 text-start">{t('Expires')}</th>
+                                <th className="px-5 py-3 text-start">{t('Renewal price')}</th>
+                                <th className="px-5 py-3 text-start">{t('Decision')}</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-line">
@@ -254,7 +253,7 @@ export default function BulkRenewalsPage({ asOf, timezone, filters, rows, summar
                                     <td className="px-5 py-4">
                                         <input
                                             type="checkbox"
-                                            aria-label={'Select ' + row.username}
+                                            aria-label={t('Select') + ' ' + row.username}
                                             checked={selected.has(row.service_id)}
                                             disabled={!row.can_select}
                                             onChange={() => toggleService(row.service_id)}
@@ -262,13 +261,13 @@ export default function BulkRenewalsPage({ asOf, timezone, filters, rows, summar
                                     </td>
                                     <td className="px-5 py-4">
                                         <p className="text-sm font-semibold">
-                                            {row.customer.name ?? 'Unknown customer'}
+                                            {row.customer.name ?? t('Unknown customer')}
                                         </p>
-                                        <p className="mt-1 text-xs text-muted">{row.customer.code ?? 'No code'}</p>
+                                        <p className="mt-1 text-xs text-muted">{row.customer.code ?? t('No code')}</p>
                                     </td>
                                     <td className="px-5 py-4">
                                         <p className="text-sm font-semibold">{row.username}</p>
-                                        <p className="mt-1 text-xs text-muted">{row.plan ?? 'Plan unavailable'}</p>
+                                        <p className="mt-1 text-xs text-muted">{row.plan ?? t('Plan unavailable')}</p>
                                     </td>
                                     <td className="px-5 py-4 text-sm tabular-nums text-muted">
                                         {formatDate(row.expires_at)}
@@ -283,7 +282,7 @@ export default function BulkRenewalsPage({ asOf, timezone, filters, rows, summar
                                                 statusClass(row.status)
                                             }
                                         >
-                                            {statusLabel(row.status)}
+                                            {statusLabel(row.status, t)}
                                         </span>
                                         <p className="mt-2 max-w-xs text-xs text-muted text-pretty">{row.reason}</p>
                                     </td>
@@ -293,9 +292,9 @@ export default function BulkRenewalsPage({ asOf, timezone, filters, rows, summar
                                 <tr>
                                     <td colSpan={6} className="px-5 py-16 text-center">
                                         <WalletCards className="mx-auto text-muted" size={28} />
-                                        <p className="mt-3 font-semibold text-balance">No due services found</p>
+                                        <p className="mt-3 font-semibold text-balance">{t('No due services found')}</p>
                                         <p className="mt-1 text-sm text-muted text-pretty">
-                                            Adjust the date or search to find services ready for renewal.
+                                            {t('Adjust the date or search to find services ready for renewal.')}
                                         </p>
                                     </td>
                                 </tr>
@@ -305,11 +304,11 @@ export default function BulkRenewalsPage({ asOf, timezone, filters, rows, summar
                 </div>
                 <div className="flex flex-col justify-between gap-3 border-t border-line px-5 py-4 sm:flex-row sm:items-center">
                     <p className="text-xs text-muted text-pretty">
-                        Preview as of {asOf} ({timezone}). Open invoices are reused safely.
+                        {t('Preview as of')} {asOf} ({timezone}). {t('Open invoices are reused safely.')}
                     </p>
                     <button type="submit" className="button-primary" disabled={form.processing || selected.size === 0}>
                         <WalletCards size={15} />{' '}
-                        {retrySelected ? 'Retry selected renewals' : 'Issue selected renewals'}
+                        {retrySelected ? t('Retry selected renewals') : t('Issue selected renewals')}
                     </button>
                 </div>
             </form>
