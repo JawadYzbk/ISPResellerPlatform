@@ -103,3 +103,49 @@ test('keeps the collector workspace accessible to collector accounts', async ({ 
 
     await auditPage(page, '/field');
 });
+
+test('keeps shared keyboard focus paths usable', async ({ page }) => {
+    test.setTimeout(60_000);
+
+    await page.goto('/login');
+    await page.getByLabel('Email address').fill(email);
+    await page.getByRole('textbox', { name: 'Password' }).fill(password);
+    await Promise.all([
+        page.waitForURL(/\/(dashboard|customers|profile)$/),
+        page.getByRole('button', { name: 'Enter workspace' }).click(),
+    ]);
+
+    await page.keyboard.press('Tab');
+    await expect(page.locator('a[href="#main-content"]')).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expect(page.locator('main#main-content')).toBeFocused();
+
+    const searchTrigger = page.getByRole('button', { name: 'Search workspace' });
+    await searchTrigger.click();
+    const searchInput = page.getByRole('textbox', { name: 'Search workspace' });
+    await expect(searchInput).toBeFocused();
+    await page.keyboard.press('Tab');
+    await expect(searchInput).toBeFocused();
+    await page.keyboard.press('Escape');
+    await expect(searchTrigger).toBeFocused();
+
+    const accountTrigger = page.getByRole('button', { name: 'Open account menu' });
+    await accountTrigger.press('ArrowDown');
+    await expect(page.getByRole('menuitem').first()).toBeFocused();
+    await page.keyboard.press('Escape');
+    await expect(accountTrigger).toBeFocused();
+
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/dashboard');
+    const mobileNavTrigger = page.locator('button[aria-controls="mobile-navigation"]');
+    await mobileNavTrigger.click();
+    const mobileNavigation = page.locator('#mobile-navigation');
+    const mobileClose = mobileNavigation.getByRole('button', { name: 'Close navigation' });
+    await expect(mobileClose).toBeFocused();
+    await page.keyboard.press('Shift+Tab');
+    await expect(
+        mobileNavigation.locator('a[href], button:not([disabled])').last(),
+    ).toBeFocused();
+    await page.keyboard.press('Escape');
+    await expect(mobileNavTrigger).toBeFocused();
+});
