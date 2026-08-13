@@ -535,6 +535,8 @@ export default function AppLayout({ children }: PropsWithChildren) {
                 >
                     <aside
                         id="mobile-navigation"
+                        role="dialog"
+                        aria-modal="true"
                         className="flex h-full w-[min(22rem,calc(100%-2rem))] flex-col border-e border-line bg-white shadow-2xl"
                         aria-label={t('Mobile navigation')}
                         onKeyDown={(event) => trapTabKey(event, event.currentTarget)}

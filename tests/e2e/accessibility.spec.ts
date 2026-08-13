@@ -274,6 +274,8 @@ test('keeps shared keyboard focus paths usable', async ({ page }) => {
     const mobileNavTrigger = page.locator('button[aria-controls="mobile-navigation"]');
     await mobileNavTrigger.click();
     const mobileNavigation = page.locator('#mobile-navigation');
+    await expect(mobileNavigation).toHaveAttribute('role', 'dialog');
+    await expect(mobileNavigation).toHaveAttribute('aria-modal', 'true');
     const mobileClose = mobileNavigation.getByRole('button', { name: 'Close navigation' });
     await expect(mobileClose).toBeFocused();
     await page.keyboard.press('Shift+Tab');
