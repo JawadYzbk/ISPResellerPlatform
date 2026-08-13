@@ -15,7 +15,7 @@ type Props = { tenant: PublicTenant };
 type StripeIntent = { clientSecret: string; publishableKey: string; invoiceId: string };
 
 export default function PortalDashboard({ tenant }: Props) {
-   const t = createTranslator(tenant.locale);
+    const t = useMemo(() => createTranslator(tenant.locale), [tenant.locale]);
 
     useEffect(() => {
         document.documentElement.lang = tenant.locale;
@@ -74,7 +74,7 @@ export default function PortalDashboard({ tenant }: Props) {
                 setTickets((await ticketsResponse.json()).data ?? []);
             })
             .catch(() => setError(t('portal.dashboard.load_error')));
-    }, [tenant.slug, tokenKey]);
+    }, [t, tenant.slug, tokenKey]);
 
     const signOut = async () => {
         const token = sessionStorage.getItem(tokenKey);

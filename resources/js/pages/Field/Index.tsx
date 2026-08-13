@@ -242,7 +242,7 @@ export default function FieldIndex({
     storageEncryptionKey,
 }: Props) {
     const { props } = usePage<PageProps>();
-    const t = createTranslator(props.app.locale);
+    const t = useMemo(() => createTranslator(props.app.locale), [props.app.locale]);
     const fieldValue = (value: string) => t('field.value.' + value);
     const [customers, setCustomers] = useState(snapshot.data.customers);
     const [currencyOptions, setCurrencyOptions] = useState(currencies);
@@ -461,7 +461,7 @@ export default function FieldIndex({
         } finally {
             setBusy(false);
         }
-    }, [customers, online, pending, persist, syncToken]);
+    }, [customers, online, pending, persist, syncToken, t]);
 
     const pushQueue = useCallback(
         async (queue = pending) => {
@@ -510,7 +510,7 @@ export default function FieldIndex({
                 setBusy(false);
             }
         },
-        [online, pending, persist],
+        [online, pending, persist, t],
     );
 
     useEffect(() => {
