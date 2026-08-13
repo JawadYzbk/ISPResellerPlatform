@@ -230,7 +230,7 @@ export default function TicketShow({
                                         form.setData('visibility', 'public');
                                     }}
                                 >
-                                    Public reply
+                                    {t('Public reply')}
                                 </button>
                                 <button
                                     type="button"
@@ -240,7 +240,7 @@ export default function TicketShow({
                                         form.setData('visibility', 'internal');
                                     }}
                                 >
-                                    Internal note
+                                    {t('Internal note')}
                                 </button>
                             </div>
                             {cannedResponses.length > 0 && (

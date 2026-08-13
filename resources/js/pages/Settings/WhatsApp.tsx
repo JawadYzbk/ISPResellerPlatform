@@ -295,8 +295,9 @@ export default function WhatsAppSettings({ setup }: Props) {
                                 <p className="eyebrow">{t('Workspace accounts')}</p>
                                 <h2 className="section-title mt-2">{t('Pair and assign delivery accounts')}</h2>
                                 <p className="mt-2 text-sm text-muted">
-                                    Each account has its own private bridge session. Assign a job so billing, support,
-                                    or operations messages use the intended phone number.
+                                    {t(
+                                        'Each account has its own private bridge session. Assign a job so billing, support, or operations messages use the intended phone number.',
+                                    )}
                                 </p>
                             </div>
                         </div>

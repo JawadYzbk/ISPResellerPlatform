@@ -1202,6 +1202,13 @@ const sharedArabic: Messages = {
     Yes: 'نعم',
     'plan.positive_promotion_value': 'أدخل قيمة ترويجية موجبة.',
     'recent provider failures; delivery remains paced': 'أعطال مزود حديثة؛ سيبقى التسليم مضبوط الإيقاع',
+    'Click the map to place a pin, or drag the existing pin to refine the service location.':
+        'انقر على الخريطة لوضع دبوس، أو اسحب الدبوس الحالي لتحسين موقع الخدمة.',
+    'Open shifts': 'الورديات المفتوحة',
+    'Extend a billing period from its expiry when grace renewal is enabled':
+        'مدّد فترة الفوترة من تاريخ انتهائها عند تفعيل التجديد بفترة سماح',
+    'Each account has its own private bridge session. Assign a job so billing, support, or operations messages use the intended phone number.':
+        'لكل حساب جلسة جسر خاصة به. عيّن وظيفة لتستخدم رسائل الفوترة والدعم والعمليات رقم الهاتف المقصود.',
 };
 
 const sharedFrench: Messages = {
@@ -1494,6 +1501,13 @@ const sharedFrench: Messages = {
     Yes: 'Oui',
     'plan.positive_promotion_value': 'Saisissez une valeur promotionnelle positive.',
     'recent provider failures; delivery remains paced': 'Échecs récents du fournisseur ; la distribution reste cadencée',
+    'Click the map to place a pin, or drag the existing pin to refine the service location.':
+        'Cliquez sur la carte pour placer un repère ou faites glisser le repère existant pour préciser l’emplacement du service.',
+    'Open shifts': 'Shifts ouverts',
+    'Extend a billing period from its expiry when grace renewal is enabled':
+        'Prolonger une période de facturation à partir de son échéance lorsque le renouvellement avec délai de grâce est activé',
+    'Each account has its own private bridge session. Assign a job so billing, support, or operations messages use the intended phone number.':
+        'Chaque compte possède sa propre session privée du pont. Attribuez une fonction pour que les messages de facturation, de support et d’opérations utilisent le bon numéro.',
 };
 
 const fieldArabic: Messages = {

@@ -1,8 +1,11 @@
 import type { LatLngExpression } from 'leaflet';
+import { usePage } from '@inertiajs/react';
 import { useEffect, useMemo } from 'react';
 import { MapContainer, Marker, TileLayer, useMap, useMapEvents } from 'react-leaflet';
 
 import L, { DEFAULT_MAP_CENTER, DEFAULT_MAP_ZOOM } from '@/lib/leaflet';
+import { createTranslator } from '@/lib/i18n';
+import type { PageProps } from '@/types';
 
 import 'leaflet/dist/leaflet.css';
 
@@ -45,6 +48,8 @@ function MapClickHandler({ onSelect }: { onSelect: (latitude: number, longitude:
 }
 
 export default function MapPicker({ latitude, longitude, onLatitudeChange, onLongitudeChange }: Props) {
+    const { props } = usePage<PageProps>();
+    const t = createTranslator(props.app.locale);
     const coordinates = useMemo(() => parseCoordinates(latitude, longitude), [latitude, longitude]);
     const center = coordinates ?? DEFAULT_MAP_CENTER;
 
@@ -79,7 +84,7 @@ export default function MapPicker({ latitude, longitude, onLatitudeChange, onLon
                 </MapContainer>
             </div>
             <p className="text-xs text-muted">
-                Click the map to place a pin, or drag the existing pin to refine the service location.
+                {t('Click the map to place a pin, or drag the existing pin to refine the service location.')}
             </p>
         </div>
     );

@@ -342,8 +342,7 @@ export default function GeneralSettings({
                                             onChange={(event) => form.setData('logo', event.target.files?.[0] ?? null)}
                                         />
                                         <p className="mt-1 text-xs text-muted">
-                                            JPG, PNG, or WebP up to 2 MB. It appears in the staff shell and customer
-                                            portal.
+                                            {t('JPG, PNG, or WebP up to 2 MB. It appears in the staff shell and customer portal.')}
                                         </p>
                                         {form.errors.logo && <p className="field-error">{form.errors.logo}</p>}
                                     </div>
@@ -520,7 +519,7 @@ export default function GeneralSettings({
                                 checked={form.data.grace_extends_period}
                                 onChange={(event) => form.setData('grace_extends_period', event.target.checked)}
                             />
-                            Extend a billing period from its expiry when grace renewal is enabled
+                            {t('Extend a billing period from its expiry when grace renewal is enabled')}
                         </label>
                     </section>
                     <div className="flex justify-end border-t border-line pt-5">
