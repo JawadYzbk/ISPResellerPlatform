@@ -1847,6 +1847,7 @@ const sharedArabic: Messages = {
     Paused: 'متوقف مؤقتًا',
     'Customer portal': 'بوابة العملاء',
     'Unsupported locale.': 'اللغة غير مدعومة.',
+    'Please wait before trying again.': 'يرجى الانتظار قبل المحاولة مرة أخرى.',
 };
 
 const sharedFrench: Messages = {
@@ -2711,6 +2712,7 @@ const sharedFrench: Messages = {
     Paused: 'En pause',
     'Customer portal': 'Portail client',
     'Unsupported locale.': 'Langue non prise en charge.',
+    'Please wait before trying again.': 'Veuillez patienter avant de réessayer.',
 };
 
 const fieldArabic: Messages = {
