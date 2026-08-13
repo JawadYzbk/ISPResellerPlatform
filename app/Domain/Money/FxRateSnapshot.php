@@ -41,9 +41,22 @@ final readonly class FxRateSnapshot
                 ? $quotient
                 : $quotient + ($remainder > 0 ? 1 : 0),
             FxRoundingMode::HalfUp => $quotient + ($remainder * 2 >= $this->denominator ? 1 : 0),
+            FxRoundingMode::CeilTo5000 => $this->ceilTo5000(
+                $negative
+                    ? $quotient
+                    : $quotient + ($remainder > 0 ? 1 : 0),
+                $negative,
+            ),
         };
 
         return $negative ? -$rounded : $rounded;
+    }
+
+    private function ceilTo5000(int $amount, bool $negative): int
+    {
+        return $amount === 0
+            ? 0
+            : ($negative ? intdiv($amount, 5_000) : intdiv($amount + 4_999, 5_000)) * 5_000;
     }
 
     /** @return array{source_currency: string, target_currency: string, numerator: int, denominator: int, source: string, overridden: bool, rounding_mode: string, effective_from: string|null, rate_source: string|null} */

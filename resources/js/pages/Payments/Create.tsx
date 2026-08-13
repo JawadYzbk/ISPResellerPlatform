@@ -344,6 +344,7 @@ export default function PaymentCreate({ customer, invoices, defaultCurrency, pay
                                     <option value="half_up">{t('Half up (standard)')}</option>
                                     <option value="floor">{t('Floor (never over-collect)')}</option>
                                     <option value="ceil">{t('Ceiling')}</option>
+                                    <option value="ceil_5000">{t('Ceiling to nearest 5,000 units')}</option>
                                 </ResponsiveSelect>
                                 <p className="mt-1 text-xs text-muted">
                                     {t(

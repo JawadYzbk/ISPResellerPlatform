@@ -328,6 +328,7 @@ const messages: Record<Exclude<Locale, 'en'>, Messages> = {
         'Half up (standard)': 'نصف للأعلى (قياسي)',
         'Floor (never over-collect)': 'أرضية (لا تحصّل زيادة)',
         Ceiling: 'سقف',
+        'Ceiling to nearest 5,000 units': 'التقريب للأعلى إلى أقرب ٥٬٠٠٠ وحدة',
         'The selected policy is saved with the payment rate for audit and receipt history.':
             'يتم حفظ السياسة المحددة مع سعر الدفعة لسجل التدقيق والإيصال.',
         'Payment reference (optional)': 'مرجع الدفعة (اختياري)',
@@ -507,6 +508,8 @@ const messages: Record<Exclude<Locale, 'en'>, Messages> = {
         Locale: 'اللغة',
         'Use workspace language': 'استخدام لغة مساحة العمل',
         Timezone: 'المنطقة الزمنية',
+        'Date format': 'تنسيق التاريخ',
+        'Time format': 'تنسيق الوقت',
         'Money and display': 'المال والعرض',
         'Prefer right-to-left layout for this workspace': 'تفضيل التخطيط من اليمين إلى اليسار لمساحة العمل هذه',
         'Automation windows': 'نوافذ الأتمتة',
@@ -927,6 +930,7 @@ const messages: Record<Exclude<Locale, 'en'>, Messages> = {
         'Half up (standard)': 'Demi-haut (standard)',
         'Floor (never over-collect)': 'Plancher (sans trop-percevoir)',
         Ceiling: 'Plafond',
+        'Ceiling to nearest 5,000 units': 'Plafond à 5 000 unités près',
         'The selected policy is saved with the payment rate for audit and receipt history.':
             'La règle sélectionnée est conservée avec le taux du paiement pour l’audit et l’historique du reçu.',
         'Payment reference (optional)': 'Référence du paiement (facultatif)',
@@ -1112,6 +1116,8 @@ const messages: Record<Exclude<Locale, 'en'>, Messages> = {
         Locale: 'Langue',
         'Use workspace language': 'Utiliser la langue de l’espace',
         Timezone: 'Fuseau horaire',
+        'Date format': 'Format de date',
+        'Time format': 'Format d’heure',
         'Money and display': 'Monnaie et affichage',
         'Prefer right-to-left layout for this workspace': 'Préférer une interface de droite à gauche pour cet espace',
         'Automation windows': 'Fenêtres d’automatisation',

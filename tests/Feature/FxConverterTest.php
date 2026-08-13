@@ -47,6 +47,18 @@ it('supports explicit flooring and ceiling without floating point arithmetic', f
         ->and($converter->snapshot('USD', 'LBP', $at, roundingMode: FxRoundingMode::Ceil->value)->convert(-1))->toBe(0);
 });
 
+it('can round positive converted amounts up to the nearest 5000 target units', function (): void {
+    $tenant = Tenant::create(['name' => 'Northline', 'slug' => 'northline', 'base_currency' => 'USD', 'collection_currency' => 'LBP']);
+    app(Tenancy::class)->set($tenant);
+    ExchangeRate::create(['base_currency' => 'USD', 'quote_currency' => 'LBP', 'rate_numerator' => 90_001, 'rate_denominator' => 1, 'effective_from' => '2026-01-01', 'source' => 'manual']);
+
+    $converter = app(FxConverter::class);
+    $at = CarbonImmutable::parse('2026-01-15');
+
+    expect($converter->snapshot('USD', 'LBP', $at, roundingMode: FxRoundingMode::CeilTo5000->value)->convert(1))->toBe(95_000)
+        ->and($converter->snapshot('USD', 'LBP', $at, roundingMode: FxRoundingMode::CeilTo5000->value)->convert(0))->toBe(0);
+});
+
 it('keeps the effective date and provider source in the FX snapshot', function (): void {
     $tenant = Tenant::create(['name' => 'Northline', 'slug' => 'northline', 'base_currency' => 'USD', 'collection_currency' => 'LBP']);
     app(Tenancy::class)->set($tenant);

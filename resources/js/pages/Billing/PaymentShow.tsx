@@ -20,7 +20,7 @@ type Payment = {
     fx_rate_denominator: number | null;
     fx_rate_overridden: boolean;
     fx_override_reason: string | null;
-    fx_rounding_mode: 'half_up' | 'floor' | 'ceil' | null;
+    fx_rounding_mode: 'half_up' | 'floor' | 'ceil' | 'ceil_5000' | null;
     fx_rate_source: string | null;
     fx_rate_effective_from: string | null;
     reference: string | null;

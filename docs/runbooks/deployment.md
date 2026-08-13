@@ -34,6 +34,8 @@ The application also applies delivery-safety controls to WhatsApp messages. Iden
 
 Frankfurter synchronization is disabled by default. For a tenant whose base currency is USD and collection currency is LBP, set `FRANKFURTER_ENABLED=true`, confirm the approved quote policy, and run `php artisan fx:sync-frankfurter` once before enabling the scheduler. Imported quotes are append-only effective-dated ratios. Manual rates remain available for treasury or street-rate policy, and payment receipts preserve the selected rate, source, effective date, and rounding mode.
 
+When collecting in whole-unit currencies such as LBP, staff can choose **Ceiling to nearest 5,000 units** in the payment form. The policy rounds the converted target amount upward and is preserved in the payment FX snapshot for audit history; use it only when that target currency's business policy calls for the increment.
+
 Keep `FRANKFURTER_CONNECT_TIMEOUT` shorter than `FRANKFURTER_TIMEOUT` (the defaults are 2 and 10 seconds). The connection bound makes a provider or DNS outage fail quickly while the response bound still allows a reachable API to return normally. Treat a failed sync as an operational alert; do not promote the seeded demo rate to production.
 
 The owner readiness checklist treats a `demo`-source FX rate as a local development warning and fails production readiness until it is replaced by a Frankfurter rate or an approved manual treasury rate. Never carry the seeded demo rate into a live tenant.
