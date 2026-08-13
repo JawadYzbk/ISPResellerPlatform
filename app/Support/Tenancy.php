@@ -11,8 +11,10 @@ final class Tenancy
 
     public function set(Tenant|int $tenant): void
     {
-        $this->tenantId = $tenant instanceof Tenant ? $tenant->getKey() : $tenant;
+        $model = $tenant instanceof Tenant ? $tenant : Tenant::query()->findOrFail($tenant);
+        $this->tenantId = $model->getKey();
         setPermissionsTeamId($this->tenantId);
+        app(TenantIntegrationSettings::class)->apply($model);
     }
 
     public function id(): ?int
@@ -29,6 +31,7 @@ final class Tenancy
     {
         $this->tenantId = null;
         setPermissionsTeamId(null);
+        app(TenantIntegrationSettings::class)->reset();
     }
 
     public function run(Tenant|int $tenant, callable $callback): mixed
@@ -39,8 +42,11 @@ final class Tenancy
         try {
             return $callback();
         } finally {
-            $this->tenantId = $previous;
-            setPermissionsTeamId($previous);
+            if ($previous === null) {
+                $this->clear();
+            } else {
+                $this->set($previous);
+            }
         }
     }
 }

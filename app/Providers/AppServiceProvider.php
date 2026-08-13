@@ -23,6 +23,7 @@ use App\Policies\PlanPolicy;
 use App\Policies\ServicePolicy;
 use App\Support\RequestContext;
 use App\Support\Tenancy;
+use App\Support\TenantIntegrationSettings;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Console\Events\ScheduledTaskFailed;
 use Illuminate\Console\Events\ScheduledTaskFinished;
@@ -43,6 +44,7 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->singleton(Tenancy::class);
+        $this->app->singleton(TenantIntegrationSettings::class);
         $this->app->singleton(RequestContext::class);
         $this->app->bind(RadiusTransport::class, UdpRadiusTransport::class);
         $this->app->bind(SubscriberReader::class, MikrotikSubscriberReader::class);

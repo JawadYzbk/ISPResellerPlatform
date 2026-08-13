@@ -16,11 +16,11 @@ class Tenant extends Model
     /** @use HasFactory<TenantFactory> */
     use HasFactory;
 
-    protected $fillable = ['name', 'logo_path', 'slug', 'status', 'base_currency', 'collection_currency', 'timezone', 'locale', 'settings'];
+    protected $fillable = ['name', 'logo_path', 'slug', 'status', 'base_currency', 'collection_currency', 'timezone', 'locale', 'settings', 'provider_settings'];
 
     protected function casts(): array
     {
-        return ['settings' => 'array'];
+        return ['settings' => 'array', 'provider_settings' => 'encrypted:array'];
     }
 
     protected static function booted(): void
