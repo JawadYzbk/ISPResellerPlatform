@@ -23,6 +23,7 @@ use App\Models\Customer;
 use App\Models\Invoice;
 use App\Models\Payment;
 use App\Models\PaymentAllocation;
+use App\Models\PublicBillingLink;
 use App\Models\Tenant;
 use App\Models\User;
 use Carbon\CarbonImmutable;
@@ -284,6 +285,14 @@ final class BillingController extends Controller
                 ])->values(),
             ],
             'canCredit' => $user->can('billing.adjustments.create') && $invoice->status->value === 'issued',
+            'publicLinks' => PublicBillingLink::query()->where('invoice_id', $invoice->id)->latest()->limit(10)->get()->map(fn (PublicBillingLink $link): array => [
+                'public_id' => $link->public_id,
+                'type' => $link->type,
+                'expires_at' => $link->expires_at->toIso8601String(),
+                'revoked_at' => $link->revoked_at?->toIso8601String(),
+                'access_count' => $link->access_count,
+                'is_active' => $link->isActive(),
+            ])->values(),
         ]);
     }
 
@@ -420,6 +429,15 @@ final class BillingController extends Controller
                 ])->values(),
             ],
             'canReverse' => $user->can('payments.void'),
+            'canShare' => $user->can('billing.invoices.view'),
+            'publicLinks' => PublicBillingLink::query()->where('payment_id', $payment->id)->latest()->limit(10)->get()->map(fn (PublicBillingLink $link): array => [
+                'public_id' => $link->public_id,
+                'type' => $link->type,
+                'expires_at' => $link->expires_at->toIso8601String(),
+                'revoked_at' => $link->revoked_at?->toIso8601String(),
+                'access_count' => $link->access_count,
+                'is_active' => $link->isActive(),
+            ])->values(),
         ]);
     }
 

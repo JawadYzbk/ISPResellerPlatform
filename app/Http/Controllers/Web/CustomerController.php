@@ -33,6 +33,7 @@ use App\Models\CustomerSavedView;
 use App\Models\Invoice;
 use App\Models\PaymentAttempt;
 use App\Models\Plan;
+use App\Models\PublicBillingLink;
 use App\Models\Router;
 use App\Models\Service;
 use App\Models\Tenant;
@@ -424,6 +425,15 @@ final class CustomerController extends Controller
             'canCreateService' => $request->user()?->can('services.create') === true,
             'canEdit' => $request->user()?->can('customers.update') === true,
             'canCollectPayment' => $request->user()?->can('payments.collect') === true,
+            'canShareBilling' => $request->user()?->can('billing.invoices.view') === true,
+            'publicLinks' => PublicBillingLink::query()->where('customer_id', $customer->id)->where('type', 'statement')->latest()->limit(10)->get()->map(fn (PublicBillingLink $link): array => [
+                'public_id' => $link->public_id,
+                'type' => $link->type,
+                'expires_at' => $link->expires_at->toIso8601String(),
+                'revoked_at' => $link->revoked_at?->toIso8601String(),
+                'access_count' => $link->access_count,
+                'is_active' => $link->isActive(),
+            ])->values(),
             'canCreateTicket' => $request->user()?->can('tickets.create') === true,
             'canResyncServices' => $request->user()?->can('services.activate') === true || $request->user()?->can('services.suspend') === true || $request->user()?->can('services.pause') === true,
             'canActivateServices' => $request->user()?->can('services.activate') === true,

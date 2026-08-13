@@ -2,6 +2,7 @@ import { Head, Link, useForm } from '@inertiajs/react';
 import { ArrowLeft, Download, FilePlus2, Printer, ReceiptText } from 'lucide-react';
 
 import StatusBadge from '@/components/StatusBadge';
+import PublicLinkCreator, { type PublicLinkSummary } from '@/components/PublicLinkCreator';
 import AppLayout from '@/layouts/AppLayout';
 import { formatDate, formatMoney } from '@/lib/format';
 
@@ -50,7 +51,15 @@ type Invoice = {
     }[];
 };
 
-export default function InvoiceShowPage({ invoice, canCredit }: { invoice: Invoice; canCredit: boolean }) {
+export default function InvoiceShowPage({
+    invoice,
+    canCredit,
+    publicLinks,
+}: {
+    invoice: Invoice;
+    canCredit: boolean;
+    publicLinks: PublicLinkSummary[];
+}) {
     const creditForm = useForm({ amount: '', reason: '' });
 
     const submitCreditNote = (event: React.FormEvent<HTMLFormElement>) => {
@@ -243,6 +252,21 @@ export default function InvoiceShowPage({ invoice, canCredit }: { invoice: Invoi
                         </p>
                     )}
                 </div>
+            </div>
+            <div className="mt-6">
+                <PublicLinkCreator
+                    endpoint={`/billing/invoices/${invoice.public_id}/public-links`}
+                    types={
+                        invoice.outstanding_amount > 0
+                            ? [
+                                  { value: 'payment', label: 'Payment link' },
+                                  { value: 'invoice', label: 'Invoice only' },
+                              ]
+                            : [{ value: 'invoice', label: 'Invoice only' }]
+                    }
+                    title="Share invoice or payment link"
+                    existingLinks={publicLinks}
+                />
             </div>
             <div className="card mt-6 overflow-hidden">
                 <div className="flex items-center gap-2 border-b border-line px-5 py-4">

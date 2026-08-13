@@ -2,6 +2,7 @@ import { Head, Link, router } from '@inertiajs/react';
 import { ArrowLeft, CreditCard, Download, Printer } from 'lucide-react';
 
 import StatusBadge from '@/components/StatusBadge';
+import PublicLinkCreator, { type PublicLinkSummary } from '@/components/PublicLinkCreator';
 import ConfirmDialog from '@/components/ui/confirm-dialog';
 import AppLayout from '@/layouts/AppLayout';
 import { formatDate, formatMoney } from '@/lib/format';
@@ -34,9 +35,9 @@ type Payment = {
     allocations: { id: number; amount: number; currency: string; invoice: { public_id: string; number: string } }[];
 };
 
-type Props = { payment: Payment; canReverse: boolean };
+type Props = { payment: Payment; canReverse: boolean; canShare: boolean; publicLinks: PublicLinkSummary[] };
 
-export default function PaymentShowPage({ payment, canReverse }: Props) {
+export default function PaymentShowPage({ payment, canReverse, canShare, publicLinks }: Props) {
     const reverse = () => {
         router.post(`/billing/payments/${payment.public_id}/reverse`);
     };
@@ -260,6 +261,16 @@ export default function PaymentShowPage({ payment, canReverse }: Props) {
                     )}
                 </div>
             </div>
+            {canShare && (
+                <div className="mt-6">
+                    <PublicLinkCreator
+                        endpoint={`/billing/payments/${payment.public_id}/public-links`}
+                        types={[{ value: 'receipt', label: 'Receipt link' }]}
+                        title="Share payment receipt"
+                        existingLinks={publicLinks}
+                    />
+                </div>
+            )}
         </AppLayout>
     );
 }

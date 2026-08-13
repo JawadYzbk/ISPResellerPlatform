@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 
 import { StatusBadge } from '@/components/StatusBadge';
+import PublicLinkCreator, { type PublicLinkSummary } from '@/components/PublicLinkCreator';
 import MapView from '@/components/MapView';
 import AppLayout from '@/layouts/AppLayout';
 import ConfirmDialog from '@/components/ui/confirm-dialog';
@@ -54,6 +55,8 @@ type Props = PageProps & {
     canCreateService?: boolean;
     canEdit?: boolean;
     canCollectPayment?: boolean;
+    canShareBilling?: boolean;
+    publicLinks: PublicLinkSummary[];
     canCreateTicket?: boolean;
     canResyncServices?: boolean;
     canActivateServices?: boolean;
@@ -72,6 +75,8 @@ export default function CustomerShow({
     canCreateService = false,
     canEdit = false,
     canCollectPayment = false,
+    canShareBilling = false,
+    publicLinks,
     canCreateTicket = false,
     canResyncServices = false,
     canActivateServices = false,
@@ -177,6 +182,16 @@ export default function CustomerShow({
                     )}
                 </div>
             </div>
+            {canShareBilling && (
+                <div className="mt-6">
+                    <PublicLinkCreator
+                        endpoint={`/customers/${customer.public_id}/statement-links`}
+                        types={[{ value: 'statement', label: 'Account statement' }]}
+                        title="Share account statement"
+                        existingLinks={publicLinks}
+                    />
+                </div>
+            )}
             <div className="mt-8 grid gap-6 xl:grid-cols-[1.3fr_0.7fr]">
                 <div className="space-y-6">
                     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
