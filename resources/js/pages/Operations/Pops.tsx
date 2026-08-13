@@ -32,6 +32,16 @@ export default function PopsPage({ pops, filters, canManage, statuses }: Props) 
     const [search, setSearch] = useState(filters.search ?? '');
     const [status, setStatus] = useState(filters.status ?? '');
     const popForm = useForm({ name: '', code: '', address: '', status: 'active' });
+    const fieldA11y = (id: string, error?: string) => ({
+        'aria-invalid': Boolean(error),
+        'aria-describedby': error ? `${id}-error` : undefined,
+    });
+    const fieldError = (id: string, error?: string) =>
+        error ? (
+            <p id={`${id}-error`} className="field-error" role="alert">
+                {t(error)}
+            </p>
+        ) : null;
 
     const applyFilters = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -67,37 +77,45 @@ export default function PopsPage({ pops, filters, canManage, statuses }: Props) 
                         <label>
                             <span className="field-label">{t('Name')}</span>
                             <input
+                                id="pop-name"
                                 className="field"
+                                {...fieldA11y('pop-name', popForm.errors.name)}
                                 value={popForm.data.name}
                                 onChange={(event) => popForm.setData('name', event.target.value)}
                                 placeholder={t('pops.name_placeholder')}
                             />
-                            {popForm.errors.name && <p className="field-error" role="alert">{t(popForm.errors.name)}</p>}
+                            {fieldError('pop-name', popForm.errors.name)}
                         </label>
                         <label>
                             <span className="field-label">{t('Code')}</span>
                             <input
+                                id="pop-code"
                                 className="field uppercase"
+                                {...fieldA11y('pop-code', popForm.errors.code)}
                                 value={popForm.data.code}
                                 onChange={(event) => popForm.setData('code', event.target.value)}
                                 placeholder="CENTRAL"
                             />
-                            {popForm.errors.code && <p className="field-error" role="alert">{t(popForm.errors.code)}</p>}
+                            {fieldError('pop-code', popForm.errors.code)}
                         </label>
                         <label>
                             <span className="field-label">{t('Address')}</span>
                             <input
+                                id="pop-address"
                                 className="field"
+                                {...fieldA11y('pop-address', popForm.errors.address)}
                                 value={popForm.data.address}
                                 onChange={(event) => popForm.setData('address', event.target.value)}
                                 placeholder={t('pops.address_placeholder')}
                             />
-                            {popForm.errors.address && <p className="field-error" role="alert">{t(popForm.errors.address)}</p>}
+                            {fieldError('pop-address', popForm.errors.address)}
                         </label>
                         <label>
                             <span className="field-label">{t('Status')}</span>
                             <ResponsiveSelect
+                                id="pop-status"
                                 className="field"
+                                {...fieldA11y('pop-status', popForm.errors.status)}
                                 value={popForm.data.status}
                                 onChange={(event) => popForm.setData('status', event.target.value)}
                             >
@@ -107,7 +125,7 @@ export default function PopsPage({ pops, filters, canManage, statuses }: Props) 
                                     </option>
                                 ))}
                             </ResponsiveSelect>
-                            {popForm.errors.status && <p className="field-error" role="alert">{t(popForm.errors.status)}</p>}
+                            {fieldError('pop-status', popForm.errors.status)}
                         </label>
                     </div>
                     <div className="flex justify-end">

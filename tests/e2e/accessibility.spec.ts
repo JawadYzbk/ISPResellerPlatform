@@ -415,6 +415,27 @@ test('connects exchange-rate errors to their controls', async ({ page }) => {
     await expect(page.locator('#source-error')).toHaveAttribute('role', 'alert');
 });
 
+test('connects POP creation errors to their controls', async ({ page }) => {
+    test.setTimeout(60_000);
+
+    await page.goto('/login');
+    await page.getByLabel('Email address').fill(email);
+    await page.getByRole('textbox', { name: 'Password' }).fill(password);
+    await Promise.all([
+        page.waitForURL(/\/(dashboard|customers|profile)$/),
+        page.getByRole('button', { name: 'Enter workspace' }).click(),
+    ]);
+
+    await page.goto('/operations/pops');
+    await page.locator('#pop-code').fill('ACCESSIBILITY-POP');
+    await page.locator('form').filter({ has: page.locator('#pop-name') }).locator('button[type="submit"]').click();
+
+    const name = page.locator('#pop-name');
+    await expect(name).toHaveAttribute('aria-invalid', 'true');
+    await expect(name).toHaveAttribute('aria-describedby', 'pop-name-error');
+    await expect(page.locator('#pop-name-error')).toHaveAttribute('role', 'alert');
+});
+
 test('connects service validation errors to their controls', async ({ page }) => {
     test.setTimeout(60_000);
 
