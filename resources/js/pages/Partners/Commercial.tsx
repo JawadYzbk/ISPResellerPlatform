@@ -134,7 +134,7 @@ function PriceBookEditorRow({
                     onChange={(event) => form.setData('buy_amount_minor', event.target.value)}
                     required
                 />
-                {form.errors.buy_amount_minor && <p className="field-error">{form.errors.buy_amount_minor}</p>}
+                {form.errors.buy_amount_minor && <p className="field-error">{t(form.errors.buy_amount_minor)}</p>}
             </label>
             <label>
                 <span className="field-label">{t('partner.commercial.sell')}</span>
@@ -146,7 +146,7 @@ function PriceBookEditorRow({
                     onChange={(event) => form.setData('sell_amount_minor', event.target.value)}
                     required
                 />
-                {form.errors.sell_amount_minor && <p className="field-error">{form.errors.sell_amount_minor}</p>}
+                {form.errors.sell_amount_minor && <p className="field-error">{t(form.errors.sell_amount_minor)}</p>}
             </label>
             <label>
                 <span className="field-label">{t('partner.commercial.floor')}</span>
@@ -157,7 +157,7 @@ function PriceBookEditorRow({
                     value={form.data.min_amount_minor}
                     onChange={(event) => form.setData('min_amount_minor', event.target.value)}
                 />
-                {form.errors.min_amount_minor && <p className="field-error">{form.errors.min_amount_minor}</p>}
+                {form.errors.min_amount_minor && <p className="field-error">{t(form.errors.min_amount_minor)}</p>}
             </label>
             <label>
                 <span className="field-label">{t('partner.commercial.ceiling')}</span>
@@ -168,7 +168,7 @@ function PriceBookEditorRow({
                     value={form.data.max_amount_minor}
                     onChange={(event) => form.setData('max_amount_minor', event.target.value)}
                 />
-                {form.errors.max_amount_minor && <p className="field-error">{form.errors.max_amount_minor}</p>}
+                {form.errors.max_amount_minor && <p className="field-error">{t(form.errors.max_amount_minor)}</p>}
             </label>
             <label>
                 <span className="field-label">{t('partner.commercial.currency')}</span>
@@ -178,7 +178,7 @@ function PriceBookEditorRow({
                     currencies={currencies}
                     onChange={(value) => form.setData('currency', value)}
                 />
-                {form.errors.currency && <p className="field-error">{form.errors.currency}</p>}
+                {form.errors.currency && <p className="field-error">{t(form.errors.currency)}</p>}
             </label>
             <label>
                 <span className="field-label">{t('partner.commercial.effective_from')}</span>
@@ -189,7 +189,7 @@ function PriceBookEditorRow({
                     onChange={(event) => form.setData('effective_from', event.target.value)}
                     required
                 />
-                {form.errors.effective_from && <p className="field-error">{form.errors.effective_from}</p>}
+                {form.errors.effective_from && <p className="field-error">{t(form.errors.effective_from)}</p>}
             </label>
             <div className="flex items-end">
                 <button type="submit" className="button-primary w-full" disabled={form.processing}>
@@ -368,7 +368,7 @@ export default function Commercial({
                                 value={form.data.name}
                                 onChange={(event) => form.setData('name', event.target.value)}
                             />
-                            {form.errors.name && <span className="field-error">{form.errors.name}</span>}
+                            {form.errors.name && <span className="field-error">{t(form.errors.name)}</span>}
                         </label>
                         <label>
                             <span className="field-label">{t('Code')}</span>
@@ -377,7 +377,7 @@ export default function Commercial({
                                 value={form.data.code}
                                 onChange={(event) => form.setData('code', event.target.value)}
                             />
-                            {form.errors.code && <span className="field-error">{form.errors.code}</span>}
+                            {form.errors.code && <span className="field-error">{t(form.errors.code)}</span>}
                         </label>
                         <label>
                             <span className="field-label">{t('partner.commercial.currency')}</span>
@@ -388,7 +388,7 @@ export default function Commercial({
                                 currencies={currencies}
                                 onChange={(value) => form.setData('currency', value)}
                             />
-                            {form.errors.currency && <span className="field-error">{form.errors.currency}</span>}
+                            {form.errors.currency && <span className="field-error">{t(form.errors.currency)}</span>}
                         </label>
                     </div>
                     <div className="grid gap-4 md:grid-cols-3">
@@ -406,7 +406,7 @@ export default function Commercial({
                                     </option>
                                 ))}
                             </ResponsiveSelect>
-                            {form.errors.parent_id && <span className="field-error">{form.errors.parent_id}</span>}
+                            {form.errors.parent_id && <span className="field-error">{t(form.errors.parent_id)}</span>}
                         </label>
                         <label>
                             <span className="field-label">{t('partner.commercial.credit_limit')}</span>
@@ -418,7 +418,7 @@ export default function Commercial({
                                 onChange={(event) => form.setData('credit_limit', Number(event.target.value))}
                             />
                             {form.errors.credit_limit && (
-                                <span className="field-error">{form.errors.credit_limit}</span>
+                                <span className="field-error">{t(form.errors.credit_limit)}</span>
                             )}
                         </label>
                         <label>
@@ -431,7 +431,7 @@ export default function Commercial({
                                 onChange={(event) => form.setData('low_balance_threshold', Number(event.target.value))}
                             />
                             {form.errors.low_balance_threshold && (
-                                <span className="field-error">{form.errors.low_balance_threshold}</span>
+                                <span className="field-error">{t(form.errors.low_balance_threshold)}</span>
                             )}
                         </label>
                     </div>

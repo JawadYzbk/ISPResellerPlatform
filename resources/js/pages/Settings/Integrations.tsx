@@ -56,7 +56,10 @@ const sourceCopy: Record<Source, string> = {
 };
 
 function FieldError({ message }: { message?: string }) {
-    return message ? <p className="field-error">{message}</p> : null;
+    const { props } = usePage<PageProps>();
+    const t = createTranslator(props.app.locale);
+
+    return message ? <p className="field-error">{t(message)}</p> : null;
 }
 
 function SecretInput({

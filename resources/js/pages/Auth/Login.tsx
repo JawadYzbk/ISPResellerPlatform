@@ -54,7 +54,7 @@ export default function Login() {
                                 className="field ps-10"
                                 autoComplete="email"
                             />
-                            {form.errors.email && <p className="mt-1.5 text-xs text-coral">{form.errors.email}</p>}
+                            {form.errors.email && <p className="mt-1.5 text-xs text-coral">{t(form.errors.email)}</p>}
                         </div>
                     </div>
                     <div>
@@ -82,7 +82,7 @@ export default function Login() {
                                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                             </button>
                             {form.errors.password && (
-                                <p className="mt-1.5 text-xs text-coral">{form.errors.password}</p>
+                                <p className="mt-1.5 text-xs text-coral">{t(form.errors.password)}</p>
                             )}
                         </div>
                     </div>

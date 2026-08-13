@@ -35,7 +35,7 @@ export default function AcceptInvitation({ token }: Props) {
                         value={form.data.name}
                         onChange={(event) => form.setData('name', event.target.value)}
                     />
-                    {form.errors.name && <p className="field-error">{form.errors.name}</p>}
+                    {form.errors.name && <p className="field-error">{t(form.errors.name)}</p>}
                 </label>
                 <label>
                     <span className="field-label">{t('Password')}</span>
@@ -46,7 +46,7 @@ export default function AcceptInvitation({ token }: Props) {
                         value={form.data.password}
                         onChange={(event) => form.setData('password', event.target.value)}
                     />
-                    {form.errors.password && <p className="field-error">{form.errors.password}</p>}
+                    {form.errors.password && <p className="field-error">{t(form.errors.password)}</p>}
                     <p className="mt-1 text-xs text-muted">{t('auth.minimum_password')}</p>
                 </label>
                 <label>

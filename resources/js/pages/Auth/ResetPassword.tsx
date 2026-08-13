@@ -36,7 +36,7 @@ export default function ResetPassword({ token, email }: Props) {
                         value={form.data.email}
                         onChange={(event) => form.setData('email', event.target.value)}
                     />
-                    {form.errors.email && <p className="field-error">{form.errors.email}</p>}
+                    {form.errors.email && <p className="field-error">{t(form.errors.email)}</p>}
                 </label>
                 <label>
                     <span className="field-label">{t('auth.new_password')}</span>
@@ -51,7 +51,7 @@ export default function ResetPassword({ token, email }: Props) {
                             onChange={(event) => form.setData('password', event.target.value)}
                         />
                     </div>
-                    {form.errors.password && <p className="field-error">{form.errors.password}</p>}
+                    {form.errors.password && <p className="field-error">{t(form.errors.password)}</p>}
                 </label>
                 <label>
                     <span className="field-label">{t('auth.confirm_new_password')}</span>

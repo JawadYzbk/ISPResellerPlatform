@@ -83,7 +83,7 @@ function BillPaymentForm({ bill, onDone }: { bill: Bill; onDone: () => void }) {
                     onChange={(event) => form.setData('amount', event.target.value)}
                     required
                 />
-                {form.errors.amount && <p className="field-error">{form.errors.amount}</p>}
+                {form.errors.amount && <p className="field-error">{t(form.errors.amount)}</p>}
             </label>
             <label>
                 <span className="field-label">{t('Method')}</span>

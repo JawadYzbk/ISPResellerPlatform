@@ -107,7 +107,7 @@ function TemplateCard({
                         value={form.data.body}
                         onChange={(event) => form.setData('body', event.target.value)}
                     />
-                    {form.errors.body && <p className="field-error">{form.errors.body}</p>}
+                    {form.errors.body && <p className="field-error">{t(form.errors.body)}</p>}
                 </label>
                 <div className="rounded-xl border border-line bg-sand/40 p-4">
                     <div className="flex items-center justify-between gap-3">

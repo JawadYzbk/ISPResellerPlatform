@@ -120,7 +120,7 @@ export default function TicketResponses({ responses }: Props) {
                             onChange={(event) => form.setData('title', event.target.value)}
                             placeholder={t('ticket_responses.title_placeholder')}
                         />
-                        {form.errors.title && <p className="field-error">{form.errors.title}</p>}
+                        {form.errors.title && <p className="field-error">{t(form.errors.title)}</p>}
                     </label>
                     <label>
                         <span className="field-label">{t('Category')}</span>
@@ -135,7 +135,7 @@ export default function TicketResponses({ responses }: Props) {
                                 </option>
                             ))}
                         </ResponsiveSelect>
-                        {form.errors.category && <p className="field-error">{form.errors.category}</p>}
+                        {form.errors.category && <p className="field-error">{t(form.errors.category)}</p>}
                     </label>
                     <label>
                         <span className="field-label">{t('ticket_responses.reply_text')}</span>
@@ -145,7 +145,7 @@ export default function TicketResponses({ responses }: Props) {
                             onChange={(event) => form.setData('body', event.target.value)}
                             placeholder={t('ticket_responses.reply_placeholder')}
                         />
-                        {form.errors.body && <p className="field-error">{form.errors.body}</p>}
+                        {form.errors.body && <p className="field-error">{t(form.errors.body)}</p>}
                     </label>
                     {editingId && (
                         <label className="flex items-center gap-3 text-sm">

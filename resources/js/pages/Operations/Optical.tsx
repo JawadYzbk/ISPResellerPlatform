@@ -120,7 +120,10 @@ function formatDate(value: string | null, t: (key: string) => string): string {
 }
 
 function ErrorText({ message }: { message?: string }) {
-    return message ? <p className="field-error">{message}</p> : null;
+    const page = usePage<PageProps>();
+    const t = createTranslator(page.props.app.locale);
+
+    return message ? <p className="field-error">{t(message)}</p> : null;
 }
 
 function DeviceFields({

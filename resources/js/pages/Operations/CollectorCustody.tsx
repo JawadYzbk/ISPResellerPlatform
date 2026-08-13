@@ -246,7 +246,7 @@ export default function CollectorCustody({ filters, collectors, entries, currenc
                         />
                     </label>
                     {(form.errors.amount || form.errors.description) && (
-                        <p className="field-error lg:col-span-3">{form.errors.amount ?? form.errors.description}</p>
+                        <p className="field-error lg:col-span-3">{t(form.errors.amount ?? form.errors.description ?? '')}</p>
                     )}
                     <div className="flex justify-end lg:col-span-3">
                         <button

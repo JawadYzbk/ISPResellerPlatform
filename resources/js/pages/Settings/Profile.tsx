@@ -55,7 +55,7 @@ export default function ProfilePage({ profile, workspaceLocale }: Props) {
                                     onChange={(event) => form.setData('name', event.target.value)}
                                     autoComplete="name"
                                 />
-                                {form.errors.name && <p className="field-error">{form.errors.name}</p>}
+                                {form.errors.name && <p className="field-error">{t(form.errors.name)}</p>}
                             </label>
                             <label>
                                 <span className="field-label">{t('Email')}</span>
@@ -99,7 +99,7 @@ export default function ProfilePage({ profile, workspaceLocale }: Props) {
                                     placeholder={t('Leave blank to use the workspace timezone')}
                                     autoComplete="off"
                                 />
-                                {form.errors.timezone && <p className="field-error">{form.errors.timezone}</p>}
+                                {form.errors.timezone && <p className="field-error">{t(form.errors.timezone)}</p>}
                             </label>
                         </div>
                     </section>

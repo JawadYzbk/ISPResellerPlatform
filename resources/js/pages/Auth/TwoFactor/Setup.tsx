@@ -64,7 +64,7 @@ export default function Setup({ provisioningUri, secret, recoveryCodes }: Props)
                         value={form.data.code}
                         onChange={(event) => form.setData('code', event.target.value)}
                     />
-                    {form.errors.code && <p className="text-xs text-coral">{form.errors.code}</p>}
+                    {form.errors.code && <p className="text-xs text-coral">{t(form.errors.code)}</p>}
                     <button className="button-primary w-full justify-center" disabled={form.processing}>
                         {t('Confirm and continue')}
                     </button>

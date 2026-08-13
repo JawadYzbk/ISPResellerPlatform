@@ -273,7 +273,7 @@ export default function Expenses({
                                 value={amount}
                                 onChange={(event) => setAmount(event.target.value)}
                             />
-                            {form.errors.amount && <span className="field-error">{form.errors.amount}</span>}
+                            {form.errors.amount && <span className="field-error">{t(form.errors.amount)}</span>}
                         </label>
                         <label className="field-label">
                             {t('Date')}
@@ -313,7 +313,7 @@ export default function Expenses({
                         </label>
                         {(form.errors.description || form.errors.attachment) && (
                             <p className="field-error md:col-span-2 xl:col-span-4">
-                                {form.errors.description ?? form.errors.attachment}
+                                {t(form.errors.description ?? form.errors.attachment ?? '')}
                             </p>
                         )}
                         <div className="flex justify-end md:col-span-2 xl:col-span-4">
