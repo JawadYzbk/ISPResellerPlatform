@@ -179,7 +179,7 @@ export default function UsersPage({
                                                         ))}
                                                     </ResponsiveSelect>
                                                     {roleForm.errors.role && (
-                                                        <p className="field-error">{roleForm.errors.role}</p>
+                                                        <p className="field-error">{t(roleForm.errors.role)}</p>
                                                     )}
                                                 </div>
                                             ) : (

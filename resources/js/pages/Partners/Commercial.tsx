@@ -467,7 +467,7 @@ export default function Commercial({
                                     onChange={(event) => editForm.setData('name', event.target.value)}
                                     required
                                 />
-                                {editForm.errors.name && <span className="field-error">{editForm.errors.name}</span>}
+                                {editForm.errors.name && <span className="field-error">{t(editForm.errors.name)}</span>}
                             </label>
                             <label>
                                 <span className="field-label">{t('Code')}</span>
@@ -477,7 +477,7 @@ export default function Commercial({
                                     onChange={(event) => editForm.setData('code', event.target.value)}
                                     required
                                 />
-                                {editForm.errors.code && <span className="field-error">{editForm.errors.code}</span>}
+                                {editForm.errors.code && <span className="field-error">{t(editForm.errors.code)}</span>}
                             </label>
                             <label>
                                 <span className="field-label">{t('partner.commercial.credit_limit')}</span>
@@ -490,7 +490,7 @@ export default function Commercial({
                                     required
                                 />
                                 {editForm.errors.credit_limit && (
-                                    <span className="field-error">{editForm.errors.credit_limit}</span>
+                                    <span className="field-error">{t(editForm.errors.credit_limit)}</span>
                                 )}
                             </label>
                             <label>
@@ -506,7 +506,7 @@ export default function Commercial({
                                     required
                                 />
                                 {editForm.errors.low_balance_threshold && (
-                                    <span className="field-error">{editForm.errors.low_balance_threshold}</span>
+                                    <span className="field-error">{t(editForm.errors.low_balance_threshold)}</span>
                                 )}
                             </label>
                             <label>
@@ -520,7 +520,7 @@ export default function Commercial({
                                     <option value="suspended">{t('Suspended')}</option>
                                 </ResponsiveSelect>
                                 {editForm.errors.status && (
-                                    <span className="field-error">{editForm.errors.status}</span>
+                                    <span className="field-error">{t(editForm.errors.status)}</span>
                                 )}
                             </label>
                             <div className="flex items-end gap-2 md:col-span-2 xl:col-span-5">
@@ -595,7 +595,7 @@ export default function Commercial({
                                         required
                                     />
                                     {walletForm.errors.amount && (
-                                        <p className="field-error">{walletForm.errors.amount}</p>
+                                        <p className="field-error">{t(walletForm.errors.amount)}</p>
                                     )}
                                 </label>
                                 <button type="submit" className="button-primary mt-4" disabled={walletForm.processing}>
@@ -639,9 +639,9 @@ export default function Commercial({
                                     settlementForm.errors.period_end ||
                                     settlementForm.errors.currency) && (
                                     <p className="field-error">
-                                        {settlementForm.errors.period_start ??
+                                        {t(settlementForm.errors.period_start ??
                                             settlementForm.errors.period_end ??
-                                            settlementForm.errors.currency}
+                                            settlementForm.errors.currency ?? '')}
                                     </p>
                                 )}
                                 <button
@@ -793,7 +793,7 @@ export default function Commercial({
                                                 </ConfirmDialog>
                                             )}
                                             {settlementActionForm.errors.status && (
-                                                <p className="field-error">{settlementActionForm.errors.status}</p>
+                                                <p className="field-error">{t(settlementActionForm.errors.status)}</p>
                                             )}
                                         </div>
                                     )}

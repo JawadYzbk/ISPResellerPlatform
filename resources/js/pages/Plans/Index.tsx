@@ -306,7 +306,7 @@ export default function PlansIndex({
                                 onChange={(event) => addonForm.setData('name', event.target.value)}
                                 placeholder={t('plan.static_ip')}
                             />
-                            {addonForm.errors.name && <p className="field-error">{addonForm.errors.name}</p>}
+                            {addonForm.errors.name && <p className="field-error">{t(addonForm.errors.name)}</p>}
                         </label>
                         <label>
                             <span className="field-label">{t('Price')}</span>
@@ -317,7 +317,7 @@ export default function PlansIndex({
                                 onChange={(event) => addonForm.setData('amount', event.target.value)}
                                 placeholder="5.00"
                             />
-                            {addonForm.errors.amount && <p className="field-error">{addonForm.errors.amount}</p>}
+                            {addonForm.errors.amount && <p className="field-error">{t(addonForm.errors.amount)}</p>}
                         </label>
                         <label>
                             <span className="field-label">{t('Currency')}</span>
@@ -350,7 +350,7 @@ export default function PlansIndex({
                                 <option value="active">{t('Active')}</option>
                                 <option value="inactive">{t('Archived')}</option>
                             </ResponsiveSelect>
-                            {addonForm.errors.status && <p className="field-error">{addonForm.errors.status}</p>}
+                            {addonForm.errors.status && <p className="field-error">{t(addonForm.errors.status)}</p>}
                         </label>
                         <label className="sm:col-span-2">
                             <span className="field-label">{t('Description')}</span>
@@ -469,7 +469,7 @@ export default function PlansIndex({
                                 value={promotionForm.data.value}
                                 onChange={(event) => promotionForm.setData('value', event.target.value)}
                             />
-                            {promotionForm.errors.value && <p className="field-error">{promotionForm.errors.value}</p>}
+                            {promotionForm.errors.value && <p className="field-error">{t(promotionForm.errors.value)}</p>}
                         </label>
                         <label>
                             <span className="field-label">{t('plan.starts')}</span>
@@ -619,7 +619,7 @@ export default function PlansIndex({
                             ))}
                         </ResponsiveSelect>
                         {usageRateForm.errors.plan_public_id && (
-                            <p className="field-error">{usageRateForm.errors.plan_public_id}</p>
+                            <p className="field-error">{t(usageRateForm.errors.plan_public_id)}</p>
                         )}
                     </label>
                     <label>
@@ -630,7 +630,7 @@ export default function PlansIndex({
                             onChange={(event) => usageRateForm.setData('name', event.target.value)}
                             placeholder={t('plan.data_overage')}
                         />
-                        {usageRateForm.errors.name && <p className="field-error">{usageRateForm.errors.name}</p>}
+                        {usageRateForm.errors.name && <p className="field-error">{t(usageRateForm.errors.name)}</p>}
                     </label>
                     <label>
                         <span className="field-label">{t('plan.included_gb')}</span>
@@ -643,7 +643,7 @@ export default function PlansIndex({
                             onChange={(event) => usageRateForm.setData('included_gb', event.target.value)}
                         />
                         {usageRateForm.errors.included_gb && (
-                            <p className="field-error">{usageRateForm.errors.included_gb}</p>
+                            <p className="field-error">{t(usageRateForm.errors.included_gb)}</p>
                         )}
                     </label>
                     <label>
@@ -655,7 +655,7 @@ export default function PlansIndex({
                             onChange={(event) => usageRateForm.setData('amount', event.target.value)}
                             placeholder="1.00"
                         />
-                        {usageRateForm.errors.amount && <p className="field-error">{usageRateForm.errors.amount}</p>}
+                        {usageRateForm.errors.amount && <p className="field-error">{t(usageRateForm.errors.amount)}</p>}
                     </label>
                     <label>
                         <span className="field-label">{t('plan.billing_unit_gb')}</span>
@@ -667,7 +667,7 @@ export default function PlansIndex({
                             value={usageRateForm.data.unit_gb}
                             onChange={(event) => usageRateForm.setData('unit_gb', event.target.value)}
                         />
-                        {usageRateForm.errors.unit_gb && <p className="field-error">{usageRateForm.errors.unit_gb}</p>}
+                        {usageRateForm.errors.unit_gb && <p className="field-error">{t(usageRateForm.errors.unit_gb)}</p>}
                     </label>
                     <label>
                         <span className="field-label">{t('Currency')}</span>
@@ -679,7 +679,7 @@ export default function PlansIndex({
                             onChange={(value) => usageRateForm.setData('currency', value)}
                         />
                         {usageRateForm.errors.currency && (
-                            <p className="field-error">{usageRateForm.errors.currency}</p>
+                            <p className="field-error">{t(usageRateForm.errors.currency)}</p>
                         )}
                     </label>
                     <label>
@@ -703,7 +703,7 @@ export default function PlansIndex({
                             onChange={(event) => usageRateForm.setData('effective_from', event.target.value)}
                         />
                         {usageRateForm.errors.effective_from && (
-                            <p className="field-error">{usageRateForm.errors.effective_from}</p>
+                            <p className="field-error">{t(usageRateForm.errors.effective_from)}</p>
                         )}
                     </label>
                     <label>
@@ -715,7 +715,7 @@ export default function PlansIndex({
                             onChange={(event) => usageRateForm.setData('effective_to', event.target.value)}
                         />
                         {usageRateForm.errors.effective_to && (
-                            <p className="field-error">{usageRateForm.errors.effective_to}</p>
+                            <p className="field-error">{t(usageRateForm.errors.effective_to)}</p>
                         )}
                     </label>
                     <label>

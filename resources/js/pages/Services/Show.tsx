@@ -666,7 +666,7 @@ export default function ServiceShow({
                                         ))}
                                     </ResponsiveSelect>
                                     {cycleForm.errors.anchor_day && (
-                                        <p className="field-error">{cycleForm.errors.anchor_day}</p>
+                                        <p className="field-error">{t(cycleForm.errors.anchor_day)}</p>
                                     )}
                                 </label>
                                 {cyclePreviewError && <p className="field-error">{cyclePreviewError}</p>}
@@ -735,7 +735,7 @@ export default function ServiceShow({
                                         ))}
                                     </ResponsiveSelect>
                                     {planForm.errors.plan_id && (
-                                        <p className="field-error">{planForm.errors.plan_id}</p>
+                                        <p className="field-error">{t(planForm.errors.plan_id)}</p>
                                     )}
                                 </label>
                                 <label>
@@ -921,7 +921,7 @@ export default function ServiceShow({
                                             ))}
                                         </ResponsiveSelect>
                                         {addonForm.errors.addon_id && (
-                                            <p className="field-error">{addonForm.errors.addon_id}</p>
+                                            <p className="field-error">{t(addonForm.errors.addon_id)}</p>
                                         )}
                                     </label>
                                     <label>
@@ -935,7 +935,7 @@ export default function ServiceShow({
                                             onChange={(event) => addonForm.setData('quantity', event.target.value)}
                                         />
                                         {addonForm.errors.quantity && (
-                                            <p className="field-error">{addonForm.errors.quantity}</p>
+                                            <p className="field-error">{t(addonForm.errors.quantity)}</p>
                                         )}
                                     </label>
                                     <label>
@@ -947,7 +947,7 @@ export default function ServiceShow({
                                             onChange={(event) => addonForm.setData('starts_at', event.target.value)}
                                         />
                                         {addonForm.errors.starts_at && (
-                                            <p className="field-error">{addonForm.errors.starts_at}</p>
+                                            <p className="field-error">{t(addonForm.errors.starts_at)}</p>
                                         )}
                                     </label>
                                     <label>
@@ -959,7 +959,7 @@ export default function ServiceShow({
                                             onChange={(event) => addonForm.setData('ends_at', event.target.value)}
                                         />
                                         {addonForm.errors.ends_at && (
-                                            <p className="field-error">{addonForm.errors.ends_at}</p>
+                                            <p className="field-error">{t(addonForm.errors.ends_at)}</p>
                                         )}
                                     </label>
                                     <div className="flex items-end justify-end sm:col-span-2">

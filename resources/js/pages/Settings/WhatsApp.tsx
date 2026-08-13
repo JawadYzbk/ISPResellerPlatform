@@ -316,7 +316,7 @@ export default function WhatsAppSettings({ setup }: Props) {
                                     value={createForm.data.label}
                                     onChange={(event) => createForm.setData('label', event.target.value)}
                                 />
-                                {createForm.errors.label && <p className="field-error">{createForm.errors.label}</p>}
+                                {createForm.errors.label && <p className="field-error">{t(createForm.errors.label)}</p>}
                             </label>
                             <label>
                                 <span className="field-label">{t('Assigned job')}</span>
@@ -331,7 +331,7 @@ export default function WhatsAppSettings({ setup }: Props) {
                                         </option>
                                     ))}
                                 </ResponsiveSelect>
-                                {createForm.errors.job && <p className="field-error">{createForm.errors.job}</p>}
+                                {createForm.errors.job && <p className="field-error">{t(createForm.errors.job)}</p>}
                             </label>
                             <button className="button-primary" disabled={createForm.processing}>
                                 <Plus size={16} /> {t('Add account')}
@@ -499,7 +499,7 @@ export default function WhatsAppSettings({ setup }: Props) {
                                 value={testForm.data.phone}
                                 onChange={(event) => testForm.setData('phone', event.target.value)}
                             />
-                            {testForm.errors.phone && <p className="field-error">{testForm.errors.phone}</p>}
+                            {testForm.errors.phone && <p className="field-error">{t(testForm.errors.phone)}</p>}
                         </label>
                         {setup.accounts.length > 0 && (
                             <label>
