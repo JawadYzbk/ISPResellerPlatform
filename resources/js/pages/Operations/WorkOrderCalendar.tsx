@@ -1,8 +1,10 @@
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import { ArrowLeft, CalendarDays, ChevronLeft, ChevronRight } from 'lucide-react';
 
 import StatusBadge from '@/components/StatusBadge';
 import AppLayout from '@/layouts/AppLayout';
+import { createTranslator } from '@/lib/i18n';
+import type { PageProps } from '@/types';
 
 type WorkOrderStatus = 'pending' | 'assigned' | 'en_route' | 'in_progress' | 'completed' | 'failed' | 'cancelled';
 type WorkOrder = {
@@ -43,10 +45,10 @@ function addDays(value: string, days: number): string {
     return dateKey(date);
 }
 
-function dayLabel(value: string): string {
+function dayLabel(value: string, locale: string): string {
     const [year, month, day] = value.split('-').map(Number);
 
-    return new Intl.DateTimeFormat('en-US', { weekday: 'short', month: 'short', day: 'numeric' }).format(
+    return new Intl.DateTimeFormat(locale, { weekday: 'short', month: 'short', day: 'numeric' }).format(
         new Date(year, month - 1, day),
     );
 }
@@ -58,6 +60,9 @@ function slotOrders(orders: WorkOrder[], day: string, hour: number): WorkOrder[]
 }
 
 export default function WorkOrderCalendarPage({ weekStart, timezone, workOrders }: Props) {
+    const { props } = usePage<PageProps>();
+    const t = createTranslator(props.app.locale);
+    const locale = props.app.locale === 'ar' ? 'ar-LB' : props.app.locale === 'fr' ? 'fr-FR' : 'en-US';
     const days = Array.from({ length: 7 }, (_, index) => addDays(weekStart, index));
     const moveWeek = (daysToMove: number) => {
         router.get(
@@ -82,25 +87,25 @@ export default function WorkOrderCalendarPage({ weekStart, timezone, workOrders 
 
     return (
         <AppLayout>
-            <Head title="Work-order calendar" />
+            <Head title={t('Work-order calendar')} />
             <Link
                 href="/operations/work-orders"
                 className="mb-6 inline-flex items-center gap-2 text-sm font-semibold text-muted hover:text-brand"
             >
-                <ArrowLeft size={16} /> Back to work orders
+                <ArrowLeft size={16} /> {t('Back to work orders')}
             </Link>
             <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
                 <div>
                     <p className="eyebrow">Field operations · {timezone}</p>
-                    <h1 className="page-title">Work-order calendar</h1>
-                    <p className="page-subtitle">Drag an active work order to a new tenant-local time slot.</p>
+                    <h1 className="page-title">{t('Work-order calendar')}</h1>
+                    <p className="page-subtitle">{t('calendar.subtitle')}</p>
                 </div>
                 <div className="flex items-center gap-2">
                     <button type="button" className="button-secondary" onClick={() => moveWeek(-7)}>
-                        <ChevronLeft size={16} /> Previous
+                        <ChevronLeft size={16} /> {t('Previous')}
                     </button>
                     <button type="button" className="button-secondary" onClick={() => moveWeek(7)}>
-                        Next <ChevronRight size={16} />
+                        {t('Next')} <ChevronRight size={16} />
                     </button>
                 </div>
             </div>
@@ -109,7 +114,7 @@ export default function WorkOrderCalendarPage({ weekStart, timezone, workOrders 
                     {days.map((day) => (
                         <section key={day} className="min-w-0">
                             <header className="border-b border-line bg-sand/40 px-3 py-3 text-center text-sm font-semibold">
-                                {dayLabel(day)}
+                                {dayLabel(day, locale)}
                             </header>
                             <div>
                                 {hours.map((hour) => (
@@ -142,12 +147,12 @@ export default function WorkOrderCalendarPage({ weekStart, timezone, workOrders 
                                                         {order.number}
                                                     </Link>
                                                     <p className="mt-1 truncate text-muted">
-                                                        {order.customer?.name ?? 'No customer'}
+                                                        {order.customer?.name ?? t('No customer')}
                                                     </p>
                                                     <div className="mt-1 flex items-center justify-between gap-1">
                                                         <StatusBadge status={order.status} />
                                                         <span className="truncate text-muted">
-                                                            {order.assignee ?? 'Unassigned'}
+                                                            {order.assignee ?? t('Unassigned')}
                                                         </span>
                                                     </div>
                                                 </div>
@@ -163,7 +168,7 @@ export default function WorkOrderCalendarPage({ weekStart, timezone, workOrders 
             {workOrders.length === 0 && (
                 <div className="mt-6 rounded-xl border border-dashed border-line p-10 text-center text-sm text-muted">
                     <CalendarDays className="mx-auto" size={28} />
-                    <p className="mt-3 font-semibold">No scheduled work orders this week.</p>
+                    <p className="mt-3 font-semibold">{t('calendar.no_work_orders')}</p>
                 </div>
             )}
         </AppLayout>
