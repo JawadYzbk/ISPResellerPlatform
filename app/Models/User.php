@@ -91,6 +91,12 @@ class User extends Authenticatable
         return $this->hasMany(CollectorTask::class, 'collector_id');
     }
 
+    /** @return HasMany<CollectorCustodyEntry, $this> */
+    public function collectorCustodyEntries(): HasMany
+    {
+        return $this->hasMany(CollectorCustodyEntry::class, 'collector_id');
+    }
+
     public function isPlatformOperator(): bool
     {
         return $this->tenant_id === null && $this->role === 'platform_operator';
