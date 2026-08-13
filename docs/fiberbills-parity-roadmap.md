@@ -42,7 +42,7 @@ Sources:
 | Box and building organization | Delivered for responsive web | Tenant-safe building/site and distribution-box/cabinet records, map placement, POP linkage, capacity validation, port occupancy, subscriber assignment, installation surveys, ONU serial capture and activation acceptance are delivered; optical readings remain in the installation phase. |
 | Monthly auto-invoicing, grace and overdue handling | Delivered | Keep idempotent billing runs, ledger posting and network enforcement. |
 | Custom billing cycle per subscriber | Delivered for monthly prepaid billing | Each service can follow its plan duration or use a day-of-month anchor. Initial and transition periods use previewed half-up proration, days 29–31 clamp safely, open renewal invoices lock their quote, and paid renewal applies the scheduled anchor. |
-| Subscription, usage-based and one-time billing combinations | Partial | Service-level recurring add-ons are now attachable with quantity, start/end dates, cancellation, currency checks and immutable renewal snapshots; finish the metered-rating engine over usage/readings and retain operator-created invoice lines. |
+| Subscription, usage-based and one-time billing combinations | Delivered for responsive web | Service-level recurring add-ons, operator-created one-off invoice lines, and effective-dated total-octets overage rates are billed together with immutable invoice snapshots; tiered/additional metering dimensions remain future expansion. |
 | Plan upgrades and renewals | Delivered | Keep immediate/next-cycle swaps, proration, multi-period renewal and router/RADIUS sync. |
 | Bulk billing operations | Delivered for responsive web | Staff can preview due renewals, distinguish ready/open/blocked rows, issue a selected batch, review row-level outcomes, and retry failed rows with the same idempotency key; scheduled billing remains available for unattended runs. |
 | PDF invoices, receipts and Excel exports | Delivered | A4 documents and compact 58/80 mm browser-printable receipts are delivered; Bluetooth printing remains mobile-phase work. |
@@ -93,7 +93,7 @@ Sources:
 ### Phase 3: billing and finance breadth
 
 1. Per-service custom billing anchors and cycle-change previews. **Delivered for monthly prepaid billing.**
-2. Recurring invoice items and usage rating; safe bulk billing is delivered for responsive web.
+2. Recurring invoice items, total-octets usage rating, and one-off invoice lines; safe bulk billing is delivered for responsive web.
 3. Generic operational expenses with approval and ledger posting. **Delivered for responsive web.**
 4. Branded public payment/statement links and compact browser receipts. **Delivered for responsive web.**
 5. Owner-facing backup health and audited business exports.
