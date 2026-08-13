@@ -1,9 +1,11 @@
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import { ArrowLeft, Building2, Edit3, Map, Save, X } from 'lucide-react';
 import { useState } from 'react';
 
 import ResponsiveSelect from '@/components/ui/responsive-select';
 import AppLayout from '@/layouts/AppLayout';
+import { createTranslator } from '@/lib/i18n';
+import type { PageProps } from '@/types';
 
 type Branch = {
     id: number;
@@ -23,6 +25,8 @@ const emptyBranch: BranchForm = { name: '', code: '', address: '', phone: '', is
 const emptyZone: ZoneForm = { name: '', code: '', parent_id: '' };
 
 export default function Locations({ branches, zones, tenant }: Props) {
+    const { props } = usePage<PageProps>();
+    const t = createTranslator(props.app.locale);
     const [editingBranchId, setEditingBranchId] = useState<number | null>(null);
     const [editingZoneId, setEditingZoneId] = useState<number | null>(null);
     const branchForm = useForm<BranchForm>(emptyBranch);
@@ -80,28 +84,26 @@ export default function Locations({ branches, zones, tenant }: Props) {
 
     return (
         <AppLayout>
-            <Head title="Branches and service zones" />
+            <Head title={t('locations.title')} />
             <Link
                 href="/settings/general"
                 className="mb-6 inline-flex items-center gap-2 text-sm font-semibold text-muted hover:text-brand"
             >
-                <ArrowLeft size={16} /> Back to workspace settings
+                <ArrowLeft size={16} /> {t('Back to workspace settings')}
             </Link>
             <div className="max-w-5xl">
                 <p className="eyebrow">Workspace setup · {tenant?.slug}</p>
-                <h1 className="page-title">Branches and service zones</h1>
-                <p className="page-subtitle">
-                    Configure the operating locations used for document sequences, customer coverage, and dispatch.
-                </p>
+                <h1 className="page-title">{t('locations.title')}</h1>
+                <p className="page-subtitle">{t('locations.subtitle')}</p>
                 <div className="mt-5 flex flex-wrap gap-2">
                     <Link href="/settings/general" className="button-secondary">
-                        General
+                        {t('General')}
                     </Link>
                     <Link href="/settings/readiness" className="button-secondary">
-                        Pilot readiness
+                        {t('Pilot readiness')}
                     </Link>
                     <Link href="/settings/users" className="button-secondary">
-                        Users and invitations
+                        {t('Users and invitations')}
                     </Link>
                 </div>
 
@@ -112,26 +114,26 @@ export default function Locations({ branches, zones, tenant }: Props) {
                                 <div className="flex items-center gap-2">
                                     <Building2 size={18} className="text-brand" />
                                     <div>
-                                        <h2 className="section-title">Branches</h2>
-                                        <p className="mt-1 text-sm text-muted">
-                                            Keep one default branch for numbering and operations.
-                                        </p>
+                                        <h2 className="section-title">{t('locations.branches')}</h2>
+                                        <p className="mt-1 text-sm text-muted">{t('locations.branches_description')}</p>
                                     </div>
                                 </div>
                             </div>
                         </div>
                         <form onSubmit={submitBranch} className="space-y-4 border-b border-line bg-sand/40 p-6">
                             <div className="flex items-center justify-between gap-3">
-                                <h3 className="font-semibold">{editingBranchId ? 'Edit branch' : 'Add branch'}</h3>
+                                <h3 className="font-semibold">
+                                    {editingBranchId ? t('locations.edit_branch') : t('locations.add_branch')}
+                                </h3>
                                 {editingBranchId && (
                                     <button type="button" className="button-quiet" onClick={resetBranch}>
-                                        <X size={15} /> Cancel
+                                        <X size={15} /> {t('Cancel')}
                                     </button>
                                 )}
                             </div>
                             <div className="grid gap-4 sm:grid-cols-2">
                                 <label>
-                                    <span className="field-label">Name</span>
+                                    <span className="field-label">{t('Name')}</span>
                                     <input
                                         className="field"
                                         value={branchForm.data.name}
@@ -141,7 +143,7 @@ export default function Locations({ branches, zones, tenant }: Props) {
                                     {branchForm.errors.name && <p className="field-error">{branchForm.errors.name}</p>}
                                 </label>
                                 <label>
-                                    <span className="field-label">Code</span>
+                                    <span className="field-label">{t('Code')}</span>
                                     <input
                                         className="field uppercase"
                                         value={branchForm.data.code}
@@ -153,7 +155,7 @@ export default function Locations({ branches, zones, tenant }: Props) {
                                     {branchForm.errors.code && <p className="field-error">{branchForm.errors.code}</p>}
                                 </label>
                                 <label>
-                                    <span className="field-label">Address</span>
+                                    <span className="field-label">{t('Address')}</span>
                                     <input
                                         className="field"
                                         value={branchForm.data.address}
@@ -165,7 +167,7 @@ export default function Locations({ branches, zones, tenant }: Props) {
                                     )}
                                 </label>
                                 <label>
-                                    <span className="field-label">Phone</span>
+                                    <span className="field-label">{t('Phone')}</span>
                                     <input
                                         className="field"
                                         value={branchForm.data.phone}
@@ -183,13 +185,14 @@ export default function Locations({ branches, zones, tenant }: Props) {
                                     checked={branchForm.data.is_default}
                                     onChange={(event) => branchForm.setData('is_default', event.target.checked)}
                                 />
-                                Use as the default branch
+                                {t('locations.use_default_branch')}
                             </label>
                             {branchForm.errors.is_default && (
                                 <p className="field-error">{branchForm.errors.is_default}</p>
                             )}
                             <button className="button-primary" disabled={branchForm.processing}>
-                                <Save size={16} /> {editingBranchId ? 'Save branch' : 'Create branch'}
+                                <Save size={16} />{' '}
+                                {editingBranchId ? t('locations.save_branch') : t('locations.create_branch')}
                             </button>
                         </form>
                         <div className="divide-y divide-line">
@@ -200,11 +203,11 @@ export default function Locations({ branches, zones, tenant }: Props) {
                                             <h3 className="font-semibold">{branch.name}</h3>
                                             <span className="badge bg-sand text-muted">{branch.code}</span>
                                             {branch.is_default && (
-                                                <span className="badge bg-brand-soft text-brand">Default</span>
+                                                <span className="badge bg-brand-soft text-brand">{t('Default')}</span>
                                             )}
                                         </div>
                                         <p className="mt-2 text-sm text-muted">
-                                            {branch.address || 'No address'}
+                                            {branch.address || t('No address')}
                                             {branch.phone ? ` · ${branch.phone}` : ''}
                                         </p>
                                     </div>
@@ -213,14 +216,12 @@ export default function Locations({ branches, zones, tenant }: Props) {
                                         className="button-secondary shrink-0"
                                         onClick={() => editBranch(branch)}
                                     >
-                                        <Edit3 size={15} /> Edit
+                                        <Edit3 size={15} /> {t('Edit')}
                                     </button>
                                 </article>
                             ))}
                             {branches.length === 0 && (
-                                <p className="p-6 text-sm text-muted">
-                                    No branches yet. Create the first one to establish the default operating location.
-                                </p>
+                                <p className="p-6 text-sm text-muted">{t('locations.no_branches')}</p>
                             )}
                         </div>
                     </section>
@@ -230,27 +231,25 @@ export default function Locations({ branches, zones, tenant }: Props) {
                             <div className="flex items-center gap-2">
                                 <Map size={18} className="text-brand" />
                                 <div>
-                                    <h2 className="section-title">Service zones</h2>
-                                    <p className="mt-1 text-sm text-muted">
-                                        Organize customer coverage and zone-based operations.
-                                    </p>
+                                    <h2 className="section-title">{t('locations.service_zones')}</h2>
+                                    <p className="mt-1 text-sm text-muted">{t('locations.zones_description')}</p>
                                 </div>
                             </div>
                         </div>
                         <form onSubmit={submitZone} className="space-y-4 border-b border-line bg-sand/40 p-6">
                             <div className="flex items-center justify-between gap-3">
                                 <h3 className="font-semibold">
-                                    {editingZoneId ? 'Edit service zone' : 'Add service zone'}
+                                    {editingZoneId ? t('locations.edit_zone') : t('locations.add_zone')}
                                 </h3>
                                 {editingZoneId && (
                                     <button type="button" className="button-quiet" onClick={resetZone}>
-                                        <X size={15} /> Cancel
+                                        <X size={15} /> {t('Cancel')}
                                     </button>
                                 )}
                             </div>
                             <div className="grid gap-4 sm:grid-cols-2">
                                 <label>
-                                    <span className="field-label">Name</span>
+                                    <span className="field-label">{t('Name')}</span>
                                     <input
                                         className="field"
                                         value={zoneForm.data.name}
@@ -260,7 +259,7 @@ export default function Locations({ branches, zones, tenant }: Props) {
                                     {zoneForm.errors.name && <p className="field-error">{zoneForm.errors.name}</p>}
                                 </label>
                                 <label>
-                                    <span className="field-label">Code</span>
+                                    <span className="field-label">{t('Code')}</span>
                                     <input
                                         className="field uppercase"
                                         value={zoneForm.data.code}
@@ -271,12 +270,12 @@ export default function Locations({ branches, zones, tenant }: Props) {
                                 </label>
                             </div>
                             <label>
-                                <span className="field-label">Parent zone (optional)</span>
+                                <span className="field-label">{t('locations.parent_zone_optional')}</span>
                                 <ResponsiveSelect
                                     value={zoneForm.data.parent_id}
                                     onChange={(event) => zoneForm.setData('parent_id', event.target.value)}
                                 >
-                                    <option value="">Top-level zone</option>
+                                    <option value="">{t('locations.top_level_zone')}</option>
                                     {zones
                                         .filter((zone) => zone.id !== editingZoneId)
                                         .map((zone) => (
@@ -290,7 +289,8 @@ export default function Locations({ branches, zones, tenant }: Props) {
                                 )}
                             </label>
                             <button className="button-primary" disabled={zoneForm.processing}>
-                                <Save size={16} /> {editingZoneId ? 'Save zone' : 'Create zone'}
+                                <Save size={16} />{' '}
+                                {editingZoneId ? t('locations.save_zone') : t('locations.create_zone')}
                             </button>
                         </form>
                         <div className="divide-y divide-line">
@@ -302,7 +302,9 @@ export default function Locations({ branches, zones, tenant }: Props) {
                                             <span className="badge bg-sand text-muted">{zone.code}</span>
                                         </div>
                                         <p className="mt-2 text-sm text-muted">
-                                            {zone.parent_name ? `Under ${zone.parent_name}` : 'Top-level zone'}
+                                            {zone.parent_name
+                                                ? `${t('locations.under')} ${zone.parent_name}`
+                                                : t('locations.top_level_zone')}
                                         </p>
                                     </div>
                                     <button
@@ -310,15 +312,11 @@ export default function Locations({ branches, zones, tenant }: Props) {
                                         className="button-secondary shrink-0"
                                         onClick={() => editZone(zone)}
                                     >
-                                        <Edit3 size={15} /> Edit
+                                        <Edit3 size={15} /> {t('Edit')}
                                     </button>
                                 </article>
                             ))}
-                            {zones.length === 0 && (
-                                <p className="p-6 text-sm text-muted">
-                                    No service zones yet. Add at least one before importing or onboarding customers.
-                                </p>
-                            )}
+                            {zones.length === 0 && <p className="p-6 text-sm text-muted">{t('locations.no_zones')}</p>}
                         </div>
                     </section>
                 </div>
