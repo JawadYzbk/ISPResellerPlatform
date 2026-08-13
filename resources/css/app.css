@@ -9,12 +9,12 @@
     --font-display: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
     --color-canvas: #f7f8f6;
     --color-ink: #182522;
-    --color-muted: #70807c;
+    --color-muted: #5f6f6a;
     --color-line: #e4e9e5;
     --color-brand: #1b6b63;
     --color-brand-soft: #e5f1ed;
     --color-sand: #f0f3ef;
-    --color-coral: #d95b4f;
+    --color-coral: #b8473d;
 }
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
@@ -112,7 +112,7 @@
         @apply mt-1.5 text-xs text-coral;
     }
     .field::placeholder {
-        color: #9aa7a3;
+        color: var(--color-muted);
     }
     .field:focus {
         border-color: color-mix(in srgb, var(--color-brand) 65%, white);
