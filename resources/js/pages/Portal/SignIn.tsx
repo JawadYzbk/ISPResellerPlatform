@@ -60,7 +60,7 @@ export default function PortalSignIn({ tenant }: Props) {
 
     return (
         <div className="min-h-screen bg-canvas px-5 py-10 text-ink sm:grid sm:place-items-center">
-            <Head title={`${tenant.name} customer portal`} />
+            <Head title={`${tenant.name} · ${t('Customer portal')}`} />
             <main className="mx-auto w-full max-w-md">
                 <div className="mb-8 flex items-center gap-3">
                     <div className="grid size-10 place-items-center overflow-hidden rounded-xl bg-brand text-white">

@@ -1845,6 +1845,8 @@ const sharedArabic: Messages = {
     Suspended: 'معلّق',
     Terminated: 'منتهية',
     Paused: 'متوقف مؤقتًا',
+    'Customer portal': 'بوابة العملاء',
+    'Unsupported locale.': 'اللغة غير مدعومة.',
 };
 
 const sharedFrench: Messages = {
@@ -2707,6 +2709,8 @@ const sharedFrench: Messages = {
     Suspended: 'Suspendu',
     Terminated: 'Terminé',
     Paused: 'En pause',
+    'Customer portal': 'Portail client',
+    'Unsupported locale.': 'Langue non prise en charge.',
 };
 
 const fieldArabic: Messages = {
@@ -7249,6 +7253,7 @@ function runtimeTranslation(locale: Locale, key: string): string | null {
                   [/^(\d+) active (.+) notification template\(s\) are missing; run (.+)\.$/, (m) => `هناك ${m[1]} من قوالب الإشعارات النشطة المفقودة (${m[2]}). شغّل ${m[3]}.`],
                   [/^It is (\d+) hour\(s\) old; refresh it or approve a current manual treasury rate\.$/, (m) => `عمره ${m[1]} ساعة؛ حدّثه أو وافق على سعر خزينة يدوي حالي.`],
                   [/^The configured tenant logo could not be verified on the (.+) storage disk\.$/, (m) => `تعذّر التحقق من شعار مساحة العمل على قرص التخزين ${m[1]}.`],
+                  [/^This database uses (.+)\. English templates remain available, but Arabic and French text require a UTF-8 PostgreSQL database\.$/, (m) => `تستخدم قاعدة البيانات هذه الترميز ${m[1]}. تبقى القوالب الإنجليزية متاحة، لكن النصين العربي والفرنسي يتطلبان قاعدة PostgreSQL بترميز UTF-8.`],
                   [/^The tenant logo path is configured, but the stored file is missing from the (.+) storage disk\.$/, (m) => `مسار الشعار مضبوط، لكن الملف مفقود من قرص التخزين ${m[1]}.`],
                   [/^(\d+) backup destination\(s\) are reachable and pass the monitored health checks\.$/, (m) => `وجهة/وجهات النسخ الاحتياطي المتاحة وعددها ${m[1]} تجتاز فحوصات الصحة المراقبة.`],
                   [/^Stripe configuration is missing: (.+)\.$/, (m) => `إعداد Stripe ناقص: ${m[1]}.`],
@@ -7335,6 +7340,7 @@ function runtimeTranslation(locale: Locale, key: string): string | null {
                   [/^(\d+) active (.+) notification template\(s\) are missing; run (.+)\.$/, (m) => `${m[1]} modèles de notification actifs (${m[2]}) manquent ; exécutez ${m[3]}.`],
                   [/^It is (\d+) hour\(s\) old; refresh it or approve a current manual treasury rate\.$/, (m) => `Il date de ${m[1]} heure(s) ; actualisez-le ou approuvez un taux manuel actuel.`],
                   [/^The configured tenant logo could not be verified on the (.+) storage disk\.$/, (m) => `Le logo d’espace n’a pas pu être vérifié sur le disque ${m[1]}.`],
+                  [/^This database uses (.+)\. English templates remain available, but Arabic and French text require a UTF-8 PostgreSQL database\.$/, (m) => `Cette base de données utilise l’encodage ${m[1]}. Les modèles anglais restent disponibles, mais les textes arabe et français nécessitent une base PostgreSQL UTF-8.`],
                   [/^The tenant logo path is configured, but the stored file is missing from the (.+) storage disk\.$/, (m) => `Le chemin du logo est configuré, mais le fichier manque sur le disque ${m[1]}.`],
                   [/^(\d+) backup destination\(s\) are reachable and pass the monitored health checks\.$/, (m) => `${m[1]} destination(s) de sauvegarde sont accessibles et réussissent les contrôles surveillés.`],
                   [/^Stripe configuration is missing: (.+)\.$/, (m) => `Configuration Stripe manquante : ${m[1]}.`],

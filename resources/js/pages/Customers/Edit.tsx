@@ -32,7 +32,7 @@ export default function CustomersEdit({ customer, zones }: Props) {
 
     return (
         <AppLayout>
-            <Head title={`Edit ${customer.first_name} ${customer.last_name ?? ''}`.trim()} />
+            <Head title={`${t('Edit customer')}: ${customer.first_name} ${customer.last_name ?? ''}`.trim()} />
             <Link
                 href={`/customers/${customer.public_id}`}
                 className="mb-6 inline-flex items-center gap-2 text-sm font-semibold text-muted hover:text-brand"
