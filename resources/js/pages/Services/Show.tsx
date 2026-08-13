@@ -1,6 +1,6 @@
 import ResponsiveSelect from '@/components/ui/responsive-select';
 import { Head, Link, router, useForm } from '@inertiajs/react';
-import { ArrowLeft, CalendarDays, CircleAlert, Network, RefreshCw, Wifi, WifiOff, X } from 'lucide-react';
+import { ArrowLeft, CalendarDays, CircleAlert, Network, Plus, RefreshCw, Wifi, WifiOff, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import { StatusBadge, type Status } from '@/components/StatusBadge';
@@ -32,6 +32,18 @@ type ServiceDetails = {
     router: { public_id: string; name: string; status: Status } | null;
     usage: { used_bytes: number; quota_bytes: number };
     equipment: { serial_number: string; assigned_at: string | null; item: { sku: string; name: string } | null }[];
+    addons: {
+        public_id: string;
+        name: string | null;
+        description: string | null;
+        amount_minor: number | null;
+        currency: string | null;
+        billing_period_days: number | null;
+        quantity: number;
+        starts_at: string;
+        ends_at: string | null;
+        status: string;
+    }[];
     pending_plan_change: {
         plan: { public_id: string; name: string; download_kbps: number; upload_kbps: number; duration_days: number };
         requested_at: string | null;
@@ -105,6 +117,14 @@ type Props = PageProps & {
     canChangeBillingCycle?: boolean;
     canDisconnectSession?: boolean;
     plans: PlanOption[];
+    availableAddons: {
+        public_id: string;
+        name: string;
+        description: string | null;
+        amount_minor: number;
+        currency: string;
+        billing_period_days: number | null;
+    }[];
 };
 
 export default function ServiceShow({
@@ -121,6 +141,7 @@ export default function ServiceShow({
     canChangeBillingCycle = false,
     canDisconnectSession = false,
     plans,
+    availableAddons,
 }: Props) {
     const planForm = useForm({ plan_id: plans[0]?.id.toString() ?? '', effective: 'next_cycle' });
     const [planPreview, setPlanPreview] = useState<PlanPreview | null>(null);
@@ -130,6 +151,12 @@ export default function ServiceShow({
     });
     const [cyclePreview, setCyclePreview] = useState<BillingCycleQuote | null>(null);
     const [cyclePreviewError, setCyclePreviewError] = useState<string | null>(null);
+    const addonForm = useForm({
+        addon_id: availableAddons[0]?.public_id ?? '',
+        quantity: '1',
+        starts_at: new Date().toISOString().slice(0, 10),
+        ends_at: '',
+    });
 
     const setPlanSelection = (field: 'plan_id' | 'effective', value: string) => {
         setPlanPreview(null);
@@ -748,6 +775,149 @@ export default function ServiceShow({
                                     </button>
                                 </ConfirmDialog>
                             </form>
+                        </div>
+                    )}
+                    {canChangePlan && service.status !== 'terminated' && (
+                        <div className="card p-6">
+                            <div className="flex items-start justify-between gap-4">
+                                <div>
+                                    <h2 className="section-title text-balance">Recurring add-ons</h2>
+                                    <p className="mt-1 text-sm text-muted text-pretty">
+                                        Attach optional recurring charges to this service. They are copied to the next
+                                        renewal invoice with a fixed price snapshot.
+                                    </p>
+                                </div>
+                                <Plus className="text-brand" size={18} />
+                            </div>
+                            <div className="mt-5 space-y-3">
+                                {service.addons.map((addon) => (
+                                    <div
+                                        key={addon.public_id}
+                                        className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-line bg-sand/40 p-4"
+                                    >
+                                        <div>
+                                            <p className="font-semibold">{addon.name ?? 'Recurring add-on'}</p>
+                                            <p className="mt-1 text-xs text-muted">
+                                                {addon.quantity} × {addon.amount_minor === null
+                                                    ? 'Price unavailable'
+                                                    : formatMoney(addon.amount_minor, addon.currency ?? '')}
+                                                {addon.billing_period_days
+                                                    ? ` every ${addon.billing_period_days} days`
+                                                    : ''}
+                                                {' · '}Starts {formatDate(addon.starts_at)}
+                                                {addon.ends_at ? ` · Ends ${formatDate(addon.ends_at)}` : ''}
+                                            </p>
+                                        </div>
+                                        <div className="flex items-center gap-3">
+                                            <span className="status-badge">{addon.status}</span>
+                                            {addon.status === 'active' && (
+                                                <ConfirmDialog
+                                                    title="Cancel this add-on?"
+                                                    description="The add-on will stop being included in future renewal invoices. Existing invoices are unchanged."
+                                                    confirmLabel="Cancel add-on"
+                                                    onConfirm={() =>
+                                                        router.delete(
+                                                            `/services/${service.public_id}/addons/${addon.public_id}`,
+                                                            { preserveScroll: true },
+                                                        )
+                                                    }
+                                                >
+                                                    <button type="button" className="button-quiet text-danger">
+                                                        <X size={15} />
+                                                        Cancel
+                                                    </button>
+                                                </ConfirmDialog>
+                                            )}
+                                        </div>
+                                    </div>
+                                ))}
+                                {service.addons.length === 0 && (
+                                    <p className="rounded-lg bg-sand px-3 py-2 text-sm text-muted">
+                                        No recurring add-ons are attached to this service.
+                                    </p>
+                                )}
+                            </div>
+                            {availableAddons.length > 0 ? (
+                                <form
+                                    className="mt-5 grid gap-4 border-t border-line pt-5 sm:grid-cols-2"
+                                    onSubmit={(event) => {
+                                        event.preventDefault();
+                                        addonForm.post(`/services/${service.public_id}/addons`, {
+                                            preserveScroll: true,
+                                            onSuccess: () => addonForm.reset('quantity', 'ends_at'),
+                                        });
+                                    }}
+                                >
+                                    <label className="sm:col-span-2">
+                                        <span className="field-label">Add-on</span>
+                                        <ResponsiveSelect
+                                            className="field"
+                                            value={addonForm.data.addon_id}
+                                            onChange={(event) => addonForm.setData('addon_id', event.target.value)}
+                                        >
+                                            {availableAddons.map((addon) => (
+                                                <option key={addon.public_id} value={addon.public_id}>
+                                                    {addon.name} · {formatMoney(addon.amount_minor, addon.currency)}
+                                                    {addon.billing_period_days
+                                                        ? ` / ${addon.billing_period_days} days`
+                                                        : ''}
+                                                </option>
+                                            ))}
+                                        </ResponsiveSelect>
+                                        {addonForm.errors.addon_id && (
+                                            <p className="field-error">{addonForm.errors.addon_id}</p>
+                                        )}
+                                    </label>
+                                    <label>
+                                        <span className="field-label">Quantity</span>
+                                        <input
+                                            className="field"
+                                            type="number"
+                                            min="1"
+                                            max="1000"
+                                            value={addonForm.data.quantity}
+                                            onChange={(event) => addonForm.setData('quantity', event.target.value)}
+                                        />
+                                        {addonForm.errors.quantity && (
+                                            <p className="field-error">{addonForm.errors.quantity}</p>
+                                        )}
+                                    </label>
+                                    <label>
+                                        <span className="field-label">Starts</span>
+                                        <input
+                                            className="field"
+                                            type="date"
+                                            value={addonForm.data.starts_at}
+                                            onChange={(event) => addonForm.setData('starts_at', event.target.value)}
+                                        />
+                                        {addonForm.errors.starts_at && (
+                                            <p className="field-error">{addonForm.errors.starts_at}</p>
+                                        )}
+                                    </label>
+                                    <label>
+                                        <span className="field-label">Ends (optional)</span>
+                                        <input
+                                            className="field"
+                                            type="date"
+                                            value={addonForm.data.ends_at}
+                                            onChange={(event) => addonForm.setData('ends_at', event.target.value)}
+                                        />
+                                        {addonForm.errors.ends_at && (
+                                            <p className="field-error">{addonForm.errors.ends_at}</p>
+                                        )}
+                                    </label>
+                                    <div className="flex items-end justify-end sm:col-span-2">
+                                        <button type="submit" className="button-primary" disabled={addonForm.processing}>
+                                            <Plus size={16} />
+                                            {addonForm.processing ? 'Adding…' : 'Add recurring add-on'}
+                                        </button>
+                                    </div>
+                                </form>
+                            ) : (
+                                <p className="mt-5 border-t border-line pt-5 text-sm text-muted">
+                                    Create an active add-on in Plans before attaching one to a service.
+                                </p>
+                            )}
                         </div>
                     )}
                     <div className="card p-6">
