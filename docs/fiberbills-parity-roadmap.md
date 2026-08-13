@@ -56,7 +56,7 @@ Sources:
 | Collector performance | Partial | Route progress and visit outcomes are now visible to managers; extend finance totals with collection rate, cash variance and historical trends. |
 | Collector wallet/cash custody | Delivered for responsive web | Physical custody combines cash-only collections, opening float, manager advances, approved field expenses, confirmed handovers and documented adjustments in an append-only multi-currency position. Pending requests do not affect balances, debits cannot overdraw custody, and checkout snapshots the handover position. |
 | Inventory and equipment assignment | Delivered | Keep serialized and bulk stock, warehouses, transfers, service assignment and movement audit. |
-| Stock assigned to collectors and field sales | Partial | Add collector/vehicle stock locations, custody handover, returns, replenishment, sales and variance reconciliation. |
+| Stock assigned to collectors and field sales | Delivered for responsive web | Collector/vehicle custody locations, audited direct transfers, replenishment and return approvals, stale-safe physical counts, manager-posted variances, and paid customer field sales are implemented. Sales atomically issue an invoice, record payment, update cash custody for cash methods, decrement stock and append movement history. |
 | Generic business expenses | Gap | Add categories, vendors, attachments, recurring expenses, approvals, cash/bank/collector payment sources and ledger posting. |
 | Customer/admin WhatsApp and SMS notifications | Delivered/partial | Complete live provider acceptance; retain multi-account jobs, deduplication, pacing and audit history. |
 | Customer portal and public invoice/payment access | Delivered/partial | Finish branded tenant-domain payment links, statement sharing, receipt access and production gateway acceptance. |
@@ -87,7 +87,7 @@ Sources:
 2. Shift check-in/out, GPS consent, routes, nearby dues and stop outcomes.
 3. Collector/admin tasks and messaging. **Delivered for responsive web.**
 4. Collector cash custody, handover, expenses and reconciliation. **Delivered for responsive web.**
-5. Collector stock custody, replenishment, return, sale and variance.
+5. Collector stock custody, replenishment, return, sale and variance. **Delivered for responsive web.**
 6. Daily route, collection and performance supervision.
 
 ### Phase 3: billing and finance breadth
