@@ -29,7 +29,15 @@ type Props = {
 
 const localeLabels: Record<string, string> = { en: 'English', ar: 'العربية', fr: 'Français' };
 
-function TemplateCard({ definition, templates, locales }: { definition: CatalogItem; templates: Template[]; locales: string[] }) {
+function TemplateCard({
+    definition,
+    templates,
+    locales,
+}: {
+    definition: CatalogItem;
+    templates: Template[];
+    locales: string[];
+}) {
     const initial = templates.find((template) => template.locale === locales[0]) ?? templates[0];
     const [locale, setLocale] = useState(initial?.locale ?? locales[0] ?? 'en');
     const [copiedVariable, setCopiedVariable] = useState<string | null>(null);
@@ -65,34 +73,72 @@ function TemplateCard({ definition, templates, locales }: { definition: CatalogI
                     <h2 className="font-semibold text-ink">{definition.label}</h2>
                     <p className="mt-1 font-mono text-xs text-muted">{definition.key}</p>
                 </div>
-                <span className="inline-flex items-center gap-1.5 self-start rounded-full bg-brand/10 px-2.5 py-1 text-xs font-semibold text-brand"><MessageSquare size={13} /> WhatsApp</span>
+                <span className="inline-flex items-center gap-1.5 self-start rounded-full bg-brand/10 px-2.5 py-1 text-xs font-semibold text-brand">
+                    <MessageSquare size={13} /> WhatsApp
+                </span>
             </div>
             <div className="space-y-5 p-5">
-                <div className="flex flex-wrap gap-1 rounded-lg bg-sand p-1" role="tablist" aria-label={`${definition.label} languages`}>
+                <div
+                    className="flex flex-wrap gap-1 rounded-lg bg-sand p-1"
+                    role="tablist"
+                    aria-label={`${definition.label} languages`}
+                >
                     {locales.map((option) => (
-                        <button key={option} type="button" role="tab" aria-selected={locale === option} onClick={() => selectLocale(option)} className={`rounded-md px-3 py-1.5 text-xs font-semibold transition ${locale === option ? 'bg-white text-brand shadow-sm' : 'text-muted hover:text-ink'}`}>
+                        <button
+                            key={option}
+                            type="button"
+                            role="tab"
+                            aria-selected={locale === option}
+                            onClick={() => selectLocale(option)}
+                            className={`rounded-md px-3 py-1.5 text-xs font-semibold transition ${locale === option ? 'bg-white text-brand shadow-sm' : 'text-muted hover:text-ink'}`}
+                        >
                             {localeLabels[option] ?? option.toUpperCase()}
                         </button>
                     ))}
                 </div>
                 <label>
                     <span className="field-label">Message body</span>
-                    <textarea dir="auto" className="field min-h-36 resize-y font-mono text-sm leading-6" value={form.data.body} onChange={(event) => form.setData('body', event.target.value)} />
+                    <textarea
+                        dir="auto"
+                        className="field min-h-36 resize-y font-mono text-sm leading-6"
+                        value={form.data.body}
+                        onChange={(event) => form.setData('body', event.target.value)}
+                    />
                     {form.errors.body && <p className="field-error">{form.errors.body}</p>}
                 </label>
                 <div className="rounded-xl border border-line bg-sand/40 p-4">
-                    <div className="flex items-center justify-between gap-3"><p className="text-sm font-semibold">Available variables</p><p className="text-xs text-muted">Copied variables keep their braces.</p></div>
+                    <div className="flex items-center justify-between gap-3">
+                        <p className="text-sm font-semibold">Available variables</p>
+                        <p className="text-xs text-muted">Copied variables keep their braces.</p>
+                    </div>
                     <div className="mt-3 flex flex-wrap gap-2">
                         {definition.variables.map((variable) => (
-                            <button key={variable} type="button" onClick={() => void copyVariable(variable)} className="inline-flex items-center gap-1.5 rounded-md border border-line bg-white px-2.5 py-1.5 font-mono text-xs text-ink hover:border-brand/40 hover:text-brand" title={`Copy {{ ${variable} }}`}>
+                            <button
+                                key={variable}
+                                type="button"
+                                onClick={() => void copyVariable(variable)}
+                                className="inline-flex items-center gap-1.5 rounded-md border border-line bg-white px-2.5 py-1.5 font-mono text-xs text-ink hover:border-brand/40 hover:text-brand"
+                                title={`Copy {{ ${variable} }}`}
+                            >
                                 {copiedVariable === variable ? <Check size={13} /> : <Copy size={13} />}
                                 {`{{ ${variable} }}`}
                             </button>
                         ))}
                     </div>
-                    <p className="mt-3 text-xs text-muted text-pretty">Only these variables are accepted. At send time the customer, service, payment, or incident data replaces each token.</p>
+                    <p className="mt-3 text-xs text-muted text-pretty">
+                        Only these variables are accepted. At send time the customer, service, payment, or incident data
+                        replaces each token.
+                    </p>
                 </div>
-                <div className="flex items-center justify-between gap-4 border-t border-line pt-4"><p className="text-xs text-muted">Editing {localeLabels[locale] ?? locale} · {selected.is_active ? 'Active for delivery' : 'Disabled'}</p><button type="submit" className="button-primary" disabled={form.processing}><Save size={15} /> Save template</button></div>
+                <div className="flex items-center justify-between gap-4 border-t border-line pt-4">
+                    <p className="text-xs text-muted">
+                        Editing {localeLabels[locale] ?? locale} ·{' '}
+                        {selected.is_active ? 'Active for delivery' : 'Disabled'}
+                    </p>
+                    <button type="submit" className="button-primary" disabled={form.processing}>
+                        <Save size={15} /> Save template
+                    </button>
+                </div>
             </div>
         </form>
     );
@@ -105,10 +151,20 @@ export default function NotificationTemplatesPage({ templates, catalog, locales 
             <div>
                 <p className="eyebrow">Automation</p>
                 <h1 className="page-title">WhatsApp message templates</h1>
-                <p className="page-subtitle text-pretty">Customize every automated WhatsApp message by language. Variables are validated before saving and replaced from the sending record at delivery time.</p>
+                <p className="page-subtitle text-pretty">
+                    Customize every automated WhatsApp message by language. Variables are validated before saving and
+                    replaced from the sending record at delivery time.
+                </p>
             </div>
             <div className="mt-8 grid gap-5 xl:grid-cols-2">
-                {catalog.map((definition) => <TemplateCard key={definition.key} definition={definition} templates={templates.filter((template) => template.key === definition.key)} locales={locales} />)}
+                {catalog.map((definition) => (
+                    <TemplateCard
+                        key={definition.key}
+                        definition={definition}
+                        templates={templates.filter((template) => template.key === definition.key)}
+                        locales={locales}
+                    />
+                ))}
             </div>
         </AppLayout>
     );

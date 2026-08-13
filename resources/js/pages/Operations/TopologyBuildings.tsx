@@ -84,33 +84,70 @@ export default function TopologyBuildingsPage({ buildings, canManage, statuses }
                     <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
                         <label>
                             <span className="field-label">Name</span>
-                            <input className="field" value={form.data.name} onChange={(event) => form.setData('name', event.target.value)} placeholder="Cedar Residence" />
+                            <input
+                                className="field"
+                                value={form.data.name}
+                                onChange={(event) => form.setData('name', event.target.value)}
+                                placeholder="Cedar Residence"
+                            />
                             {form.errors.name && <p className="field-error">{form.errors.name}</p>}
                         </label>
                         <label>
                             <span className="field-label">Code</span>
-                            <input className="field uppercase" value={form.data.code} onChange={(event) => form.setData('code', event.target.value)} placeholder="CEDAR-01" />
+                            <input
+                                className="field uppercase"
+                                value={form.data.code}
+                                onChange={(event) => form.setData('code', event.target.value)}
+                                placeholder="CEDAR-01"
+                            />
                             {form.errors.code && <p className="field-error">{form.errors.code}</p>}
                         </label>
                         <label className="md:col-span-2">
                             <span className="field-label">Address</span>
-                            <input className="field" value={form.data.address} onChange={(event) => form.setData('address', event.target.value)} placeholder="Street, district, city" />
+                            <input
+                                className="field"
+                                value={form.data.address}
+                                onChange={(event) => form.setData('address', event.target.value)}
+                                placeholder="Street, district, city"
+                            />
                             {form.errors.address && <p className="field-error">{form.errors.address}</p>}
                         </label>
                         <label>
                             <span className="field-label">Floors</span>
-                            <input type="number" min="0" className="field" value={form.data.floors} onChange={(event) => form.setData('floors', event.target.value)} placeholder="8" />
+                            <input
+                                type="number"
+                                min="0"
+                                className="field"
+                                value={form.data.floors}
+                                onChange={(event) => form.setData('floors', event.target.value)}
+                                placeholder="8"
+                            />
                             {form.errors.floors && <p className="field-error">{form.errors.floors}</p>}
                         </label>
                         <label>
                             <span className="field-label">Units</span>
-                            <input type="number" min="0" className="field" value={form.data.unit_count} onChange={(event) => form.setData('unit_count', event.target.value)} placeholder="64" />
+                            <input
+                                type="number"
+                                min="0"
+                                className="field"
+                                value={form.data.unit_count}
+                                onChange={(event) => form.setData('unit_count', event.target.value)}
+                                placeholder="64"
+                            />
                             {form.errors.unit_count && <p className="field-error">{form.errors.unit_count}</p>}
                         </label>
                         <label>
                             <span className="field-label">Status</span>
-                            <ResponsiveSelect className="field" value={form.data.status} onChange={(event) => form.setData('status', event.target.value)}>
-                                {statuses.map((status) => <option key={status} value={status}>{status.replace('_', ' ')}</option>)}
+                            <ResponsiveSelect
+                                className="field"
+                                value={form.data.status}
+                                onChange={(event) => form.setData('status', event.target.value)}
+                            >
+                                {statuses.map((status) => (
+                                    <option key={status} value={status}>
+                                        {status.replace('_', ' ')}
+                                    </option>
+                                ))}
                             </ResponsiveSelect>
                             {form.errors.status && <p className="field-error">{form.errors.status}</p>}
                         </label>
@@ -125,35 +162,71 @@ export default function TopologyBuildingsPage({ buildings, canManage, statuses }
                     />
                     <label>
                         <span className="field-label">Notes</span>
-                        <textarea className="field min-h-20" value={form.data.notes} onChange={(event) => form.setData('notes', event.target.value)} placeholder="Access notes, caretaker, or riser details" />
+                        <textarea
+                            className="field min-h-20"
+                            value={form.data.notes}
+                            onChange={(event) => form.setData('notes', event.target.value)}
+                            placeholder="Access notes, caretaker, or riser details"
+                        />
                         {form.errors.notes && <p className="field-error">{form.errors.notes}</p>}
                     </label>
                     <div className="flex justify-end">
-                        <button type="submit" className="button-primary" disabled={form.processing}><Plus size={16} /> Add building</button>
+                        <button type="submit" className="button-primary" disabled={form.processing}>
+                            <Plus size={16} /> Add building
+                        </button>
                     </div>
                 </form>
             )}
 
             <section className="card mt-8 overflow-hidden">
                 <div className="flex items-center justify-between gap-4 border-b border-line px-5 py-4">
-                    <div className="flex items-center gap-2"><Building2 size={17} className="text-brand" /><h2 className="section-title">Sites</h2></div>
+                    <div className="flex items-center gap-2">
+                        <Building2 size={17} className="text-brand" />
+                        <h2 className="section-title">Sites</h2>
+                    </div>
                     <p className="text-sm tabular-nums text-muted">{buildings.length.toLocaleString()} total</p>
                 </div>
                 <div className="grid gap-4 p-5 md:grid-cols-2 xl:grid-cols-3">
                     {buildings.map((building) => (
-                        <Link key={building.public_id} href={`/operations/topology/buildings/${building.public_id}`} className="rounded-xl border border-line p-5 transition hover:border-brand/40 hover:bg-sand/30">
+                        <Link
+                            key={building.public_id}
+                            href={`/operations/topology/buildings/${building.public_id}`}
+                            className="rounded-xl border border-line p-5 transition hover:border-brand/40 hover:bg-sand/30"
+                        >
                             <div className="flex items-start justify-between gap-4">
-                                <div><p className="font-semibold text-ink">{building.name}</p><p className="mt-1 text-xs uppercase tracking-wide text-muted">{building.code}</p></div>
+                                <div>
+                                    <p className="font-semibold text-ink">{building.name}</p>
+                                    <p className="mt-1 text-xs uppercase tracking-wide text-muted">{building.code}</p>
+                                </div>
                                 <StatusBadge status={building.status} />
                             </div>
-                            <p className="mt-4 flex items-start gap-2 text-sm text-muted"><MapPinned size={16} className="mt-0.5 shrink-0 text-brand" />{building.address ?? 'No address recorded'}</p>
+                            <p className="mt-4 flex items-start gap-2 text-sm text-muted">
+                                <MapPinned size={16} className="mt-0.5 shrink-0 text-brand" />
+                                {building.address ?? 'No address recorded'}
+                            </p>
                             <div className="mt-5 grid grid-cols-2 gap-3 border-t border-line pt-4 text-sm">
-                                <div><p className="text-xs text-muted">Boxes</p><p className="mt-1 font-semibold tabular-nums">{building.distribution_boxes_count}</p></div>
-                                <div><p className="text-xs text-muted">Active services</p><p className="mt-1 font-semibold tabular-nums">{building.active_services_count}</p></div>
+                                <div>
+                                    <p className="text-xs text-muted">Boxes</p>
+                                    <p className="mt-1 font-semibold tabular-nums">
+                                        {building.distribution_boxes_count}
+                                    </p>
+                                </div>
+                                <div>
+                                    <p className="text-xs text-muted">Active services</p>
+                                    <p className="mt-1 font-semibold tabular-nums">{building.active_services_count}</p>
+                                </div>
                             </div>
                         </Link>
                     ))}
-                    {buildings.length === 0 && <div className="col-span-full px-5 py-14 text-center"><Building2 className="mx-auto text-muted" size={30} /><p className="mt-3 font-semibold">No buildings yet</p><p className="mt-1 text-sm text-muted">Add the first site to begin mapping subscriber access.</p></div>}
+                    {buildings.length === 0 && (
+                        <div className="col-span-full px-5 py-14 text-center">
+                            <Building2 className="mx-auto text-muted" size={30} />
+                            <p className="mt-3 font-semibold">No buildings yet</p>
+                            <p className="mt-1 text-sm text-muted">
+                                Add the first site to begin mapping subscriber access.
+                            </p>
+                        </div>
+                    )}
                 </div>
             </section>
         </AppLayout>

@@ -159,7 +159,12 @@ export default function AppLayout({ children }: PropsWithChildren) {
             label: 'Billing',
             items: [
                 { label: 'Billing', href: '/billing/invoices', icon: ReceiptText, permission: 'billing.invoices.view' },
-                { label: 'Credit notes', href: '/billing/credit-notes', icon: FilePlus2, permission: 'billing.invoices.view' },
+                {
+                    label: 'Credit notes',
+                    href: '/billing/credit-notes',
+                    icon: FilePlus2,
+                    permission: 'billing.invoices.view',
+                },
                 { label: 'Payments', href: '/billing/payments', icon: CreditCard, permission: 'payments.collect' },
                 { label: 'Cash shifts', href: '/billing/shifts', icon: WalletCards, permission: 'payments.collect' },
                 { label: 'FX rates', href: '/billing/exchange-rates', icon: Scale, permission: 'settings.manage' },
@@ -169,27 +174,67 @@ export default function AppLayout({ children }: PropsWithChildren) {
         {
             label: 'Field operations',
             items: [
-                { label: 'Collector check-ins', href: '/operations/collector-check-ins', icon: MapPinned, permission: 'reports.operations' },
-                { label: 'Collector routes', href: '/operations/collector-routes', icon: Navigation, permission: 'reports.operations' },
-                { label: 'Collector tasks', href: '/operations/collector-tasks', icon: ClipboardCheck, permission: 'reports.operations' },
-                { label: 'Collector custody', href: '/operations/collector-custody', icon: HandCoins, permission: 'reports.operations' },
+                {
+                    label: 'Collector check-ins',
+                    href: '/operations/collector-check-ins',
+                    icon: MapPinned,
+                    permission: 'reports.operations',
+                },
+                {
+                    label: 'Collector routes',
+                    href: '/operations/collector-routes',
+                    icon: Navigation,
+                    permission: 'reports.operations',
+                },
+                {
+                    label: 'Collector tasks',
+                    href: '/operations/collector-tasks',
+                    icon: ClipboardCheck,
+                    permission: 'reports.operations',
+                },
+                {
+                    label: 'Collector custody',
+                    href: '/operations/collector-custody',
+                    icon: HandCoins,
+                    permission: 'reports.operations',
+                },
             ],
         },
         {
             label: 'Support & work',
             items: [
                 { label: 'Tickets', href: '/operations/tickets', icon: MessageSquare, permission: 'tickets.view' },
-                { label: 'Work orders', href: '/operations/work-orders', icon: ClipboardList, permission: 'workorders.complete' },
-                { label: 'Work-order calendar', href: '/operations/work-orders/calendar', icon: CalendarDays, permission: 'workorders.complete' },
+                {
+                    label: 'Work orders',
+                    href: '/operations/work-orders',
+                    icon: ClipboardList,
+                    permission: 'workorders.complete',
+                },
+                {
+                    label: 'Work-order calendar',
+                    href: '/operations/work-orders/calendar',
+                    icon: CalendarDays,
+                    permission: 'workorders.complete',
+                },
             ],
         },
         {
             label: 'Network',
             items: [
-                { label: 'Buildings & boxes', href: '/operations/topology/buildings', icon: Building2, permission: 'network.view' },
+                {
+                    label: 'Buildings & boxes',
+                    href: '/operations/topology/buildings',
+                    icon: Building2,
+                    permission: 'network.view',
+                },
                 { label: 'Live sessions', href: '/operations/sessions', icon: Radio, permission: 'network.view' },
                 { label: 'Incidents', href: '/operations/incidents', icon: CircleAlert, permission: 'network.view' },
-                { label: 'Network queue', href: '/operations/network-commands', icon: Wrench, permission: 'network.view' },
+                {
+                    label: 'Network queue',
+                    href: '/operations/network-commands',
+                    icon: Wrench,
+                    permission: 'network.view',
+                },
                 { label: 'Routers', href: '/operations/routers', icon: Router, permission: 'network.view' },
                 { label: 'POPs', href: '/operations/pops', icon: Network, permission: 'network.view' },
                 { label: 'IP pools', href: '/operations/ip-pools', icon: Network, permission: 'network.view' },
@@ -199,7 +244,19 @@ export default function AppLayout({ children }: PropsWithChildren) {
             label: 'Inventory & partners',
             items: [
                 { label: 'Inventory', href: '/operations/inventory', icon: Package, permission: 'inventory.view' },
-                { label: 'Imports', href: '/operations/imports', icon: FileUp, permission: ['customers.create', 'plans.manage', 'services.create', 'inventory.receive', 'billing.adjustments.create', 'network.view'] },
+                {
+                    label: 'Imports',
+                    href: '/operations/imports',
+                    icon: FileUp,
+                    permission: [
+                        'customers.create',
+                        'plans.manage',
+                        'services.create',
+                        'inventory.receive',
+                        'billing.adjustments.create',
+                        'network.view',
+                    ],
+                },
                 { label: 'Credentials', href: '/operations/credentials', icon: KeyRound, permission: 'suppliers.view' },
                 { label: 'Suppliers', href: '/operations/suppliers', icon: Store, permission: 'suppliers.view' },
                 { label: 'Partners', href: '/partners/commercial', icon: Store, permission: 'wallets.view' },
@@ -207,13 +264,20 @@ export default function AppLayout({ children }: PropsWithChildren) {
         },
         {
             label: 'Insights',
-            items: [{ label: 'Reports', href: '/reports/operations', icon: BarChart3, permission: 'reports.operations' }],
+            items: [
+                { label: 'Reports', href: '/reports/operations', icon: BarChart3, permission: 'reports.operations' },
+            ],
         },
         {
             label: 'Settings',
             items: [
                 { label: 'Settings', href: '/settings', icon: Wrench, permission: 'settings.manage' },
-                { label: 'Notification templates', href: '/settings/notification-templates', icon: MessageSquare, permission: 'settings.manage' },
+                {
+                    label: 'Notification templates',
+                    href: '/settings/notification-templates',
+                    icon: MessageSquare,
+                    permission: 'settings.manage',
+                },
             ],
         },
     ];
@@ -231,8 +295,11 @@ export default function AppLayout({ children }: PropsWithChildren) {
         : collectorMode
           ? [{ label: 'Collector desk', items: fieldNav }]
           : workspaceGroups
-              .map((group) => ({ ...group, items: group.items.filter((item) => item.permission === undefined || can(item.permission)) }))
-              .filter((group) => group.items.length > 0);
+                .map((group) => ({
+                    ...group,
+                    items: group.items.filter((item) => item.permission === undefined || can(item.permission)),
+                }))
+                .filter((group) => group.items.length > 0);
     const nav = navGroups.flatMap((group) => group.items);
     const activeNavHref = nav
         .filter((item) => matchesPath(item.href))
@@ -290,7 +357,11 @@ export default function AppLayout({ children }: PropsWithChildren) {
                     )}
                     <nav className="space-y-2" aria-label={t('Workspace navigation')}>
                         {navGroups.map((group) => {
-                            const isOpen = openGroups[group.label] ?? (group.label === 'Workspace' || group.label === 'Collector desk' || group.label === activeGroupLabel);
+                            const isOpen =
+                                openGroups[group.label] ??
+                                (group.label === 'Workspace' ||
+                                    group.label === 'Collector desk' ||
+                                    group.label === activeGroupLabel);
 
                             return (
                                 <div key={group.label}>
@@ -299,10 +370,15 @@ export default function AppLayout({ children }: PropsWithChildren) {
                                             type="button"
                                             className="flex w-full items-center justify-between rounded-md px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-muted hover:bg-sand hover:text-ink"
                                             aria-expanded={isOpen}
-                                            onClick={() => setOpenGroups((current) => ({ ...current, [group.label]: !isOpen }))}
+                                            onClick={() =>
+                                                setOpenGroups((current) => ({ ...current, [group.label]: !isOpen }))
+                                            }
                                         >
                                             <span>{t(group.label)}</span>
-                                            <ChevronDown size={14} className={`transition-transform ${isOpen ? '' : '-rotate-90'}`} />
+                                            <ChevronDown
+                                                size={14}
+                                                className={`transition-transform ${isOpen ? '' : '-rotate-90'}`}
+                                            />
                                         </button>
                                     )}
                                     {isOpen && (
