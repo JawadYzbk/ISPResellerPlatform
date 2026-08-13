@@ -75,8 +75,11 @@ function SetupSignal({
 }
 
 export default function GeneralSettings({ tenant, settings, currencies, payments, setup }: Props) {
-    const { app } = usePage<PageProps>().props;
+    const page = usePage<PageProps>();
+    const { app } = page.props;
     const t = createTranslator(app.locale);
+    const settingsPath = page.url.split('?')[0].replace(/\/+$/, '') || '/';
+    const tabClass = (href: string) => (settingsPath === href ? 'button-primary' : 'button-secondary');
     const form = useForm<FormSettings>({ ...settings, name: tenant.name, logo: null });
     const whatsappReady = setup.whatsapp.mode === 'web' ? setup.whatsapp.status === 'ready' : setup.whatsapp.configured;
     const whatsappDetail = whatsappReady
@@ -119,27 +122,30 @@ export default function GeneralSettings({ tenant, settings, currencies, payments
                 <p className="page-subtitle">
                     {t('Control tenant identity, business time, currency, and automation defaults.')}
                 </p>
-                <div className="mt-5 flex gap-2">
-                    <Link href="/settings/setup" className="button-primary">
+                <div className="mt-5 flex flex-wrap gap-2">
+                    <Link href="/settings/setup" className={tabClass('/settings/setup')}>
                         {t('First-time setup')}
                     </Link>
-                    <Link href="/settings/general" className="button-secondary">
+                    <Link href="/settings/general" className={tabClass('/settings/general')}>
                         {t('General')}
                     </Link>
-                    <Link href="/settings/readiness" className="button-secondary">
+                    <Link href="/settings/readiness" className={tabClass('/settings/readiness')}>
                         {t('Pilot readiness')}
                     </Link>
-                    <Link href="/settings/users" className="button-secondary">
+                    <Link href="/settings/users" className={tabClass('/settings/users')}>
                         {t('Users and invitations')}
                     </Link>
-                    <Link href="/settings/locations" className="button-secondary">
+                    <Link href="/settings/locations" className={tabClass('/settings/locations')}>
                         {t('Branches and zones')}
                     </Link>
-                    <Link href="/settings/whatsapp" className="button-secondary">
-                        WhatsApp setup
+                    <Link href="/settings/integrations" className={tabClass('/settings/integrations')}>
+                        {t('Integrations')}
                     </Link>
-                    <Link href="/settings/ticket-responses" className="button-secondary">
-                        Ticket responses
+                    <Link href="/settings/whatsapp" className={tabClass('/settings/whatsapp')}>
+                        {t('WhatsApp setup')}
+                    </Link>
+                    <Link href="/settings/ticket-responses" className={tabClass('/settings/ticket-responses')}>
+                        {t('Ticket responses')}
                     </Link>
                 </div>
                 <section id="payment-channels" className="card mt-6 p-5">
