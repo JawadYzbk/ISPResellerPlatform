@@ -1,10 +1,12 @@
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import { ArrowLeft, Download, FilePlus2, Printer, ReceiptText } from 'lucide-react';
 
 import StatusBadge from '@/components/StatusBadge';
 import PublicLinkCreator, { type PublicLinkSummary } from '@/components/PublicLinkCreator';
 import AppLayout from '@/layouts/AppLayout';
 import { formatDate, formatMoney } from '@/lib/format';
+import { createTranslator } from '@/lib/i18n';
+import type { PageProps } from '@/types';
 
 type Invoice = {
     public_id: string;
@@ -60,6 +62,8 @@ export default function InvoiceShowPage({
     canCredit: boolean;
     publicLinks: PublicLinkSummary[];
 }) {
+    const { props } = usePage<PageProps>();
+    const t = createTranslator(props.app.locale);
     const creditForm = useForm({ amount: '', reason: '' });
 
     const submitCreditNote = (event: React.FormEvent<HTMLFormElement>) => {
@@ -77,21 +81,21 @@ export default function InvoiceShowPage({
                     href="/billing/invoices"
                     className="inline-flex items-center gap-2 text-sm font-semibold text-muted hover:text-brand"
                 >
-                    <ArrowLeft size={16} /> Back to invoices
+                    <ArrowLeft size={16} /> {t('Back to invoices')}
                 </Link>
                 <div className="flex gap-2">
                     <a href={`/billing/invoices/${invoice.public_id}/pdf`} className="button-secondary">
-                        <Download size={16} /> Download PDF
+                        <Download size={16} /> {t('Download PDF')}
                     </a>
                     <button type="button" className="button-secondary" onClick={() => window.print()}>
-                        <Printer size={16} /> Print invoice
+                        <Printer size={16} /> {t('Print invoice')}
                     </button>
                 </div>
             </div>
 
             <div className="mt-8 flex flex-col justify-between gap-5 sm:flex-row sm:items-start">
                 <div>
-                    <p className="eyebrow">Billing document</p>
+                    <p className="eyebrow">{t('invoice.billing_document')}</p>
                     <h1 className="page-title">{invoice.number}</h1>
                     <p className="page-subtitle">
                         Issued {formatDate(invoice.issued_at)} · Due {formatDate(invoice.due_at)}
@@ -103,7 +107,7 @@ export default function InvoiceShowPage({
             <div className="mt-8 grid gap-6 lg:grid-cols-[1fr_320px]">
                 <div className="card overflow-hidden">
                     <div className="border-b border-line px-5 py-4">
-                        <p className="text-sm font-semibold">Line items</p>
+                        <p className="text-sm font-semibold">{t('Line items')}</p>
                         <Link
                             href={`/customers/${invoice.customer.public_id}`}
                             className="mt-1 inline-block text-sm text-muted hover:text-brand"
@@ -115,10 +119,10 @@ export default function InvoiceShowPage({
                         <table className="w-full min-w-[720px] text-start">
                             <thead>
                                 <tr className="border-b border-line bg-sand/50 text-xs font-semibold uppercase tracking-wider text-muted">
-                                    <th className="px-5 py-3.5 text-start">Description</th>
-                                    <th className="px-5 py-3.5 text-start">Quantity</th>
-                                    <th className="px-5 py-3.5 text-start">Unit price</th>
-                                    <th className="px-5 py-3.5 text-end">Total</th>
+                                    <th className="px-5 py-3.5 text-start">{t('Description')}</th>
+                                    <th className="px-5 py-3.5 text-start">{t('Quantity')}</th>
+                                    <th className="px-5 py-3.5 text-start">{t('Unit price')}</th>
+                                    <th className="px-5 py-3.5 text-end">{t('Total')}</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-line">
@@ -145,7 +149,7 @@ export default function InvoiceShowPage({
                                 {invoice.lines.length === 0 && (
                                     <tr>
                                         <td colSpan={4} className="px-5 py-12 text-center text-sm text-muted">
-                                            No line items were recorded.
+                                            {t('invoice.no_line_items')}
                                         </td>
                                     </tr>
                                 )}
@@ -155,34 +159,34 @@ export default function InvoiceShowPage({
                 </div>
 
                 <div className="card h-fit p-5">
-                    <p className="text-sm font-semibold">Invoice totals</p>
+                    <p className="text-sm font-semibold">{t('invoice.totals')}</p>
                     <dl className="mt-5 space-y-3 text-sm">
                         <div className="flex justify-between gap-4">
-                            <dt className="text-muted">Subtotal</dt>
+                            <dt className="text-muted">{t('Subtotal')}</dt>
                             <dd>{formatMoney(invoice.subtotal_amount, invoice.currency)}</dd>
                         </div>
                         <div className="flex justify-between gap-4">
-                            <dt className="text-muted">Tax</dt>
+                            <dt className="text-muted">{t('Tax')}</dt>
                             <dd>{formatMoney(invoice.tax_amount, invoice.currency)}</dd>
                         </div>
                         <div className="flex justify-between gap-4 border-t border-line pt-3 font-semibold">
-                            <dt>Total</dt>
+                            <dt>{t('Total')}</dt>
                             <dd>{formatMoney(invoice.total_amount, invoice.currency)}</dd>
                         </div>
                         <div className="flex justify-between gap-4">
-                            <dt className="text-muted">Posted payments</dt>
+                            <dt className="text-muted">{t('Posted payments')}</dt>
                             <dd className="text-emerald-700">
                                 − {formatMoney(invoice.allocated_amount, invoice.currency)}
                             </dd>
                         </div>
                         <div className="flex justify-between gap-4">
-                            <dt className="text-muted">Credit notes</dt>
+                            <dt className="text-muted">{t('Credit notes')}</dt>
                             <dd className="text-emerald-700">
                                 − {formatMoney(invoice.credited_amount, invoice.currency)}
                             </dd>
                         </div>
                         <div className="flex justify-between gap-4 border-t border-line pt-3 font-semibold">
-                            <dt>Outstanding</dt>
+                            <dt>{t('Outstanding')}</dt>
                             <dd className={invoice.outstanding_amount > 0 ? 'text-coral' : 'text-emerald-700'}>
                                 {formatMoney(invoice.outstanding_amount, invoice.currency)}
                             </dd>
@@ -192,10 +196,10 @@ export default function InvoiceShowPage({
                         <form onSubmit={submitCreditNote} className="mt-6 space-y-3 border-t border-line pt-5">
                             <div className="flex items-center gap-2">
                                 <FilePlus2 size={16} className="text-brand" />
-                                <p className="text-sm font-semibold">Issue credit note</p>
+                                <p className="text-sm font-semibold">{t('Issue credit note')}</p>
                             </div>
                             <label>
-                                <span className="field-label">Amount (minor units)</span>
+                                <span className="field-label">{t('Amount (minor units)')}</span>
                                 <input
                                     type="number"
                                     min="1"
@@ -207,7 +211,7 @@ export default function InvoiceShowPage({
                                 {creditForm.errors.amount && <p className="field-error">{creditForm.errors.amount}</p>}
                             </label>
                             <label>
-                                <span className="field-label">Reason</span>
+                                <span className="field-label">{t('Reason')}</span>
                                 <textarea
                                     className="field min-h-20"
                                     value={creditForm.data.reason}
@@ -217,7 +221,7 @@ export default function InvoiceShowPage({
                                 {creditForm.errors.reason && <p className="field-error">{creditForm.errors.reason}</p>}
                             </label>
                             <button type="submit" className="button-secondary w-full" disabled={creditForm.processing}>
-                                Issue credit note
+                                {t('Issue credit note')}
                             </button>
                         </form>
                     )}
@@ -227,7 +231,7 @@ export default function InvoiceShowPage({
             <div className="card mt-6 overflow-hidden">
                 <div className="flex items-center gap-2 border-b border-line px-5 py-4">
                     <ReceiptText size={17} className="text-brand" />
-                    <p className="text-sm font-semibold">Posted payments</p>
+                    <p className="text-sm font-semibold">{t('Posted payments')}</p>
                 </div>
                 <div className="divide-y divide-line">
                     {invoice.payments.map((payment) => (
@@ -247,9 +251,7 @@ export default function InvoiceShowPage({
                         </Link>
                     ))}
                     {invoice.payments.length === 0 && (
-                        <p className="px-5 py-10 text-center text-sm text-muted">
-                            No posted payments have been allocated to this invoice.
-                        </p>
+                        <p className="px-5 py-10 text-center text-sm text-muted">{t('invoice.no_posted_payments')}</p>
                     )}
                 </div>
             </div>
@@ -259,19 +261,19 @@ export default function InvoiceShowPage({
                     types={
                         invoice.outstanding_amount > 0
                             ? [
-                                  { value: 'payment', label: 'Payment link' },
-                                  { value: 'invoice', label: 'Invoice only' },
+                                  { value: 'payment', label: t('Payment link') },
+                                  { value: 'invoice', label: t('Invoice only') },
                               ]
-                            : [{ value: 'invoice', label: 'Invoice only' }]
+                            : [{ value: 'invoice', label: t('Invoice only') }]
                     }
-                    title="Share invoice or payment link"
+                    title={t('invoice.share_link')}
                     existingLinks={publicLinks}
                 />
             </div>
             <div className="card mt-6 overflow-hidden">
                 <div className="flex items-center gap-2 border-b border-line px-5 py-4">
                     <FilePlus2 size={17} className="text-brand" />
-                    <p className="text-sm font-semibold">Credit notes</p>
+                    <p className="text-sm font-semibold">{t('Credit notes')}</p>
                 </div>
                 <div className="divide-y divide-line">
                     {invoice.credit_notes.map((note) => (
@@ -291,7 +293,7 @@ export default function InvoiceShowPage({
                         </div>
                     ))}
                     {invoice.credit_notes.length === 0 && (
-                        <p className="px-5 py-10 text-center text-sm text-muted">No credit notes have been issued.</p>
+                        <p className="px-5 py-10 text-center text-sm text-muted">{t('invoice.no_credit_notes')}</p>
                     )}
                 </div>
             </div>
