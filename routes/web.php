@@ -30,6 +30,7 @@ use App\Http\Controllers\Web\MediaDownloadController;
 use App\Http\Controllers\Web\NetworkOperationsController;
 use App\Http\Controllers\Web\NotificationController;
 use App\Http\Controllers\Web\NotificationTemplateController;
+use App\Http\Controllers\Web\OpticalOperationsController;
 use App\Http\Controllers\Web\OperationalExpenseController;
 use App\Http\Controllers\Web\PartnerController;
 use App\Http\Controllers\Web\PlanOperationsController;
@@ -243,6 +244,10 @@ Route::middleware(['auth', 'tenant', '2fa'])->group(function (): void {
     Route::put('/operations/topology/boxes/{distributionBox:public_id}', [TopologyOperationsController::class, 'updateBox'])->middleware('recent-auth')->name('operations.topology.boxes.update');
     Route::post('/operations/topology/services/{service:public_id}/assignment', [TopologyOperationsController::class, 'assignService'])->middleware('recent-auth')->name('operations.topology.services.assign');
     Route::delete('/operations/topology/services/{service:public_id}/assignment', [TopologyOperationsController::class, 'unassignService'])->middleware('recent-auth')->name('operations.topology.services.unassign');
+    Route::get('/operations/optical', [OpticalOperationsController::class, 'index'])->name('operations.optical');
+    Route::post('/operations/optical/devices', [OpticalOperationsController::class, 'storeDevice'])->middleware('recent-auth')->name('operations.optical.devices.store');
+    Route::patch('/operations/optical/devices/{opticalDevice:public_id}', [OpticalOperationsController::class, 'updateDevice'])->middleware('recent-auth')->name('operations.optical.devices.update');
+    Route::post('/operations/optical/readings', [OpticalOperationsController::class, 'recordReading'])->middleware('recent-auth')->name('operations.optical.readings.store');
     Route::put('/operations/pops/{pop}', [PopOperationsController::class, 'update'])->middleware('recent-auth')->name('operations.pops.update');
     Route::post('/operations/pops/{pop}/upstream-links', [PopOperationsController::class, 'storeUpstreamLink'])->middleware('recent-auth')->name('operations.pops.upstream-links.store');
     Route::patch('/operations/upstream-links/{link}', [PopOperationsController::class, 'updateUpstreamLink'])->middleware('recent-auth')->name('operations.pops.upstream-links.update');

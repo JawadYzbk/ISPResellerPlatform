@@ -227,6 +227,7 @@ export default function AppLayout({ children }: PropsWithChildren) {
                     icon: Building2,
                     permission: 'network.view',
                 },
+                { label: 'Optical access', href: '/operations/optical', icon: Network, permission: 'network.view' },
                 { label: 'Live sessions', href: '/operations/sessions', icon: Radio, permission: 'network.view' },
                 { label: 'Incidents', href: '/operations/incidents', icon: CircleAlert, permission: 'network.view' },
                 {
