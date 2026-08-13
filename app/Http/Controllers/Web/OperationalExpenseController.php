@@ -2,14 +2,19 @@
 
 namespace App\Http\Controllers\Web;
 
+use App\Actions\CreateExpenseCategory;
+use App\Actions\CreateExpenseVendor;
 use App\Actions\CreateOperationalExpense;
+use App\Actions\CreateRecurringExpenseSchedule;
 use App\Actions\GetCurrencyCatalog;
 use App\Actions\ReviewOperationalExpense;
 use App\Actions\StoreMediaUpload;
+use App\Actions\UpdateExpenseCategory;
+use App\Actions\UpdateExpenseVendor;
+use App\Actions\UpdateRecurringExpenseSchedule;
 use App\Http\Controllers\Controller;
 use App\Models\ExpenseCategory;
 use App\Models\ExpenseVendor;
-use App\Models\LedgerAccount;
 use App\Models\OperationalExpense;
 use App\Models\RecurringExpenseSchedule;
 use App\Models\User;
@@ -150,7 +155,7 @@ final class OperationalExpenseController extends Controller
         return back()->with('success', $validated['decision'] === 'posted' ? 'Expense approved and posted.' : 'Expense rejected.');
     }
 
-    public function storeCategory(Request $request): RedirectResponse
+    public function storeCategory(Request $request, CreateExpenseCategory $create): RedirectResponse
     {
         $this->userWith($request, 'expenses.manage');
         $data = $request->validate([
@@ -160,48 +165,42 @@ final class OperationalExpenseController extends Controller
                 Rule::unique('expense_categories', 'code')->where('tenant_id', app(Tenancy::class)->requireId()),
             ],
         ]);
-        $account = LedgerAccount::query()->where('code', '5300')->firstOrFail();
-        ExpenseCategory::create([
-            ...$data,
-            'code' => strtoupper($data['code']),
-            'ledger_account_id' => $account->id,
-            'is_active' => true,
-        ]);
+        $create->handle($data);
 
         return back()->with('success', 'Expense category created.');
     }
 
-    public function updateCategory(Request $request, ExpenseCategory $expenseCategory): RedirectResponse
+    public function updateCategory(Request $request, ExpenseCategory $expenseCategory, UpdateExpenseCategory $update): RedirectResponse
     {
         $this->userWith($request, 'expenses.manage');
         $data = $request->validate([
             'name' => ['required', 'string', 'max:120'],
             'is_active' => ['required', 'boolean'],
         ]);
-        $expenseCategory->update($data);
+        $update->handle($expenseCategory, $data);
 
         return back()->with('success', 'Expense category updated.');
     }
 
-    public function storeVendor(Request $request): RedirectResponse
+    public function storeVendor(Request $request, CreateExpenseVendor $create): RedirectResponse
     {
         $this->userWith($request, 'expenses.manage');
         $data = $request->validate($this->vendorRules());
-        ExpenseVendor::create([...$data, 'is_active' => true]);
+        $create->handle($data);
 
         return back()->with('success', 'Expense vendor created.');
     }
 
-    public function updateVendor(Request $request, ExpenseVendor $expenseVendor): RedirectResponse
+    public function updateVendor(Request $request, ExpenseVendor $expenseVendor, UpdateExpenseVendor $update): RedirectResponse
     {
         $this->userWith($request, 'expenses.manage');
         $data = $request->validate([...$this->vendorRules(), 'is_active' => ['required', 'boolean']]);
-        $expenseVendor->update($data);
+        $update->handle($expenseVendor, $data);
 
         return back()->with('success', 'Expense vendor updated.');
     }
 
-    public function storeRecurring(Request $request): RedirectResponse
+    public function storeRecurring(Request $request, CreateRecurringExpenseSchedule $create): RedirectResponse
     {
         $user = $this->userWith($request, 'expenses.manage');
         $data = $request->validate([
@@ -217,28 +216,16 @@ final class OperationalExpenseController extends Controller
             'starts_on' => ['required', 'date_format:Y-m-d'],
             'ends_on' => ['nullable', 'date_format:Y-m-d', 'after_or_equal:starts_on'],
         ]);
-        $category = ExpenseCategory::query()->whereKey($data['expense_category_id'])->where('is_active', true)->firstOrFail();
-        $vendorId = filled($data['expense_vendor_id'] ?? null)
-            ? ExpenseVendor::query()->whereKey($data['expense_vendor_id'])->where('is_active', true)->firstOrFail()->id
-            : null;
-        RecurringExpenseSchedule::create([
-            ...$data,
-            'expense_category_id' => $category->id,
-            'expense_vendor_id' => $vendorId,
-            'created_by_id' => $user->id,
-            'currency' => strtoupper($data['currency']),
-            'next_run_on' => $data['starts_on'],
-            'is_active' => true,
-        ]);
+        $create->handle($user, $data);
 
         return back()->with('success', 'Recurring expense schedule created.');
     }
 
-    public function updateRecurring(Request $request, RecurringExpenseSchedule $recurringExpenseSchedule): RedirectResponse
+    public function updateRecurring(Request $request, RecurringExpenseSchedule $recurringExpenseSchedule, UpdateRecurringExpenseSchedule $update): RedirectResponse
     {
         $this->userWith($request, 'expenses.manage');
         $data = $request->validate(['is_active' => ['required', 'boolean']]);
-        $recurringExpenseSchedule->update($data);
+        $update->handle($recurringExpenseSchedule, $data['is_active']);
 
         return back()->with('success', $data['is_active'] ? 'Recurring expense resumed.' : 'Recurring expense paused.');
     }
