@@ -715,8 +715,8 @@ test.describe('staff core journeys', () => {
             await page.getByRole('combobox').click();
             await page.getByRole('option', { name: /^(French|Français|الفرنسية)$/ }).click();
             await page.getByRole('button', { name: /^(Save profile|Enregistrer le profil|حفظ الملف الشخصي)$/ }).click();
-            await expect(page.getByTestId('flash-toast')).toContainText('Profile updated.');
-            await expect(page.getByText('Updated', { exact: true })).toBeVisible();
+            await expect(page.getByTestId('flash-toast')).toContainText(/^(?:Updated|Mis à jour|تم التحديث)/);
+            await expect(page.getByTestId('flash-toast')).toContainText(/(?:Profile updated\.|Profil mis à jour\.|تم تحديث الملف الشخصي\.)/);
             await expect(page.getByRole('combobox')).toContainText(/^(French|Français|الفرنسية)$/);
         } finally {
             await restoreEnglishProfile(page);
