@@ -363,7 +363,7 @@ export default function InventoryPage({
                                     className="field"
                                     value={itemForm.data.name}
                                     onChange={(event) => itemForm.setData('name', event.target.value)}
-                                    placeholder="Outdoor UTP cable"
+                                    placeholder={t('Outdoor UTP cable')}
                                 />
                                 {itemForm.errors.name && <p className="field-error">{itemForm.errors.name}</p>}
                             </label>
@@ -373,7 +373,7 @@ export default function InventoryPage({
                                     className="field"
                                     value={itemForm.data.category}
                                     onChange={(event) => itemForm.setData('category', event.target.value)}
-                                    placeholder="cable"
+                                    placeholder={t('cable')}
                                 />
                                 {itemForm.errors.category && <p className="field-error">{itemForm.errors.category}</p>}
                             </label>
@@ -418,7 +418,7 @@ export default function InventoryPage({
                                     className="field"
                                     value={warehouseForm.data.name}
                                     onChange={(event) => warehouseForm.setData('name', event.target.value)}
-                                    placeholder="Main warehouse"
+                                    placeholder={t('Main warehouse')}
                                 />
                                 {warehouseForm.errors.name && (
                                     <p className="field-error">{warehouseForm.errors.name}</p>

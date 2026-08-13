@@ -63,7 +63,7 @@ export default function TicketsPage({ tickets, filters }: Props) {
                             className="field ps-10"
                             value={search}
                             onChange={(event) => setSearch(event.target.value)}
-                            placeholder="TCK-0001, subject, customer"
+                            placeholder={t('TCK-0001, subject, customer')}
                         />
                     </div>
                 </label>

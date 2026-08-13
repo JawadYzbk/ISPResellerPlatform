@@ -256,7 +256,7 @@ function DeviceFields({
                     className="field min-h-24 resize-y"
                     value={form.data.notes}
                     onChange={(event) => form.setData('notes', event.target.value)}
-                    placeholder="Rack, cabinet, vendor access notes"
+                                placeholder={t('Rack, cabinet, vendor access notes')}
                 />
                 <ErrorText message={form.errors.notes} />
             </label>

@@ -579,7 +579,7 @@ export default function TopologyBuildingShowPage({
                                 className="field"
                                 value={boxForm.data.name}
                                 onChange={(event) => boxForm.setData('name', event.target.value)}
-                                placeholder="Cedar cabinet"
+                                placeholder={t('Cedar cabinet')}
                             />
                             <ErrorText message={boxForm.errors.name} />
                         </label>
@@ -650,7 +650,7 @@ export default function TopologyBuildingShowPage({
                             className="field min-h-16"
                             value={boxForm.data.notes}
                             onChange={(event) => boxForm.setData('notes', event.target.value)}
-                            placeholder="Locked room, riser, or access notes"
+                            placeholder={t('Locked room, riser, or access notes')}
                         />
                         <ErrorText message={boxForm.errors.notes} />
                     </label>

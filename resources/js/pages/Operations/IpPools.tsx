@@ -127,7 +127,7 @@ export default function IpPoolsPage({ pools, selectedPoolId, addresses, routers,
                                 className="field"
                                 value={poolForm.data.name}
                                 onChange={(event) => poolForm.setData('name', event.target.value)}
-                                placeholder="Subscriber IPv4"
+                                placeholder={t('Subscriber IPv4')}
                             />
                             {poolForm.errors.name && <p className="field-error">{poolForm.errors.name}</p>}
                         </label>

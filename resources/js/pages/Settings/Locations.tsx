@@ -138,7 +138,7 @@ export default function Locations({ branches, zones, tenant }: Props) {
                                         className="field"
                                         value={branchForm.data.name}
                                         onChange={(event) => branchForm.setData('name', event.target.value)}
-                                        placeholder="Main office"
+                                        placeholder={t('Main office')}
                                     />
                                     {branchForm.errors.name && <p className="field-error">{branchForm.errors.name}</p>}
                                 </label>
@@ -254,7 +254,7 @@ export default function Locations({ branches, zones, tenant }: Props) {
                                         className="field"
                                         value={zoneForm.data.name}
                                         onChange={(event) => zoneForm.setData('name', event.target.value)}
-                                        placeholder="North district"
+                                        placeholder={t('North district')}
                                     />
                                     {zoneForm.errors.name && <p className="field-error">{zoneForm.errors.name}</p>}
                                 </label>

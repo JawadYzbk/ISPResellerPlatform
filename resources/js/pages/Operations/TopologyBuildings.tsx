@@ -89,7 +89,7 @@ export default function TopologyBuildingsPage({ buildings, canManage, statuses }
                                 className="field"
                                 value={form.data.name}
                                 onChange={(event) => form.setData('name', event.target.value)}
-                                placeholder="Cedar Residence"
+                                placeholder={t('Cedar Residence')}
                             />
                             {form.errors.name && <p className="field-error">{t(form.errors.name)}</p>}
                         </label>
@@ -109,7 +109,7 @@ export default function TopologyBuildingsPage({ buildings, canManage, statuses }
                                 className="field"
                                 value={form.data.address}
                                 onChange={(event) => form.setData('address', event.target.value)}
-                                placeholder="Street, district, city"
+                                placeholder={t('Street, district, city')}
                             />
                             {form.errors.address && <p className="field-error">{t(form.errors.address)}</p>}
                         </label>
@@ -167,7 +167,7 @@ export default function TopologyBuildingsPage({ buildings, canManage, statuses }
                             className="field min-h-20"
                             value={form.data.notes}
                             onChange={(event) => form.setData('notes', event.target.value)}
-                            placeholder="Access notes, caretaker, or riser details"
+                                placeholder={t('Access notes, caretaker, or riser details')}
                         />
                         {form.errors.notes && <p className="field-error">{t(form.errors.notes)}</p>}
                     </label>
