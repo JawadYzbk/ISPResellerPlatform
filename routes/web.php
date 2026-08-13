@@ -20,6 +20,7 @@ use App\Http\Controllers\Web\FieldController;
 use App\Http\Controllers\Web\ImportOperationsController;
 use App\Http\Controllers\Web\IncidentOperationsController;
 use App\Http\Controllers\Web\InventoryOperationsController;
+use App\Http\Controllers\Web\InventoryStockCountController;
 use App\Http\Controllers\Web\InventoryTransferRequestController;
 use App\Http\Controllers\Web\InvitationController;
 use App\Http\Controllers\Web\IpPoolOperationsController;
@@ -119,6 +120,7 @@ Route::middleware(['auth', 'tenant', '2fa'])->group(function (): void {
     Route::post('/field/tasks/{collectorTask:public_id}/read', [CollectorTaskController::class, 'read'])->name('field.tasks.read');
     Route::post('/field/custody', [CollectorCustodyController::class, 'storeField'])->name('field.custody.store');
     Route::post('/field/inventory-requests', [InventoryTransferRequestController::class, 'store'])->name('field.inventory-requests.store');
+    Route::post('/field/stock-counts', [InventoryStockCountController::class, 'store'])->name('field.stock-counts.store');
     Route::get('/profile', [ProfileController::class, 'show'])->name('profile');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications');
@@ -257,6 +259,7 @@ Route::middleware(['auth', 'tenant', '2fa'])->group(function (): void {
     Route::post('/operations/inventory/bulk-receive', [InventoryOperationsController::class, 'receiveBulk'])->middleware('recent-auth')->name('operations.inventory.bulk-receive');
     Route::post('/operations/inventory/bulk-transfer', [InventoryOperationsController::class, 'transferBulk'])->middleware('recent-auth')->name('operations.inventory.bulk-transfer');
     Route::patch('/operations/inventory/requests/{inventoryTransferRequest:public_id}', [InventoryTransferRequestController::class, 'review'])->middleware('recent-auth')->name('operations.inventory.requests.review');
+    Route::patch('/operations/inventory/stock-counts/{inventoryStockCount:public_id}', [InventoryStockCountController::class, 'review'])->middleware('recent-auth')->name('operations.inventory.stock-counts.review');
     Route::post('/operations/inventory/{unit}/assign', [InventoryOperationsController::class, 'assign'])->middleware('recent-auth')->name('operations.inventory.assign');
     Route::post('/operations/inventory/{unit}/transfer', [InventoryOperationsController::class, 'transfer'])->middleware('recent-auth')->name('operations.inventory.transfer');
     Route::get('/operations/imports', [ImportOperationsController::class, 'index'])->name('operations.imports');
