@@ -60,18 +60,31 @@ test('keeps representative workspace controls named for assistive technology', a
     ]);
 
     for (const path of [
+        '/dashboard',
         '/customers',
         '/customers/create',
+        '/plans',
+        '/services',
         '/settings/general',
+        '/settings/locations',
+        '/settings/readiness',
         '/settings/notification-templates',
+        '/settings/ticket-responses',
+        '/settings/users',
+        '/settings/whatsapp',
         '/operations/inventory',
         '/operations/optical',
         '/operations/work-orders/calendar',
         '/billing/invoices',
         '/billing/payments',
+        '/billing/credit-notes',
+        '/billing/exchange-rates',
+        '/billing/shifts',
+        '/reports/finance',
         '/reports/operations',
         '/partners/commercial',
         '/notifications',
+        '/profile',
     ]) {
         await auditPage(page, path);
     }
