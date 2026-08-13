@@ -344,6 +344,26 @@ test('connects service validation errors to their controls', async ({ page }) =>
     await expect(page.locator('#password-error')).toHaveAttribute('role', 'alert');
 });
 
+test('connects router validation errors to their controls', async ({ page }) => {
+    test.setTimeout(60_000);
+
+    await page.goto('/login');
+    await page.getByLabel('Email address').fill(email);
+    await page.getByRole('textbox', { name: 'Password' }).fill(password);
+    await Promise.all([
+        page.waitForURL(/\/(dashboard|customers|profile)$/),
+        page.getByRole('button', { name: 'Enter workspace' }).click(),
+    ]);
+
+    await page.goto('/operations/routers/create');
+    await page.locator('form button[type="submit"]').click();
+
+    const name = page.locator('#name');
+    await expect(name).toHaveAttribute('aria-invalid', 'true');
+    await expect(name).toHaveAttribute('aria-describedby', 'name-error');
+    await expect(page.locator('#name-error')).toHaveAttribute('role', 'alert');
+});
+
 test('keeps customer portal sign-in inputs accessible', async ({ page }) => {
     await auditPage(page, '/portal/northline');
 
