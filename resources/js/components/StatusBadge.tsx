@@ -45,6 +45,8 @@ export type Status =
     | 'free'
     | 'conflict'
     | 'maintenance'
+    | 'full'
+    | 'retired'
     | 'down'
     | 'decommissioned';
 
@@ -94,6 +96,8 @@ const styles: Record<Status, string> = {
     free: 'bg-emerald-50 text-emerald-700 ring-emerald-600/20',
     conflict: 'bg-rose-50 text-rose-700 ring-rose-600/20',
     maintenance: 'bg-amber-50 text-amber-700 ring-amber-600/20',
+    full: 'bg-amber-50 text-amber-700 ring-amber-600/20',
+    retired: 'bg-slate-100 text-slate-600 ring-slate-500/20',
     down: 'bg-rose-50 text-rose-700 ring-rose-600/20',
     decommissioned: 'bg-slate-100 text-slate-600 ring-slate-500/20',
 };

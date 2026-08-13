@@ -8,9 +8,18 @@ type Props = {
     longitude: string;
     onLatitudeChange: (value: string) => void;
     onLongitudeChange: (value: string) => void;
+    title?: string;
+    description?: string;
 };
 
-export default function CustomerLocationFields({ latitude, longitude, onLatitudeChange, onLongitudeChange }: Props) {
+export default function CustomerLocationFields({
+    latitude,
+    longitude,
+    onLatitudeChange,
+    onLongitudeChange,
+    title = 'Service location',
+    description = 'Optional GPS coordinates for field work and dispatch.',
+}: Props) {
     const [locating, setLocating] = useState(false);
     const [locationError, setLocationError] = useState<string | null>(null);
     const mapUrl =
@@ -51,8 +60,8 @@ export default function CustomerLocationFields({ latitude, longitude, onLatitude
                 <div className="flex items-center gap-2">
                     <MapPinned size={17} className="text-brand" />
                     <div>
-                        <legend className="text-sm font-semibold">Service location</legend>
-                        <p className="mt-1 text-xs text-muted">Optional GPS coordinates for field work and dispatch.</p>
+                        <legend className="text-sm font-semibold">{title}</legend>
+                        <p className="mt-1 text-xs text-muted">{description}</p>
                     </div>
                 </div>
                 <button type="button" className="button-secondary" onClick={useCurrentLocation} disabled={locating}>
