@@ -510,6 +510,32 @@ export default function AppLayout({ children }: PropsWithChildren) {
                                                     {t('Workspace settings')}
                                                 </Link>
                                             )}
+                                            <div className="mt-1 border-t border-line px-3 pb-2 pt-3">
+                                                <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-muted">
+                                                    {t('Language')}
+                                                </p>
+                                                <div className="grid grid-cols-3 gap-1">
+                                                    {(
+                                                        [
+                                                            ['en', 'English'],
+                                                            ['ar', 'Arabic'],
+                                                            ['fr', 'French'],
+                                                        ] as const
+                                                    ).map(([locale, label]) => (
+                                                        <Form key={locale} action="/settings/locale" method="post">
+                                                            <input type="hidden" name="locale" value={locale} />
+                                                            <button
+                                                                type="submit"
+                                                                role="menuitem"
+                                                                className={`w-full rounded-md px-2 py-2 text-xs font-semibold ${app.locale === locale ? 'bg-brand-soft text-brand' : 'text-muted hover:bg-sand hover:text-ink'}`}
+                                                                aria-current={app.locale === locale ? 'true' : undefined}
+                                                            >
+                                                                {t(label)}
+                                                            </button>
+                                                        </Form>
+                                                    ))}
+                                                </div>
+                                            </div>
                                         </>
                                     )}
                                     <Form action="/logout" method="post" className="mt-1 border-t border-line pt-1">
