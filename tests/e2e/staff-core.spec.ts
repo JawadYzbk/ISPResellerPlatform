@@ -439,7 +439,9 @@ test.describe('staff core journeys', () => {
                 );
                 await deleteDialog.getByRole('button', { name: 'Delete account', exact: true }).click();
                 expect((await deleteResponse).status()).toBeLessThan(400);
-                await expect(page.getByTestId('flash-toast')).toContainText('WhatsApp account deleted.');
+                await expect(
+                    page.getByTestId('flash-toast').filter({ hasText: 'WhatsApp account deleted.' }),
+                ).toContainText('WhatsApp account deleted.');
                 await page.reload();
                 await expect(accountCard).toHaveCount(0);
             }
