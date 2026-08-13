@@ -57,6 +57,35 @@ const timeFormatOptions = [
     { value: 'h:i:s A', label: '02:30:45 PM (12-hour with seconds)' },
 ] as const;
 
+function timezoneLabel(timezone: string): string {
+    try {
+        const offsetPart = new Intl.DateTimeFormat('en-US', {
+            timeZone: timezone,
+            timeZoneName: 'longOffset',
+        })
+            .formatToParts(new Date())
+            .find((part) => part.type === 'timeZoneName')?.value;
+
+        if (!offsetPart) {
+            return timezone;
+        }
+
+        const normalized = offsetPart.replace(/^GMT/, 'UTC');
+        if (normalized === 'UTC') {
+            return `${timezone} · UTC±00:00`;
+        }
+
+        const match = normalized.match(/^UTC([+-])(\d{1,2})(?::?(\d{2}))?$/);
+        if (!match) {
+            return `${timezone} · ${normalized}`;
+        }
+
+        return `${timezone} · UTC${match[1]}${match[2].padStart(2, '0')}:${match[3] ?? '00'}`;
+    } catch {
+        return timezone;
+    }
+}
+
 function SetupSignal({
     label,
     detail,
@@ -342,7 +371,7 @@ export default function GeneralSettings({ tenant, settings, currencies, timezone
                                 >
                                     {availableTimezones.map((timezone) => (
                                         <option key={timezone} value={timezone}>
-                                            {timezone}
+                                            {timezoneLabel(timezone)}
                                         </option>
                                     ))}
                                 </ResponsiveSelect>
