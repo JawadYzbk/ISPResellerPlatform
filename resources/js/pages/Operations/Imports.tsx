@@ -5,6 +5,7 @@ import { useMemo } from 'react';
 
 import AppLayout from '@/layouts/AppLayout';
 import ConfirmDialog from '@/components/ui/confirm-dialog';
+import { createTranslator } from '@/lib/i18n';
 import type { ImportBatchReportRow, ImportBatchResult, PageProps } from '@/types';
 
 type ImportType = {
@@ -52,7 +53,9 @@ const formatDate = (value: string | null) =>
 const rowErrorText = (row: ImportBatchReportRow) => (row.errors.length > 0 ? row.errors.join('; ') : 'Ready to import');
 
 export default function Imports({ types, routers, batches }: Props) {
-    const { flash } = usePage<PagePropsWithImportFlash>().props;
+    const { props } = usePage<PagePropsWithImportFlash>();
+    const { flash } = props;
+    const t = createTranslator(props.app.locale);
     const initialType = types[0]?.value ?? '';
     const form = useForm({
         type: initialType,
@@ -75,13 +78,11 @@ export default function Imports({ types, routers, batches }: Props) {
 
     return (
         <AppLayout>
-            <Head title="Imports" />
+            <Head title={t('imports.title')} />
             <div>
-                <p className="eyebrow">Data operations</p>
-                <h1 className="page-title">Safe imports</h1>
-                <p className="page-subtitle">
-                    Preview a file, resolve rejected rows, then commit only when the report is ready.
-                </p>
+                <p className="eyebrow">{t('imports.eyebrow')}</p>
+                <h1 className="page-title">{t('imports.title')}</h1>
+                <p className="page-subtitle">{t('imports.subtitle')}</p>
             </div>
 
             <div className="mt-8 grid gap-6 xl:grid-cols-[minmax(0,0.82fr)_minmax(0,1.18fr)]">
@@ -91,16 +92,13 @@ export default function Imports({ types, routers, batches }: Props) {
                             <FileUp size={19} />
                         </div>
                         <div>
-                            <h2 className="text-lg font-semibold">Start an import</h2>
-                            <p className="mt-1 text-sm leading-6 text-muted">
-                                Files are validated inside the current tenant boundary. Secrets and internal IDs are
-                                removed from the report.
-                            </p>
+                            <h2 className="text-lg font-semibold">{t('imports.start')}</h2>
+                            <p className="mt-1 text-sm leading-6 text-muted">{t('imports.start_description')}</p>
                         </div>
                     </div>
 
                     <label>
-                        <span className="field-label">Import type</span>
+                        <span className="field-label">{t('imports.type')}</span>
                         <ResponsiveSelect
                             className="field"
                             value={form.data.type}
@@ -117,13 +115,13 @@ export default function Imports({ types, routers, batches }: Props) {
 
                     {isRouterDiscovery ? (
                         <label>
-                            <span className="field-label">Router</span>
+                            <span className="field-label">{t('Router')}</span>
                             <ResponsiveSelect
                                 className="field"
                                 value={form.data.router_public_id}
                                 onChange={(event) => form.setData('router_public_id', event.target.value)}
                             >
-                                <option value="">Select a router</option>
+                                <option value="">{t('imports.select_router')}</option>
                                 {routers.map((router) => (
                                     <option key={router.public_id} value={router.public_id}>
                                         {router.name} · {router.host}
@@ -133,14 +131,11 @@ export default function Imports({ types, routers, batches }: Props) {
                             {form.errors.router_public_id && (
                                 <p className="field-error">{form.errors.router_public_id}</p>
                             )}
-                            <p className="mt-2 text-xs leading-5 text-muted">
-                                Discovery reads PPP secrets from the router and records a redacted match report. It
-                                never changes the router or services.
-                            </p>
+                            <p className="mt-2 text-xs leading-5 text-muted">{t('imports.discovery_description')}</p>
                         </label>
                     ) : (
                         <label>
-                            <span className="field-label">CSV or XLSX file</span>
+                            <span className="field-label">{t('imports.file')}</span>
                             <input
                                 className="field file:me-3 file:rounded-md file:border-0 file:bg-brand-soft file:px-3 file:py-1.5 file:font-semibold file:text-brand"
                                 type="file"
@@ -149,7 +144,7 @@ export default function Imports({ types, routers, batches }: Props) {
                             />
                             {form.errors.file && <p className="field-error">{form.errors.file}</p>}
                             <p className="mt-2 text-xs leading-5 text-muted">
-                                Required columns: {selectedType?.columns ?? 'Choose an import type.'}
+                                {t('imports.required_columns')}: {selectedType?.columns ?? t('imports.choose_type')}
                             </p>
                         </label>
                     )}
@@ -162,10 +157,9 @@ export default function Imports({ types, routers, batches }: Props) {
                             onChange={(event) => form.setData('dry_run', event.target.checked)}
                         />
                         <span>
-                            <span className="block text-sm font-semibold">Preview only</span>
+                            <span className="block text-sm font-semibold">{t('imports.preview_only')}</span>
                             <span className="mt-1 block text-xs leading-5 text-muted">
-                                No records are created. Upload the corrected file again with this unchecked to commit
-                                valid rows.
+                                {t('imports.preview_description')}
                             </span>
                         </span>
                     </label>
@@ -180,29 +174,27 @@ export default function Imports({ types, routers, batches }: Props) {
                         }
                     >
                         {form.data.dry_run ? <Upload size={16} /> : <CheckCircle2 size={16} />}
-                        {form.data.dry_run ? 'Preview import' : 'Commit import'}
+                        {form.data.dry_run ? t('imports.preview') : t('imports.commit')}
                     </button>
                 </form>
 
                 <div className="card overflow-hidden">
                     <div className="border-b border-line px-6 py-5">
-                        <h2 className="text-lg font-semibold">Latest report</h2>
-                        <p className="mt-1 text-sm text-muted">
-                            The latest preview or commit is shown here after validation.
-                        </p>
+                        <h2 className="text-lg font-semibold">{t('imports.latest_report')}</h2>
+                        <p className="mt-1 text-sm text-muted">{t('imports.latest_report_description')}</p>
                     </div>
                     {result ? (
                         <div>
                             <div className="grid gap-3 border-b border-line p-6 sm:grid-cols-4">
-                                <Metric label="Type" value={labelForType(result.type, types)} />
-                                <Metric label="Rows" value={result.total_rows.toLocaleString()} />
+                                <Metric label={t('Type')} value={labelForType(result.type, types)} />
+                                <Metric label={t('Rows')} value={result.total_rows.toLocaleString()} />
                                 <Metric
-                                    label="Accepted"
+                                    label={t('Accepted')}
                                     value={result.successful_rows.toLocaleString()}
                                     tone="success"
                                 />
                                 <Metric
-                                    label="Rejected"
+                                    label={t('Rejected')}
                                     value={result.failed_rows.toLocaleString()}
                                     tone={result.failed_rows > 0 ? 'warning' : 'success'}
                                 />
@@ -211,14 +203,14 @@ export default function Imports({ types, routers, batches }: Props) {
                                 <table className="w-full min-w-[560px] text-start">
                                     <thead className="sticky top-0 border-b border-line bg-white text-xs font-semibold uppercase tracking-wider text-muted">
                                         <tr>
-                                            <th className="px-6 py-3 text-start">Row</th>
-                                            <th className="px-6 py-3 text-start">Status</th>
-                                            <th className="px-6 py-3 text-start">Validation</th>
+                                            <th className="px-6 py-3 text-start">{t('Row')}</th>
+                                            <th className="px-6 py-3 text-start">{t('Status')}</th>
+                                            <th className="px-6 py-3 text-start">{t('Validation')}</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-line">
                                         {result.report.map((row) => (
-                                            <ReportRow key={`${row.row}-${row.status}`} row={row} />
+                                            <ReportRow key={`${row.row}-${row.status}`} row={row} t={t} />
                                         ))}
                                     </tbody>
                                 </table>
@@ -228,10 +220,8 @@ export default function Imports({ types, routers, batches }: Props) {
                         <div className="grid min-h-80 place-items-center px-6 text-center">
                             <div>
                                 <FileUp className="mx-auto text-muted" size={28} />
-                                <p className="mt-3 font-semibold">No import report yet</p>
-                                <p className="mt-1 text-sm text-muted">
-                                    Choose a file and run a preview to see row-level validation.
-                                </p>
+                                <p className="mt-3 font-semibold">{t('imports.no_report')}</p>
+                                <p className="mt-1 text-sm text-muted">{t('imports.no_report_description')}</p>
                             </div>
                         </div>
                     )}
@@ -241,10 +231,8 @@ export default function Imports({ types, routers, batches }: Props) {
             <div className="card mt-6 overflow-hidden">
                 <div className="flex items-center justify-between border-b border-line px-6 py-5">
                     <div>
-                        <h2 className="text-lg font-semibold">Import history</h2>
-                        <p className="mt-1 text-sm text-muted">
-                            Completed batches remain available for controlled rollback.
-                        </p>
+                        <h2 className="text-lg font-semibold">{t('imports.history')}</h2>
+                        <p className="mt-1 text-sm text-muted">{t('imports.history_description')}</p>
                     </div>
                     <RotateCcw size={18} className="text-muted" />
                 </div>
@@ -252,11 +240,11 @@ export default function Imports({ types, routers, batches }: Props) {
                     <table className="w-full min-w-[900px] text-start">
                         <thead>
                             <tr className="border-b border-line bg-sand/50 text-xs font-semibold uppercase tracking-wider text-muted">
-                                <th className="px-6 py-3 text-start">Import</th>
-                                <th className="px-6 py-3 text-start">Status</th>
-                                <th className="px-6 py-3 text-start">Rows</th>
-                                <th className="px-6 py-3 text-start">Created</th>
-                                <th className="px-6 py-3 text-end">Action</th>
+                                <th className="px-6 py-3 text-start">{t('Import')}</th>
+                                <th className="px-6 py-3 text-start">{t('Status')}</th>
+                                <th className="px-6 py-3 text-start">{t('Rows')}</th>
+                                <th className="px-6 py-3 text-start">{t('Created')}</th>
+                                <th className="px-6 py-3 text-end">{t('Action')}</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-line">
@@ -266,12 +254,13 @@ export default function Imports({ types, routers, batches }: Props) {
                                     batch={batch}
                                     types={types}
                                     canRollback={canRollback(batch.type)}
+                                    t={t}
                                 />
                             ))}
                             {batches.length === 0 && (
                                 <tr>
                                     <td colSpan={5} className="px-6 py-14 text-center text-sm text-muted">
-                                        No imports have been run in this tenant.
+                                        {t('imports.no_history')}
                                     </td>
                                 </tr>
                             )}
@@ -304,7 +293,7 @@ function Metric({
     );
 }
 
-function ReportRow({ row }: { row: ImportBatchReportRow }) {
+function ReportRow({ row, t }: { row: ImportBatchReportRow; t: (key: string) => string }) {
     const accepted = row.status === 'valid' || row.status === 'imported';
     return (
         <tr>
@@ -314,7 +303,7 @@ function ReportRow({ row }: { row: ImportBatchReportRow }) {
                     className={`inline-flex items-center gap-1.5 text-xs font-semibold ${accepted ? 'text-brand' : 'text-coral'}`}
                 >
                     {accepted ? <CheckCircle2 size={14} /> : <AlertTriangle size={14} />}
-                    {row.status}
+                    {t(row.status)}
                 </span>
             </td>
             <td className="px-6 py-3 text-sm text-muted">{rowErrorText(row)}</td>
@@ -322,7 +311,17 @@ function ReportRow({ row }: { row: ImportBatchReportRow }) {
     );
 }
 
-function HistoryRow({ batch, types, canRollback }: { batch: Batch; types: ImportType[]; canRollback: boolean }) {
+function HistoryRow({
+    batch,
+    types,
+    canRollback,
+    t,
+}: {
+    batch: Batch;
+    types: ImportType[];
+    canRollback: boolean;
+    t: (key: string) => string;
+}) {
     const form = useForm({});
     return (
         <tr>
@@ -332,20 +331,20 @@ function HistoryRow({ batch, types, canRollback }: { batch: Batch; types: Import
             </td>
             <td className="px-6 py-4">
                 <span className="rounded-full bg-sand px-2.5 py-1 text-xs font-semibold capitalize">
-                    {batch.status.replace('_', ' ')}
+                    {t(batch.status.replace('_', ' '))}
                 </span>
             </td>
             <td className="px-6 py-4 text-sm text-muted">
-                {batch.successful_rows}/{batch.total_rows} accepted
-                {batch.failed_rows > 0 ? ` · ${batch.failed_rows} rejected` : ''}
+                {batch.successful_rows}/{batch.total_rows} {t('Accepted').toLocaleLowerCase()}
+                {batch.failed_rows > 0 ? ` · ${batch.failed_rows} ${t('Rejected').toLocaleLowerCase()}` : ''}
             </td>
             <td className="px-6 py-4 text-sm text-muted">{formatDate(batch.created_at)}</td>
             <td className="px-6 py-4 text-end">
                 {canRollback && batch.status === 'completed' && (
                     <ConfirmDialog
-                        title="Roll back this completed import?"
-                        description="Financial balance imports are reversed through the journal."
-                        confirmLabel="Roll back import"
+                        title={t('imports.rollback_title')}
+                        description={t('imports.rollback_description')}
+                        confirmLabel={t('imports.rollback')}
                         destructive
                         onConfirm={() => form.post(`/operations/imports/${batch.id}/rollback`)}
                     >
@@ -354,7 +353,7 @@ function HistoryRow({ batch, types, canRollback }: { batch: Batch; types: Import
                             className="inline-flex items-center gap-2 text-sm font-semibold text-coral hover:underline"
                             disabled={form.processing}
                         >
-                            <RotateCcw size={14} /> Roll back
+                            <RotateCcw size={14} /> {t('imports.rollback')}
                         </button>
                     </ConfirmDialog>
                 )}
