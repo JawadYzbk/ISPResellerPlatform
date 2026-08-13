@@ -23,13 +23,12 @@ final class SecurityHeaders
         }
 
         if (in_array((string) config('app.env'), ['local', 'testing'], true)) {
-            $styleSources = [...$styleSources, 'http://localhost:5173', 'http://127.0.0.1:5173', 'http://[::1]:5173'];
+            $styleSources = [...$styleSources, 'http://localhost:5173', 'http://127.0.0.1:5173'];
             $scriptSources = [
                 ...$scriptSources,
                 "'unsafe-eval'",
                 'http://localhost:5173',
                 'http://127.0.0.1:5173',
-                'http://[::1]:5173',
             ];
             $connectSources = [
                 ...$connectSources,
@@ -37,8 +36,6 @@ final class SecurityHeaders
                 'ws://127.0.0.1:5173',
                 'http://localhost:5173',
                 'http://127.0.0.1:5173',
-                'ws://[::1]:5173',
-                'http://[::1]:5173',
             ];
         }
 
