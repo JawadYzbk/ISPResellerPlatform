@@ -1,4 +1,4 @@
-import { Head, Link, router, useForm } from '@inertiajs/react';
+import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
 import { Archive, ArrowLeft, Edit3, MessageSquareText, RotateCcw, Save, X } from 'lucide-react';
 import { useState } from 'react';
 
@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import ResponsiveSelect from '@/components/ui/responsive-select';
 import AppLayout from '@/layouts/AppLayout';
+import { createTranslator } from '@/lib/i18n';
 import type { PageProps } from '@/types';
 
 type TicketResponse = {
@@ -35,6 +36,8 @@ const categories = [
 ];
 
 export default function TicketResponses({ responses }: Props) {
+    const { props } = usePage<PageProps>();
+    const t = createTranslator(props.app.locale);
     const [editingId, setEditingId] = useState<string | null>(null);
     const [responseToArchive, setResponseToArchive] = useState<TicketResponse | null>(null);
     const form = useForm<FormData>({ title: '', body: '', category: 'support', is_active: true });
@@ -75,23 +78,21 @@ export default function TicketResponses({ responses }: Props) {
 
     return (
         <AppLayout>
-            <Head title="Ticket responses" />
+            <Head title={t('ticket_responses.title')} />
             <Link
                 href="/settings/general"
                 className="mb-6 inline-flex items-center gap-2 text-sm font-semibold text-muted hover:text-brand"
             >
-                <ArrowLeft size={16} /> Back to workspace settings
+                <ArrowLeft size={16} /> {t('Back to workspace settings')}
             </Link>
             <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
                 <div>
-                    <p className="eyebrow">Support operations</p>
-                    <h1 className="page-title">Ticket responses</h1>
-                    <p className="page-subtitle">
-                        Give operators consistent, editable replies for common customer situations.
-                    </p>
+                    <p className="eyebrow">{t('tickets.support_operations')}</p>
+                    <h1 className="page-title">{t('ticket_responses.title')}</h1>
+                    <p className="page-subtitle">{t('ticket_responses.subtitle')}</p>
                 </div>
                 <Link href="/operations/tickets" className="button-secondary">
-                    Open ticket queue
+                    {t('ticket_responses.open_queue')}
                 </Link>
             </div>
 
@@ -100,30 +101,29 @@ export default function TicketResponses({ responses }: Props) {
                     <div className="flex items-center justify-between gap-3">
                         <div className="flex items-center gap-2">
                             <MessageSquareText size={18} className="text-brand" />
-                            <h2 className="section-title">{editingId ? 'Edit response' : 'New response'}</h2>
+                            <h2 className="section-title">
+                                {editingId ? t('ticket_responses.edit') : t('ticket_responses.new')}
+                            </h2>
                         </div>
                         {editingId && (
                             <button type="button" className="button-quiet" onClick={resetForm}>
-                                <X size={15} /> Cancel
+                                <X size={15} /> {t('Cancel')}
                             </button>
                         )}
                     </div>
-                    <p className="text-sm text-muted">
-                        Responses are available to staff with ticket reply access. Keep them short enough to
-                        personalize.
-                    </p>
+                    <p className="text-sm text-muted">{t('ticket_responses.form_description')}</p>
                     <label>
-                        <span className="field-label">Title</span>
+                        <span className="field-label">{t('Title')}</span>
                         <input
                             className="field"
                             value={form.data.title}
                             onChange={(event) => form.setData('title', event.target.value)}
-                            placeholder="For example, Payment received"
+                            placeholder={t('ticket_responses.title_placeholder')}
                         />
                         {form.errors.title && <p className="field-error">{form.errors.title}</p>}
                     </label>
                     <label>
-                        <span className="field-label">Category</span>
+                        <span className="field-label">{t('Category')}</span>
                         <ResponsiveSelect
                             className="field"
                             value={form.data.category}
@@ -131,19 +131,19 @@ export default function TicketResponses({ responses }: Props) {
                         >
                             {categories.map((category) => (
                                 <option key={category.value} value={category.value}>
-                                    {category.label}
+                                    {t(category.label)}
                                 </option>
                             ))}
                         </ResponsiveSelect>
                         {form.errors.category && <p className="field-error">{form.errors.category}</p>}
                     </label>
                     <label>
-                        <span className="field-label">Reply text</span>
+                        <span className="field-label">{t('ticket_responses.reply_text')}</span>
                         <textarea
                             className="field min-h-36 resize-y"
                             value={form.data.body}
                             onChange={(event) => form.setData('body', event.target.value)}
-                            placeholder="Write the reusable customer-facing reply"
+                            placeholder={t('ticket_responses.reply_placeholder')}
                         />
                         {form.errors.body && <p className="field-error">{form.errors.body}</p>}
                     </label>
@@ -154,20 +154,18 @@ export default function TicketResponses({ responses }: Props) {
                                 checked={form.data.is_active}
                                 onChange={(event) => form.setData('is_active', event.target.checked)}
                             />
-                            Keep this response available to operators
+                            {t('ticket_responses.keep_available')}
                         </label>
                     )}
                     <button className="button-primary w-full justify-center" disabled={form.processing}>
-                        <Save size={16} /> {editingId ? 'Save response' : 'Create response'}
+                        <Save size={16} /> {editingId ? t('ticket_responses.save') : t('ticket_responses.create')}
                     </button>
                 </form>
 
                 <section className="card overflow-hidden">
                     <div className="border-b border-line px-6 py-5">
-                        <h2 className="section-title">Saved responses</h2>
-                        <p className="mt-1 text-sm text-muted">
-                            Archived responses stay in the workspace so they can be restored or reviewed later.
-                        </p>
+                        <h2 className="section-title">{t('ticket_responses.saved')}</h2>
+                        <p className="mt-1 text-sm text-muted">{t('ticket_responses.saved_description')}</p>
                     </div>
                     <div className="divide-y divide-line">
                         {responses.map((response) => (
@@ -178,7 +176,9 @@ export default function TicketResponses({ responses }: Props) {
                                             <h3 className="font-semibold">{response.title}</h3>
                                             <span className="badge bg-sand text-muted">{response.category}</span>
                                             {!response.is_active && (
-                                                <span className="badge bg-amber-50 text-amber-700">Archived</span>
+                                                <span className="badge bg-amber-50 text-amber-700">
+                                                    {t('Archived')}
+                                                </span>
                                             )}
                                         </div>
                                         <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-muted">
@@ -192,7 +192,7 @@ export default function TicketResponses({ responses }: Props) {
                                             onClick={() => edit(response)}
                                         >
                                             {response.is_active ? <Edit3 size={15} /> : <RotateCcw size={15} />}
-                                            {response.is_active ? 'Edit' : 'Restore'}
+                                            {response.is_active ? t('Edit') : t('Restore')}
                                         </button>
                                         {response.is_active && (
                                             <button
@@ -200,7 +200,7 @@ export default function TicketResponses({ responses }: Props) {
                                                 className="button-secondary text-coral"
                                                 onClick={() => setResponseToArchive(response)}
                                             >
-                                                <Archive size={15} /> Archive
+                                                <Archive size={15} /> {t('Archive')}
                                             </button>
                                         )}
                                     </div>
@@ -208,7 +208,7 @@ export default function TicketResponses({ responses }: Props) {
                             </article>
                         ))}
                         {responses.length === 0 && (
-                            <p className="p-6 text-sm text-muted">No saved ticket responses yet.</p>
+                            <p className="p-6 text-sm text-muted">{t('ticket_responses.none')}</p>
                         )}
                     </div>
                 </section>
@@ -217,15 +217,17 @@ export default function TicketResponses({ responses }: Props) {
             <AlertDialog open={responseToArchive !== null} onOpenChange={(open) => !open && setResponseToArchive(null)}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>Archive this ticket response?</AlertDialogTitle>
+                        <AlertDialogTitle>{t('ticket_responses.archive_title')}</AlertDialogTitle>
                         <AlertDialogDescription>
                             “{responseToArchive?.title}” will disappear from the ticket composer. You can restore it
                             later.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogCancel>Keep response</AlertDialogCancel>
-                        <AlertDialogAction onClick={archive}>Archive response</AlertDialogAction>
+                        <AlertDialogCancel>{t('ticket_responses.keep_response')}</AlertDialogCancel>
+                        <AlertDialogAction onClick={archive}>
+                            {t('ticket_responses.archive_response')}
+                        </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
