@@ -45,7 +45,16 @@ type CatalogItem = {
     reorder_level: number;
     is_active: boolean;
 };
-type CatalogWarehouse = { id: number; code: string; name: string; type: 'warehouse' | 'van'; is_active: boolean };
+type CatalogWarehouse = {
+    id: number;
+    code: string;
+    name: string;
+    type: 'warehouse' | 'van' | 'collector';
+    assigned_user_id: number | null;
+    assigned_user: { id: number; name: string } | null;
+    is_active: boolean;
+};
+type FieldUser = { id: number; name: string; role: 'collector' | 'technician' };
 type InventoryMovement = {
     id: string;
     movement_type: string;
@@ -75,6 +84,7 @@ type Props = PageProps & {
     bulkWarehouses: BulkWarehouse[];
     catalogWarehouses: CatalogWarehouse[];
     transferWarehouses: BulkWarehouse[];
+    fieldUsers: FieldUser[];
     movements: InventoryMovement[];
 };
 
@@ -92,6 +102,7 @@ export default function InventoryPage({
     bulkWarehouses,
     catalogWarehouses,
     transferWarehouses,
+    fieldUsers,
     movements,
 }: Props) {
     const [search, setSearch] = useState(filters.search ?? '');
@@ -100,7 +111,7 @@ export default function InventoryPage({
     const [selectedServices, setSelectedServices] = useState<Record<number, string>>({});
     const [selectedWarehouses, setSelectedWarehouses] = useState<Record<number, string>>({});
     const itemForm = useForm({ sku: '', name: '', category: '', is_serialized: false, reorder_level: '0' });
-    const warehouseForm = useForm({ name: '', code: '', type: 'warehouse' });
+    const warehouseForm = useForm({ name: '', code: '', type: 'warehouse', assigned_user_id: '' });
     const [editingItemId, setEditingItemId] = useState<number | null>(null);
     const [editingWarehouseId, setEditingWarehouseId] = useState<number | null>(null);
     const itemEditForm = useForm({
@@ -111,8 +122,21 @@ export default function InventoryPage({
         reorder_level: '0',
         is_active: true,
     });
-    const warehouseEditForm = useForm({ name: '', code: '', type: 'warehouse', is_active: true });
+    const warehouseEditForm = useForm({
+        name: '',
+        code: '',
+        type: 'warehouse',
+        assigned_user_id: '',
+        is_active: true,
+    });
     const receiveForm = useForm({ inventory_item_id: '', warehouse_id: '', quantity: '', note: '' });
+    const transferForm = useForm({
+        inventory_item_id: '',
+        source_warehouse_id: '',
+        destination_warehouse_id: '',
+        quantity: '',
+        note: '',
+    });
     const unitForm = useForm({ inventory_item_id: '', warehouse_id: '', serial_number: '' });
 
     const applyFilters = (event: React.FormEvent) => {
@@ -136,6 +160,11 @@ export default function InventoryPage({
     const submitReceive = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         receiveForm.post('/operations/inventory/bulk-receive', { onSuccess: () => receiveForm.reset() });
+    };
+
+    const submitBulkTransfer = (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        transferForm.post('/operations/inventory/bulk-transfer', { onSuccess: () => transferForm.reset() });
     };
 
     const submitItem = (event: React.FormEvent<HTMLFormElement>) => {
@@ -182,6 +211,7 @@ export default function InventoryPage({
             name: warehouse.name,
             code: warehouse.code,
             type: warehouse.type,
+            assigned_user_id: warehouse.assigned_user_id ? String(warehouse.assigned_user_id) : '',
             is_active: warehouse.is_active,
         });
         warehouseEditForm.clearErrors();
@@ -327,7 +357,7 @@ export default function InventoryPage({
                             onSubmit={submitWarehouse}
                             className="grid gap-3 rounded-xl border border-line bg-sand/30 p-4 sm:grid-cols-2"
                         >
-                            <p className="text-sm font-semibold sm:col-span-2">New warehouse or van</p>
+                            <p className="text-sm font-semibold sm:col-span-2">New stock location</p>
                             <label>
                                 <span className="field-label">Name</span>
                                 <input
@@ -357,18 +387,50 @@ export default function InventoryPage({
                                 <ResponsiveSelect
                                     className="field"
                                     value={warehouseForm.data.type}
-                                    onChange={(event) => warehouseForm.setData('type', event.target.value)}
+                                    onChange={(event) =>
+                                        warehouseForm.setData({
+                                            ...warehouseForm.data,
+                                            type: event.target.value,
+                                            assigned_user_id:
+                                                event.target.value === 'warehouse'
+                                                    ? ''
+                                                    : warehouseForm.data.assigned_user_id,
+                                        })
+                                    }
                                 >
                                     <option value="warehouse">Warehouse</option>
                                     <option value="van">Technician van</option>
+                                    <option value="collector">Collector stock</option>
                                 </ResponsiveSelect>
                                 {warehouseForm.errors.type && (
                                     <p className="field-error">{warehouseForm.errors.type}</p>
                                 )}
                             </label>
-                            <div className="flex items-end">
+                            {warehouseForm.data.type !== 'warehouse' && (
+                                <label>
+                                    <span className="field-label">Custodian</span>
+                                    <ResponsiveSelect
+                                        className="field"
+                                        value={warehouseForm.data.assigned_user_id}
+                                        onChange={(event) =>
+                                            warehouseForm.setData('assigned_user_id', event.target.value)
+                                        }
+                                    >
+                                        <option value="">Select field user</option>
+                                        {fieldUsers.map((user) => (
+                                            <option key={user.id} value={user.id}>
+                                                {user.name} · {user.role === 'collector' ? 'Collector' : 'Technician'}
+                                            </option>
+                                        ))}
+                                    </ResponsiveSelect>
+                                    {warehouseForm.errors.assigned_user_id && (
+                                        <p className="field-error">{warehouseForm.errors.assigned_user_id}</p>
+                                    )}
+                                </label>
+                            )}
+                            <div className="flex items-end sm:col-span-2">
                                 <button className="button-secondary w-full" disabled={warehouseForm.processing}>
-                                    <Package size={15} /> Create storage
+                                    <Package size={15} /> Create location
                                 </button>
                             </div>
                         </form>
@@ -637,13 +699,51 @@ export default function InventoryPage({
                                                         className="field"
                                                         value={warehouseEditForm.data.type}
                                                         onChange={(event) =>
-                                                            warehouseEditForm.setData('type', event.target.value)
+                                                            warehouseEditForm.setData({
+                                                                ...warehouseEditForm.data,
+                                                                type: event.target.value,
+                                                                assigned_user_id:
+                                                                    event.target.value === 'warehouse'
+                                                                        ? ''
+                                                                        : warehouseEditForm.data.assigned_user_id,
+                                                            })
                                                         }
                                                     >
                                                         <option value="warehouse">Warehouse</option>
                                                         <option value="van">Technician van</option>
+                                                        <option value="collector">Collector stock</option>
                                                     </ResponsiveSelect>
                                                 </label>
+                                                {warehouseEditForm.data.type !== 'warehouse' && (
+                                                    <label>
+                                                        <span className="field-label">Custodian</span>
+                                                        <ResponsiveSelect
+                                                            className="field"
+                                                            value={warehouseEditForm.data.assigned_user_id}
+                                                            onChange={(event) =>
+                                                                warehouseEditForm.setData(
+                                                                    'assigned_user_id',
+                                                                    event.target.value,
+                                                                )
+                                                            }
+                                                        >
+                                                            <option value="">Select field user</option>
+                                                            {fieldUsers.map((user) => (
+                                                                <option key={user.id} value={user.id}>
+                                                                    {user.name} ·{' '}
+                                                                    {user.role === 'collector'
+                                                                        ? 'Collector'
+                                                                        : 'Technician'}
+                                                                </option>
+                                                            ))}
+                                                        </ResponsiveSelect>
+                                                        {warehouseEditForm.errors.assigned_user_id && (
+                                                            <p className="field-error">
+                                                                {warehouseEditForm.errors.assigned_user_id}
+                                                            </p>
+                                                        )}
+                                                    </label>
+                                                )}
                                                 <label>
                                                     <span className="field-label">Status</span>
                                                     <ResponsiveSelect
@@ -685,8 +785,17 @@ export default function InventoryPage({
                                                     <p className="truncate text-sm font-semibold">{warehouse.name}</p>
                                                     <p className="mt-1 text-xs text-muted">
                                                         {warehouse.code} ·{' '}
-                                                        {warehouse.type === 'van' ? 'Technician van' : 'Warehouse'}
+                                                        {warehouse.type === 'van'
+                                                            ? 'Technician van'
+                                                            : warehouse.type === 'collector'
+                                                              ? 'Collector stock'
+                                                              : 'Warehouse'}
                                                     </p>
+                                                    {warehouse.assigned_user && (
+                                                        <p className="mt-1 text-xs text-muted">
+                                                            Custodian: {warehouse.assigned_user.name}
+                                                        </p>
+                                                    )}
                                                 </div>
                                                 <div className="flex shrink-0 items-center gap-2">
                                                     <span
@@ -804,6 +913,104 @@ export default function InventoryPage({
                         </label>
                     </form>
                 )}
+                {canTransfer && bulkItems.length > 0 && bulkWarehouses.length > 1 && (
+                    <form
+                        onSubmit={submitBulkTransfer}
+                        className="mt-5 grid gap-4 border-t border-line pt-5 sm:grid-cols-2 lg:grid-cols-4 lg:items-end"
+                    >
+                        <div className="sm:col-span-2 lg:col-span-4">
+                            <p className="text-sm font-semibold">Move stock between locations</p>
+                            <p className="mt-1 text-xs text-muted">
+                                Replenish a collector or technician, or return unused stock to the warehouse.
+                            </p>
+                        </div>
+                        <label>
+                            <span className="field-label">Material</span>
+                            <ResponsiveSelect
+                                className="field"
+                                value={transferForm.data.inventory_item_id}
+                                onChange={(event) => transferForm.setData('inventory_item_id', event.target.value)}
+                            >
+                                <option value="">Select item</option>
+                                {bulkItems.map((item) => (
+                                    <option key={item.id} value={item.id}>
+                                        {item.sku} · {item.name}
+                                    </option>
+                                ))}
+                            </ResponsiveSelect>
+                            {transferForm.errors.inventory_item_id && (
+                                <p className="field-error">{transferForm.errors.inventory_item_id}</p>
+                            )}
+                        </label>
+                        <label>
+                            <span className="field-label">From</span>
+                            <ResponsiveSelect
+                                className="field"
+                                value={transferForm.data.source_warehouse_id}
+                                onChange={(event) => transferForm.setData('source_warehouse_id', event.target.value)}
+                            >
+                                <option value="">Select source</option>
+                                {bulkWarehouses.map((warehouse) => (
+                                    <option key={warehouse.id} value={warehouse.id}>
+                                        {warehouse.code} · {warehouse.name}
+                                    </option>
+                                ))}
+                            </ResponsiveSelect>
+                            {transferForm.errors.source_warehouse_id && (
+                                <p className="field-error">{transferForm.errors.source_warehouse_id}</p>
+                            )}
+                        </label>
+                        <label>
+                            <span className="field-label">To</span>
+                            <ResponsiveSelect
+                                className="field"
+                                value={transferForm.data.destination_warehouse_id}
+                                onChange={(event) =>
+                                    transferForm.setData('destination_warehouse_id', event.target.value)
+                                }
+                            >
+                                <option value="">Select destination</option>
+                                {bulkWarehouses
+                                    .filter(
+                                        (warehouse) => String(warehouse.id) !== transferForm.data.source_warehouse_id,
+                                    )
+                                    .map((warehouse) => (
+                                        <option key={warehouse.id} value={warehouse.id}>
+                                            {warehouse.code} · {warehouse.name}
+                                        </option>
+                                    ))}
+                            </ResponsiveSelect>
+                            {transferForm.errors.destination_warehouse_id && (
+                                <p className="field-error">{transferForm.errors.destination_warehouse_id}</p>
+                            )}
+                        </label>
+                        <label>
+                            <span className="field-label">Quantity</span>
+                            <input
+                                className="field"
+                                inputMode="decimal"
+                                value={transferForm.data.quantity}
+                                onChange={(event) => transferForm.setData('quantity', event.target.value)}
+                                placeholder="0.000"
+                            />
+                            {transferForm.errors.quantity && (
+                                <p className="field-error">{transferForm.errors.quantity}</p>
+                            )}
+                        </label>
+                        <label className="sm:col-span-2 lg:col-span-3">
+                            <span className="field-label">Transfer note</span>
+                            <input
+                                className="field"
+                                value={transferForm.data.note}
+                                onChange={(event) => transferForm.setData('note', event.target.value)}
+                                placeholder="Optional custody or replenishment note"
+                            />
+                        </label>
+                        <button type="submit" className="button-secondary" disabled={transferForm.processing}>
+                            Transfer stock
+                        </button>
+                    </form>
+                )}
             </section>
 
             <section className="card mt-6 overflow-hidden">
@@ -827,6 +1034,8 @@ export default function InventoryPage({
                             <option value="assign">Assign</option>
                             <option value="return">Return</option>
                             <option value="transfer">Transfer</option>
+                            <option value="transfer_out">Bulk transfer out</option>
+                            <option value="transfer_in">Bulk transfer in</option>
                         </ResponsiveSelect>
                     </label>
                 </div>

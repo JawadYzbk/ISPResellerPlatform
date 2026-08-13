@@ -111,7 +111,7 @@ final class InventoryOperationsController extends Controller
             'assignableServices' => $assignableServices,
             'bulkBalances' => $bulkBalances,
             'movements' => $listInventoryMovements->handle($request->string('movement_type')->toString() ?: null),
-            'bulkItems' => $canReceive
+            'bulkItems' => ($canReceive || $canTransfer)
                 ? InventoryItem::query()->where('is_serialized', false)->where('is_active', true)->orderBy('name')->get(['id', 'sku', 'name'])->values()
                 : [],
             'serializedItems' => $canReceive
@@ -120,7 +120,7 @@ final class InventoryOperationsController extends Controller
             'catalogItems' => $canReceive
                 ? InventoryItem::query()->orderByDesc('is_active')->orderBy('name')->get(['id', 'sku', 'name', 'category', 'is_serialized', 'reorder_level', 'is_active'])->values()
                 : [],
-            'bulkWarehouses' => $canReceive
+            'bulkWarehouses' => ($canReceive || $canTransfer)
                 ? Warehouse::query()->where('is_active', true)->orderBy('code')->get(['id', 'code', 'name'])->values()
                 : [],
             'catalogWarehouses' => $canReceive
