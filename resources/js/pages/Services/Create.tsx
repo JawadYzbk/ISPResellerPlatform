@@ -65,6 +65,16 @@ export default function ServicesCreate({ customer, plans, routers }: Props) {
         [form.data.plan_id, plans],
     );
     const needsRouter = form.data.provisioning_mode === 'radius' || form.data.provisioning_mode === 'mikrotik';
+    const fieldA11y = (name: keyof typeof form.data) => ({
+        'aria-invalid': Boolean(form.errors[name]),
+        'aria-describedby': form.errors[name] ? `${name}-error` : undefined,
+    });
+    const fieldError = (name: keyof typeof form.data) =>
+        form.errors[name] ? (
+            <p id={`${name}-error`} className="field-error" role="alert">
+                {t(form.errors[name])}
+            </p>
+        ) : null;
 
     const generatePassword = () => {
         const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@$%';
@@ -103,6 +113,7 @@ export default function ServicesCreate({ customer, plans, routers }: Props) {
                         <ResponsiveSelect
                             id="plan_id"
                             className="field"
+                            {...fieldA11y('plan_id')}
                             value={form.data.plan_id}
                             onChange={(event) => form.setData('plan_id', event.target.value)}
                         >
@@ -113,7 +124,7 @@ export default function ServicesCreate({ customer, plans, routers }: Props) {
                                 </option>
                             ))}
                         </ResponsiveSelect>
-                        {form.errors.plan_id && <p className="field-error" role="alert">{t(form.errors.plan_id)}</p>}
+                        {fieldError('plan_id')}
                         {selectedPlan && (
                             <p className="mt-1 text-xs text-muted">
                                 {t('customer.plan_currency')}: {selectedPlan.currency}
@@ -128,10 +139,11 @@ export default function ServicesCreate({ customer, plans, routers }: Props) {
                             <input
                                 id="username"
                                 className="field"
+                                {...fieldA11y('username')}
                                 value={form.data.username}
                                 onChange={(event) => form.setData('username', event.target.value)}
                             />
-                            {form.errors.username && <p className="field-error" role="alert">{t(form.errors.username)}</p>}
+                            {fieldError('username')}
                         </div>
                         <div>
                             <label className="field-label" htmlFor="password">
@@ -142,6 +154,7 @@ export default function ServicesCreate({ customer, plans, routers }: Props) {
                                     id="password"
                                     type="password"
                                     className="field min-w-0 flex-1"
+                                    {...fieldA11y('password')}
                                     value={form.data.password}
                                     onChange={(event) => form.setData('password', event.target.value)}
                                 />
@@ -154,7 +167,7 @@ export default function ServicesCreate({ customer, plans, routers }: Props) {
                                     <KeyRound size={16} />
                                 </button>
                             </div>
-                            {form.errors.password && <p className="field-error" role="alert">{t(form.errors.password)}</p>}
+                            {fieldError('password')}
                             <p className="mt-1 text-xs text-muted">{t('service.password_note')}</p>
                         </div>
                     </div>
@@ -165,6 +178,7 @@ export default function ServicesCreate({ customer, plans, routers }: Props) {
                         <ResponsiveSelect
                             id="billing_anchor_day"
                             className="field"
+                            {...fieldA11y('billing_anchor_day')}
                             value={form.data.billing_anchor_day}
                             onChange={(event) => form.setData('billing_anchor_day', event.target.value)}
                         >
@@ -175,16 +189,22 @@ export default function ServicesCreate({ customer, plans, routers }: Props) {
                                 </option>
                             ))}
                         </ResponsiveSelect>
-                        {form.errors.billing_anchor_day && (
-                            <p className="field-error" role="alert">{t(form.errors.billing_anchor_day)}</p>
-                        )}
+                        {fieldError('billing_anchor_day')}
                         <p className="mt-1 text-xs text-pretty text-muted">
                             {t('The first renewal invoice is prorated from its issue date to this day. Days 29–31 clamp to shorter months.')}
                         </p>
                     </div>
                     <div>
-                        <p className="field-label">{t('customer.provisioning_mode')}</p>
-                        <div className="grid gap-3 sm:grid-cols-2">
+                        <p id="provisioning-mode-label" className="field-label">
+                            {t('customer.provisioning_mode')}
+                        </p>
+                        <div
+                            className="grid gap-3 sm:grid-cols-2"
+                            role="radiogroup"
+                            aria-labelledby="provisioning-mode-label"
+                            aria-describedby={form.errors.provisioning_mode ? 'provisioning_mode-error' : undefined}
+                            aria-invalid={Boolean(form.errors.provisioning_mode)}
+                        >
                             {modes.map((mode) => (
                                 <label
                                     key={mode.value}
@@ -211,9 +231,7 @@ export default function ServicesCreate({ customer, plans, routers }: Props) {
                                 </label>
                             ))}
                         </div>
-                        {form.errors.provisioning_mode && (
-                            <p className="field-error" role="alert">{t(form.errors.provisioning_mode)}</p>
-                        )}
+                        {fieldError('provisioning_mode')}
                     </div>
                     {needsRouter && (
                         <div>
@@ -223,6 +241,7 @@ export default function ServicesCreate({ customer, plans, routers }: Props) {
                             <ResponsiveSelect
                                 id="router_id"
                                 className="field"
+                                {...fieldA11y('router_id')}
                                 value={form.data.router_id}
                                 onChange={(event) => form.setData('router_id', event.target.value)}
                             >
@@ -233,7 +252,7 @@ export default function ServicesCreate({ customer, plans, routers }: Props) {
                                     </option>
                                 ))}
                             </ResponsiveSelect>
-                            {form.errors.router_id && <p className="field-error" role="alert">{t(form.errors.router_id)}</p>}
+                            {fieldError('router_id')}
                         </div>
                     )}
                     <div className="flex items-start gap-3 rounded-xl bg-sand/60 p-4 text-sm text-muted">
