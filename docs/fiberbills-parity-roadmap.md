@@ -44,7 +44,7 @@ Sources:
 | Custom billing cycle per subscriber | Delivered for monthly prepaid billing | Each service can follow its plan duration or use a day-of-month anchor. Initial and transition periods use previewed half-up proration, days 29–31 clamp safely, open renewal invoices lock their quote, and paid renewal applies the scheduled anchor. |
 | Subscription, usage-based and one-time billing combinations | Partial | Add recurring invoice items and a metered-rating engine over usage/readings; retain operator-created invoice lines. |
 | Plan upgrades and renewals | Delivered | Keep immediate/next-cycle swaps, proration, multi-period renewal and router/RADIUS sync. |
-| Bulk billing operations | Partial | Add a previewable bulk invoice/renewal desk with row-level outcomes and idempotent retries. |
+| Bulk billing operations | Delivered for responsive web | Staff can preview due renewals, distinguish ready/open/blocked rows, issue a selected batch, review row-level outcomes, and retry failed rows with the same idempotency key; scheduled billing remains available for unattended runs. |
 | PDF invoices, receipts and Excel exports | Delivered | A4 documents and compact 58/80 mm browser-printable receipts are delivered; Bluetooth printing remains mobile-phase work. |
 | Revenue, pending, overdue and financial reports | Delivered | Keep allocation-backed aging, margin, ARPU, retention, usage and reseller reporting. |
 | Cash collection and automatic reconciliation | Delivered | Keep append-only payments, cash shifts, allocations, reversals and daily collector totals. |
@@ -93,7 +93,7 @@ Sources:
 ### Phase 3: billing and finance breadth
 
 1. Per-service custom billing anchors and cycle-change previews. **Delivered for monthly prepaid billing.**
-2. Recurring invoice items, usage rating and safe bulk billing.
+2. Recurring invoice items and usage rating; safe bulk billing is delivered for responsive web.
 3. Generic operational expenses with approval and ledger posting. **Delivered for responsive web.**
 4. Branded public payment/statement links and compact browser receipts. **Delivered for responsive web.**
 5. Owner-facing backup health and audited business exports.
