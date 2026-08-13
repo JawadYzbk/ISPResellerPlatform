@@ -12,13 +12,16 @@ use App\Actions\GetTenantReadiness;
 use App\Actions\GetWhatsAppSetupStatus;
 use App\Actions\GetWorkspaceSetupSignals;
 use App\Actions\QueueWhatsAppTestMessage;
+use App\Actions\UpdateTenantIntegrationSettings;
 use App\Actions\UpdateTenantSettings;
 use App\Actions\UpdateWhatsAppAccount;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\TenantIntegrationSettingsRequest;
 use App\Http\Requests\TenantSettingsRequest;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Models\WhatsAppAccount;
+use App\Support\TenantIntegrationSettings;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -84,6 +87,96 @@ final class SettingsController extends Controller
             ])->values()->all(),
             'providerChecks' => $request->session()->get('provider_checks'),
         ]);
+    }
+
+    public function setup(Request $request, GetTenantReadiness $readiness): Response
+    {
+        $user = $request->user();
+        abort_unless($user instanceof User && $user->can('settings.manage'), 403);
+        $tenant = Tenant::query()->find($user->tenant_id);
+        abort_unless($tenant instanceof Tenant, 403);
+
+        $checks = $readiness->handle($tenant);
+
+        return Inertia::render('Settings/Setup', [
+            'checks' => collect($checks)->map(fn (array $check, string $name): array => [
+                'name' => $name,
+                ...$check,
+            ])->values()->all(),
+        ]);
+    }
+
+    public function integrations(Request $request, TenantIntegrationSettings $settings): Response
+    {
+        $user = $request->user();
+        abort_unless($user instanceof User && $user->can('settings.manage'), 403);
+        $tenant = Tenant::query()->find($user->tenant_id);
+        abort_unless($tenant instanceof Tenant, 403);
+
+        $resolved = $settings->resolved($tenant);
+        $stored = $settings->stored($tenant);
+        $configured = static fn (mixed $value): bool => is_string($value) ? trim($value) !== '' : $value !== null;
+        $secretPaths = [
+            'whatsapp_cloud_token' => 'whatsapp.token',
+            'whatsapp_phone_number_id' => 'whatsapp.phone_number_id',
+            'whatsapp_web_token' => 'whatsapp.web.token',
+            'whatsapp_webhook_secret' => 'webhooks.secrets.whatsapp_web',
+            'stripe_secret' => 'stripe.secret',
+            'stripe_publishable_key' => 'stripe.publishable_key',
+            'stripe_webhook_secret' => 'stripe.webhook_secret',
+            'whish_channel' => 'whish.channel',
+            'whish_secret' => 'whish.secret',
+        ];
+
+        return Inertia::render('Settings/Integrations', [
+            'settings' => [
+                'payment_driver' => (string) ($resolved['payments.driver'] ?? 'null'),
+                'frankfurter_enabled' => (bool) ($resolved['frankfurter.enabled'] ?? false),
+                'frankfurter_currency_catalog_enabled' => (bool) ($resolved['frankfurter.currency_catalog_enabled'] ?? true),
+                'frankfurter_endpoint' => (string) ($resolved['frankfurter.endpoint'] ?? ''),
+                'frankfurter_connect_timeout' => (int) ($resolved['frankfurter.connect_timeout'] ?? 2),
+                'frankfurter_timeout' => (int) ($resolved['frankfurter.timeout'] ?? 10),
+                'frankfurter_quotes' => implode(',', (array) ($resolved['frankfurter.quotes'] ?? [])),
+                'whatsapp_mode' => (string) ($resolved['whatsapp.mode'] ?? 'cloud'),
+                'whatsapp_web_enabled' => (bool) ($resolved['whatsapp.web.enabled'] ?? false),
+                'whatsapp_web_endpoint' => (string) ($resolved['whatsapp.web.endpoint'] ?? ''),
+                'whatsapp_web_client_id' => (string) ($resolved['whatsapp.web.client_id'] ?? ''),
+                'whatsapp_web_webhook_url' => (string) ($resolved['whatsapp.web.webhook_url'] ?? ''),
+                'stripe_endpoint' => (string) ($resolved['stripe.endpoint'] ?? ''),
+                'stripe_webhook_tolerance' => (int) ($resolved['stripe.webhook_tolerance'] ?? 300),
+                'stripe_timeout' => (int) ($resolved['stripe.timeout'] ?? 15),
+                'whish_enabled' => (bool) ($resolved['whish.enabled'] ?? false),
+                'whish_environment' => (string) ($resolved['whish.environment'] ?? 'sandbox'),
+                'whish_website_url' => (string) ($resolved['whish.website_url'] ?? ''),
+                'whish_endpoint' => (string) ($resolved['whish.endpoint'] ?? ''),
+                'whish_timeout' => (int) ($resolved['whish.timeout'] ?? 15),
+                'whish_success_callback_url' => (string) ($resolved['whish.success_callback_url'] ?? ''),
+                'whish_failure_callback_url' => (string) ($resolved['whish.failure_callback_url'] ?? ''),
+                'whish_success_redirect_url' => (string) ($resolved['whish.success_redirect_url'] ?? ''),
+                'whish_failure_redirect_url' => (string) ($resolved['whish.failure_redirect_url'] ?? ''),
+            ],
+            'configured' => collect($secretPaths)->mapWithKeys(
+                fn (string $path, string $field): array => [$field => $configured($resolved[$path] ?? null)],
+            )->all(),
+            'sources' => collect($secretPaths)->mapWithKeys(
+                fn (string $path, string $field): array => [$field => array_key_exists($path, $stored) ? 'workspace' : ($configured($resolved[$path] ?? null) ? 'environment' : 'missing')],
+            )->all(),
+        ]);
+    }
+
+    public function updateIntegrations(
+        TenantIntegrationSettingsRequest $request,
+        UpdateTenantIntegrationSettings $update,
+    ): RedirectResponse {
+        $user = $request->user();
+        abort_unless($user instanceof User && $user->can('settings.manage'), 403);
+        $tenant = Tenant::query()->find($user->tenant_id);
+        abort_unless($tenant instanceof Tenant, 403);
+        $update->handle($tenant, $request->validated());
+
+        return redirect()->route('settings.integrations')
+            ->with('success_title', 'Integration settings saved.')
+            ->with('success', 'Provider configuration updated for this workspace.');
     }
 
     public function providerCheck(Request $request, CheckProviderConnectivity $check): RedirectResponse

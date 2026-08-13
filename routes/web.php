@@ -111,6 +111,9 @@ Route::middleware(['auth', 'tenant', '2fa'])->group(function (): void {
     Route::get('/search', WorkspaceSearchController::class)->name('workspace.search');
     Route::get('/settings', fn () => redirect()->route('settings.general'))->name('settings');
     Route::get('/settings/general', [SettingsController::class, 'general'])->name('settings.general');
+    Route::get('/settings/setup', [SettingsController::class, 'setup'])->name('settings.setup');
+    Route::get('/settings/integrations', [SettingsController::class, 'integrations'])->name('settings.integrations');
+    Route::put('/settings/integrations', [SettingsController::class, 'updateIntegrations'])->middleware('recent-auth')->name('settings.integrations.update');
     Route::get('/settings/readiness', [SettingsController::class, 'readiness'])->name('settings.readiness');
     Route::post('/settings/readiness/provider-check', [SettingsController::class, 'providerCheck'])->middleware('recent-auth')->name('settings.readiness.provider-check');
     Route::get('/settings/locations', [LocationOperationsController::class, 'index'])->name('settings.locations');

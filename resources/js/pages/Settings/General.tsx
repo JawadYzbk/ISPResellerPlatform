@@ -120,6 +120,9 @@ export default function GeneralSettings({ tenant, settings, currencies, payments
                     {t('Control tenant identity, business time, currency, and automation defaults.')}
                 </p>
                 <div className="mt-5 flex gap-2">
+                    <Link href="/settings/setup" className="button-primary">
+                        {t('First-time setup')}
+                    </Link>
                     <Link href="/settings/general" className="button-secondary">
                         {t('General')}
                     </Link>
@@ -165,7 +168,7 @@ export default function GeneralSettings({ tenant, settings, currencies, payments
                                 {payments.whish.detail}
                             </p>
                             <Link
-                                href={payments.whish.ready ? '/customers' : '/settings/readiness'}
+                                href={payments.whish.ready ? '/customers' : '/settings/integrations#whish'}
                                 className="mt-3 inline-flex text-xs font-semibold text-brand"
                             >
                                 {payments.whish.ready ? t('Open customer collection') : t('Open readiness checklist')} →
@@ -179,7 +182,7 @@ export default function GeneralSettings({ tenant, settings, currencies, payments
                                 {payments.stripe.detail}
                             </p>
                             <Link
-                                href={payments.stripe.ready ? '#payment-channels' : '/settings/readiness'}
+                                href={payments.stripe.ready ? '#payment-channels' : '/settings/integrations#stripe'}
                                 className="mt-3 inline-flex text-xs font-semibold text-brand"
                             >
                                 {payments.stripe.ready ? t('Review customer portal') : t('Open readiness checklist')} →
@@ -195,8 +198,8 @@ export default function GeneralSettings({ tenant, settings, currencies, payments
                                 {t('The remaining workspace checks are visible here.')}
                             </p>
                         </div>
-                        <Link href="/settings/whatsapp" className="button-quiet">
-                            {t('Open messaging setup')}
+                        <Link href="/settings/integrations" className="button-quiet">
+                            {t('Open integration settings')}
                         </Link>
                     </div>
                     <div className="mt-5 grid gap-4 md:grid-cols-3">
