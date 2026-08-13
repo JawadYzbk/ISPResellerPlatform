@@ -140,6 +140,16 @@ export default function InventoryPage({
 
         return t('inventory.' + key);
     };
+    const fieldA11y = (id: string, error?: string) => ({
+        'aria-invalid': Boolean(error),
+        'aria-describedby': error ? `${id}-error` : undefined,
+    });
+    const fieldError = (id: string, error?: string) =>
+        error ? (
+            <p id={`${id}-error`} className="field-error" role="alert">
+                {t(error)}
+            </p>
+        ) : null;
     const [search, setSearch] = useState(filters.search ?? '');
     const [status, setStatus] = useState(filters.status ?? '');
     const [movementType, setMovementType] = useState(filters.movement_type ?? '');
@@ -350,36 +360,43 @@ export default function InventoryPage({
                             <label>
                                 <span className="field-label">{t('SKU')}</span>
                                 <input
+                                    id="item-sku"
                                     className="field"
+                                    {...fieldA11y('item-sku', itemForm.errors.sku)}
                                     value={itemForm.data.sku}
                                     onChange={(event) => itemForm.setData('sku', event.target.value)}
                                     placeholder="CABLE-UTP"
                                 />
-                                {itemForm.errors.sku && <p className="field-error" role="alert">{t(itemForm.errors.sku)}</p>}
+                                {fieldError('item-sku', itemForm.errors.sku)}
                             </label>
                             <label>
                                 <span className="field-label">{t('Name')}</span>
                                 <input
+                                    id="item-name"
                                     className="field"
+                                    {...fieldA11y('item-name', itemForm.errors.name)}
                                     value={itemForm.data.name}
                                     onChange={(event) => itemForm.setData('name', event.target.value)}
                                     placeholder={t('Outdoor UTP cable')}
                                 />
-                                {itemForm.errors.name && <p className="field-error" role="alert">{t(itemForm.errors.name)}</p>}
+                                {fieldError('item-name', itemForm.errors.name)}
                             </label>
                             <label>
                                 <span className="field-label">{t('Category')}</span>
                                 <input
+                                    id="item-category"
                                     className="field"
+                                    {...fieldA11y('item-category', itemForm.errors.category)}
                                     value={itemForm.data.category}
                                     onChange={(event) => itemForm.setData('category', event.target.value)}
                                     placeholder={t('cable')}
                                 />
-                                {itemForm.errors.category && <p className="field-error" role="alert">{t(itemForm.errors.category)}</p>}
+                                {fieldError('item-category', itemForm.errors.category)}
                             </label>
                             <label>
                                 <span className="field-label">{t('inventory.inventory_type')}</span>
                                 <ResponsiveSelect
+                                    id="item-type"
                                     className="field"
                                     value={itemForm.data.is_serialized ? 'serialized' : 'bulk'}
                                     onChange={(event) =>
@@ -393,15 +410,15 @@ export default function InventoryPage({
                             <label>
                                 <span className="field-label">{t('inventory.reorder_level')}</span>
                                 <input
+                                    id="item-reorder-level"
                                     className="field"
                                     type="number"
                                     min="0"
+                                    {...fieldA11y('item-reorder-level', itemForm.errors.reorder_level)}
                                     value={itemForm.data.reorder_level}
                                     onChange={(event) => itemForm.setData('reorder_level', event.target.value)}
                                 />
-                                {itemForm.errors.reorder_level && (
-                                    <p className="field-error" role="alert">{t(itemForm.errors.reorder_level)}</p>
-                                )}
+                                {fieldError('item-reorder-level', itemForm.errors.reorder_level)}
                             </label>
                             <button type="submit" className="button-secondary sm:col-span-2" disabled={itemForm.processing}>
                                 <Package size={15} /> {t('inventory.create_item')}
@@ -415,31 +432,33 @@ export default function InventoryPage({
                             <label>
                                 <span className="field-label">{t('Name')}</span>
                                 <input
+                                    id="warehouse-name"
                                     className="field"
+                                    {...fieldA11y('warehouse-name', warehouseForm.errors.name)}
                                     value={warehouseForm.data.name}
                                     onChange={(event) => warehouseForm.setData('name', event.target.value)}
                                     placeholder={t('Main warehouse')}
                                 />
-                                {warehouseForm.errors.name && (
-                                    <p className="field-error" role="alert">{t(warehouseForm.errors.name)}</p>
-                                )}
+                                {fieldError('warehouse-name', warehouseForm.errors.name)}
                             </label>
                             <label>
                                 <span className="field-label">{t('Code')}</span>
                                 <input
+                                    id="warehouse-code"
                                     className="field uppercase"
+                                    {...fieldA11y('warehouse-code', warehouseForm.errors.code)}
                                     value={warehouseForm.data.code}
                                     onChange={(event) => warehouseForm.setData('code', event.target.value)}
                                     placeholder="MAIN"
                                 />
-                                {warehouseForm.errors.code && (
-                                    <p className="field-error" role="alert">{t(warehouseForm.errors.code)}</p>
-                                )}
+                                {fieldError('warehouse-code', warehouseForm.errors.code)}
                             </label>
                             <label>
                                 <span className="field-label">{t('inventory.storage_type')}</span>
                                 <ResponsiveSelect
+                                    id="warehouse-type"
                                     className="field"
+                                    {...fieldA11y('warehouse-type', warehouseForm.errors.type)}
                                     value={warehouseForm.data.type}
                                     onChange={(event) =>
                                         warehouseForm.setData({
@@ -456,15 +475,15 @@ export default function InventoryPage({
                                     <option value="van">{t('inventory.technician_van')}</option>
                                     <option value="collector">{t('inventory.collector_stock')}</option>
                                 </ResponsiveSelect>
-                                {warehouseForm.errors.type && (
-                                    <p className="field-error" role="alert">{t(warehouseForm.errors.type)}</p>
-                                )}
+                                {fieldError('warehouse-type', warehouseForm.errors.type)}
                             </label>
                             {warehouseForm.data.type !== 'warehouse' && (
                                 <label>
                                     <span className="field-label">{t('inventory.custodian')}</span>
                                     <ResponsiveSelect
+                                        id="warehouse-assigned-user"
                                         className="field"
+                                        {...fieldA11y('warehouse-assigned-user', warehouseForm.errors.assigned_user_id)}
                                         value={warehouseForm.data.assigned_user_id}
                                         onChange={(event) =>
                                             warehouseForm.setData('assigned_user_id', event.target.value)
@@ -477,9 +496,7 @@ export default function InventoryPage({
                                             </option>
                                         ))}
                                     </ResponsiveSelect>
-                                    {warehouseForm.errors.assigned_user_id && (
-                                        <p className="field-error" role="alert">{t(warehouseForm.errors.assigned_user_id)}</p>
-                                    )}
+                                    {fieldError('warehouse-assigned-user', warehouseForm.errors.assigned_user_id)}
                                 </label>
                             )}
                             <div className="flex items-end sm:col-span-2">

@@ -372,6 +372,28 @@ test('connects invitation validation errors to their controls', async ({ page })
     await expect(page.locator('#invite-email-error')).toHaveAttribute('role', 'alert');
 });
 
+test('connects inventory setup errors to their controls', async ({ page }) => {
+    test.setTimeout(60_000);
+
+    await page.goto('/login');
+    await page.getByLabel('Email address').fill(email);
+    await page.getByRole('textbox', { name: 'Password' }).fill(password);
+    await Promise.all([
+        page.waitForURL(/\/(dashboard|customers|profile)$/),
+        page.getByRole('button', { name: 'Enter workspace' }).click(),
+    ]);
+
+    await page.goto('/operations/inventory');
+    const itemForm = page.locator('form').filter({ has: page.locator('#item-sku') });
+    await itemForm.locator('#item-sku').fill('');
+    await itemForm.locator('button[type="submit"]').click();
+
+    const sku = page.locator('#item-sku');
+    await expect(sku).toHaveAttribute('aria-invalid', 'true');
+    await expect(sku).toHaveAttribute('aria-describedby', 'item-sku-error');
+    await expect(page.locator('#item-sku-error')).toHaveAttribute('role', 'alert');
+});
+
 test('connects service validation errors to their controls', async ({ page }) => {
     test.setTimeout(60_000);
 
