@@ -6,7 +6,6 @@ use App\Contracts\Action;
 use App\Domain\Communications\WhatsAppBridgeClient;
 use App\Jobs\DeleteWhatsAppBridgeAccount;
 use App\Models\WhatsAppAccount;
-use Throwable;
 
 final readonly class DeleteWhatsAppAccount implements Action
 {
@@ -15,21 +14,14 @@ final readonly class DeleteWhatsAppAccount implements Action
     /** @return array{deleted: bool, cleanup_queued: bool} */
     public function handle(WhatsAppAccount $account): array
     {
-        try {
-            if ($this->bridge->configured()) {
-                $this->bridge->remove($account);
-            }
-        } catch (Throwable $exception) {
-            report($exception);
-            $bridgeId = $account->bridge_id;
-            $account->delete();
-            DeleteWhatsAppBridgeAccount::dispatch($bridgeId)->afterCommit();
-
-            return ['deleted' => true, 'cleanup_queued' => true];
-        }
-
+        $cleanupQueued = $this->bridge->configured();
+        $bridgeId = $account->bridge_id;
         $account->delete();
 
-        return ['deleted' => true, 'cleanup_queued' => false];
+        if ($cleanupQueued) {
+            DeleteWhatsAppBridgeAccount::dispatch($bridgeId)->afterCommit();
+        }
+
+        return ['deleted' => true, 'cleanup_queued' => $cleanupQueued];
     }
 }

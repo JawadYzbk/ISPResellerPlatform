@@ -96,11 +96,13 @@ export default function WhatsAppSettings({ setup }: Props) {
     const createForm = useForm({ label: '', job: 'general' });
     const [accountJobs, setAccountJobs] = useState<Record<string, string>>({});
     const [accountToDelete, setAccountToDelete] = useState<WhatsAppAccount | null>(null);
+    const [accountMutationPending, setAccountMutationPending] = useState(false);
 
     useEffect(() => {
         if (
             setup.mode !== 'web' ||
-            (setup.accounts.length > 0 && setup.accounts.every((account) => account.status === 'ready'))
+            (setup.accounts.length > 0 && setup.accounts.every((account) => account.status === 'ready')) ||
+            accountMutationPending
         ) {
             return;
         }
@@ -110,7 +112,16 @@ export default function WhatsAppSettings({ setup }: Props) {
         }, 5000);
 
         return () => window.clearInterval(interval);
-    }, [setup.mode, setup.status, setup.accounts]);
+    }, [accountMutationPending, setup.mode, setup.status, setup.accounts]);
+
+    const beginAccountMutation = () => {
+        router.cancelAll({ async: true });
+        setAccountMutationPending(true);
+    };
+
+    const finishAccountMutation = () => {
+        setAccountMutationPending(false);
+    };
 
     const submitTest = (event: React.FormEvent) => {
         event.preventDefault();
@@ -123,18 +134,27 @@ export default function WhatsAppSettings({ setup }: Props) {
     const submitAccountUpdate = (event: React.FormEvent<HTMLFormElement>, account: WhatsAppAccount) => {
         event.preventDefault();
         const data = new FormData(event.currentTarget);
+        beginAccountMutation();
         router.patch(
             `/settings/whatsapp/accounts/${account.id}`,
             {
                 label: String(data.get('label') ?? ''),
                 job: String(data.get('job') ?? 'general'),
             },
-            { preserveScroll: true },
+            { preserveScroll: true, onFinish: finishAccountMutation },
         );
     };
 
     const disconnectAccount = (account: WhatsAppAccount) => {
-        router.post(`/settings/whatsapp/accounts/${account.id}/disconnect`, {}, { preserveScroll: true });
+        beginAccountMutation();
+        router.post(
+            `/settings/whatsapp/accounts/${account.id}/disconnect`,
+            {},
+            {
+                preserveScroll: true,
+                onFinish: finishAccountMutation,
+            },
+        );
     };
 
     const requestDeleteAccount = (account: WhatsAppAccount) => {
@@ -148,14 +168,20 @@ export default function WhatsAppSettings({ setup }: Props) {
 
         const account = accountToDelete;
         setAccountToDelete(null);
-        router.delete(`/settings/whatsapp/accounts/${account.id}`, { preserveScroll: true });
+        beginAccountMutation();
+        router.delete(`/settings/whatsapp/accounts/${account.id}`, {
+            preserveScroll: true,
+            onFinish: finishAccountMutation,
+        });
     };
 
     const submitCreate = (event: React.FormEvent) => {
         event.preventDefault();
+        beginAccountMutation();
         createForm.post('/settings/whatsapp/accounts', {
             preserveScroll: true,
             onSuccess: () => createForm.reset(),
+            onFinish: finishAccountMutation,
         });
     };
 

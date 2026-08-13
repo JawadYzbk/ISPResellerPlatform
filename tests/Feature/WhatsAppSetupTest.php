@@ -150,6 +150,7 @@ it('queues an audited WhatsApp test message only after the bridge is ready', fun
 });
 
 it('creates, reassigns, disconnects, and returns a WhatsApp account to QR pairing', function (): void {
+    Queue::fake();
     Http::fake(function ($request) {
         static $statusCalls = 0;
         if (str_ends_with($request->url(), '/disconnect')) {
@@ -215,7 +216,7 @@ it('creates, reassigns, disconnects, and returns a WhatsApp account to QR pairin
 
     app(Tenancy::class)->set($tenant);
     expect(WhatsAppAccount::query()->whereKey($deletable->id)->exists())->toBeFalse();
-    Http::assertSent(fn ($request): bool => $request->method() === 'DELETE');
+    Queue::assertPushed(DeleteWhatsAppBridgeAccount::class, fn (DeleteWhatsAppBridgeAccount $job): bool => $job->bridgeId === $deletable->bridge_id);
 
     $remaining = WhatsAppAccount::query()->firstOrFail();
     $this->actingAs($owner)
