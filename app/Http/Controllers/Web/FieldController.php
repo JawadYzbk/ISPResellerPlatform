@@ -13,6 +13,7 @@ use App\Models\CollectorCustodyEntry;
 use App\Models\CollectorFieldDay;
 use App\Models\CollectorRoute;
 use App\Models\CollectorTask;
+use App\Models\FieldInventorySale;
 use App\Models\InventoryItem;
 use App\Models\InventoryStockCount;
 use App\Models\InventoryTransferRequest;
@@ -185,6 +186,23 @@ final class FieldController extends Controller
                     'review_note' => $count->review_note,
                     'warehouse' => $count->warehouse?->only(['code', 'name']),
                     'variance' => $count->lines->map(fn ($line): array => ['item' => $line->item?->only(['sku', 'name']), 'quantity' => (string) $line->variance_quantity])->values(),
+                ])->values(),
+            'sales' => FieldInventorySale::query()
+                ->where('collector_id', $user->id)
+                ->with(['customer:id,public_id,code,first_name,last_name', 'invoice:id,public_id,number', 'payment:id,public_id,number', 'lines.item:id,sku,name'])
+                ->latest('sold_at')
+                ->limit(10)
+                ->get()
+                ->map(fn (FieldInventorySale $sale): array => [
+                    'id' => $sale->public_id,
+                    'currency' => $sale->currency,
+                    'total_amount' => $sale->total_amount,
+                    'payment_method' => $sale->payment_method,
+                    'sold_at' => $sale->sold_at?->toIso8601String(),
+                    'customer' => $sale->customer === null ? null : ['id' => $sale->customer->public_id, 'code' => $sale->customer->code, 'name' => $sale->customer->full_name],
+                    'invoice' => $sale->invoice?->only(['public_id', 'number']),
+                    'payment' => $sale->payment?->only(['public_id', 'number']),
+                    'lines' => $sale->lines->map(fn ($line): array => ['item' => $line->item?->only(['sku', 'name']), 'quantity' => (string) $line->quantity, 'total_amount' => $line->total_amount])->values()->all(),
                 ])->values(),
         ];
     }

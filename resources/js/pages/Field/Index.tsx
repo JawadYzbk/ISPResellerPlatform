@@ -1,4 +1,5 @@
 import CurrencyCombobox, { type CurrencyOption } from '@/components/ui/currency-combobox';
+import CustomerCombobox from '@/components/ui/customer-combobox';
 import ConfirmDialog from '@/components/ui/confirm-dialog';
 import ResponsiveSelect from '@/components/ui/responsive-select';
 import { Head, Link, useForm } from '@inertiajs/react';
@@ -167,6 +168,17 @@ type FieldStock = {
         warehouse: { code: string; name: string } | null;
         variance: { item: { sku: string; name: string } | null; quantity: string }[];
     }[];
+    sales: {
+        id: string;
+        currency: string;
+        total_amount: number;
+        payment_method: string;
+        sold_at: string | null;
+        customer: { id: string; code: string; name: string } | null;
+        invoice: { public_id: string; number: string } | null;
+        payment: { public_id: string; number: string } | null;
+        lines: { item: { sku: string; name: string } | null; quantity: string; total_amount: number }[];
+    }[];
 };
 
 type SyncResult = {
@@ -279,6 +291,17 @@ export default function FieldIndex({
         note: '',
     });
     const [countedQuantities, setCountedQuantities] = useState<Record<number, string>>({});
+    const saleForm = useForm({
+        customer_id: '',
+        warehouse_id: '',
+        inventory_item_id: '',
+        currency: defaultCurrency || 'USD',
+        payment_method: 'cash',
+        lines: [] as { inventory_item_id: string; quantity: string; unit_amount: number }[],
+        note: '',
+    });
+    const [saleQuantity, setSaleQuantity] = useState('');
+    const [saleUnitPrice, setSaleUnitPrice] = useState('');
 
     const submitStockRequest = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -317,6 +340,40 @@ export default function FieldIndex({
                 setCountedQuantities({});
             },
             onFinish: () => stockCountForm.transform((data) => data),
+        });
+    };
+
+    const saleUnitAmount = parseMoneyToMinor(saleUnitPrice, saleForm.data.currency);
+    const saleTotal =
+        saleUnitAmount === null || Number(saleQuantity) <= 0 ? null : Math.round(saleUnitAmount * Number(saleQuantity));
+
+    const submitInventorySale = () => {
+        if (
+            saleUnitAmount === null ||
+            saleUnitAmount < 1 ||
+            !Number.isFinite(Number(saleQuantity)) ||
+            Number(saleQuantity) <= 0
+        ) {
+            saleForm.setError('lines', 'Enter a positive quantity and unit price.');
+            return;
+        }
+        saleForm.transform((data) => ({
+            customer_id: data.customer_id,
+            warehouse_id: data.warehouse_id,
+            currency: data.currency,
+            payment_method: data.payment_method,
+            idempotency_key: newIdempotencyKey(),
+            lines: [{ inventory_item_id: data.inventory_item_id, quantity: saleQuantity, unit_amount: saleUnitAmount }],
+            note: data.note,
+        }));
+        saleForm.post('/field/inventory-sales', {
+            preserveScroll: true,
+            onSuccess: () => {
+                saleForm.reset();
+                setSaleQuantity('');
+                setSaleUnitPrice('');
+            },
+            onFinish: () => saleForm.transform((data) => data),
         });
     };
 
@@ -1152,6 +1209,170 @@ export default function FieldIndex({
                                 </button>
                             </div>
                         </form>
+                    )}
+                    {stock.locations.some((location) => location.balances.length > 0) && (
+                        <div className="border-t border-line p-5">
+                            <h3 className="text-balance font-semibold">Sell stock to a customer</h3>
+                            <p className="mt-1 text-pretty text-xs text-muted">
+                                Creates and pays a customer invoice, removes stock from your custody, and includes cash
+                                in your shift.
+                            </p>
+                            <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                                <label className="field-label">
+                                    Customer
+                                    <CustomerCombobox
+                                        className="mt-1"
+                                        aria-label="Sale customer"
+                                        value={saleForm.data.customer_id}
+                                        customers={customers.map((customer) => ({
+                                            id: customer.id,
+                                            code: customer.code,
+                                            name: `${customer.first_name} ${customer.last_name ?? ''}`.trim(),
+                                            phone: customer.phone,
+                                            status: 'active',
+                                            balance_amount: customer.balance_amount,
+                                            balance_currency: customer.balance_currency,
+                                        }))}
+                                        onChange={(value) => saleForm.setData('customer_id', value)}
+                                    />
+                                </label>
+                                <label className="field-label">
+                                    Stock location
+                                    <ResponsiveSelect
+                                        className="mt-1"
+                                        value={saleForm.data.warehouse_id}
+                                        onChange={(event) => saleForm.setData('warehouse_id', event.target.value)}
+                                    >
+                                        <option value="">Select location</option>
+                                        {stock.locations
+                                            .filter((location) => location.balances.length > 0)
+                                            .map((location) => (
+                                                <option key={location.id} value={location.id}>
+                                                    {location.code} · {location.name}
+                                                </option>
+                                            ))}
+                                    </ResponsiveSelect>
+                                </label>
+                                <label className="field-label">
+                                    Item
+                                    <ResponsiveSelect
+                                        className="mt-1"
+                                        value={saleForm.data.inventory_item_id}
+                                        onChange={(event) => saleForm.setData('inventory_item_id', event.target.value)}
+                                    >
+                                        <option value="">Select item</option>
+                                        {stock.locations
+                                            .find((location) => String(location.id) === saleForm.data.warehouse_id)
+                                            ?.balances.map((balance) => (
+                                                <option key={balance.item_id} value={balance.item_id}>
+                                                    {balance.sku} · {balance.name} · {balance.quantity} available
+                                                </option>
+                                            ))}
+                                    </ResponsiveSelect>
+                                </label>
+                                <label className="field-label">
+                                    Quantity
+                                    <input
+                                        className="field mt-1 tabular-nums"
+                                        inputMode="decimal"
+                                        value={saleQuantity}
+                                        onChange={(event) => setSaleQuantity(event.target.value)}
+                                        placeholder="0.000"
+                                    />
+                                </label>
+                                <label className="field-label">
+                                    Unit price
+                                    <input
+                                        className="field mt-1 tabular-nums"
+                                        inputMode="decimal"
+                                        value={saleUnitPrice}
+                                        onChange={(event) => setSaleUnitPrice(event.target.value)}
+                                        placeholder="0.00"
+                                    />
+                                </label>
+                                <label className="field-label">
+                                    Currency
+                                    <CurrencyCombobox
+                                        className="field mt-1"
+                                        value={saleForm.data.currency}
+                                        currencies={currencyOptions}
+                                        onChange={(value) => saleForm.setData('currency', value)}
+                                    />
+                                </label>
+                                <label className="field-label">
+                                    Payment method
+                                    <ResponsiveSelect
+                                        className="mt-1"
+                                        value={saleForm.data.payment_method}
+                                        onChange={(event) => saleForm.setData('payment_method', event.target.value)}
+                                    >
+                                        <option value="cash">Cash</option>
+                                        <option value="mobile_wallet">Mobile wallet</option>
+                                        <option value="card">Card</option>
+                                        <option value="bank_transfer">Bank transfer</option>
+                                    </ResponsiveSelect>
+                                </label>
+                                <label className="field-label sm:col-span-2">
+                                    Note (optional)
+                                    <input
+                                        className="field mt-1"
+                                        value={saleForm.data.note}
+                                        onChange={(event) => saleForm.setData('note', event.target.value)}
+                                        placeholder="Item handover context"
+                                    />
+                                </label>
+                            </div>
+                            {saleForm.errors.lines && <p className="field-error mt-3">{saleForm.errors.lines}</p>}
+                            <div className="mt-4 flex items-center justify-between gap-4">
+                                <p className="text-sm text-muted">
+                                    Total:{' '}
+                                    <span className="font-semibold tabular-nums text-ink">
+                                        {saleTotal === null ? '—' : formatMoney(saleTotal, saleForm.data.currency)}
+                                    </span>
+                                </p>
+                                <ConfirmDialog
+                                    title="Record this paid inventory sale?"
+                                    description={`This creates a paid invoice for ${saleTotal === null ? 'the calculated total' : formatMoney(saleTotal, saleForm.data.currency)} and immediately removes the item from your stock.`}
+                                    confirmLabel="Record sale"
+                                    onConfirm={submitInventorySale}
+                                >
+                                    <button
+                                        type="button"
+                                        className="button-primary"
+                                        disabled={
+                                            saleForm.processing ||
+                                            saleTotal === null ||
+                                            !saleForm.data.customer_id ||
+                                            !saleForm.data.inventory_item_id
+                                        }
+                                    >
+                                        Record sale
+                                    </button>
+                                </ConfirmDialog>
+                            </div>
+                            {stock.sales.length > 0 && (
+                                <div className="mt-5 divide-y divide-line border-t border-line">
+                                    {stock.sales.slice(0, 5).map((sale) => (
+                                        <div key={sale.id} className="flex items-start justify-between gap-4 py-3">
+                                            <div className="min-w-0">
+                                                <p className="truncate text-sm font-semibold">
+                                                    {sale.customer?.name ?? 'Customer sale'}
+                                                </p>
+                                                <p className="mt-1 truncate text-xs text-muted">
+                                                    {sale.invoice?.number} ·{' '}
+                                                    {sale.lines
+                                                        .map((line) => `${line.quantity} ${line.item?.name ?? ''}`)
+                                                        .join(', ')}
+                                                </p>
+                                            </div>
+                                            <p className="shrink-0 font-semibold tabular-nums">
+                                                {formatMoney(sale.total_amount, sale.currency)}
+                                            </p>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
                     )}
                     {stock.locations.some((location) => location.balances.length > 0) && (
                         <form onSubmit={submitStockCount} className="border-t border-line p-5">
