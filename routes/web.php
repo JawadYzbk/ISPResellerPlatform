@@ -17,6 +17,7 @@ use App\Http\Controllers\Web\CustomerController;
 use App\Http\Controllers\Web\DashboardController;
 use App\Http\Controllers\Web\ExchangeRateOperationsController;
 use App\Http\Controllers\Web\FieldController;
+use App\Http\Controllers\Web\FieldInventorySaleController;
 use App\Http\Controllers\Web\ImportOperationsController;
 use App\Http\Controllers\Web\IncidentOperationsController;
 use App\Http\Controllers\Web\InventoryOperationsController;
@@ -121,6 +122,7 @@ Route::middleware(['auth', 'tenant', '2fa'])->group(function (): void {
     Route::post('/field/custody', [CollectorCustodyController::class, 'storeField'])->name('field.custody.store');
     Route::post('/field/inventory-requests', [InventoryTransferRequestController::class, 'store'])->name('field.inventory-requests.store');
     Route::post('/field/stock-counts', [InventoryStockCountController::class, 'store'])->name('field.stock-counts.store');
+    Route::post('/field/inventory-sales', [FieldInventorySaleController::class, 'store'])->name('field.inventory-sales.store');
     Route::get('/profile', [ProfileController::class, 'show'])->name('profile');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications');
