@@ -3,6 +3,7 @@
 namespace App\Actions;
 
 use App\Contracts\Action;
+use App\Data\BillingCycleQuote;
 use App\Enums\InvoiceStatus;
 use App\Enums\ServiceStatus;
 use App\Models\Customer;
@@ -13,7 +14,7 @@ use DomainException;
 
 final readonly class CreateRenewalInvoice implements Action
 {
-    public function __construct(private CreateInvoice $createInvoice, private IssueInvoice $issueInvoice) {}
+    public function __construct(private CreateInvoice $createInvoice, private IssueInvoice $issueInvoice, private PreviewServiceBillingCycle $previewCycle) {}
 
     public function handle(Customer $customer, Service $service, ?User $actor = null, int $periods = 1): Invoice
     {
@@ -27,13 +28,16 @@ final readonly class CreateRenewalInvoice implements Action
             throw new DomainException('Terminated services require an explicit reactivation workflow.');
         }
 
+        $cycleQuote = $this->cycleQuote($service, $periods);
+        $cycleEnd = $cycleQuote?->endsAt->toIso8601String();
         $draft = Invoice::query()
             ->where('customer_id', $customer->id)
             ->where('status', InvoiceStatus::Draft)
             ->whereHas('lines', fn ($query) => $query->where('service_id', $service->id))
             ->latest('id')
             ->get()
-            ->first(fn (Invoice $invoice): bool => $periods === 1 || (int) ($invoice->metadata['renewal_periods'] ?? 1) === $periods);
+            ->first(fn (Invoice $invoice): bool => ($periods === 1 || (int) ($invoice->metadata['renewal_periods'] ?? 1) === $periods)
+                && ($cycleEnd === null || ($invoice->metadata['billing_cycle_quote']['ends_at'] ?? null) === $cycleEnd));
         if ($draft instanceof Invoice) {
             return $this->issueInvoice->handle($draft, $actor);
         }
@@ -45,8 +49,11 @@ final readonly class CreateRenewalInvoice implements Action
             ->whereHas('lines', fn ($query) => $query->where('service_id', $service->id))
             ->latest('id')
             ->get()
-            ->first(function (Invoice $invoice) use ($periods): bool {
+            ->first(function (Invoice $invoice) use ($periods, $cycleEnd): bool {
                 if ($periods > 1 && (int) ($invoice->metadata['renewal_periods'] ?? 1) !== $periods) {
+                    return false;
+                }
+                if ($cycleEnd !== null && ($invoice->metadata['billing_cycle_quote']['ends_at'] ?? null) !== $cycleEnd) {
                     return false;
                 }
                 $allocated = $invoice->payments->sum(fn ($payment): int => $payment->allocations
@@ -60,9 +67,34 @@ final readonly class CreateRenewalInvoice implements Action
             return $openInvoice;
         }
 
-        $invoice = $this->createInvoice->handle($customer, $service->plan, $service, quantity: $periods);
-        $invoice->forceFill(['metadata' => ['renewal_periods' => $periods]])->save();
+        $invoice = $this->createInvoice->handle(
+            $customer,
+            $service->plan,
+            $service,
+            quantity: $periods,
+            unitAmount: $cycleQuote?->proratedAmount,
+            description: $cycleQuote === null ? null : $service->plan->name.' · prorated billing cycle',
+            priceContext: $cycleQuote === null ? [] : ['billing_cycle_quote' => $cycleQuote->toArray()],
+        );
+        $invoice->forceFill(['metadata' => array_filter([
+            'renewal_periods' => $periods,
+            'billing_cycle_quote' => $cycleQuote?->toArray(),
+        ], static fn (mixed $value): bool => $value !== null)])->save();
 
         return $this->issueInvoice->handle($invoice, $actor);
+    }
+
+    private function cycleQuote(Service $service, int $periods): ?BillingCycleQuote
+    {
+        if ($periods !== 1) {
+            return null;
+        }
+        $pending = $service->metadata['pending_billing_cycle'] ?? null;
+        $anchorDay = is_array($pending) ? (int) ($pending['anchor_day'] ?? 0) : (int) ($service->billing_anchor_day ?? 0);
+        if ($anchorDay < 1 || ($service->expires_at !== null && ! is_array($pending))) {
+            return null;
+        }
+
+        return $this->previewCycle->handle($service, $anchorDay);
     }
 }

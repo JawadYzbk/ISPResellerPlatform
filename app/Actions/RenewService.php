@@ -3,6 +3,7 @@
 namespace App\Actions;
 
 use App\Contracts\Action;
+use App\Domain\Billing\AnchoredBillingCycle;
 use App\Domain\Billing\BillingPeriod;
 use App\Enums\ServiceStatus;
 use App\Models\Plan;
@@ -50,19 +51,34 @@ final readonly class RenewService implements Action
 
             $settings = $locked->tenant->settingsData();
             $now = CarbonImmutable::now($settings->timezone);
-            $expiresAt = $locked->expires_at === null ? null : CarbonImmutable::instance($locked->expires_at);
+            $expiresAt = $locked->expires_at === null ? null : CarbonImmutable::instance($locked->expires_at)->setTimezone($settings->timezone);
             $renewedUntil = $expiresAt;
+            $metadata = $locked->metadata ?? [];
+            $pendingCycle = $metadata['pending_billing_cycle'] ?? null;
+            $pendingAnchorDay = is_array($pendingCycle) ? (int) ($pendingCycle['anchor_day'] ?? 0) : 0;
+            if ($pendingAnchorDay >= 1 && $pendingAnchorDay <= 31) {
+                $base = $this->renewalBase($now, $expiresAt, (bool) ($settings->settings['grace_extends_period'] ?? false));
+                $renewedUntil = (new AnchoredBillingCycle($pendingAnchorDay))->nextAnchorAfter($base);
+                $locked->billing_anchor_day = $pendingAnchorDay;
+                unset($metadata['pending_billing_cycle']);
+                $periods--;
+            }
             for ($period = 0; $period < $periods; $period++) {
-                $billingPeriod = BillingPeriod::custom($renewedUntil ?? $now, max(1, (int) $locked->plan->duration_days));
-                $renewedUntil = $billingPeriod->renewFrom(
-                    $now,
-                    $renewedUntil,
-                    (bool) ($settings->settings['grace_extends_period'] ?? false),
-                );
+                if ($locked->billing_anchor_day !== null) {
+                    $base = $this->renewalBase($now, $renewedUntil, (bool) ($settings->settings['grace_extends_period'] ?? false));
+                    $renewedUntil = (new AnchoredBillingCycle($locked->billing_anchor_day))->nextAnchorAfter($base);
+                } else {
+                    $billingPeriod = BillingPeriod::custom($renewedUntil ?? $now, max(1, (int) $locked->plan->duration_days));
+                    $renewedUntil = $billingPeriod->renewFrom(
+                        $now,
+                        $renewedUntil,
+                        (bool) ($settings->settings['grace_extends_period'] ?? false),
+                    );
+                }
             }
             $autoOverdue = $locked->status === ServiceStatus::Suspended && $locked->suspension_reason === 'auto_overdue';
 
-            $locked->forceFill(['expires_at' => $renewedUntil->utc(), 'current_period_bytes' => 0, 'fup_applied_at' => null])->save();
+            $locked->forceFill(['expires_at' => $renewedUntil->utc(), 'metadata' => $metadata, 'current_period_bytes' => 0, 'fup_applied_at' => null])->save();
             $updated = $autoOverdue
                 ? $this->transition->handle($locked, ServiceStatus::Active, $actor, ['reason' => 'payment_renewal'])
                 : $locked->refresh();
@@ -84,5 +100,15 @@ final readonly class RenewService implements Action
         }
 
         return $updated->refresh();
+    }
+
+    private function renewalBase(CarbonImmutable $now, ?CarbonImmutable $expiresAt, bool $graceExtendsPeriod): CarbonImmutable
+    {
+        return match (true) {
+            $expiresAt === null => $now,
+            $expiresAt->greaterThanOrEqualTo($now) => $expiresAt,
+            $graceExtendsPeriod => $expiresAt,
+            default => $now,
+        };
     }
 }

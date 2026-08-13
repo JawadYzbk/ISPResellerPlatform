@@ -12,7 +12,7 @@ use Carbon\CarbonImmutable;
 
 final readonly class GenerateInvoices implements Action
 {
-    public function __construct(private CreateInvoice $createInvoice, private IssueInvoice $issueInvoice) {}
+    public function __construct(private CreateRenewalInvoice $createRenewalInvoice) {}
 
     public function handle(Tenant $tenant, CarbonImmutable $period): BillingRun
     {
@@ -36,8 +36,7 @@ final readonly class GenerateInvoices implements Action
         Service::query()->with(['customer', 'plan'])->where('status', ServiceStatus::Active)->where('expires_at', '<=', $periodEnd)->chunkById(100, function ($services) use (&$processed, &$failed): void {
             foreach ($services as $service) {
                 try {
-                    $invoice = $this->createInvoice->handle($service->customer, $service->plan, $service, CarbonImmutable::now());
-                    $this->issueInvoice->handle($invoice);
+                    $this->createRenewalInvoice->handle($service->customer, $service);
                     $processed++;
                 } catch (\Throwable $exception) {
                     $failed++;

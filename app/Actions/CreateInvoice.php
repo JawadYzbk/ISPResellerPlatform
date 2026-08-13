@@ -16,7 +16,8 @@ final readonly class CreateInvoice implements Action
 {
     public function __construct(private DocumentNumberGenerator $numbers) {}
 
-    public function handle(Customer $customer, Plan $plan, ?Service $service = null, ?CarbonImmutable $at = null, int $quantity = 1): Invoice
+    /** @param array<string, mixed> $priceContext */
+    public function handle(Customer $customer, Plan $plan, ?Service $service = null, ?CarbonImmutable $at = null, int $quantity = 1, ?int $unitAmount = null, ?string $description = null, array $priceContext = []): Invoice
     {
         if ($quantity < 1) {
             throw new DomainException('Invoice quantity must be positive.');
@@ -31,8 +32,13 @@ final readonly class CreateInvoice implements Action
             throw new DomainException('The plan has no effective price at the invoice date.');
         }
 
-        return DB::transaction(function () use ($customer, $plan, $service, $price, $quantity): Invoice {
-            $total = $price->amount_minor * $quantity;
+        $unitAmount ??= $price->amount_minor;
+        if ($unitAmount < 0) {
+            throw new DomainException('Invoice unit amounts cannot be negative.');
+        }
+
+        return DB::transaction(function () use ($customer, $plan, $service, $price, $quantity, $unitAmount, $description, $priceContext): Invoice {
+            $total = $unitAmount * $quantity;
             $invoice = Invoice::create([
                 'number' => $this->numbers->next('invoice', 'INV'),
                 'customer_id' => $customer->id,
@@ -45,12 +51,18 @@ final readonly class CreateInvoice implements Action
             $invoice->lines()->create([
                 'plan_id' => $plan->id,
                 'service_id' => $service?->id,
-                'description' => $plan->name,
+                'description' => $description ?? $plan->name,
                 'quantity' => $quantity,
-                'unit_amount' => $price->amount_minor,
+                'unit_amount' => $unitAmount,
                 'total_amount' => $total,
                 'currency' => $price->currency,
-                'price_snapshot' => ['amount_minor' => $price->amount_minor, 'currency' => $price->currency, 'effective_from' => $price->effective_from->toIso8601String()],
+                'price_snapshot' => [
+                    'amount_minor' => $price->amount_minor,
+                    'billed_unit_amount' => $unitAmount,
+                    'currency' => $price->currency,
+                    'effective_from' => $price->effective_from->toIso8601String(),
+                    ...$priceContext,
+                ],
             ]);
 
             return $invoice->load('lines');
