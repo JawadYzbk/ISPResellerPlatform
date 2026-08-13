@@ -207,6 +207,8 @@ Route::middleware(['auth', 'tenant', '2fa'])->group(function (): void {
     Route::patch('/operations/expense-categories/{expenseCategory:public_id}', [OperationalExpenseController::class, 'updateCategory'])->middleware('recent-auth')->name('operations.expense-categories.update');
     Route::post('/operations/expense-vendors', [OperationalExpenseController::class, 'storeVendor'])->middleware('recent-auth')->name('operations.expense-vendors.store');
     Route::patch('/operations/expense-vendors/{expenseVendor:public_id}', [OperationalExpenseController::class, 'updateVendor'])->middleware('recent-auth')->name('operations.expense-vendors.update');
+    Route::post('/operations/recurring-expenses', [OperationalExpenseController::class, 'storeRecurring'])->middleware('recent-auth')->name('operations.recurring-expenses.store');
+    Route::patch('/operations/recurring-expenses/{recurringExpenseSchedule:public_id}', [OperationalExpenseController::class, 'updateRecurring'])->middleware('recent-auth')->name('operations.recurring-expenses.update');
     Route::post('/operations/network-commands/{command:public_id}/retry', [NetworkOperationsController::class, 'retry'])->name('operations.network-commands.retry');
     Route::get('/operations/sessions', [SessionOperationsController::class, 'index'])->name('operations.sessions');
     Route::get('/operations/incidents', [IncidentOperationsController::class, 'index'])->name('operations.incidents');

@@ -5,7 +5,7 @@ import ResponsiveSelect from '@/components/ui/responsive-select';
 import AppLayout from '@/layouts/AppLayout';
 import { formatDate, formatMoney, parseMoneyToMinor } from '@/lib/format';
 import { Head, Link, router, useForm } from '@inertiajs/react';
-import { Building2, FileCheck2, Paperclip, Plus, ReceiptText, Tags } from 'lucide-react';
+import { Banknote, Building2, FileCheck2, Paperclip, Plus, ReceiptText, Tags } from 'lucide-react';
 import { useState } from 'react';
 
 type Category = { id: number; public_id: string; name: string; code: string; is_active: boolean };
@@ -20,6 +20,20 @@ type Vendor = {
     is_active: boolean;
 };
 type Attachment = { public_id: string; name: string; mime_type: string; size_bytes: number; download_url: string };
+type RecurringSchedule = {
+    public_id: string;
+    frequency: 'weekly' | 'monthly' | 'quarterly' | 'yearly';
+    interval: number;
+    payment_source: 'cash' | 'bank';
+    amount: number;
+    currency: string;
+    description: string;
+    next_run_on: string;
+    ends_on: string | null;
+    is_active: boolean;
+    category: { name: string };
+    vendor: { name: string } | null;
+};
 type Expense = {
     public_id: string;
     status: Status;
@@ -45,6 +59,7 @@ type Props = {
     collectors: { id: number; name: string }[];
     currencies: CurrencyOption[];
     expenses: Expense[];
+    recurringSchedules: RecurringSchedule[];
 };
 
 export default function Expenses({
@@ -55,8 +70,10 @@ export default function Expenses({
     collectors,
     currencies,
     expenses,
+    recurringSchedules,
 }: Props) {
     const [amount, setAmount] = useState('');
+    const [recurringAmount, setRecurringAmount] = useState('');
     const [reviewNotes, setReviewNotes] = useState<Record<string, string>>({});
     const activeCategories = categories.filter((category) => category.is_active);
     const activeVendors = vendors.filter((vendor) => vendor.is_active);
@@ -74,6 +91,19 @@ export default function Expenses({
     });
     const categoryForm = useForm({ name: '', code: '' });
     const vendorForm = useForm({ name: '', phone: '', email: '', tax_number: '', address: '' });
+    const recurringForm = useForm({
+        expense_category_id: activeCategories[0]?.id ?? 0,
+        expense_vendor_id: '',
+        frequency: 'monthly',
+        interval: 1,
+        payment_source: 'bank',
+        amount: 0,
+        currency: currencies[0]?.code ?? 'USD',
+        description: '',
+        reference: '',
+        starts_on: new Date().toISOString().slice(0, 10),
+        ends_on: '',
+    });
     const applyFilters = (next: Partial<Props['filters']>) =>
         router.get('/operations/expenses', { ...filters, ...next }, { preserveState: false, replace: true });
     const submit = (event: React.FormEvent) => {
@@ -399,6 +429,210 @@ export default function Expenses({
                     )}
                 </div>
             </section>
+
+            {permissions.manage && (
+                <section className="card mt-6 p-6">
+                    <div className="flex items-start gap-3">
+                        <span className="grid size-9 place-items-center rounded-xl bg-brand-soft text-brand">
+                            <Banknote size={18} />
+                        </span>
+                        <div>
+                            <h2 className="section-title text-balance">Recurring expenses</h2>
+                            <p className="mt-1 text-pretty text-sm text-muted">
+                                Generate pending rent, fuel, upstream, and office costs on schedule. Every occurrence
+                                still requires approval.
+                            </p>
+                        </div>
+                    </div>
+                    <form
+                        className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-4"
+                        onSubmit={(event) => {
+                            event.preventDefault();
+                            const minor = parseMoneyToMinor(recurringAmount, recurringForm.data.currency);
+                            if (minor === null || minor <= 0) {
+                                recurringForm.setError('amount', 'Enter a positive amount.');
+                                return;
+                            }
+                            recurringForm.transform((data) => ({ ...data, amount: minor }));
+                            recurringForm.post('/operations/recurring-expenses', {
+                                preserveScroll: true,
+                                onSuccess: () => {
+                                    setRecurringAmount('');
+                                    recurringForm.reset('description', 'reference');
+                                },
+                            });
+                        }}
+                    >
+                        <label className="field-label">
+                            Category
+                            <ResponsiveSelect
+                                className="mt-1"
+                                value={recurringForm.data.expense_category_id}
+                                onChange={(event) =>
+                                    recurringForm.setData('expense_category_id', Number(event.target.value))
+                                }
+                            >
+                                {activeCategories.map((item) => (
+                                    <option key={item.id} value={item.id}>
+                                        {item.name}
+                                    </option>
+                                ))}
+                            </ResponsiveSelect>
+                        </label>
+                        <label className="field-label">
+                            Vendor (optional)
+                            <ResponsiveSelect
+                                className="mt-1"
+                                value={recurringForm.data.expense_vendor_id}
+                                onChange={(event) => recurringForm.setData('expense_vendor_id', event.target.value)}
+                            >
+                                <option value="">No vendor</option>
+                                {activeVendors.map((item) => (
+                                    <option key={item.id} value={item.id}>
+                                        {item.name}
+                                    </option>
+                                ))}
+                            </ResponsiveSelect>
+                        </label>
+                        <label className="field-label">
+                            Frequency
+                            <ResponsiveSelect
+                                className="mt-1"
+                                value={recurringForm.data.frequency}
+                                onChange={(event) => recurringForm.setData('frequency', event.target.value)}
+                            >
+                                <option value="weekly">Weekly</option>
+                                <option value="monthly">Monthly</option>
+                                <option value="quarterly">Quarterly</option>
+                                <option value="yearly">Yearly</option>
+                            </ResponsiveSelect>
+                        </label>
+                        <label className="field-label">
+                            Every
+                            <input
+                                className="field mt-1 tabular-nums"
+                                type="number"
+                                min="1"
+                                max="24"
+                                value={recurringForm.data.interval}
+                                onChange={(event) => recurringForm.setData('interval', Number(event.target.value))}
+                            />
+                        </label>
+                        <label className="field-label">
+                            Paid from
+                            <ResponsiveSelect
+                                className="mt-1"
+                                value={recurringForm.data.payment_source}
+                                onChange={(event) => recurringForm.setData('payment_source', event.target.value)}
+                            >
+                                <option value="bank">Bank account</option>
+                                <option value="cash">Workspace cash</option>
+                            </ResponsiveSelect>
+                        </label>
+                        <label className="field-label">
+                            Currency
+                            <CurrencyCombobox
+                                className="field mt-1"
+                                value={recurringForm.data.currency}
+                                currencies={currencies}
+                                onChange={(value) => recurringForm.setData('currency', value)}
+                            />
+                        </label>
+                        <label className="field-label">
+                            Amount
+                            <input
+                                className="field mt-1 tabular-nums"
+                                inputMode="decimal"
+                                value={recurringAmount}
+                                onChange={(event) => setRecurringAmount(event.target.value)}
+                            />
+                            {recurringForm.errors.amount && (
+                                <span className="field-error">{recurringForm.errors.amount}</span>
+                            )}
+                        </label>
+                        <label className="field-label">
+                            First due date
+                            <input
+                                className="field mt-1"
+                                type="date"
+                                value={recurringForm.data.starts_on}
+                                onChange={(event) => recurringForm.setData('starts_on', event.target.value)}
+                            />
+                        </label>
+                        <label className="field-label xl:col-span-2">
+                            Description
+                            <input
+                                className="field mt-1"
+                                value={recurringForm.data.description}
+                                onChange={(event) => recurringForm.setData('description', event.target.value)}
+                            />
+                        </label>
+                        <label className="field-label">
+                            End date (optional)
+                            <input
+                                className="field mt-1"
+                                type="date"
+                                value={recurringForm.data.ends_on}
+                                onChange={(event) => recurringForm.setData('ends_on', event.target.value)}
+                            />
+                        </label>
+                        <div className="flex items-end justify-end">
+                            <button
+                                className="button-primary"
+                                disabled={recurringForm.processing || !recurringForm.data.description.trim()}
+                            >
+                                Create schedule
+                            </button>
+                        </div>
+                    </form>
+                    <div className="mt-6 divide-y divide-line border-t border-line">
+                        {recurringSchedules.map((schedule) => (
+                            <div
+                                key={schedule.public_id}
+                                className="flex flex-col justify-between gap-3 py-4 sm:flex-row sm:items-center"
+                            >
+                                <div>
+                                    <div className="flex flex-wrap items-center gap-2">
+                                        <p className="font-semibold">{schedule.description}</p>
+                                        <span
+                                            className={`rounded-full px-2.5 py-1 text-xs font-semibold ${schedule.is_active ? 'bg-emerald-50 text-emerald-700' : 'bg-sand text-muted'}`}
+                                        >
+                                            {schedule.is_active ? 'Active' : 'Paused'}
+                                        </span>
+                                    </div>
+                                    <p className="mt-1 text-xs text-muted">
+                                        {schedule.category.name} · {schedule.vendor?.name ?? 'No vendor'} · every{' '}
+                                        {schedule.interval} {schedule.frequency} · next {schedule.next_run_on}
+                                    </p>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                    <p className="font-semibold tabular-nums">
+                                        {formatMoney(schedule.amount, schedule.currency)}
+                                    </p>
+                                    <button
+                                        type="button"
+                                        className="button-secondary"
+                                        onClick={() =>
+                                            router.patch(
+                                                `/operations/recurring-expenses/${schedule.public_id}`,
+                                                { is_active: !schedule.is_active },
+                                                { preserveScroll: true },
+                                            )
+                                        }
+                                    >
+                                        {schedule.is_active ? 'Pause' : 'Resume'}
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
+                        {recurringSchedules.length === 0 && (
+                            <p className="py-8 text-center text-pretty text-sm text-muted">
+                                No recurring expenses configured.
+                            </p>
+                        )}
+                    </div>
+                </section>
+            )}
 
             {permissions.manage && (
                 <section className="mt-6 grid gap-6 xl:grid-cols-2">

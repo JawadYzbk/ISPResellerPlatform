@@ -11,6 +11,7 @@ use App\Models\ExpenseCategory;
 use App\Models\ExpenseVendor;
 use App\Models\LedgerAccount;
 use App\Models\OperationalExpense;
+use App\Models\RecurringExpenseSchedule;
 use App\Models\User;
 use App\Support\Tenancy;
 use DomainException;
@@ -83,6 +84,24 @@ final class OperationalExpenseController extends Controller
                     'download_url' => route('operations.media.download', $attachment->public_id),
                 ])->values()->all(),
             ])->values(),
+            'recurringSchedules' => RecurringExpenseSchedule::query()
+                ->with(['category:id,name', 'vendor:id,name'])
+                ->latest()
+                ->get()
+                ->map(fn (RecurringExpenseSchedule $schedule): array => [
+                    'public_id' => $schedule->public_id,
+                    'frequency' => $schedule->frequency,
+                    'interval' => $schedule->interval,
+                    'payment_source' => $schedule->payment_source,
+                    'amount' => $schedule->amount,
+                    'currency' => $schedule->currency,
+                    'description' => $schedule->description,
+                    'next_run_on' => $schedule->next_run_on->format('Y-m-d'),
+                    'ends_on' => $schedule->ends_on?->format('Y-m-d'),
+                    'is_active' => $schedule->is_active,
+                    'category' => $schedule->category?->only(['name']),
+                    'vendor' => $schedule->vendor?->only(['name']),
+                ])->values(),
         ]);
     }
 
@@ -180,6 +199,48 @@ final class OperationalExpenseController extends Controller
         $expenseVendor->update($data);
 
         return back()->with('success', 'Expense vendor updated.');
+    }
+
+    public function storeRecurring(Request $request): RedirectResponse
+    {
+        $user = $this->userWith($request, 'expenses.manage');
+        $data = $request->validate([
+            'expense_category_id' => ['required', 'integer'],
+            'expense_vendor_id' => ['nullable', 'integer'],
+            'frequency' => ['required', Rule::in(RecurringExpenseSchedule::FREQUENCIES)],
+            'interval' => ['required', 'integer', 'min:1', 'max:24'],
+            'payment_source' => ['required', Rule::in(['cash', 'bank'])],
+            'amount' => ['required', 'integer', 'min:1'],
+            'currency' => ['required', 'string', 'size:3', 'regex:/^[A-Za-z]{3}$/'],
+            'description' => ['required', 'string', 'max:2000'],
+            'reference' => ['nullable', 'string', 'max:120'],
+            'starts_on' => ['required', 'date_format:Y-m-d'],
+            'ends_on' => ['nullable', 'date_format:Y-m-d', 'after_or_equal:starts_on'],
+        ]);
+        $category = ExpenseCategory::query()->whereKey($data['expense_category_id'])->where('is_active', true)->firstOrFail();
+        $vendorId = filled($data['expense_vendor_id'] ?? null)
+            ? ExpenseVendor::query()->whereKey($data['expense_vendor_id'])->where('is_active', true)->firstOrFail()->id
+            : null;
+        RecurringExpenseSchedule::create([
+            ...$data,
+            'expense_category_id' => $category->id,
+            'expense_vendor_id' => $vendorId,
+            'created_by_id' => $user->id,
+            'currency' => strtoupper($data['currency']),
+            'next_run_on' => $data['starts_on'],
+            'is_active' => true,
+        ]);
+
+        return back()->with('success', 'Recurring expense schedule created.');
+    }
+
+    public function updateRecurring(Request $request, RecurringExpenseSchedule $recurringExpenseSchedule): RedirectResponse
+    {
+        $this->userWith($request, 'expenses.manage');
+        $data = $request->validate(['is_active' => ['required', 'boolean']]);
+        $recurringExpenseSchedule->update($data);
+
+        return back()->with('success', $data['is_active'] ? 'Recurring expense resumed.' : 'Recurring expense paused.');
     }
 
     /** @return array<string, list<string>> */
