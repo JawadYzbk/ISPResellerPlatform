@@ -44,6 +44,16 @@ export default function PlanEdit({ plan, currencies }: Props) {
         status: plan.status,
     });
     const fractionDigits = currencyFractionDigits(form.data.currency);
+    const fieldA11y = (name: keyof typeof form.data) => ({
+        'aria-invalid': Boolean(form.errors[name]),
+        'aria-describedby': form.errors[name] ? `${name}-error` : undefined,
+    });
+    const fieldError = (name: keyof typeof form.data) =>
+        form.errors[name] ? (
+            <p id={`${name}-error`} className="field-error" role="alert">
+                {t(form.errors[name])}
+            </p>
+        ) : null;
 
     const submit = (event: React.FormEvent) => {
         event.preventDefault();
@@ -85,14 +95,16 @@ export default function PlanEdit({ plan, currencies }: Props) {
                         <label key={key}>
                             <span className="field-label">{label}</span>
                             <input
+                                id={key}
                                 className="field"
                                 type={key === 'name' || key === 'slug' ? 'text' : 'number'}
                                 min={key === 'duration_days' ? 1 : 0}
+                                {...fieldA11y(key)}
                                 value={form.data[key]}
                                 onChange={(event) => form.setData(key, event.target.value)}
                                 placeholder={placeholder}
                             />
-                            {form.errors[key] && <p className="field-error" role="alert">{t(form.errors[key])}</p>}
+                            {fieldError(key)}
                         </label>
                     ))}
                     <label>
@@ -100,47 +112,57 @@ export default function PlanEdit({ plan, currencies }: Props) {
                             {t('Price')} ({form.data.currency})
                         </span>
                         <input
+                            id="amount"
                             className="field"
                             type="number"
                             min="0"
                             step={fractionDigits === 0 ? '1' : '0.01'}
+                            {...fieldA11y('amount')}
                             value={form.data.amount}
                             onChange={(event) => form.setData('amount', event.target.value)}
                             placeholder="35.00"
                         />
-                        {form.errors.amount && <p className="field-error" role="alert">{t(form.errors.amount)}</p>}
+                        {fieldError('amount')}
                     </label>
                     <label>
                         <span className="field-label">{t('Currency')}</span>
                         <CurrencyCombobox
+                            id="currency"
                             className="field"
+                            aria-invalid={Boolean(form.errors.currency)}
+                            aria-describedby={form.errors.currency ? 'currency-error' : undefined}
                             value={form.data.currency}
                             currencies={currencies}
                             onChange={(value) => form.setData('currency', value)}
                         />
-                        {form.errors.currency && <p className="field-error" role="alert">{t(form.errors.currency)}</p>}
+                        {fieldError('currency')}
                     </label>
                     <label>
                         <span className="field-label">{t('plan.price_effective_from')}</span>
                         <input
                             className="field"
                             type="date"
+                            id="effective_from"
+                            {...fieldA11y('effective_from')}
                             value={form.data.effective_from}
                             onChange={(event) => form.setData('effective_from', event.target.value)}
                         />
-                        {form.errors.effective_from && <p className="field-error" role="alert">{t(form.errors.effective_from)}</p>}
+                        {fieldError('effective_from')}
                     </label>
                 </div>
                 <label>
                     <span className="field-label">{t('plan.plan_status')}</span>
                     <ResponsiveSelect
+                        id="status"
                         className="field"
+                        {...fieldA11y('status')}
                         value={form.data.status}
                         onChange={(event) => form.setData('status', event.target.value as 'active' | 'inactive')}
                     >
                         <option value="active">{t('Active')}</option>
                         <option value="inactive">{t('Inactive')}</option>
                     </ResponsiveSelect>
+                    {fieldError('status')}
                 </label>
                 <div className="flex items-center gap-2 rounded-xl border border-line bg-sand/40 p-4 text-sm text-muted">
                     <Tags size={17} className="text-brand" /> {t('plan.invoice_snapshot_note')}

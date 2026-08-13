@@ -222,6 +222,38 @@ test('connects customer edit errors to their controls', async ({ page }) => {
     await expect(page.locator('#address-error')).toHaveAttribute('role', 'alert');
 });
 
+test('connects plan pricing errors to their controls', async ({ page }) => {
+    test.setTimeout(60_000);
+
+    await page.goto('/login');
+    await page.getByLabel('Email address').fill(email);
+    await page.getByRole('textbox', { name: 'Password' }).fill(password);
+    await Promise.all([
+        page.waitForURL(/\/(dashboard|customers|profile)$/),
+        page.getByRole('button', { name: 'Enter workspace' }).click(),
+    ]);
+
+    await page.goto('/plans/create');
+    await page.locator('#name').fill('Accessibility plan');
+    await page.locator('form button[type="submit"]').click();
+
+    const createAmount = page.locator('#amount');
+    await expect(createAmount).toHaveAttribute('aria-invalid', 'true');
+    await expect(createAmount).toHaveAttribute('aria-describedby', 'amount-error');
+    await expect(page.locator('#amount-error')).toHaveAttribute('role', 'alert');
+
+    const editPath = await findDetailPath(page, '/plans', /^\/plans\/[^/]+\/edit$/);
+    expect(editPath).not.toBeNull();
+    await page.goto(editPath!);
+    await page.locator('#amount').fill('');
+    await page.locator('form button[type="submit"]').click();
+
+    const editAmount = page.locator('#amount');
+    await expect(editAmount).toHaveAttribute('aria-invalid', 'true');
+    await expect(editAmount).toHaveAttribute('aria-describedby', 'amount-error');
+    await expect(page.locator('#amount-error')).toHaveAttribute('role', 'alert');
+});
+
 test('keeps customer portal sign-in inputs accessible', async ({ page }) => {
     await auditPage(page, '/portal/northline');
 
