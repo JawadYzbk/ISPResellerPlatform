@@ -96,6 +96,16 @@ export type FinanceReport = {
     invoiced_by_currency: Record<string, number>;
     collected_by_currency: Record<string, number>;
     collection_rate_by_currency: Record<string, number | null>;
+    cash_reconciliation: {
+        closed_shift_count: number;
+        variance_shift_count: number;
+        variance_by_currency: Record<string, number>;
+    };
+    collection_trend: {
+        date: string;
+        invoiced_by_currency: Record<string, number>;
+        collected_by_currency: Record<string, number>;
+    }[];
     aging_by_currency: Record<string, Record<'current' | '1_30' | '31_60' | '61_90' | '90_plus', number>>;
     outstanding_by_currency: Record<string, number>;
     customer_balances_by_currency: Record<string, number>;

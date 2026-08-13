@@ -5,6 +5,7 @@ namespace App\Actions;
 use App\Contracts\Action;
 use App\Enums\InvoiceStatus;
 use App\Enums\PaymentStatus;
+use App\Models\CashShift;
 use App\Models\CreditNote;
 use App\Models\Customer;
 use App\Models\Invoice;
@@ -59,6 +60,7 @@ final readonly class GetFinanceReport implements Action
             'credited_by_currency' => $creditedByCurrency,
             'collected_by_currency' => $collectedByCurrency,
             'collection_rate_by_currency' => $collectionRates,
+            'cash_reconciliation' => $this->cashReconciliation($from, $to),
             'aging_by_currency' => $aging['aging_by_currency'],
             'outstanding_by_currency' => $aging['outstanding_by_currency'],
             'customer_balances_by_currency' => Customer::query()->selectRaw('balance_currency, SUM(balance_amount) as total')->groupBy('balance_currency')->pluck('total', 'balance_currency')->map(fn ($value): int => (int) $value)->all(),
@@ -103,8 +105,67 @@ final readonly class GetFinanceReport implements Action
             'arpu_by_currency' => $arpu,
             'top_usage' => $this->topUsage($from, $to),
             'collector_performance' => $this->collectorPerformance($payments),
+            'collection_trend' => $this->collectionTrend($invoices, $payments),
             'supplier_payables' => $this->supplierPayables->handle($from, $to),
         ];
+    }
+
+    /** @return array{closed_shift_count: int, variance_shift_count: int, variance_by_currency: array<string, int>} */
+    private function cashReconciliation(CarbonImmutable $from, CarbonImmutable $to): array
+    {
+        $shifts = CashShift::query()
+            ->whereNotNull('closed_at')
+            ->whereBetween('closed_at', [$from->startOfDay(), $to->endOfDay()])
+            ->get(['system_totals', 'declared_totals', 'variance']);
+        $varianceByCurrency = [];
+
+        foreach ($shifts as $shift) {
+            $system = is_array($shift->system_totals) ? $shift->system_totals : [];
+            $declared = is_array($shift->declared_totals) ? $shift->declared_totals : [];
+
+            foreach (array_unique([...array_keys($system), ...array_keys($declared)]) as $currency) {
+                $varianceByCurrency[$currency] = ($varianceByCurrency[$currency] ?? 0)
+                    + ((int) ($declared[$currency] ?? 0) - (int) ($system[$currency] ?? 0));
+            }
+        }
+
+        return [
+            'closed_shift_count' => $shifts->count(),
+            'variance_shift_count' => $shifts->where('variance', true)->count(),
+            'variance_by_currency' => $varianceByCurrency,
+        ];
+    }
+
+    /** @param Collection<int, Invoice> $invoices @param Collection<int, Payment> $payments @return list<array{date: string, invoiced_by_currency: array<string, int>, collected_by_currency: array<string, int>}> */
+    private function collectionTrend(Collection $invoices, Collection $payments): array
+    {
+        $trend = [];
+
+        foreach ($invoices as $invoice) {
+            $date = $invoice->issued_at?->toDateString();
+            if ($date === null) {
+                continue;
+            }
+            $trend[$date]['date'] = $date;
+            $trend[$date]['invoiced_by_currency'][$invoice->currency] = ($trend[$date]['invoiced_by_currency'][$invoice->currency] ?? 0) + $invoice->total_amount;
+        }
+
+        foreach ($payments as $payment) {
+            $date = $payment->received_at?->toDateString();
+            if ($date === null) {
+                continue;
+            }
+            $trend[$date]['date'] = $date;
+            $trend[$date]['collected_by_currency'][$payment->currency] = ($trend[$date]['collected_by_currency'][$payment->currency] ?? 0) + $payment->amount;
+        }
+
+        ksort($trend);
+
+        return collect($trend)->map(fn (array $day): array => [
+            'date' => $day['date'],
+            'invoiced_by_currency' => $day['invoiced_by_currency'] ?? [],
+            'collected_by_currency' => $day['collected_by_currency'] ?? [],
+        ])->values()->all();
     }
 
     /** @param array<string, array<string, int>> $revenueByPop @return array<string, array<string, array<string, int>>> */

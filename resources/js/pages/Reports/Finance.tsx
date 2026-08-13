@@ -130,6 +130,70 @@ export default function FinanceReportPage({ report }: Props) {
                     <p className="mt-1 text-sm text-muted">{t('Issued invoices less allocations')}</p>
                 </div>
             </div>
+            <div className="mt-6 grid gap-6 lg:grid-cols-[1.25fr_0.75fr]">
+                <div className="card p-6">
+                    <h2 className="section-title">{t('Collection trend')}</h2>
+                    <p className="mt-1 text-sm text-muted">
+                        {t('Daily issued and collected amounts for the selected period')}
+                    </p>
+                    <div className="mt-4 overflow-x-auto">
+                        <table className="w-full min-w-[520px] text-left text-sm">
+                            <thead className="text-xs uppercase tracking-[0.14em] text-muted">
+                                <tr>
+                                    <th className="pb-3">{t('Date')}</th>
+                                    <th className="pb-3">{t('Invoiced')}</th>
+                                    <th className="pb-3">{t('Collected')}</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-line">
+                                {report.collection_trend.map((day) => (
+                                    <tr key={day.date}>
+                                        <td className="py-3 font-semibold">{day.date}</td>
+                                        <td className="py-3">{formatAmounts(day.invoiced_by_currency)}</td>
+                                        <td className="py-3">{formatAmounts(day.collected_by_currency)}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                        {report.collection_trend.length === 0 && (
+                            <p className="py-3 text-sm text-muted">{t('No collection activity in this period')}</p>
+                        )}
+                    </div>
+                </div>
+                <div className="card p-6">
+                    <h2 className="section-title">{t('Cash reconciliation')}</h2>
+                    <p className="mt-1 text-sm text-muted">{t('Closed collector shifts and declared cash variance')}</p>
+                    <div className="mt-5 grid grid-cols-2 gap-3">
+                        <div className="rounded-lg bg-sand/50 p-4">
+                            <p className="text-xs font-semibold uppercase tracking-wider text-muted">
+                                {t('Closed shifts')}
+                            </p>
+                            <p className="mt-2 font-display text-2xl font-semibold">
+                                {report.cash_reconciliation.closed_shift_count}
+                            </p>
+                        </div>
+                        <div className="rounded-lg bg-sand/50 p-4">
+                            <p className="text-xs font-semibold uppercase tracking-wider text-muted">
+                                {t('With variance')}
+                            </p>
+                            <p className="mt-2 font-display text-2xl font-semibold">
+                                {report.cash_reconciliation.variance_shift_count}
+                            </p>
+                        </div>
+                    </div>
+                    <div className="mt-5 divide-y divide-line text-sm">
+                        {entriesOrEmpty(report.cash_reconciliation.variance_by_currency).map(([currency, amount]) => (
+                            <div key={currency} className="flex items-center justify-between py-3">
+                                <span className="font-semibold">{currency}</span>
+                                <span className="text-muted">{formatMoney(amount, currency)}</span>
+                            </div>
+                        ))}
+                    </div>
+                    {keysOrEmpty(report.cash_reconciliation.variance_by_currency).length === 0 && (
+                        <p className="mt-4 text-sm text-muted">{t('No cash variance recorded')}</p>
+                    )}
+                </div>
+            </div>
             <div className="mt-6 card p-6">
                 <h2 className="section-title">{t('Currency detail')}</h2>
                 <div className="mt-4 divide-y divide-line text-sm">

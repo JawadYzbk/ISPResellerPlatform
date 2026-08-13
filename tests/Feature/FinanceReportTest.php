@@ -46,6 +46,9 @@ it('reconciles issued revenue and posted collections by currency', function (): 
         ->and($report['invoiced_by_currency']['USD'])->toBe(3500)
         ->and($report['collected_by_currency']['USD'])->toBe(1000)
         ->and($report['collection_rate_by_currency']['USD'])->toBe(28.57)
+        ->and($report['collection_trend'][0]['invoiced_by_currency']['USD'])->toBe(3500)
+        ->and($report['collection_trend'][0]['collected_by_currency']['USD'])->toBe(1000)
+        ->and($report['cash_reconciliation']['closed_shift_count'])->toBe(0)
         ->and($report['aging_by_currency']['USD']['1_30'])->toBe(2500)
         ->and($report['outstanding_by_currency']['USD'])->toBe(2500)
         ->and($report['revenue_by_plan'][$plan->slug]['USD'])->toBe(3500)
@@ -133,6 +136,7 @@ it('reports POP margin and collector performance from posted records', function 
     $service->plan->prices()->create(['currency' => 'USD', 'amount_minor' => 3500, 'effective_from' => now()->subDay()]);
     $invoice = app(IssueInvoice::class)->handle(app(CreateInvoice::class)->handle($service->customer, $service->plan, $service));
     app(RecordPayment::class)->handle($service->customer, 3500, 'USD', 'cash', 'report-collector-001', $invoice, $collector, $shift);
+    $shift->update(['status' => 'closed', 'closed_at' => now(), 'system_totals' => ['USD' => 3500], 'declared_totals' => ['USD' => 3400], 'variance' => true]);
     UpstreamLink::create(['pop_id' => $pop->id, 'provider_name' => 'Transit Provider', 'capacity_mbps' => 1000, 'monthly_cost_amount' => 1000, 'currency' => 'USD', 'contract_start' => now()->startOfMonth(), 'contract_end' => now()->endOfMonth()]);
 
     $from = CarbonImmutable::now()->startOfMonth();
@@ -145,7 +149,11 @@ it('reports POP margin and collector performance from posted records', function 
         ->and($report['collector_performance'][0]['collector'])->toBe('Nadia Collector')
         ->and($report['collector_performance'][0]['payment_count'])->toBe(1)
         ->and($report['collector_performance'][0]['totals_by_currency']['USD'])->toBe(3500)
-        ->and(app(ExportFinanceReportCsv::class)->handle($from, $to))->toContain('margin_by_pop:CENTRAL,USD,2500');
+        ->and($report['cash_reconciliation']['variance_shift_count'])->toBe(1)
+        ->and($report['cash_reconciliation']['variance_by_currency']['USD'])->toBe(-100)
+        ->and(app(ExportFinanceReportCsv::class)->handle($from, $to))
+        ->toContain('margin_by_pop:CENTRAL,USD,2500')
+        ->toContain('cash_variance_by_currency,USD,-100');
 });
 
 it('prorates upstream costs separately for each calendar month', function (): void {
