@@ -90,6 +90,11 @@ test('keeps representative workspace controls named for assistive technology', a
     }
 });
 
+test('keeps guest authentication pages accessible', async ({ page }) => {
+    await auditPage(page, '/login');
+    await auditPage(page, '/forgot-password');
+});
+
 test('keeps the collector workspace accessible to collector accounts', async ({ page }) => {
     test.setTimeout(60_000);
 

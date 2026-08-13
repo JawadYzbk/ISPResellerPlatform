@@ -26,9 +26,9 @@ export default function Login() {
                     <p className="mb-2 text-sm font-semibold uppercase tracking-[0.18em] text-brand">
                         {t('Welcome back')}
                     </p>
-                    <h2 className="font-display text-3xl font-semibold tracking-tight">
+                    <h1 className="font-display text-3xl font-semibold tracking-tight">
                         {t('Sign in to your workspace')}
-                    </h2>
+                    </h1>
                     <p className="mt-3 text-sm leading-6 text-muted">
                         {t('Use your staff account to access the operations desk.')}
                     </p>

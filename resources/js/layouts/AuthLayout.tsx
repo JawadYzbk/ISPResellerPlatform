@@ -13,6 +13,12 @@ export default function AuthLayout({ children }: PropsWithChildren) {
     return (
         <div className="auth-root relative bg-canvas" dir={page.props.app.direction}>
             <Toaster />
+            <a
+                href="#main-content"
+                className="sr-only focus:not-sr-only focus:fixed focus:start-4 focus:top-4 focus:z-[110] focus:rounded-lg focus:bg-brand focus:px-4 focus:py-3 focus:text-sm focus:font-semibold focus:text-white focus:shadow-lg"
+            >
+                {t('Skip to main content')}
+            </a>
             <div data-testid="auth-shell" className="auth-shell grid lg:grid-cols-[1.1fr_0.9fr]">
                 <section
                     data-testid="auth-brand-panel"
@@ -37,9 +43,9 @@ export default function AuthLayout({ children }: PropsWithChildren) {
                         <p className="mb-6 text-sm font-semibold uppercase tracking-[0.2em] text-white/60">
                             {t('The operations spine for local ISPs')}
                         </p>
-                        <h1 className="font-display text-5xl font-semibold leading-[1.08] tracking-tight">
+                        <p className="font-display text-5xl font-semibold leading-[1.08] tracking-tight">
                             {t('Know what’s happening. Keep customers connected.')}
-                        </h1>
+                        </p>
                         <p className="mt-6 max-w-md text-base leading-7 text-white/70">
                             {t(
                                 'One desk for subscribers, cash collection, field work and the network actions that keep your business moving.',
@@ -50,12 +56,14 @@ export default function AuthLayout({ children }: PropsWithChildren) {
                         {t('Built for operators who do more with less.')}
                     </p>
                 </section>
-                <div
+                <main
                     data-testid="auth-form-panel"
+                    id="main-content"
+                    tabIndex={-1}
                     className="auth-form-panel flex items-center justify-center px-5 py-12 sm:px-10"
                 >
                     <div className="w-full max-w-sm">{children}</div>
-                </div>
+                </main>
             </div>
         </div>
     );
