@@ -18,6 +18,7 @@ import {
     Command,
     LayoutDashboard,
     LogOut,
+    Menu,
     MessageSquare,
     MapPinned,
     Navigation,
@@ -35,6 +36,7 @@ import {
     Wifi,
     WalletCards,
     Wrench,
+    X,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { useEffect, useRef, useState, type MouseEvent as ReactMouseEvent, type PropsWithChildren } from 'react';
@@ -70,10 +72,14 @@ export default function AppLayout({ children }: PropsWithChildren) {
     const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
     const [searching, setSearching] = useState(false);
     const [accountOpen, setAccountOpen] = useState(false);
+    const [mobileNavOpen, setMobileNavOpen] = useState(false);
     const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
     const searchInput = useRef<HTMLInputElement>(null);
     const searchReturnFocus = useRef<HTMLButtonElement | null>(null);
     const accountMenu = useRef<HTMLDivElement>(null);
+    const mobileNavTrigger = useRef<HTMLButtonElement>(null);
+    const mobileNavClose = useRef<HTMLButtonElement>(null);
+    const mobileNavWasOpen = useRef(false);
     const can = (permission: string | string[]) =>
         Array.isArray(permission)
             ? permission.some((item) => auth.permissions.includes(item))
@@ -90,6 +96,7 @@ export default function AppLayout({ children }: PropsWithChildren) {
             }
             if (event.key === 'Escape') setSearchOpen(false);
             if (event.key === 'Escape') setAccountOpen(false);
+            if (event.key === 'Escape') setMobileNavOpen(false);
         };
         window.addEventListener('keydown', handleShortcut);
 
@@ -112,6 +119,20 @@ export default function AppLayout({ children }: PropsWithChildren) {
         searchReturnFocus.current = null;
         trigger?.focus();
     }, [searchOpen]);
+
+    useEffect(() => {
+        if (mobileNavOpen) {
+            mobileNavWasOpen.current = true;
+            const timer = window.setTimeout(() => mobileNavClose.current?.focus(), 0);
+
+            return () => window.clearTimeout(timer);
+        }
+
+        if (mobileNavWasOpen.current) {
+            mobileNavWasOpen.current = false;
+            mobileNavTrigger.current?.focus();
+        }
+    }, [mobileNavOpen]);
 
     const openSearch = (event: ReactMouseEvent<HTMLButtonElement>) => {
         searchReturnFocus.current = event.currentTarget;
@@ -320,6 +341,56 @@ export default function AppLayout({ children }: PropsWithChildren) {
         .filter((item) => matchesPath(item.href))
         .sort((left, right) => right.href.length - left.href.length)[0]?.href;
     const activeGroupLabel = navGroups.find((group) => group.items.some((item) => item.href === activeNavHref))?.label;
+    const navigationMenu = (
+        <nav className="space-y-2" aria-label={t('Workspace navigation')}>
+            {navGroups.map((group) => {
+                const isOpen =
+                    openGroups[group.label] ??
+                    (group.label === 'Workspace' ||
+                        group.label === 'Collector desk' ||
+                        group.label === activeGroupLabel);
+
+                return (
+                    <div key={group.label}>
+                        {navGroups.length > 1 && (
+                            <button
+                                type="button"
+                                className="flex w-full items-center justify-between rounded-md px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-muted hover:bg-sand hover:text-ink"
+                                aria-expanded={isOpen}
+                                onClick={() => setOpenGroups((current) => ({ ...current, [group.label]: !isOpen }))}
+                            >
+                                <span>{t(group.label)}</span>
+                                <ChevronDown
+                                    size={14}
+                                    aria-hidden="true"
+                                    className={`transition-transform ${isOpen ? '' : '-rotate-90'}`}
+                                />
+                            </button>
+                        )}
+                        {isOpen && (
+                            <div className="mt-1 space-y-0.5">
+                                {group.items.map(({ label, href, icon: Icon }) => {
+                                    const active = href === activeNavHref;
+
+                                    return (
+                                        <Link
+                                            key={href}
+                                            href={href}
+                                            className={`group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition ${active ? 'bg-brand-soft text-brand' : 'text-muted hover:bg-sand hover:text-ink'}`}
+                                            aria-current={active ? 'page' : undefined}
+                                        >
+                                            <Icon aria-hidden="true" size={17} strokeWidth={active ? 2.2 : 1.8} />
+                                            <span>{t(label)}</span>
+                                        </Link>
+                                    );
+                                })}
+                            </div>
+                        )}
+                    </div>
+                );
+            })}
+        </nav>
+    );
 
     return (
         <div className="min-h-dvh bg-canvas text-ink" dir={app.direction}>
@@ -376,67 +447,64 @@ export default function AppLayout({ children }: PropsWithChildren) {
                             </span>
                         </Link>
                     )}
-                    <nav className="space-y-2" aria-label={t('Workspace navigation')}>
-                        {navGroups.map((group) => {
-                            const isOpen =
-                                openGroups[group.label] ??
-                                (group.label === 'Workspace' ||
-                                    group.label === 'Collector desk' ||
-                                    group.label === activeGroupLabel);
-
-                            return (
-                                <div key={group.label}>
-                                    {navGroups.length > 1 && (
-                                        <button
-                                            type="button"
-                                            className="flex w-full items-center justify-between rounded-md px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-muted hover:bg-sand hover:text-ink"
-                                            aria-expanded={isOpen}
-                                            onClick={() =>
-                                                setOpenGroups((current) => ({ ...current, [group.label]: !isOpen }))
-                                            }
-                                        >
-                                            <span>{t(group.label)}</span>
-                                            <ChevronDown
-                                                size={14}
-                                                className={`transition-transform ${isOpen ? '' : '-rotate-90'}`}
-                                            />
-                                        </button>
-                                    )}
-                                    {isOpen && (
-                                        <div className="mt-1 space-y-0.5">
-                                            {group.items.map(({ label, href, icon: Icon }) => {
-                                                const active = href === activeNavHref;
-
-                                                return (
-                                                    <Link
-                                                        key={href}
-                                                        href={href}
-                                                        className={`group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition ${active ? 'bg-brand-soft text-brand' : 'text-muted hover:bg-sand hover:text-ink'}`}
-                                                        aria-current={active ? 'page' : undefined}
-                                                    >
-                                                        <Icon size={17} strokeWidth={active ? 2.2 : 1.8} />
-                                                        <span>{t(label)}</span>
-                                                    </Link>
-                                                );
-                                            })}
-                                        </div>
-                                    )}
-                                </div>
-                            );
-                        })}
-                    </nav>
+                    {navigationMenu}
                 </div>
             </aside>
+
+            {mobileNavOpen && (
+                <div
+                    className="fixed inset-0 z-40 bg-ink/25 lg:hidden"
+                    role="presentation"
+                    onMouseDown={(event) => event.target === event.currentTarget && setMobileNavOpen(false)}
+                >
+                    <aside
+                        id="mobile-navigation"
+                        className="flex h-full w-[min(22rem,calc(100%-2rem))] flex-col border-e border-line bg-white shadow-2xl"
+                        aria-label={t('Mobile navigation')}
+                        onClick={(event) => {
+                            if ((event.target as HTMLElement).closest('a')) setMobileNavOpen(false);
+                        }}
+                    >
+                        <div className="flex h-20 shrink-0 items-center justify-between border-b border-line px-5">
+                            <div>
+                                <p className="font-display text-sm font-bold tracking-tight">ISP Manager</p>
+                                <p className="text-xs text-muted">{t('Operations desk')}</p>
+                            </div>
+                            <button
+                                ref={mobileNavClose}
+                                type="button"
+                                onClick={() => setMobileNavOpen(false)}
+                                className="rounded-lg p-2 text-muted hover:bg-sand hover:text-ink"
+                                aria-label={t('Close navigation')}
+                            >
+                                <X size={19} aria-hidden="true" />
+                            </button>
+                        </div>
+                        <div className="min-h-0 flex-1 overflow-y-auto px-4 py-5">{navigationMenu}</div>
+                    </aside>
+                </div>
+            )}
 
             <div className="lg:ps-64">
                 <header className="sticky top-0 z-10 flex h-20 items-center justify-between border-b border-line bg-canvas/90 px-5 backdrop-blur lg:px-8">
                     <div className="flex items-center gap-3">
+                        <button
+                            ref={mobileNavTrigger}
+                            type="button"
+                            onClick={() => setMobileNavOpen(true)}
+                            className="rounded-lg border border-line bg-white p-2 text-muted hover:text-brand lg:hidden"
+                            aria-expanded={mobileNavOpen}
+                            aria-controls="mobile-navigation"
+                            aria-label={t(mobileNavOpen ? 'Close navigation' : 'Open navigation')}
+                        >
+                            <Menu size={18} aria-hidden="true" />
+                        </button>
                         {!isPlatformOperator && (
                             <>
                                 <button
                                     type="button"
                                     onClick={openSearch}
-                                    className="hidden rounded-lg border border-line bg-white p-2 text-muted hover:text-brand lg:block"
+                                    className="rounded-lg border border-line bg-white p-2 text-muted hover:text-brand"
                                     title={t('Search customers')}
                                     aria-label={t('Search customers')}
                                 >
@@ -654,28 +722,30 @@ export default function AppLayout({ children }: PropsWithChildren) {
                     {children}
                 </main>
             </div>
-            <nav
-                className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-white/95 px-2 pb-[env(safe-area-inset-bottom)] shadow-[0_-6px_20px_rgba(14,31,29,0.08)] backdrop-blur lg:hidden"
-                aria-label={t('Field navigation')}
-            >
-                <div className="mx-auto flex max-w-lg items-stretch justify-around">
-                    {fieldNav.map(({ label, href, icon: Icon }) => {
-                        const active = matchesPath(href);
+            {!isPlatformOperator && (
+                <nav
+                    className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-white/95 px-2 pb-[env(safe-area-inset-bottom)] shadow-[0_-6px_20px_rgba(14,31,29,0.08)] backdrop-blur lg:hidden"
+                    aria-label={t('Field navigation')}
+                >
+                    <div className="mx-auto flex max-w-lg items-stretch justify-around">
+                        {fieldNav.map(({ label, href, icon: Icon }) => {
+                            const active = matchesPath(href);
 
-                        return (
-                            <Link
-                                key={href}
-                                href={href}
-                                className={`flex min-h-16 min-w-16 flex-1 flex-col items-center justify-center gap-1 px-1 text-[11px] font-semibold transition ${active ? 'text-brand' : 'text-muted hover:text-ink'}`}
-                                aria-current={active ? 'page' : undefined}
-                            >
-                                <Icon size={20} strokeWidth={active ? 2.2 : 1.8} />
-                                <span>{t(label)}</span>
-                            </Link>
-                        );
-                    })}
-                </div>
-            </nav>
+                            return (
+                                <Link
+                                    key={href}
+                                    href={href}
+                                    className={`flex min-h-16 min-w-16 flex-1 flex-col items-center justify-center gap-1 px-1 text-[11px] font-semibold transition ${active ? 'text-brand' : 'text-muted hover:text-ink'}`}
+                                    aria-current={active ? 'page' : undefined}
+                                >
+                                    <Icon aria-hidden="true" size={20} strokeWidth={active ? 2.2 : 1.8} />
+                                    <span>{t(label)}</span>
+                                </Link>
+                            );
+                        })}
+                    </div>
+                </nav>
+            )}
         </div>
     );
 }

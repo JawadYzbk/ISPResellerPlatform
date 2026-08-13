@@ -3498,6 +3498,25 @@ const fieldFrench: Messages = {
     'Ledger projections are append-only.': 'Les projections du grand livre sont en ajout uniquement.',
 };
 
+const accessibilityMessages: Record<Exclude<Locale, 'en'>, Messages> = {
+    ar: {
+        'Skip to main content': 'انتقل إلى المحتوى الرئيسي',
+        'Mobile navigation': 'التنقل على الهاتف',
+        'Open navigation': 'فتح قائمة التنقل',
+        'Close navigation': 'إغلاق قائمة التنقل',
+        'Show password': 'إظهار كلمة المرور',
+        'Hide password': 'إخفاء كلمة المرور',
+    },
+    fr: {
+        'Skip to main content': 'Accéder au contenu principal',
+        'Mobile navigation': 'Navigation mobile',
+        'Open navigation': 'Ouvrir la navigation',
+        'Close navigation': 'Fermer la navigation',
+        'Show password': 'Afficher le mot de passe',
+        'Hide password': 'Masquer le mot de passe',
+    },
+};
+
 const messages: Record<Exclude<Locale, 'en'>, Messages> = {
     ar: {
         'Rate for 1 unit': 'سعر وحدة واحدة',
@@ -7753,7 +7772,10 @@ export function normalizeLocale(locale: string): Locale {
 
 export function createTranslator(locale: string) {
     const normalizedLocale = normalizeLocale(locale);
-    const dictionary = messages[normalizedLocale as Exclude<Locale, 'en'>];
+    const dictionary = {
+        ...(accessibilityMessages[normalizedLocale as Exclude<Locale, 'en'>] ?? {}),
+        ...(messages[normalizedLocale as Exclude<Locale, 'en'>] ?? {}),
+    };
 
     return (key: string): string => dictionary?.[key] ?? runtimeTranslation(normalizedLocale, key) ?? key;
 }
