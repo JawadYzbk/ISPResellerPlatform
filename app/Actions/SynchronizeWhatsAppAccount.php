@@ -56,6 +56,9 @@ final readonly class SynchronizeWhatsAppAccount implements Action
             'push_name' => $pushName,
             'last_error' => $lastError,
             'last_ready_at' => $account->last_ready_at?->toIso8601String(),
+            'next_send_at' => $account->next_send_at?->toIso8601String(),
+            'cooldown_until' => $account->cooldown_until?->toIso8601String(),
+            'failure_streak' => (int) $account->failure_streak,
             'qr_code' => $rawQr === null ? null : $this->qrCode->dataUri($rawQr),
             'is_active' => (bool) $account->is_active,
         ];

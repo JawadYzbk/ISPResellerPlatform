@@ -49,6 +49,9 @@ type WhatsAppAccount = {
     push_name: string | null;
     last_error: string | null;
     last_ready_at: string | null;
+    next_send_at: string | null;
+    cooldown_until: string | null;
+    failure_streak: number;
     qr_code: string | null;
     is_active: boolean;
 };
@@ -410,6 +413,15 @@ export default function WhatsAppSettings({ setup }: Props) {
                                                 {t('Last ready')} {new Date(account.last_ready_at).toLocaleString()}
                                             </span>
                                         )}
+                                    </div>
+
+                                    <div className="mt-3 rounded-lg bg-sand/60 px-3 py-2 text-xs text-muted">
+                                        <span className="font-semibold text-ink">{t('Delivery safety')}</span>{' '}
+                                        {account.cooldown_until
+                                            ? `${t('Cooldown until')} ${new Date(account.cooldown_until).toLocaleString()}`
+                                            : account.failure_streak > 0
+                                              ? `${account.failure_streak} ${t('recent provider failures; delivery remains paced')}`
+                                              : t('Paced and duplicate-protected')}
                                     </div>
 
                                     {account.qr_code && (
