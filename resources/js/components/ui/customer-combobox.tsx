@@ -19,7 +19,7 @@ export type CustomerOption = {
     phone: string | null;
     status: string;
     balance_amount: number;
-    balance_currency: string;
+    balance_currency: string | null;
 };
 
 type CustomerComboboxProps = {
@@ -149,8 +149,10 @@ export default function CustomerCombobox({
                                             {customer.phone ? ` · ${customer.phone}` : ''}
                                         </span>
                                         <span className="block truncate text-xs text-muted">
-                                {enumLabel(customer.status, t)} ·{' '}
-                                            {formatMoney(customer.balance_amount, customer.balance_currency)}
+                                        {enumLabel(customer.status, t)}
+                                        {customer.balance_currency
+                                            ? ` · ${formatMoney(customer.balance_amount, customer.balance_currency)}`
+                                            : ''}
                                         </span>
                                     </span>
                                 </CommandItem>

@@ -69,7 +69,7 @@ export default function CollectorTasks({ filters, collectors, customers, tasks, 
         phone: customer.phone,
         status: 'active',
         balance_amount: 0,
-        balance_currency: '',
+        balance_currency: null,
     }));
     const applyFilter = (next: { status?: string; collector?: number | null }) =>
         router.get(

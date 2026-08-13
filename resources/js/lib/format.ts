@@ -1,17 +1,27 @@
-export function formatMoney(amountMinor: number, currency: string, locale = browserLocale()): string {
-    const normalizedCurrency = currency.trim().toUpperCase();
+export function formatMoney(amountMinor: number, currency: string | null | undefined, locale = browserLocale()): string {
+    const normalizedCurrency = normalizeCurrencyCode(currency);
+    if (normalizedCurrency === null) return '—';
+
     const fractionDigits = currencyFractionDigits(normalizedCurrency, locale);
 
-    return new Intl.NumberFormat(locale, {
-        style: 'currency',
-        currency: normalizedCurrency,
-        minimumFractionDigits: fractionDigits,
-        maximumFractionDigits: fractionDigits,
-    }).format(amountMinor / 10 ** fractionDigits);
+    try {
+        return new Intl.NumberFormat(locale, {
+            style: 'currency',
+            currency: normalizedCurrency,
+            minimumFractionDigits: fractionDigits,
+            maximumFractionDigits: fractionDigits,
+        }).format(amountMinor / 10 ** fractionDigits);
+    } catch {
+        return new Intl.NumberFormat(locale, {
+            minimumFractionDigits: fractionDigits,
+            maximumFractionDigits: fractionDigits,
+        }).format(amountMinor / 10 ** fractionDigits);
+    }
 }
 
-export function currencyFractionDigits(currency: string, locale = 'en-US'): number {
-    const normalizedCurrency = currency.trim().toUpperCase();
+export function currencyFractionDigits(currency: string | null | undefined, locale = 'en-US'): number {
+    const normalizedCurrency = normalizeCurrencyCode(currency);
+    if (normalizedCurrency === null) return 2;
 
     try {
         return (
@@ -42,6 +52,12 @@ export function parseMoneyToMinor(value: string, currency: string): number | nul
     const safeMaximum = BigInt(Number.MAX_SAFE_INTEGER);
 
     return amount > 0n && amount <= safeMaximum ? Number(amount) : null;
+}
+
+function normalizeCurrencyCode(currency: string | null | undefined): string | null {
+    const normalized = typeof currency === 'string' ? currency.trim().toUpperCase() : '';
+
+    return /^[A-Z]{3}$/.test(normalized) ? normalized : null;
 }
 
 type Translate = (key: string) => string;
