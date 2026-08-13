@@ -57,7 +57,7 @@ Sources:
 | Collector wallet/cash custody | Delivered for responsive web | Physical custody combines cash-only collections, opening float, manager advances, approved field expenses, confirmed handovers and documented adjustments in an append-only multi-currency position. Pending requests do not affect balances, debits cannot overdraw custody, and checkout snapshots the handover position. |
 | Inventory and equipment assignment | Delivered | Keep serialized and bulk stock, warehouses, transfers, service assignment and movement audit. |
 | Stock assigned to collectors and field sales | Delivered for responsive web | Collector/vehicle custody locations, audited direct transfers, replenishment and return approvals, stale-safe physical counts, manager-posted variances, and paid customer field sales are implemented. Sales atomically issue an invoice, record payment, update cash custody for cash methods, decrement stock and append movement history. |
-| Generic business expenses | Gap | Add categories, vendors, attachments, recurring expenses, approvals, cash/bank/collector payment sources and ledger posting. |
+| Generic business expenses | Delivered for responsive web | Tenant-scoped categories and vendors, private receipt attachments, pending approval, cash/bank/collector sources, atomic ledger and custody posting, and pausable weekly/monthly/quarterly/yearly schedules are implemented. Recurring occurrences remain pending until a manager approves them. |
 | Customer/admin WhatsApp and SMS notifications | Delivered/partial | Complete live provider acceptance; retain multi-account jobs, deduplication, pacing and audit history. |
 | Customer portal and public invoice/payment access | Delivered/partial | Finish branded tenant-domain payment links, statement sharing, receipt access and production gateway acceptance. |
 | Multi-company distributor operation | Delivered | Keep the stronger tenant and reseller hierarchy, wallets, price books, commissions and settlements. |
@@ -94,7 +94,7 @@ Sources:
 
 1. Per-service custom billing anchors and cycle-change previews.
 2. Recurring invoice items, usage rating and safe bulk billing.
-3. Generic operational expenses with approval and ledger posting.
+3. Generic operational expenses with approval and ledger posting. **Delivered for responsive web.**
 4. Branded public payment/statement links and compact browser receipts.
 5. Owner-facing backup health and audited business exports.
 
