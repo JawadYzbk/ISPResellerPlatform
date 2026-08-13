@@ -94,3 +94,52 @@ it('receives bulk stock and consumes it from the operator work-order page', func
     expect(StockBalance::query()->where('inventory_item_id', $item->id)->value('quantity'))->toBe('4.000')
         ->and(WorkOrderMaterial::query()->where('work_order_id', $order->id)->value('quantity'))->toBe('1.250');
 });
+
+it('transfers bulk stock between custody locations with paired audit movements', function (): void {
+    $tenant = Tenant::create(['name' => 'Transferline', 'slug' => 'transferline', 'base_currency' => 'USD', 'collection_currency' => 'LBP']);
+    app(Tenancy::class)->set($tenant);
+    $operator = User::create([
+        'tenant_id' => $tenant->id,
+        'name' => 'Inventory operator',
+        'email' => 'bulk-transfer-operator@example.test',
+        'password' => Hash::make('password'),
+        'role' => 'operations_manager',
+        'last_authenticated_at' => now(),
+    ]);
+    app(CapabilitySeeder::class)->run();
+    $operator->assignRole('operations_manager');
+    $operator->forceFill(['last_authenticated_at' => now()])->save();
+    $source = Warehouse::create(['name' => 'Main warehouse', 'code' => 'MAIN']);
+    $destination = Warehouse::create(['name' => 'Collector custody', 'code' => 'COL-01', 'type' => 'collector', 'assigned_user_id' => $operator->id]);
+    $item = InventoryItem::create(['sku' => 'DROP-CABLE', 'name' => 'Drop cable', 'category' => 'cable', 'is_serialized' => false]);
+    $sourceBalance = StockBalance::create(['inventory_item_id' => $item->id, 'warehouse_id' => $source->id, 'quantity' => '25.000']);
+
+    $this->actingAs($operator)->post(route('operations.inventory.bulk-transfer'), [
+        'inventory_item_id' => $item->id,
+        'source_warehouse_id' => $source->id,
+        'destination_warehouse_id' => $destination->id,
+        'quantity' => '7.500',
+        'note' => 'Weekly collector replenishment',
+    ])->assertRedirect(route('operations.inventory'))
+        ->assertSessionHas('success', 'Bulk stock transferred.');
+
+    app(Tenancy::class)->set($tenant);
+    $movements = StockMovement::query()->where('inventory_item_id', $item->id)->orderBy('id')->get();
+    expect($sourceBalance->refresh()->quantity)->toBe('17.500')
+        ->and(StockBalance::query()->where('warehouse_id', $destination->id)->value('quantity'))->toBe('7.500')
+        ->and($movements)->toHaveCount(2)
+        ->and($movements[0]->movement_type)->toBe('transfer_out')
+        ->and($movements[0]->quantity)->toBe('-7.500')
+        ->and($movements[1]->movement_type)->toBe('transfer_in')
+        ->and($movements[1]->quantity)->toBe('7.500')
+        ->and($movements[0]->metadata['transfer_id'])->toBe($movements[1]->metadata['transfer_id']);
+
+    $this->actingAs($operator)->post(route('operations.inventory.bulk-transfer'), [
+        'inventory_item_id' => $item->id,
+        'source_warehouse_id' => $source->id,
+        'destination_warehouse_id' => $destination->id,
+        'quantity' => '99.000',
+    ])->assertSessionHasErrors('quantity');
+
+    expect($sourceBalance->refresh()->quantity)->toBe('17.500');
+});

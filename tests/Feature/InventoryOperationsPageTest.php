@@ -163,3 +163,65 @@ it('lets an inventory manager create stock masters and receive serialized equipm
         ->and(InventoryUnit::query()->where('serial_number', 'ONU-0001')->value('warehouse_id'))->toBe($warehouse->id)
         ->and(InventoryMovement::query()->where('movement_type', 'receive')->where('inventory_unit_id', InventoryUnit::query()->where('serial_number', 'ONU-0001')->value('id'))->exists())->toBeTrue();
 });
+
+it('creates a tenant-safe field stock location assigned to a collector', function (): void {
+    $tenant = Tenant::create(['name' => 'Fieldline', 'slug' => 'fieldline', 'base_currency' => 'USD', 'collection_currency' => 'LBP']);
+    $otherTenant = Tenant::create(['name' => 'Elsewhere', 'slug' => 'elsewhere', 'base_currency' => 'USD', 'collection_currency' => 'USD']);
+    app(Tenancy::class)->set($tenant);
+    $owner = User::create([
+        'tenant_id' => $tenant->id,
+        'name' => 'Tenant owner',
+        'email' => 'field-stock-owner@example.test',
+        'password' => Hash::make('password'),
+        'role' => 'tenant_owner',
+        'last_authenticated_at' => now(),
+    ]);
+    $collector = User::create([
+        'tenant_id' => $tenant->id,
+        'name' => 'Nadia Collector',
+        'email' => 'field-stock-collector@example.test',
+        'password' => Hash::make('password'),
+        'role' => 'collector',
+    ]);
+    app(CapabilitySeeder::class)->run();
+    $owner->assignRole('tenant_owner');
+    $owner->forceFill(['last_authenticated_at' => now()])->save();
+
+    $this->actingAs($owner)
+        ->get(route('operations.inventory'))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->where('fieldUsers.0.id', $collector->id)
+            ->where('fieldUsers.0.role', 'collector'));
+
+    $this->actingAs($owner)
+        ->post(route('operations.inventory.warehouses.store'), [
+            'name' => 'Nadia stock',
+            'code' => 'COL-NADIA',
+            'type' => 'collector',
+            'assigned_user_id' => $collector->id,
+        ])
+        ->assertRedirect(route('operations.inventory'));
+
+    app(Tenancy::class)->set($tenant);
+    expect(Warehouse::query()->where('code', 'COL-NADIA')->value('assigned_user_id'))->toBe($collector->id);
+
+    app(Tenancy::class)->set($otherTenant);
+    $outsider = User::create([
+        'tenant_id' => $otherTenant->id,
+        'name' => 'Outside collector',
+        'email' => 'outside-field-stock@example.test',
+        'password' => Hash::make('password'),
+        'role' => 'collector',
+    ]);
+    app(Tenancy::class)->set($tenant);
+
+    $this->actingAs($owner)
+        ->post(route('operations.inventory.warehouses.store'), [
+            'name' => 'Invalid stock',
+            'code' => 'INVALID',
+            'type' => 'collector',
+            'assigned_user_id' => $outsider->id,
+        ])
+        ->assertSessionHasErrors('assigned_user_id');
+});

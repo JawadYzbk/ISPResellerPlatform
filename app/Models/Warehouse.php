@@ -24,6 +24,11 @@ class Warehouse extends Model
         return $this->belongsTo(Tenant::class);
     }
 
+    public function assignedUser(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'assigned_user_id');
+    }
+
     /** @return HasMany<InventoryUnit, $this> */
     public function units(): HasMany
     {

@@ -253,6 +253,7 @@ Route::middleware(['auth', 'tenant', '2fa'])->group(function (): void {
     Route::patch('/operations/inventory/warehouses/{warehouse}', [InventoryOperationsController::class, 'updateWarehouse'])->middleware('recent-auth')->name('operations.inventory.warehouses.update');
     Route::post('/operations/inventory/serialized-receive', [InventoryOperationsController::class, 'receiveUnit'])->middleware('recent-auth')->name('operations.inventory.serialized-receive');
     Route::post('/operations/inventory/bulk-receive', [InventoryOperationsController::class, 'receiveBulk'])->middleware('recent-auth')->name('operations.inventory.bulk-receive');
+    Route::post('/operations/inventory/bulk-transfer', [InventoryOperationsController::class, 'transferBulk'])->middleware('recent-auth')->name('operations.inventory.bulk-transfer');
     Route::post('/operations/inventory/{unit}/assign', [InventoryOperationsController::class, 'assign'])->middleware('recent-auth')->name('operations.inventory.assign');
     Route::post('/operations/inventory/{unit}/transfer', [InventoryOperationsController::class, 'transfer'])->middleware('recent-auth')->name('operations.inventory.transfer');
     Route::get('/operations/imports', [ImportOperationsController::class, 'index'])->name('operations.imports');

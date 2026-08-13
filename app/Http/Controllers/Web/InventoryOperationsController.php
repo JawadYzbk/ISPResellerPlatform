@@ -10,6 +10,7 @@ use App\Actions\ListInventoryMovements;
 use App\Actions\ListInventoryUnits;
 use App\Actions\ReceiveBulkStock;
 use App\Actions\ReceiveInventoryUnit;
+use App\Actions\TransferBulkStock;
 use App\Actions\TransferInventoryUnit;
 use App\Actions\UpdateInventoryItem;
 use App\Actions\UpdateWarehouse;
@@ -123,10 +124,22 @@ final class InventoryOperationsController extends Controller
                 ? Warehouse::query()->where('is_active', true)->orderBy('code')->get(['id', 'code', 'name'])->values()
                 : [],
             'catalogWarehouses' => $canReceive
-                ? Warehouse::query()->orderByDesc('is_active')->orderBy('code')->get(['id', 'code', 'name', 'type', 'is_active'])->values()
+                ? Warehouse::query()
+                    ->with('assignedUser:id,name')
+                    ->orderByDesc('is_active')
+                    ->orderBy('code')
+                    ->get(['id', 'code', 'name', 'type', 'assigned_user_id', 'is_active'])
+                    ->values()
                 : [],
             'transferWarehouses' => $canTransfer
                 ? Warehouse::query()->where('is_active', true)->orderBy('code')->get(['id', 'code', 'name'])->values()
+                : [],
+            'fieldUsers' => $canReceive
+                ? User::query()
+                    ->whereIn('role', ['collector', 'technician'])
+                    ->orderBy('name')
+                    ->get(['id', 'name', 'role'])
+                    ->values()
                 : [],
         ]);
     }
@@ -158,13 +171,18 @@ final class InventoryOperationsController extends Controller
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'code' => ['required', 'string', 'max:32'],
-            'type' => ['required', 'string', 'max:16', 'in:warehouse,van'],
+            'type' => ['required', 'string', 'max:16', 'in:warehouse,van,collector'],
+            'assigned_user_id' => ['nullable', 'integer'],
         ]);
         $code = strtoupper(trim((string) $validated['code']));
         if (Warehouse::query()->where('code', $code)->exists()) {
             throw ValidationException::withMessages(['code' => 'A warehouse with this code already exists.']);
         }
-        $warehouse = $create->handle($validated);
+        try {
+            $warehouse = $create->handle($validated);
+        } catch (DomainException $exception) {
+            throw ValidationException::withMessages(['assigned_user_id' => $exception->getMessage()]);
+        }
 
         return redirect()->route('operations.inventory')->with('success', "Warehouse {$warehouse->code} created.");
     }
@@ -202,10 +220,15 @@ final class InventoryOperationsController extends Controller
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'code' => ['required', 'string', 'max:32', Rule::unique('warehouses', 'code')->ignore($warehouse->id)->where('tenant_id', $user->tenant_id)],
-            'type' => ['required', 'string', 'max:16', 'in:warehouse,van'],
+            'type' => ['required', 'string', 'max:16', 'in:warehouse,van,collector'],
+            'assigned_user_id' => ['nullable', 'integer'],
             'is_active' => ['required', 'boolean'],
         ]);
-        $updated = $update->handle($warehouse, $validated);
+        try {
+            $updated = $update->handle($warehouse, $validated);
+        } catch (DomainException $exception) {
+            throw ValidationException::withMessages(['assigned_user_id' => $exception->getMessage()]);
+        }
 
         return redirect()->route('operations.inventory')->with('success', "Warehouse {$updated->code} updated.");
     }
@@ -249,6 +272,29 @@ final class InventoryOperationsController extends Controller
         }
 
         return redirect()->route('operations.inventory')->with('success', 'Bulk stock received.');
+    }
+
+    public function transferBulk(Request $request, TransferBulkStock $transfer): RedirectResponse
+    {
+        $user = $request->user();
+        abort_unless($user instanceof User && $user->can('inventory.transfer'), 403);
+        $validated = $request->validate([
+            'inventory_item_id' => ['required', 'integer'],
+            'source_warehouse_id' => ['required', 'integer'],
+            'destination_warehouse_id' => ['required', 'integer', 'different:source_warehouse_id'],
+            'quantity' => ['required', 'string', 'regex:/^\d{1,9}(?:\.\d{1,3})?$/'],
+            'note' => ['nullable', 'string', 'max:500'],
+        ]);
+        $item = InventoryItem::query()->findOrFail($validated['inventory_item_id']);
+        $source = Warehouse::query()->findOrFail($validated['source_warehouse_id']);
+        $destination = Warehouse::query()->findOrFail($validated['destination_warehouse_id']);
+        try {
+            $transfer->handle($item, $source, $destination, $user, (string) $validated['quantity'], $validated['note'] ?? null);
+        } catch (DomainException $exception) {
+            throw ValidationException::withMessages(['quantity' => $exception->getMessage()]);
+        }
+
+        return redirect()->route('operations.inventory')->with('success', 'Bulk stock transferred.');
     }
 
     public function assign(Request $request, InventoryUnit $unit, AssignInventoryUnit $assign): RedirectResponse
