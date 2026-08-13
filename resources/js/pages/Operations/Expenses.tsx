@@ -4,9 +4,11 @@ import CurrencyCombobox, { type CurrencyOption } from '@/components/ui/currency-
 import ResponsiveSelect from '@/components/ui/responsive-select';
 import AppLayout from '@/layouts/AppLayout';
 import { formatDate, formatMoney, parseMoneyToMinor } from '@/lib/format';
-import { Head, Link, router, useForm } from '@inertiajs/react';
+import { createTranslator } from '@/lib/i18n';
+import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
 import { Banknote, Building2, FileCheck2, Paperclip, Plus, ReceiptText, Tags } from 'lucide-react';
 import { useState } from 'react';
+import type { PageProps } from '@/types';
 
 type Category = { id: number; public_id: string; name: string; code: string; is_active: boolean };
 type Vendor = {
@@ -72,6 +74,8 @@ export default function Expenses({
     expenses,
     recurringSchedules,
 }: Props) {
+    const page = usePage<PageProps>();
+    const t = createTranslator(page.props.app.locale);
     const [amount, setAmount] = useState('');
     const [recurringAmount, setRecurringAmount] = useState('');
     const [reviewNotes, setReviewNotes] = useState<Record<string, string>>({});
@@ -110,7 +114,7 @@ export default function Expenses({
         event.preventDefault();
         const minor = parseMoneyToMinor(amount, form.data.currency);
         if (minor === null || minor <= 0) {
-            form.setError('amount', 'Enter a positive amount.');
+            form.setError('amount', t('Enter a positive amount.'));
             return;
         }
         form.clearErrors('amount');
@@ -133,45 +137,44 @@ export default function Expenses({
 
     return (
         <AppLayout>
-            <Head title="Operational expenses" />
+            <Head title={t('Operational expenses')} />
             <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-end">
                 <div>
-                    <p className="eyebrow">Expense control</p>
-                    <h1 className="page-title text-balance">Operational expenses</h1>
+                    <p className="eyebrow">{t('Expense control')}</p>
+                    <h1 className="page-title text-balance">{t('Operational expenses')}</h1>
                     <p className="page-subtitle text-pretty">
-                        Submit receipts, review spending, and post approved cash, bank, or collector payments to the
-                        ledger.
+                        {t('Submit receipts, review spending, and post approved cash, bank, or collector payments to the ledger.')}
                     </p>
                 </div>
                 <div className="grid gap-2 sm:grid-cols-3">
                     <ResponsiveSelect
                         value={filters.status}
-                        aria-label="Expense status"
+                        aria-label={t('Expense status')}
                         onChange={(event) => applyFilters({ status: event.target.value })}
                     >
-                        <option value="all">All statuses</option>
-                        <option value="pending">Pending</option>
-                        <option value="posted">Posted</option>
-                        <option value="rejected">Rejected</option>
+                        <option value="all">{t('All statuses')}</option>
+                        <option value="pending">{t('Pending')}</option>
+                        <option value="posted">{t('Posted')}</option>
+                        <option value="rejected">{t('Rejected')}</option>
                     </ResponsiveSelect>
                     <ResponsiveSelect
                         value={filters.payment_source}
-                        aria-label="Payment source"
+                        aria-label={t('Payment source')}
                         onChange={(event) => applyFilters({ payment_source: event.target.value })}
                     >
-                        <option value="all">All payment sources</option>
-                        <option value="cash">Cash</option>
-                        <option value="bank">Bank</option>
-                        <option value="collector">Collector cash</option>
+                        <option value="all">{t('All payment sources')}</option>
+                        <option value="cash">{t('Cash')}</option>
+                        <option value="bank">{t('Bank')}</option>
+                        <option value="collector">{t('Collector cash')}</option>
                     </ResponsiveSelect>
                     <ResponsiveSelect
                         value={filters.category ?? ''}
-                        aria-label="Expense category"
+                        aria-label={t('Expense category')}
                         onChange={(event) =>
                             applyFilters({ category: event.target.value ? Number(event.target.value) : null })
                         }
                     >
-                        <option value="">All categories</option>
+                        <option value="">{t('All categories')}</option>
                         {categories.map((category) => (
                             <option key={category.id} value={category.id}>
                                 {category.name}
@@ -188,15 +191,15 @@ export default function Expenses({
                             <Plus size={18} />
                         </span>
                         <div>
-                            <h2 className="section-title text-balance">Submit an expense</h2>
+                            <h2 className="section-title text-balance">{t('Submit an expense')}</h2>
                             <p className="mt-1 text-pretty text-sm text-muted">
-                                It remains pending and has no ledger or custody impact until approved.
+                                {t('It remains pending and has no ledger or custody impact until approved.')}
                             </p>
                         </div>
                     </div>
                     <form className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-4" onSubmit={submit}>
                         <label className="field-label">
-                            Category
+                            {t('Category')}
                             <ResponsiveSelect
                                 className="mt-1"
                                 value={form.data.expense_category_id}
@@ -210,13 +213,13 @@ export default function Expenses({
                             </ResponsiveSelect>
                         </label>
                         <label className="field-label">
-                            Vendor (optional)
+                            {t('Vendor')} ({t('optional')})
                             <ResponsiveSelect
                                 className="mt-1"
                                 value={form.data.expense_vendor_id}
                                 onChange={(event) => form.setData('expense_vendor_id', event.target.value)}
                             >
-                                <option value="">No vendor</option>
+                                <option value="">{t('No vendor')}</option>
                                 {activeVendors.map((item) => (
                                     <option key={item.id} value={item.id}>
                                         {item.name}
@@ -225,26 +228,26 @@ export default function Expenses({
                             </ResponsiveSelect>
                         </label>
                         <label className="field-label">
-                            Paid from
+                            {t('Paid from')}
                             <ResponsiveSelect
                                 className="mt-1"
                                 value={form.data.payment_source}
                                 onChange={(event) => form.setData('payment_source', event.target.value)}
                             >
-                                <option value="cash">Workspace cash</option>
-                                <option value="bank">Bank account</option>
-                                <option value="collector">Collector custody</option>
+                                <option value="cash">{t('Workspace cash')}</option>
+                                <option value="bank">{t('Bank account')}</option>
+                                <option value="collector">{t('Collector custody')}</option>
                             </ResponsiveSelect>
                         </label>
                         {form.data.payment_source === 'collector' && (
                             <label className="field-label">
-                                Collector
+                                {t('Collector')}
                                 <ResponsiveSelect
                                     className="mt-1"
                                     value={form.data.collector_id}
                                     onChange={(event) => form.setData('collector_id', event.target.value)}
                                 >
-                                    <option value="">Choose collector</option>
+                                    <option value="">{t('Choose collector')}</option>
                                     {collectors.map((item) => (
                                         <option key={item.id} value={item.id}>
                                             {item.name}
@@ -254,7 +257,7 @@ export default function Expenses({
                             </label>
                         )}
                         <label className="field-label">
-                            Currency
+                            {t('Currency')}
                             <CurrencyCombobox
                                 className="field mt-1"
                                 value={form.data.currency}
@@ -263,7 +266,7 @@ export default function Expenses({
                             />
                         </label>
                         <label className="field-label">
-                            Amount
+                            {t('Amount')}
                             <input
                                 className="field mt-1 tabular-nums"
                                 inputMode="decimal"
@@ -273,7 +276,7 @@ export default function Expenses({
                             {form.errors.amount && <span className="field-error">{form.errors.amount}</span>}
                         </label>
                         <label className="field-label">
-                            Date
+                            {t('Date')}
                             <input
                                 className="field mt-1"
                                 type="date"
@@ -282,7 +285,7 @@ export default function Expenses({
                             />
                         </label>
                         <label className="field-label">
-                            Reference (optional)
+                            {t('Reference')} ({t('optional')})
                             <input
                                 className="field mt-1"
                                 maxLength={120}
@@ -291,7 +294,7 @@ export default function Expenses({
                             />
                         </label>
                         <label className="field-label md:col-span-2">
-                            Description
+                            {t('Description')}
                             <textarea
                                 className="field mt-1 min-h-20"
                                 maxLength={2000}
@@ -300,7 +303,7 @@ export default function Expenses({
                             />
                         </label>
                         <label className="field-label md:col-span-2">
-                            Receipt (PDF or image)
+                            {t('Receipt (PDF or image)')}
                             <input
                                 className="field mt-1 file:me-3 file:rounded-lg file:border-0 file:bg-brand-soft file:px-3 file:py-1.5 file:font-semibold file:text-brand"
                                 type="file"
@@ -320,7 +323,7 @@ export default function Expenses({
                                     form.processing || !form.data.description.trim() || !form.data.expense_category_id
                                 }
                             >
-                                Submit for approval
+                                {t('Submit for approval')}
                             </button>
                         </div>
                     </form>
@@ -329,8 +332,10 @@ export default function Expenses({
 
             <section className="card mt-6 overflow-hidden">
                 <div className="border-b border-line px-5 py-4">
-                    <h2 className="section-title">Expense register</h2>
-                    <p className="mt-1 text-xs text-muted tabular-nums">{expenses.length} record(s)</p>
+                    <h2 className="section-title">{t('Expense register')}</h2>
+                    <p className="mt-1 text-xs text-muted tabular-nums">
+                        {expenses.length} {t('record(s)')}
+                    </p>
                 </div>
                 <div className="divide-y divide-line">
                     {expenses.map((expense) => (
@@ -345,7 +350,7 @@ export default function Expenses({
                                             <h3 className="font-semibold">{expense.category.name}</h3>
                                             <StatusBadge status={expense.status} />
                                             <span className="rounded-full bg-sand px-2.5 py-1 text-xs font-semibold capitalize">
-                                                {expense.payment_source}
+                                                {t(expense.payment_source)}
                                             </span>
                                         </div>
                                         <p className="mt-1 text-pretty text-sm text-muted">{expense.description}</p>
@@ -376,7 +381,7 @@ export default function Expenses({
                             {expense.status === 'pending' && permissions.approve && (
                                 <div className="mt-4 rounded-xl border border-line bg-sand/30 p-4">
                                     <label className="field-label">
-                                        Review note
+                                        {t('Review note')}
                                         <input
                                             className="field mt-1"
                                             value={reviewNotes[expense.public_id] ?? ''}
@@ -390,40 +395,46 @@ export default function Expenses({
                                     </label>
                                     <div className="mt-3 flex justify-end gap-2">
                                         <ConfirmDialog
-                                            title="Reject this expense?"
-                                            description="It remains in the audit trail without changing the ledger or collector custody."
-                                            confirmLabel="Reject expense"
+                                            title={t('Reject this expense?')}
+                                            description={t(
+                                                'It remains in the audit trail without changing the ledger or collector custody.',
+                                            )}
+                                            confirmLabel={t('Reject expense')}
                                             destructive
                                             onConfirm={() => review(expense, 'rejected')}
                                         >
                                             <button type="button" className="button-danger">
-                                                Reject
+                                                {t('Reject')}
                                             </button>
                                         </ConfirmDialog>
                                         <ConfirmDialog
-                                            title="Approve and post this expense?"
-                                            description="This creates a permanent journal entry and, for collector cash, reduces custody."
-                                            confirmLabel="Approve expense"
+                                            title={t('Approve and post this expense?')}
+                                            description={t(
+                                                'This creates a permanent journal entry and, for collector cash, reduces custody.',
+                                            )}
+                                            confirmLabel={t('Approve expense')}
                                             onConfirm={() => review(expense, 'posted')}
                                         >
                                             <button type="button" className="button-primary">
-                                                Approve and post
+                                                {t('Approve and post')}
                                             </button>
                                         </ConfirmDialog>
                                     </div>
                                 </div>
                             )}
                             {expense.review_note && (
-                                <p className="mt-3 text-pretty text-xs text-muted">Review: {expense.review_note}</p>
+                                <p className="mt-3 text-pretty text-xs text-muted">
+                                    {t('Review')}: {expense.review_note}
+                                </p>
                             )}
                         </article>
                     ))}
                     {expenses.length === 0 && (
                         <div className="p-12 text-center">
                             <FileCheck2 className="mx-auto text-muted" size={30} />
-                            <p className="mt-3 font-semibold">No matching expenses</p>
+                            <p className="mt-3 font-semibold">{t('No matching expenses')}</p>
                             <p className="mt-1 text-pretty text-sm text-muted">
-                                Submit the first expense above or change the current filters.
+                                {t('Submit the first expense above or change the current filters.')}
                             </p>
                         </div>
                     )}
@@ -437,10 +448,9 @@ export default function Expenses({
                             <Banknote size={18} />
                         </span>
                         <div>
-                            <h2 className="section-title text-balance">Recurring expenses</h2>
+                            <h2 className="section-title text-balance">{t('Recurring expenses')}</h2>
                             <p className="mt-1 text-pretty text-sm text-muted">
-                                Generate pending rent, fuel, upstream, and office costs on schedule. Every occurrence
-                                still requires approval.
+                                {t('Generate pending rent, fuel, upstream, and office costs on schedule. Every occurrence still requires approval.')}
                             </p>
                         </div>
                     </div>
@@ -464,7 +474,7 @@ export default function Expenses({
                         }}
                     >
                         <label className="field-label">
-                            Category
+                            {t('Category')}
                             <ResponsiveSelect
                                 className="mt-1"
                                 value={recurringForm.data.expense_category_id}
@@ -480,13 +490,13 @@ export default function Expenses({
                             </ResponsiveSelect>
                         </label>
                         <label className="field-label">
-                            Vendor (optional)
+                            {t('Vendor')} ({t('optional')})
                             <ResponsiveSelect
                                 className="mt-1"
                                 value={recurringForm.data.expense_vendor_id}
                                 onChange={(event) => recurringForm.setData('expense_vendor_id', event.target.value)}
                             >
-                                <option value="">No vendor</option>
+                                <option value="">{t('No vendor')}</option>
                                 {activeVendors.map((item) => (
                                     <option key={item.id} value={item.id}>
                                         {item.name}
@@ -495,20 +505,20 @@ export default function Expenses({
                             </ResponsiveSelect>
                         </label>
                         <label className="field-label">
-                            Frequency
+                            {t('Frequency')}
                             <ResponsiveSelect
                                 className="mt-1"
                                 value={recurringForm.data.frequency}
                                 onChange={(event) => recurringForm.setData('frequency', event.target.value)}
                             >
-                                <option value="weekly">Weekly</option>
-                                <option value="monthly">Monthly</option>
-                                <option value="quarterly">Quarterly</option>
-                                <option value="yearly">Yearly</option>
+                                <option value="weekly">{t('Weekly')}</option>
+                                <option value="monthly">{t('Monthly')}</option>
+                                <option value="quarterly">{t('Quarterly')}</option>
+                                <option value="yearly">{t('Yearly')}</option>
                             </ResponsiveSelect>
                         </label>
                         <label className="field-label">
-                            Every
+                            {t('Every')}
                             <input
                                 className="field mt-1 tabular-nums"
                                 type="number"
@@ -519,18 +529,18 @@ export default function Expenses({
                             />
                         </label>
                         <label className="field-label">
-                            Paid from
+                            {t('Paid from')}
                             <ResponsiveSelect
                                 className="mt-1"
                                 value={recurringForm.data.payment_source}
                                 onChange={(event) => recurringForm.setData('payment_source', event.target.value)}
                             >
-                                <option value="bank">Bank account</option>
-                                <option value="cash">Workspace cash</option>
+                                <option value="bank">{t('Bank account')}</option>
+                                <option value="cash">{t('Workspace cash')}</option>
                             </ResponsiveSelect>
                         </label>
                         <label className="field-label">
-                            Currency
+                            {t('Currency')}
                             <CurrencyCombobox
                                 className="field mt-1"
                                 value={recurringForm.data.currency}
@@ -539,7 +549,7 @@ export default function Expenses({
                             />
                         </label>
                         <label className="field-label">
-                            Amount
+                            {t('Amount')}
                             <input
                                 className="field mt-1 tabular-nums"
                                 inputMode="decimal"
@@ -551,7 +561,7 @@ export default function Expenses({
                             )}
                         </label>
                         <label className="field-label">
-                            First due date
+                            {t('First due date')}
                             <input
                                 className="field mt-1"
                                 type="date"
@@ -560,7 +570,7 @@ export default function Expenses({
                             />
                         </label>
                         <label className="field-label xl:col-span-2">
-                            Description
+                            {t('Description')}
                             <input
                                 className="field mt-1"
                                 value={recurringForm.data.description}
@@ -568,7 +578,7 @@ export default function Expenses({
                             />
                         </label>
                         <label className="field-label">
-                            End date (optional)
+                            {t('End date')} ({t('optional')})
                             <input
                                 className="field mt-1"
                                 type="date"
@@ -581,7 +591,7 @@ export default function Expenses({
                                 className="button-primary"
                                 disabled={recurringForm.processing || !recurringForm.data.description.trim()}
                             >
-                                Create schedule
+                                {t('Create schedule')}
                             </button>
                         </div>
                     </form>
@@ -597,12 +607,12 @@ export default function Expenses({
                                         <span
                                             className={`rounded-full px-2.5 py-1 text-xs font-semibold ${schedule.is_active ? 'bg-emerald-50 text-emerald-700' : 'bg-sand text-muted'}`}
                                         >
-                                            {schedule.is_active ? 'Active' : 'Paused'}
+                                            {schedule.is_active ? t('Active') : t('Paused')}
                                         </span>
                                     </div>
                                     <p className="mt-1 text-xs text-muted">
                                         {schedule.category.name} · {schedule.vendor?.name ?? 'No vendor'} · every{' '}
-                                        {schedule.interval} {schedule.frequency} · next {schedule.next_run_on}
+                                        {schedule.interval} {t(schedule.frequency)} · {t('next')} {schedule.next_run_on}
                                     </p>
                                 </div>
                                 <div className="flex items-center gap-3">
@@ -620,14 +630,14 @@ export default function Expenses({
                                             )
                                         }
                                     >
-                                        {schedule.is_active ? 'Pause' : 'Resume'}
+                                        {schedule.is_active ? t('Pause') : t('Resume')}
                                     </button>
                                 </div>
                             </div>
                         ))}
                         {recurringSchedules.length === 0 && (
                             <p className="py-8 text-center text-pretty text-sm text-muted">
-                                No recurring expenses configured.
+                                {t('No recurring expenses configured.')}
                             </p>
                         )}
                     </div>
@@ -640,9 +650,9 @@ export default function Expenses({
                         <div className="flex items-center gap-3">
                             <Tags className="text-brand" size={19} />
                             <div>
-                                <h2 className="section-title">Expense categories</h2>
+                                <h2 className="section-title">{t('Expense categories')}</h2>
                                 <p className="mt-1 text-pretty text-sm text-muted">
-                                    Keep reporting labels consistent across the workspace.
+                                    {t('Keep reporting labels consistent across the workspace.')}
                                 </p>
                             </div>
                         </div>
@@ -658,17 +668,17 @@ export default function Expenses({
                         >
                             <input
                                 className="field"
-                                placeholder="Category name"
+                                placeholder={t('Category name')}
                                 value={categoryForm.data.name}
                                 onChange={(event) => categoryForm.setData('name', event.target.value)}
                             />
                             <input
                                 className="field uppercase"
-                                placeholder="CODE"
+                                placeholder={t('CODE')}
                                 value={categoryForm.data.code}
                                 onChange={(event) => categoryForm.setData('code', event.target.value)}
                             />
-                            <button className="button-secondary">Add category</button>
+                            <button className="button-secondary">{t('Add category')}</button>
                         </form>
                         <div className="mt-4 flex flex-wrap gap-2">
                             {categories.map((item) => (
@@ -685,9 +695,9 @@ export default function Expenses({
                         <div className="flex items-center gap-3">
                             <Building2 className="text-brand" size={19} />
                             <div>
-                                <h2 className="section-title">Vendors</h2>
+                                <h2 className="section-title">{t('Vendors')}</h2>
                                 <p className="mt-1 text-pretty text-sm text-muted">
-                                    Store suppliers used for recurring operational purchases.
+                                    {t('Store suppliers used for recurring operational purchases.')}
                                 </p>
                             </div>
                         </div>
@@ -703,34 +713,36 @@ export default function Expenses({
                         >
                             <input
                                 className="field"
-                                placeholder="Vendor name"
+                                placeholder={t('Vendor name')}
                                 value={vendorForm.data.name}
                                 onChange={(event) => vendorForm.setData('name', event.target.value)}
                             />
                             <input
                                 className="field"
-                                placeholder="Phone"
+                                placeholder={t('Phone')}
                                 value={vendorForm.data.phone}
                                 onChange={(event) => vendorForm.setData('phone', event.target.value)}
                             />
                             <input
                                 className="field"
                                 type="email"
-                                placeholder="Email"
+                                placeholder={t('Email')}
                                 value={vendorForm.data.email}
                                 onChange={(event) => vendorForm.setData('email', event.target.value)}
                             />
                             <input
                                 className="field"
-                                placeholder="Tax number"
+                                placeholder={t('Tax number')}
                                 value={vendorForm.data.tax_number}
                                 onChange={(event) => vendorForm.setData('tax_number', event.target.value)}
                             />
                             <div className="flex justify-end sm:col-span-2">
-                                <button className="button-secondary">Add vendor</button>
+                                <button className="button-secondary">{t('Add vendor')}</button>
                             </div>
                         </form>
-                        <p className="mt-4 text-xs text-muted tabular-nums">{vendors.length} vendor(s) configured</p>
+                        <p className="mt-4 text-xs text-muted tabular-nums">
+                            {vendors.length} {t('vendor(s) configured')}
+                        </p>
                     </div>
                 </section>
             )}
