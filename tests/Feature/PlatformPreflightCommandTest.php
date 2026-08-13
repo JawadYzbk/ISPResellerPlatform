@@ -2,6 +2,7 @@
 
 use App\Models\Tenant;
 use App\Models\User;
+use Database\Seeders\CapabilitySeeder;
 use Illuminate\Console\Command;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
@@ -212,6 +213,51 @@ it('rejects a production tenant with an unassigned capability role', function ()
         ->assertExitCode(Command::FAILURE)
         ->expectsOutputToContain('CapabilitySeeder')
         ->expectsOutputToContain('Capability assignments');
+});
+
+it('ignores platform operators outside a tenant when validating production roles', function (): void {
+    $tenant = Tenant::factory()->create();
+    User::factory()->create(['tenant_id' => null, 'role' => 'platform_operator']);
+    User::factory()->create([
+        'tenant_id' => $tenant->id,
+        'role' => 'tenant_owner',
+        'two_factor_confirmed_at' => now(),
+    ]);
+    app(CapabilitySeeder::class)->run();
+
+    config()->set([
+        'app.key' => 'base64:'.base64_encode(str_repeat('a', 32)),
+        'app.env' => 'production',
+        'app.debug' => false,
+        'app.url' => 'https://portal.isp.internal',
+        'session.secure' => true,
+        'security.enforce_web_two_factor' => true,
+        'queue.default' => 'database',
+        'cache.default' => 'database',
+        'sentry.dsn' => 'https://public@sentry.io/123',
+        'sentry.send_default_pii' => false,
+        'backup.backup.destination.disks' => ['s3'],
+        'backup.backup.password' => 'backup-passphrase',
+        'backup.backup.encryption' => 'aes256',
+        'backup.notifications.mail.to' => 'ops@isp.test',
+        'filesystems.default' => 's3',
+        'filesystems.disks.s3.key' => 's3-key',
+        'filesystems.disks.s3.secret' => 's3-secret',
+        'filesystems.disks.s3.bucket' => 'isp-media',
+        'filesystems.disks.s3.endpoint' => 'https://objects.provider.test',
+        'monitoring.enabled' => true,
+        'monitoring.webhook_url' => 'https://alerts.isp.internal/platform',
+        'monitoring.webhook_secret' => 'monitoring-secret',
+        'broadcasting.default' => 'reverb',
+        'broadcasting.connections.reverb.key' => 'reverb-key',
+        'broadcasting.connections.reverb.secret' => 'reverb-secret',
+        'broadcasting.connections.reverb.options.host' => 'realtime.provider.test',
+        'reverb.apps.apps.0.allowed_origins' => ['https://portal.provider.test'],
+    ]);
+
+    $this->artisan('platform:preflight', ['--production' => true])
+        ->assertExitCode(Command::SUCCESS)
+        ->expectsOutputToContain('Preflight passed.');
 });
 
 it('requires the private Web.js bridge and callback secret when selected', function (): void {

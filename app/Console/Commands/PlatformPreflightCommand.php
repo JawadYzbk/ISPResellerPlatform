@@ -187,8 +187,8 @@ final class PlatformPreflightCommand extends Command
         try {
             $tenancy = app(Tenancy::class);
             foreach (Tenant::query()->get(['id']) as $tenant) {
-                $ready = $tenancy->run($tenant, function (): bool {
-                    foreach (User::query()->whereNotNull('role')->get() as $user) {
+                $ready = $tenancy->run($tenant, function () use ($tenant): bool {
+                    foreach (User::query()->where('tenant_id', $tenant->id)->whereNotNull('role')->get() as $user) {
                         if (! $user->hasRole((string) $user->role)) {
                             return false;
                         }
@@ -214,8 +214,9 @@ final class PlatformPreflightCommand extends Command
             $tenancy = app(Tenancy::class);
 
             foreach (Tenant::query()->get(['id']) as $tenant) {
-                $ready = $tenancy->run($tenant, function (): bool {
+                $ready = $tenancy->run($tenant, function () use ($tenant): bool {
                     $privilegedUsers = User::query()
+                        ->where('tenant_id', $tenant->id)
                         ->whereNotNull('role')
                         ->get();
 
