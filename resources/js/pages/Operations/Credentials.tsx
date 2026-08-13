@@ -76,6 +76,16 @@ export default function CredentialsPage({
         file: null as File | null,
     });
     const selectedSupplier = suppliers.find((supplier) => supplier.id.toString() === importForm.data.supplier_id);
+    const fieldA11y = (id: string, error?: string) => ({
+        'aria-invalid': Boolean(error),
+        'aria-describedby': error ? `${id}-error` : undefined,
+    });
+    const fieldError = (id: string, error?: string) =>
+        error ? (
+            <p id={`${id}-error`} className="field-error" role="alert">
+                {t(error)}
+            </p>
+        ) : null;
 
     const applyFilters = (event: React.FormEvent) => {
         event.preventDefault();
@@ -140,7 +150,9 @@ export default function CredentialsPage({
                         <label>
                             <span className="field-label">{t('Supplier')}</span>
                             <ResponsiveSelect
+                                id="credential-supplier"
                                 className="field"
+                                {...fieldA11y('credential-supplier', importForm.errors.supplier_id)}
                                 value={importForm.data.supplier_id}
                                 onChange={(event) => {
                                     importForm.setData('supplier_id', event.target.value);
@@ -154,14 +166,14 @@ export default function CredentialsPage({
                                     </option>
                                 ))}
                             </ResponsiveSelect>
-                            {importForm.errors.supplier_id && (
-                                <p className="field-error" role="alert">{t(importForm.errors.supplier_id)}</p>
-                            )}
+                            {fieldError('credential-supplier', importForm.errors.supplier_id)}
                         </label>
                         <label>
                             <span className="field-label">{t('credentials.contract_optional')}</span>
                             <ResponsiveSelect
+                                id="credential-contract"
                                 className="field"
+                                {...fieldA11y('credential-contract', importForm.errors.supplier_contract_id)}
                                 value={importForm.data.supplier_contract_id}
                                 onChange={(event) => importForm.setData('supplier_contract_id', event.target.value)}
                                 disabled={!selectedSupplier || selectedSupplier.contracts.length === 0}
@@ -173,81 +185,93 @@ export default function CredentialsPage({
                                     </option>
                                 ))}
                             </ResponsiveSelect>
-                            {importForm.errors.supplier_contract_id && (
-                                <p className="field-error" role="alert">{t(importForm.errors.supplier_contract_id)}</p>
-                            )}
+                            {fieldError('credential-contract', importForm.errors.supplier_contract_id)}
                         </label>
                         <label>
                             <span className="field-label">{t('credentials.batch_reference')}</span>
                             <input
+                                id="credential-reference"
                                 className="field"
+                                {...fieldA11y('credential-reference', importForm.errors.reference)}
                                 value={importForm.data.reference}
                                 onChange={(event) => importForm.setData('reference', event.target.value)}
                                 placeholder="SUP-2026-08"
                             />
-                            {importForm.errors.reference && (
-                                <p className="field-error" role="alert">{t(importForm.errors.reference)}</p>
-                            )}
+                            {fieldError('credential-reference', importForm.errors.reference)}
                         </label>
                         <label>
                             <span className="field-label">{t('credentials.expiry_optional')}</span>
                             <input
+                                id="credential-expiry"
                                 className="field"
                                 type="date"
+                                {...fieldA11y('credential-expiry', importForm.errors.expires_at)}
                                 value={importForm.data.expires_at}
                                 onChange={(event) => importForm.setData('expires_at', event.target.value)}
                             />
-                            {importForm.errors.expires_at && (
-                                <p className="field-error" role="alert">{t(importForm.errors.expires_at)}</p>
-                            )}
+                            {fieldError('credential-expiry', importForm.errors.expires_at)}
                         </label>
                         <label>
                             <span className="field-label">{t('credentials.contract_reference')}</span>
                             <input
+                                id="credential-contract-reference"
                                 className="field"
+                                {...fieldA11y('credential-contract-reference', importForm.errors.contract_reference)}
                                 value={importForm.data.contract_reference}
                                 onChange={(event) => importForm.setData('contract_reference', event.target.value)}
                                 placeholder="CONTRACT-01"
                             />
+                            {fieldError('credential-contract-reference', importForm.errors.contract_reference)}
                         </label>
                         <label>
                             <span className="field-label">{t('credentials.unit_cost')}</span>
                             <input
+                                id="credential-unit-cost"
                                 className="field"
                                 type="number"
                                 min="0"
+                                {...fieldA11y('credential-unit-cost', importForm.errors.unit_cost_amount)}
                                 value={importForm.data.unit_cost_amount}
                                 onChange={(event) => importForm.setData('unit_cost_amount', event.target.value)}
                             />
+                            {fieldError('credential-unit-cost', importForm.errors.unit_cost_amount)}
                         </label>
                         <label>
                             <span className="field-label">{t('credentials.total_cost')}</span>
                             <input
+                                id="credential-total-cost"
                                 className="field"
                                 type="number"
                                 min="0"
+                                {...fieldA11y('credential-total-cost', importForm.errors.total_cost_amount)}
                                 value={importForm.data.total_cost_amount}
                                 onChange={(event) => importForm.setData('total_cost_amount', event.target.value)}
                             />
+                            {fieldError('credential-total-cost', importForm.errors.total_cost_amount)}
                         </label>
                         <label>
                             <span className="field-label">{t('credentials.cost_currency')}</span>
                             <CurrencyCombobox
+                                id="credential-currency"
                                 className="field"
+                                {...fieldA11y('credential-currency', importForm.errors.currency)}
                                 value={importForm.data.currency}
                                 currencies={currencies}
                                 onChange={(value) => importForm.setData('currency', value)}
                             />
+                            {fieldError('credential-currency', importForm.errors.currency)}
                         </label>
                         <label>
                             <span className="field-label">{t('credentials.csv_file')}</span>
                             <input
+                                id="credential-file"
                                 className="field file:me-3 file:rounded-md file:border-0 file:bg-brand-soft file:px-3 file:py-1.5 file:font-semibold file:text-brand"
                                 type="file"
                                 accept=".csv,.txt"
+                                {...fieldA11y('credential-file', importForm.errors.file)}
                                 onChange={(event) => importForm.setData('file', event.target.files?.[0] ?? null)}
                             />
-                            {importForm.errors.file && <p className="field-error" role="alert">{t(importForm.errors.file)}</p>}
+                            {fieldError('credential-file', importForm.errors.file)}
                         </label>
                     </div>
                     <div className="flex justify-end">

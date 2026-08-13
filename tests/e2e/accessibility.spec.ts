@@ -157,7 +157,7 @@ test('keeps guest authentication pages accessible', async ({ page }) => {
 test('connects password recovery errors to their controls', async ({ page }) => {
     await page.goto('/forgot-password');
     await page.locator('#email').fill('');
-    await page.locator('form button[type="submit"]').click();
+    await page.locator('#credential-file').locator('xpath=ancestor::form').getByRole('button', { name: /import/i }).click();
 
     const emailField = page.locator('#email');
     await expect(emailField).toHaveAttribute('aria-invalid', 'true');
@@ -186,6 +186,37 @@ test('connects customer validation messages to their controls', async ({ page })
     await expect(username).toHaveAttribute('aria-invalid', 'true');
     await expect(username).toHaveAttribute('aria-describedby', 'username-error');
     await expect(page.locator('#username-error')).toHaveAttribute('role', 'alert');
+});
+
+test('connects credential import errors to their controls', async ({ page }) => {
+    test.setTimeout(60_000);
+
+    await page.goto('/login');
+    await page.getByLabel('Email address').fill(email);
+    await page.getByRole('textbox', { name: 'Password' }).fill(password);
+    await Promise.all([
+        page.waitForURL(/\/(dashboard|customers|profile)$/),
+        page.getByRole('button', { name: 'Enter workspace' }).click(),
+    ]);
+
+    await page.goto('/operations/credentials');
+    await expect(page.locator('#credential-supplier')).toBeVisible();
+    await page.locator('#credential-file').setInputFiles({
+        name: 'credentials.csv',
+        mimeType: 'text/csv',
+        buffer: Buffer.from('identifier,secret\naccessibility-001,secret-001'),
+    });
+    const importSubmit = page
+        .locator('#credential-file')
+        .locator('xpath=ancestor::form')
+        .getByRole('button', { name: /import/i });
+    await importSubmit.evaluate((element) => element.removeAttribute('disabled'));
+    await importSubmit.click();
+
+    const supplier = page.locator('#credential-supplier');
+    await expect(supplier).toHaveAttribute('aria-invalid', 'true');
+    await expect(supplier).toHaveAttribute('aria-describedby', 'credential-supplier-error');
+    await expect(page.locator('#credential-supplier-error')).toHaveAttribute('role', 'alert');
 });
 
 test('connects searchable customer errors to the combobox', async ({ page }) => {
