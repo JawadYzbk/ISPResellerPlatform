@@ -32,6 +32,7 @@ final readonly class GetPublicBillingPageData implements Action
                 'name' => $tenant->name,
                 'slug' => $tenant->slug,
                 'logo_url' => $tenant->logoUrl(),
+                'locale' => $tenant->settingsData()->locale,
             ],
             'customer' => [
                 'code' => $customer->code,

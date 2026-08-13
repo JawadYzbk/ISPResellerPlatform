@@ -7,8 +7,9 @@ import { useEffect, useMemo, useState } from 'react';
 import StatusBadge, { type Status } from '@/components/StatusBadge';
 import { formatDate, formatMoney } from '@/lib/format';
 import { createIdempotencyKey } from '@/lib/idempotency';
+import { createTranslator } from '@/lib/i18n';
 
-type Tenant = { name: string; slug: string; logo_url: string | null };
+type Tenant = { name: string; slug: string; logo_url: string | null; locale: string };
 type Customer = { code: string; name: string; balance_amount: number; balance_currency: string };
 type Invoice = {
     public_id: string;
@@ -60,6 +61,11 @@ export default function PublicBilling({
     statement,
     gateways,
 }: Props) {
+    const t = createTranslator(tenant.locale);
+    useEffect(() => {
+        document.documentElement.lang = tenant.locale;
+        document.documentElement.dir = tenant.locale === 'ar' ? 'rtl' : 'ltr';
+    }, [tenant.locale]);
     const [stripeSession, setStripeSession] = useState<StripeSession | null>(null);
     const [whishSession, setWhishSession] = useState<WhishSession | null>(null);
     const [busy, setBusy] = useState<'stripe' | 'whish' | null>(null);
@@ -86,7 +92,7 @@ export default function PublicBilling({
                 publishableKey: payload.payload.publishable_key,
             });
             setWhishSession(null);
-        } else setMessage(payload.message ?? 'Stripe checkout could not be started.');
+        } else setMessage(payload.message ?? t('public.billing.stripe_start_error'));
         setBusy(null);
     };
     const startWhish = async () => {
@@ -106,7 +112,7 @@ export default function PublicBilling({
                 qrDataUri: payload.qr_data_uri,
             });
             setStripeSession(null);
-        } else setMessage(payload.message ?? 'Whish checkout could not be started.');
+        } else setMessage(payload.message ?? t('public.billing.whish_start_error'));
         setBusy(null);
     };
 
@@ -117,26 +123,26 @@ export default function PublicBilling({
             if (!response.ok) return;
             const payload = await response.json();
             if (payload.status === 'succeeded') {
-                setMessage('Payment confirmed. Thank you.');
+                setMessage(t('public.billing.payment_confirmed'));
                 setWhishSession(null);
                 window.clearInterval(timer);
             } else if (payload.terminal) {
-                setMessage('The payment was not completed. You can try again.');
+                setMessage(t('public.billing.payment_incomplete'));
                 setWhishSession(null);
                 window.clearInterval(timer);
             }
         }, 4000);
         return () => window.clearInterval(timer);
-    }, [token, whishSession]);
+    }, [t, token, whishSession]);
 
-    const title =
-        type === 'statement'
-            ? 'Account statement'
-            : type === 'receipt'
-              ? 'Payment receipt'
-              : type === 'payment'
-                ? 'Pay invoice'
-                : 'Invoice';
+   const title =
+       type === 'statement'
+            ? t('public.billing.account_statement')
+           : type === 'receipt'
+              ? t('public.billing.payment_receipt')
+             : type === 'payment'
+                ? t('public.billing.pay_invoice')
+                : t('public.billing.invoice');
 
     return (
         <div className="min-h-dvh bg-canvas px-4 py-6 text-ink sm:px-6 sm:py-10">
@@ -153,7 +159,7 @@ export default function PublicBilling({
                         </span>
                         <div className="min-w-0">
                             <p className="truncate font-display font-bold">{tenant.name}</p>
-                            <p className="text-xs text-muted">Secure billing link</p>
+                            <p className="text-xs text-muted">{t('public.billing.secure_link')}</p>
                         </div>
                     </div>
                     <div className="flex gap-2">
@@ -165,7 +171,7 @@ export default function PublicBilling({
                         )}
                         <button type="button" className="button-secondary" onClick={() => window.print()}>
                             <Printer size={15} />
-                            <span className="hidden sm:inline">Print</span>
+                                <span className="hidden sm:inline">{t('public.billing.print')}</span>
                         </button>
                     </div>
                 </header>
@@ -188,9 +194,9 @@ export default function PublicBilling({
                         </div>
                     </div>
 
-                    {invoice && <InvoiceDetails invoice={invoice} />}
-                    {payment && <PaymentDetails payment={payment} token={token} />}
-                    {statement && <StatementDetails customer={customer} statement={statement} />}
+                    {invoice && <InvoiceDetails invoice={invoice} t={t} />}
+                    {payment && <PaymentDetails payment={payment} token={token} t={t} />}
+                    {statement && <StatementDetails customer={customer} statement={statement} t={t} />}
 
                     {type === 'payment' && invoice && (
                         <div className="border-t border-line bg-sand/30 px-5 py-6 sm:px-8">
@@ -198,18 +204,17 @@ export default function PublicBilling({
                                 <div className="flex items-start gap-3 text-emerald-700">
                                     <CheckCircle2 className="mt-0.5 shrink-0" size={20} />
                                     <div>
-                                        <p className="font-semibold">This invoice is paid</p>
-                                        <p className="mt-1 text-pretty text-sm">No balance remains on this invoice.</p>
+                                        <p className="font-semibold">{t('public.billing.invoice_paid')}</p>
+                                        <p className="mt-1 text-pretty text-sm">{t('public.billing.no_invoice_balance')}</p>
                                     </div>
                                 </div>
                             ) : (
                                 <div>
                                     <h2 className="section-title text-balance">
-                                        Pay {formatMoney(invoice.outstanding_amount, invoice.currency)}
+                                        {t('public.billing.pay')} {formatMoney(invoice.outstanding_amount, invoice.currency)}
                                     </h2>
                                     <p className="mt-1 text-pretty text-sm text-muted">
-                                        Choose a configured online payment method. Confirmation is recorded by the
-                                        provider callback.
+                                        {t('public.billing.payment_method_note')}
                                     </p>
                                     <div className="mt-4 grid gap-3 sm:grid-cols-2">
                                         {gateways?.stripe.ready && (
@@ -220,7 +225,7 @@ export default function PublicBilling({
                                                 onClick={startStripe}
                                             >
                                                 <CreditCard size={16} />
-                                                {busy === 'stripe' ? 'Starting…' : 'Pay by card'}
+                                                {busy === 'stripe' ? t('public.billing.starting') : t('public.billing.pay_by_card')}
                                             </button>
                                         )}
                                         {gateways?.whish.ready && (
@@ -231,13 +236,13 @@ export default function PublicBilling({
                                                 onClick={startWhish}
                                             >
                                                 <ExternalLink size={16} />
-                                                {busy === 'whish' ? 'Starting…' : 'Pay with Whish'}
+                                                {busy === 'whish' ? t('public.billing.starting') : t('public.billing.pay_with_whish')}
                                             </button>
                                         )}
                                     </div>
                                     {!gateways?.stripe.ready && !gateways?.whish.ready && (
                                         <p className="mt-4 rounded-xl border border-line bg-white p-4 text-pretty text-sm text-muted">
-                                            Online payment is not configured. Contact {tenant.name} to arrange payment.
+                                            {t('public.billing.online_not_configured')} {tenant.name} {t('public.billing.arrange_payment')}
                                         </p>
                                     )}
                                     {message && (
@@ -251,9 +256,10 @@ export default function PublicBilling({
                                     {stripeSession && (
                                         <StripeCheckout
                                             session={stripeSession}
+                                            t={t}
                                             onComplete={() => {
                                                 setStripeSession(null);
-                                                setMessage('Payment submitted. Confirmation may take a moment.');
+                                                setMessage(t('public.billing.payment_submitted'));
                                             }}
                                             onError={setMessage}
                                         />
@@ -262,11 +268,11 @@ export default function PublicBilling({
                                         <div className="mt-5 rounded-2xl border border-line bg-white p-5 text-center">
                                             <img
                                                 src={whishSession.qrDataUri}
-                                                alt="Whish payment QR code"
+                                                alt={t('public.billing.whish_qr_alt')}
                                                 className="mx-auto size-52 max-w-full"
                                             />
                                             <p className="mt-3 text-pretty text-sm text-muted">
-                                                Scan with your phone or open Whish Pay directly.
+                                                {t('public.billing.scan_or_open_whish')}
                                             </p>
                                             <a
                                                 href={whishSession.collectUrl}
@@ -275,7 +281,7 @@ export default function PublicBilling({
                                                 className="button-primary mt-4 justify-center"
                                             >
                                                 <ExternalLink size={16} />
-                                                Open Whish Pay
+                                                {t('public.billing.open_whish')}
                                             </a>
                                         </div>
                                     )}
@@ -287,36 +293,35 @@ export default function PublicBilling({
                 {type === 'receipt' && (
                     <div className="mt-4 flex justify-center gap-2 print:hidden">
                         <a href={`/share/${token}/pdf?format=compact&width=58`} className="button-secondary">
-                            58 mm receipt
+                            {t('public.billing.receipt_58')}
                         </a>
                         <a href={`/share/${token}/pdf?format=compact&width=80`} className="button-secondary">
-                            80 mm receipt
+                            {t('public.billing.receipt_80')}
                         </a>
                     </div>
                 )}
                 <p className="mt-6 text-center text-pretty text-xs text-muted print:hidden">
-                    This private link expires {formatDate(expires_at)}. Do not forward it unless you intend to share
-                    this billing document.
+                    {t('public.billing.private_link_expires')} {formatDate(expires_at)}. {t('public.billing.do_not_forward')}
                 </p>
             </main>
         </div>
     );
 }
 
-function InvoiceDetails({ invoice }: { invoice: Invoice }) {
+function InvoiceDetails({ invoice, t }: { invoice: Invoice; t: (key: string) => string }) {
     return (
         <div className="px-5 py-6 sm:px-8">
             <dl className="grid gap-4 sm:grid-cols-3">
                 <div>
-                    <dt className="field-label">Issued</dt>
+                    <dt className="field-label">{t('public.billing.issued')}</dt>
                     <dd className="mt-1 text-sm font-semibold">{formatDate(invoice.issued_at)}</dd>
                 </div>
                 <div>
-                    <dt className="field-label">Due</dt>
+                    <dt className="field-label">{t('public.billing.due')}</dt>
                     <dd className="mt-1 text-sm font-semibold">{formatDate(invoice.due_at)}</dd>
                 </div>
                 <div>
-                    <dt className="field-label">Outstanding</dt>
+                    <dt className="field-label">{t('public.billing.outstanding')}</dt>
                     <dd className="mt-1 text-sm font-semibold tabular-nums">
                         {formatMoney(invoice.outstanding_amount, invoice.currency)}
                     </dd>
@@ -327,7 +332,7 @@ function InvoiceDetails({ invoice }: { invoice: Invoice }) {
                     <div key={`${line.description}-${index}`} className="flex justify-between gap-4 py-3">
                         <div>
                             <p className="text-sm font-semibold">{line.description}</p>
-                            <p className="mt-0.5 text-xs text-muted tabular-nums">Quantity {line.quantity}</p>
+                            <p className="mt-0.5 text-xs text-muted tabular-nums">{t('public.billing.quantity')} {line.quantity}</p>
                         </div>
                         <p className="text-sm font-semibold tabular-nums">{formatMoney(line.amount, line.currency)}</p>
                     </div>
@@ -335,15 +340,15 @@ function InvoiceDetails({ invoice }: { invoice: Invoice }) {
             </div>
             <div className="ms-auto mt-5 max-w-xs space-y-2 text-sm">
                 <div className="flex justify-between">
-                    <span className="text-muted">Subtotal</span>
+                    <span className="text-muted">{t('public.billing.subtotal')}</span>
                     <span className="tabular-nums">{formatMoney(invoice.subtotal_amount, invoice.currency)}</span>
                 </div>
                 <div className="flex justify-between">
-                    <span className="text-muted">Tax</span>
+                    <span className="text-muted">{t('public.billing.tax')}</span>
                     <span className="tabular-nums">{formatMoney(invoice.tax_amount, invoice.currency)}</span>
                 </div>
                 <div className="flex justify-between border-t border-line pt-2 text-base font-bold">
-                    <span>Total</span>
+                    <span>{t('public.billing.total')}</span>
                     <span className="tabular-nums">{formatMoney(invoice.total_amount, invoice.currency)}</span>
                 </div>
             </div>
@@ -351,27 +356,27 @@ function InvoiceDetails({ invoice }: { invoice: Invoice }) {
     );
 }
 
-function PaymentDetails({ payment, token }: { payment: Payment; token: string }) {
+function PaymentDetails({ payment, token, t }: { payment: Payment; token: string; t: (key: string) => string }) {
     return (
         <div className="px-5 py-6 sm:px-8">
             <div className="text-center">
                 <ReceiptText className="mx-auto text-brand" size={24} />
-                <p className="mt-3 text-sm text-muted">Amount received</p>
+                <p className="mt-3 text-sm text-muted">{t('public.billing.amount_received')}</p>
                 <p className="mt-1 font-display text-3xl font-bold tabular-nums">
                     {formatMoney(payment.amount, payment.currency)}
                 </p>
             </div>
             <dl className="mt-7 grid gap-4 border-t border-line pt-5 sm:grid-cols-3">
                 <div>
-                    <dt className="field-label">Received</dt>
+                    <dt className="field-label">{t('public.billing.received')}</dt>
                     <dd className="mt-1 text-sm font-semibold">{formatDate(payment.received_at)}</dd>
                 </div>
                 <div>
-                    <dt className="field-label">Method</dt>
+                    <dt className="field-label">{t('public.billing.method')}</dt>
                     <dd className="mt-1 text-sm font-semibold capitalize">{payment.method.replaceAll('_', ' ')}</dd>
                 </div>
                 <div>
-                    <dt className="field-label">Reference</dt>
+                    <dt className="field-label">{t('public.billing.reference')}</dt>
                     <dd className="mt-1 break-all text-sm font-semibold">{payment.reference ?? '—'}</dd>
                 </div>
             </dl>
@@ -388,22 +393,22 @@ function PaymentDetails({ payment, token }: { payment: Payment; token: string })
                 </div>
             )}
             <a href={`/share/${token}/pdf`} className="sr-only">
-                Download receipt PDF
+                {t('public.billing.download_receipt_pdf')}
             </a>
         </div>
     );
 }
 
-function StatementDetails({ customer, statement }: { customer: Customer; statement: NonNullable<Props['statement']> }) {
+function StatementDetails({ customer, statement, t }: { customer: Customer; statement: NonNullable<Props['statement']>; t: (key: string) => string }) {
     return (
         <div className="px-5 py-6 sm:px-8">
             <div className="rounded-xl bg-brand-soft p-4">
-                <p className="text-sm text-muted">Current account balance</p>
+                <p className="text-sm text-muted">{t('public.billing.current_account_balance')}</p>
                 <p className="mt-1 text-2xl font-bold tabular-nums">
                     {formatMoney(customer.balance_amount, customer.balance_currency)}
                 </p>
             </div>
-            <h2 className="mt-7 section-title">Recent invoices</h2>
+            <h2 className="mt-7 section-title">{t('public.billing.recent_invoices')}</h2>
             <div className="mt-3 divide-y divide-line border-y border-line">
                 {statement.invoices.map((invoice) => (
                     <div key={invoice.public_id} className="flex items-center justify-between gap-4 py-3">
@@ -418,16 +423,16 @@ function StatementDetails({ customer, statement }: { customer: Customer; stateme
                                 {formatMoney(invoice.total_amount, invoice.currency)}
                             </p>
                             <p className="text-xs text-muted tabular-nums">
-                                Due {formatMoney(invoice.outstanding_amount, invoice.currency)}
+                                {t('public.billing.due')} {formatMoney(invoice.outstanding_amount, invoice.currency)}
                             </p>
                         </div>
                     </div>
                 ))}
                 {statement.invoices.length === 0 && (
-                    <p className="py-8 text-center text-sm text-muted">No invoices on this account.</p>
+                    <p className="py-8 text-center text-sm text-muted">{t('public.billing.no_account_invoices')}</p>
                 )}
             </div>
-            <h2 className="mt-7 section-title">Recent payments</h2>
+            <h2 className="mt-7 section-title">{t('public.billing.recent_payments')}</h2>
             <div className="mt-3 divide-y divide-line border-y border-line">
                 {statement.payments.map((payment) => (
                     <div key={payment.public_id} className="flex items-center justify-between gap-4 py-3">
@@ -443,7 +448,7 @@ function StatementDetails({ customer, statement }: { customer: Customer; stateme
                     </div>
                 ))}
                 {statement.payments.length === 0 && (
-                    <p className="py-8 text-center text-sm text-muted">No posted payments on this account.</p>
+                    <p className="py-8 text-center text-sm text-muted">{t('public.billing.no_account_payments')}</p>
                 )}
             </div>
         </div>
@@ -452,10 +457,12 @@ function StatementDetails({ customer, statement }: { customer: Customer; stateme
 
 function StripeCheckout({
     session,
+    t,
     onComplete,
     onError,
 }: {
     session: StripeSession;
+    t: (key: string) => string;
     onComplete: () => void;
     onError: (message: string) => void;
 }) {
@@ -463,13 +470,13 @@ function StripeCheckout({
     return (
         <div className="mt-5 rounded-2xl border border-line bg-white p-5">
             <Elements stripe={stripePromise} options={{ clientSecret: session.clientSecret }}>
-                <StripeForm onComplete={onComplete} onError={onError} />
+                <StripeForm t={t} onComplete={onComplete} onError={onError} />
             </Elements>
         </div>
     );
 }
 
-function StripeForm({ onComplete, onError }: { onComplete: () => void; onError: (message: string) => void }) {
+function StripeForm({ t, onComplete, onError }: { t: (key: string) => string; onComplete: () => void; onError: (message: string) => void }) {
     const stripe = useStripe();
     const elements = useElements();
     const [busy, setBusy] = useState(false);
@@ -485,7 +492,7 @@ function StripeForm({ onComplete, onError }: { onComplete: () => void; onError: 
                     confirmParams: { return_url: window.location.href },
                     redirect: 'if_required',
                 });
-                if (result.error) onError(result.error.message ?? 'The card payment could not be confirmed.');
+                if (result.error) onError(result.error.message ?? t('public.billing.card_confirm_error'));
                 else onComplete();
                 setBusy(false);
             }}
@@ -493,7 +500,7 @@ function StripeForm({ onComplete, onError }: { onComplete: () => void; onError: 
             <PaymentElement />
             <button className="button-primary w-full justify-center" disabled={busy || !stripe || !elements}>
                 <CreditCard size={16} />
-                {busy ? 'Confirming…' : 'Confirm card payment'}
+                {busy ? t('public.billing.confirming') : t('public.billing.confirm_card')}
             </button>
         </form>
     );
