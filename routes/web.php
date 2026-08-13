@@ -241,6 +241,7 @@ Route::middleware(['auth', 'tenant', '2fa'])->group(function (): void {
     Route::get('/billing/payments', [BillingController::class, 'payments'])->name('billing.payments');
     Route::get('/billing/payments/{payment:public_id}', [BillingController::class, 'showPayment'])->name('billing.payments.show');
     Route::get('/billing/payments/{payment:public_id}/pdf', [BillingController::class, 'paymentPdf'])->name('billing.payments.pdf');
+    Route::get('/billing/payments/{payment:public_id}/compact-pdf', [BillingController::class, 'compactPaymentPdf'])->name('billing.payments.compact-pdf');
     Route::get('/billing/shifts', [CashShiftOperationsController::class, 'index'])->name('billing.shifts');
     Route::post('/billing/shifts/open', [CashShiftOperationsController::class, 'open'])->name('billing.shifts.open');
     Route::post('/billing/shifts/{shift:public_id}/close', [CashShiftOperationsController::class, 'close'])->middleware('recent-auth')->name('billing.shifts.close');

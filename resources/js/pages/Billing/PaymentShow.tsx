@@ -55,6 +55,12 @@ export default function PaymentShowPage({ payment, canReverse }: Props) {
                     <a href={`/billing/payments/${payment.public_id}/pdf`} className="button-secondary">
                         <Download size={16} /> Download PDF
                     </a>
+                    <a
+                        href={`/billing/payments/${payment.public_id}/compact-pdf?width=80`}
+                        className="button-secondary"
+                    >
+                        <Printer size={16} /> 80 mm receipt
+                    </a>
                     <button type="button" className="button-secondary" onClick={() => window.print()}>
                         <Printer size={16} /> Print receipt
                     </button>
@@ -187,6 +193,20 @@ export default function PaymentShowPage({ payment, canReverse }: Props) {
                         >
                             <Download size={16} /> Download PDF
                         </a>
+                        <div className="grid grid-cols-2 gap-2">
+                            <a
+                                href={`/billing/payments/${payment.public_id}/compact-pdf?width=58`}
+                                className="button-secondary justify-center"
+                            >
+                                58 mm
+                            </a>
+                            <a
+                                href={`/billing/payments/${payment.public_id}/compact-pdf?width=80`}
+                                className="button-secondary justify-center"
+                            >
+                                80 mm
+                            </a>
+                        </div>
                         <button
                             type="button"
                             className="button-secondary w-full justify-center"

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Web;
 
 use App\Actions\CreateManualInvoice;
+use App\Actions\GenerateCompactPaymentReceiptPdf;
 use App\Actions\GenerateInvoicePdf;
 use App\Actions\GeneratePaymentReceiptPdf;
 use App\Actions\GetCurrencyCatalog;
@@ -428,5 +429,14 @@ final class BillingController extends Controller
         abort_unless($user instanceof User && $user->can('payments.collect'), 403);
 
         return $generate->handle($payment);
+    }
+
+    public function compactPaymentPdf(Request $request, Payment $payment, GenerateCompactPaymentReceiptPdf $generate): HttpResponse
+    {
+        $user = $request->user();
+        abort_unless($user instanceof User && $user->can('payments.collect'), 403);
+        $validated = $request->validate(['width' => ['nullable', 'integer', 'in:58,80']]);
+
+        return $generate->handle($payment, (int) ($validated['width'] ?? 80));
     }
 }

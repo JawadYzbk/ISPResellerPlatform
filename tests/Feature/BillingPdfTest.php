@@ -59,4 +59,12 @@ it('downloads tenant-scoped invoice and receipt PDFs', function (): void {
         ->assertOk()
         ->assertHeader('Content-Type', 'application/pdf')
         ->assertHeader('Content-Disposition', 'attachment; filename=RCT-PDF-001.pdf');
+
+    foreach ([58, 80] as $width) {
+        $this->actingAs($user)
+            ->get(route('billing.payments.compact-pdf', ['payment' => $payment->public_id, 'width' => $width]))
+            ->assertOk()
+            ->assertHeader('Content-Type', 'application/pdf')
+            ->assertHeader('Content-Disposition', "attachment; filename=RCT-PDF-001-{$width}mm.pdf");
+    }
 });
