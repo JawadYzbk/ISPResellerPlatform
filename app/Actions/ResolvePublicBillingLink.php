@@ -18,16 +18,15 @@ final readonly class ResolvePublicBillingLink implements Action
             throw new NotFoundHttpException('This billing link is invalid or has expired.');
         }
 
-        return app(Tenancy::class)->run((int) $link->tenant_id, function () use ($link, $trackAccess): PublicBillingLink {
-            $current = PublicBillingLink::query()->findOrFail($link->id);
-            if ($trackAccess) {
-                $current->forceFill([
-                    'last_accessed_at' => now(),
-                    'access_count' => $current->access_count + 1,
-                ])->save();
-            }
+        app(Tenancy::class)->set((int) $link->tenant_id);
+        $current = PublicBillingLink::query()->findOrFail($link->id);
+        if ($trackAccess) {
+            $current->forceFill([
+                'last_accessed_at' => now(),
+                'access_count' => $current->access_count + 1,
+            ])->save();
+        }
 
-            return $current->load(['tenant', 'customer', 'invoice.lines', 'invoice.payments.allocations', 'invoice.creditNotes', 'payment.allocations.invoice']);
-        });
+        return $current->load(['tenant', 'customer', 'invoice.lines', 'invoice.payments.allocations', 'invoice.creditNotes', 'payment.allocations.invoice']);
     }
 }

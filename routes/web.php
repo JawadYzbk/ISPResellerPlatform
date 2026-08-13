@@ -36,6 +36,8 @@ use App\Http\Controllers\Web\PlatformTenantController;
 use App\Http\Controllers\Web\PopOperationsController;
 use App\Http\Controllers\Web\PortalPageController;
 use App\Http\Controllers\Web\ProfileController;
+use App\Http\Controllers\Web\PublicBillingLinkController;
+use App\Http\Controllers\Web\PublicBillingPageController;
 use App\Http\Controllers\Web\ReportController;
 use App\Http\Controllers\Web\RouterOperationsController;
 use App\Http\Controllers\Web\SecurityController;
@@ -75,6 +77,8 @@ Route::prefix('portal/{tenant:slug}')->group(function (): void {
 });
 
 Route::get('/tenant/{tenant:slug}/logo', TenantLogoController::class)->name('tenant.logo');
+Route::get('/share/{token}', [PublicBillingPageController::class, 'show'])->middleware('throttle:60,1')->name('public.billing.show');
+Route::get('/share/{token}/pdf', [PublicBillingPageController::class, 'pdf'])->middleware('throttle:60,1')->name('public.billing.pdf');
 
 Route::middleware('guest')->group(function (): void {
     Route::get('/login', [LoginController::class, 'create'])->name('login');
@@ -242,6 +246,10 @@ Route::middleware(['auth', 'tenant', '2fa'])->group(function (): void {
     Route::get('/billing/payments/{payment:public_id}', [BillingController::class, 'showPayment'])->name('billing.payments.show');
     Route::get('/billing/payments/{payment:public_id}/pdf', [BillingController::class, 'paymentPdf'])->name('billing.payments.pdf');
     Route::get('/billing/payments/{payment:public_id}/compact-pdf', [BillingController::class, 'compactPaymentPdf'])->name('billing.payments.compact-pdf');
+    Route::post('/billing/invoices/{invoice:public_id}/public-links', [PublicBillingLinkController::class, 'invoice'])->name('billing.invoices.public-links.store');
+    Route::post('/billing/payments/{payment:public_id}/public-links', [PublicBillingLinkController::class, 'receipt'])->name('billing.payments.public-links.store');
+    Route::post('/customers/{customer:public_id}/statement-links', [PublicBillingLinkController::class, 'statement'])->name('customers.statement-links.store');
+    Route::delete('/billing/public-links/{publicBillingLink:public_id}', [PublicBillingLinkController::class, 'destroy'])->middleware('recent-auth')->name('billing.public-links.destroy');
     Route::get('/billing/shifts', [CashShiftOperationsController::class, 'index'])->name('billing.shifts');
     Route::post('/billing/shifts/open', [CashShiftOperationsController::class, 'open'])->name('billing.shifts.open');
     Route::post('/billing/shifts/{shift:public_id}/close', [CashShiftOperationsController::class, 'close'])->middleware('recent-auth')->name('billing.shifts.close');

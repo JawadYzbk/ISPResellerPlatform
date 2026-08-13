@@ -42,6 +42,12 @@ class PublicBillingLink extends Model
         });
     }
 
+    /** @return BelongsTo<Tenant, $this> */
+    public function tenant(): BelongsTo
+    {
+        return $this->belongsTo(Tenant::class);
+    }
+
     /** @return BelongsTo<Customer, $this> */
     public function customer(): BelongsTo
     {
@@ -64,5 +70,10 @@ class PublicBillingLink extends Model
     public function createdBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by_id');
+    }
+
+    public function isActive(): bool
+    {
+        return $this->revoked_at === null && $this->expires_at->isFuture();
     }
 }

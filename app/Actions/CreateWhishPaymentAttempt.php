@@ -4,10 +4,13 @@ namespace App\Actions;
 
 use App\Contracts\Action;
 use App\Domain\Payments\WhishPaymentGateway;
+use App\Enums\InvoiceStatus;
 use App\Enums\PaymentAttemptStatus;
+use App\Models\CreditNote;
 use App\Models\Currency;
 use App\Models\Customer;
 use App\Models\Invoice;
+use App\Models\PaymentAllocation;
 use App\Models\PaymentAttempt;
 use App\Models\User;
 use DomainException;
@@ -19,17 +22,22 @@ final readonly class CreateWhishPaymentAttempt implements Action
 {
     public function __construct(private WhishPaymentGateway $gateway) {}
 
-    public function handle(User $actor, Customer $customer, int $amount, string $currency, ?Invoice $invoice, string $idempotencyKey): PaymentAttempt
+    public function handle(?User $actor, Customer $customer, int $amount, string $currency, ?Invoice $invoice, string $idempotencyKey, string $source = 'collector'): PaymentAttempt
     {
         $currency = strtoupper(trim($currency));
         if ($amount < 1) {
             throw new DomainException('Payment amount must be positive.');
         }
-        if ($customer->tenant_id !== $actor->tenant_id) {
+        if ($actor !== null && $customer->tenant_id !== $actor->tenant_id) {
             throw new DomainException('The customer does not belong to the active tenant.');
         }
-        if ($invoice !== null && ($invoice->tenant_id !== $customer->tenant_id || $invoice->customer_id !== $customer->id)) {
-            throw new DomainException('The invoice is not payable by this customer.');
+        if ($invoice !== null) {
+            if ($invoice->tenant_id !== $customer->tenant_id || $invoice->customer_id !== $customer->id || $invoice->status !== InvoiceStatus::Issued) {
+                throw new DomainException('The invoice is not payable by this customer.');
+            }
+            if ($currency !== $invoice->currency || $amount > $this->remaining($invoice)) {
+                throw new DomainException('The payment amount exceeds the invoice balance.');
+            }
         }
         if (! in_array($currency, ['USD', 'LBP', 'AED'], true) || ! Currency::query()->where('code', $currency)->where('is_active', true)->exists()) {
             throw new DomainException('Whish Pay supports only active USD, LBP, and AED currencies.');
@@ -50,13 +58,13 @@ final readonly class CreateWhishPaymentAttempt implements Action
                 'external_id' => $externalId,
                 'customer_id' => $customer->id,
                 'invoice_id' => $invoice?->id,
-                'actor_id' => $actor->id,
+                'actor_id' => $actor?->id,
                 'amount' => $amount,
                 'currency' => $currency,
                 'status' => PaymentAttemptStatus::Pending,
                 'idempotency_key' => $idempotencyKey,
                 'invoice_reference' => $invoice?->number ?: 'COL-'.$externalId,
-                'metadata' => ['source' => 'collector'],
+                'metadata' => ['source' => $source],
             ]);
         } catch (UniqueConstraintViolationException $exception) {
             $existing = PaymentAttempt::query()
@@ -91,5 +99,13 @@ final readonly class CreateWhishPaymentAttempt implements Action
         } while (PaymentAttempt::withoutGlobalScopes()->where('gateway', 'whish')->where('external_id', $externalId)->exists());
 
         return $externalId;
+    }
+
+    private function remaining(Invoice $invoice): int
+    {
+        $allocated = (int) PaymentAllocation::query()->where('invoice_id', $invoice->id)->sum('amount');
+        $credited = (int) CreditNote::query()->where('invoice_id', $invoice->id)->where('status', 'issued')->sum('amount');
+
+        return max(0, $invoice->total_amount - $allocated - $credited);
     }
 }

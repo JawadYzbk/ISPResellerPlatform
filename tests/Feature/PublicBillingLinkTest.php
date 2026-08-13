@@ -3,11 +3,14 @@
 use App\Actions\CreatePublicBillingLink;
 use App\Actions\ResolvePublicBillingLink;
 use App\Actions\RevokePublicBillingLink;
+use App\Domain\Payments\PaymentGateway;
+use App\Domain\Payments\PaymentIntentResult;
 use App\Enums\InvoiceStatus;
 use App\Enums\PaymentStatus;
 use App\Models\Customer;
 use App\Models\Invoice;
 use App\Models\Payment;
+use App\Models\PaymentAttempt;
 use App\Models\PublicBillingLink;
 use App\Models\Tenant;
 use App\Models\User;
@@ -100,4 +103,53 @@ it('fails closed for expired, revoked, malformed, and cross-customer targets', f
     expect(fn () => app(ResolvePublicBillingLink::class)->handle($expired->token))
         ->toThrow(NotFoundHttpException::class)
         ->and(PublicBillingLink::withoutGlobalScopes()->count())->toBe(2);
+});
+
+it('creates a one-time visible staff link and serves branded public invoice checkout', function (): void {
+    [$tenant, $owner, , $invoice] = publicBillingWorkspace();
+    $response = $this->actingAs($owner)->post(route('billing.invoices.public-links.store', $invoice), [
+        'type' => 'payment',
+        'expires_in_days' => 7,
+    ]);
+    $response->assertRedirect()->assertSessionHas('success', 'Public billing link created. Copy it before leaving this page.');
+    $payload = $response->getSession()->get('publicLink');
+    expect($payload)->toBeArray()->and($payload['url'] ?? null)->toBeString();
+    $token = basename((string) parse_url((string) $payload['url'], PHP_URL_PATH));
+
+    app(Tenancy::class)->clear();
+    $this->get(route('public.billing.show', $token))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->component('Public/Billing')
+            ->where('tenant.name', $tenant->name)
+            ->where('type', 'payment')
+            ->where('invoice.number', 'INV-PUBLIC-001')
+            ->where('invoice.outstanding_amount', 5000));
+
+    app(Tenancy::class)->clear();
+    $this->get(route('public.billing.pdf', $token))
+        ->assertOk()
+        ->assertHeader('Content-Type', 'application/pdf');
+
+    app()->instance(PaymentGateway::class, new class implements PaymentGateway
+    {
+        public function createIntent(Customer $customer, Invoice $invoice, int $amount, string $currency, string $idempotencyKey): PaymentIntentResult
+        {
+            return new PaymentIntentResult('pi_public_001', 'requires_action', $amount, $currency, [
+                'client_secret' => 'pi_public_secret',
+                'publishable_key' => 'pk_test_public',
+            ]);
+        }
+    });
+    app(Tenancy::class)->clear();
+    $this->postJson(route('api.public-billing.stripe', $token), ['amount' => 5000], ['X-Idempotency-Key' => 'public-link-stripe-001'])
+        ->assertCreated()
+        ->assertJsonPath('id', 'pi_public_001')
+        ->assertJsonPath('amount', 5000);
+
+    app(Tenancy::class)->clear();
+    $this->postJson(route('api.public-billing.whish', $token), ['amount' => 5001], ['X-Idempotency-Key' => 'public-link-whish-overpay'])
+        ->assertUnprocessable()
+        ->assertJsonPath('message', 'The payment amount exceeds the invoice balance.');
+    expect(PaymentAttempt::withoutGlobalScopes()->count())->toBe(0);
 });

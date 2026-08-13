@@ -55,6 +55,7 @@ final class HandleInertiaRequests extends Middleware
                 'success' => fn () => $request->session()->get('success'),
                 'error' => fn () => $request->session()->get('error'),
                 'importResult' => fn () => $request->session()->get('importResult'),
+                'publicLink' => fn () => $request->session()->get('publicLink'),
             ],
         ];
     }

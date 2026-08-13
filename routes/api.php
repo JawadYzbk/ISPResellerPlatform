@@ -22,6 +22,7 @@ use App\Http\Controllers\Api\PortalAuthController;
 use App\Http\Controllers\Api\PortalBillingController;
 use App\Http\Controllers\Api\PortalController;
 use App\Http\Controllers\Api\PortalTicketController;
+use App\Http\Controllers\Api\PublicBillingPaymentController;
 use App\Http\Controllers\Api\RouterApiController;
 use App\Http\Controllers\Api\RouterSubscriberImportController;
 use App\Http\Controllers\Api\ServiceApiController;
@@ -40,6 +41,9 @@ use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->middleware(ApiResponseHeaders::class)->group(function (): void {
     Route::get('/health', [HealthController::class, 'show'])->name('api.health');
+    Route::post('/public-billing/{token}/stripe-intent', [PublicBillingPaymentController::class, 'stripe'])->middleware('throttle:20,1')->name('api.public-billing.stripe');
+    Route::post('/public-billing/{token}/whish', [PublicBillingPaymentController::class, 'whish'])->middleware('throttle:20,1')->name('api.public-billing.whish');
+    Route::get('/public-billing/{token}/whish/{attempt}', [PublicBillingPaymentController::class, 'whishStatus'])->middleware('throttle:30,1')->name('api.public-billing.whish.status');
     Route::post('/webhooks/gateways/{gateway}', MessageWebhookController::class)->name('api.webhooks.gateways');
     Route::post('/webhooks/payments/{gateway}', PaymentGatewayWebhookController::class)->name('api.webhooks.payments');
     Route::get('/webhooks/payments/whish/success', [WhishPaymentCallbackController::class, 'success'])->middleware('throttle:30,1')->name('api.webhooks.payments.whish.success');
