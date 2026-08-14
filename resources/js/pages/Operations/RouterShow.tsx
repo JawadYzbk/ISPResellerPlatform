@@ -30,6 +30,16 @@ type Props = { router: RouterRecord; pops: Pop[]; canEdit: boolean };
 export default function RouterShowPage({ router: device, pops, canEdit }: Props) {
     const { props } = usePage<PageProps>();
     const t = createTranslator(props.app.locale);
+    const fieldA11y = (id: string, error?: string) => ({
+        'aria-invalid': Boolean(error),
+        'aria-describedby': error ? `${id}-error` : undefined,
+    });
+    const fieldError = (id: string, error?: string) =>
+        error ? (
+            <p id={`${id}-error`} className="field-error" role="alert">
+                {t(error)}
+            </p>
+        ) : null;
     const form = useForm({
         name: device.name,
         host: device.host,
@@ -129,36 +139,45 @@ export default function RouterShowPage({ router: device, pops, canEdit }: Props)
                             <label>
                                 <span className="field-label">{t('router_create.name')}</span>
                                 <input
+                                    id="router-edit-name"
                                     className="field"
+                                    {...fieldA11y('router-edit-name', form.errors.name)}
                                     value={form.data.name}
                                     onChange={(event) => form.setData('name', event.target.value)}
                                 />
-                                {form.errors.name && <p className="field-error" role="alert">{t(form.errors.name)}</p>}
+                                {fieldError('router-edit-name', form.errors.name)}
                             </label>
                             <label>
                                 <span className="field-label">{t('router_create.host')}</span>
                                 <input
+                                    id="router-edit-host"
                                     className="field"
+                                    {...fieldA11y('router-edit-host', form.errors.host)}
                                     value={form.data.host}
                                     onChange={(event) => form.setData('host', event.target.value)}
                                 />
-                                {form.errors.host && <p className="field-error" role="alert">{t(form.errors.host)}</p>}
+                                {fieldError('router-edit-host', form.errors.host)}
                             </label>
                             <label>
                                 <span className="field-label">{t('router_create.api_port')}</span>
                                 <input
+                                    id="router-edit-api-port"
                                     className="field"
                                     type="number"
                                     min={1}
                                     max={65535}
+                                    {...fieldA11y('router-edit-api-port', form.errors.api_port)}
                                     value={form.data.api_port}
                                     onChange={(event) => form.setData('api_port', event.target.value)}
                                 />
+                                {fieldError('router-edit-api-port', form.errors.api_port)}
                             </label>
                             <label>
                                 <span className="field-label">POP</span>
                                 <ResponsiveSelect
+                                    id="router-edit-pop"
                                     className="field"
+                                    {...fieldA11y('router-edit-pop', form.errors.pop_id)}
                                     value={form.data.pop_id}
                                     onChange={(event) => form.setData('pop_id', event.target.value)}
                                 >
@@ -169,57 +188,72 @@ export default function RouterShowPage({ router: device, pops, canEdit }: Props)
                                         </option>
                                     ))}
                                 </ResponsiveSelect>
+                                {fieldError('router-edit-pop', form.errors.pop_id)}
                             </label>
                             <label>
                                 <span className="field-label">{t('router_create.username')}</span>
                                 <input
+                                    id="router-edit-username"
                                     className="field"
                                     autoComplete="off"
+                                    {...fieldA11y('router-edit-username', form.errors.username)}
                                     value={form.data.username}
                                     onChange={(event) => form.setData('username', event.target.value)}
                                 />
+                                {fieldError('router-edit-username', form.errors.username)}
                             </label>
                             <label>
                                 <span className="field-label">{t('router_show.new_password')}</span>
                                 <input
+                                    id="router-edit-password"
                                     className="field"
                                     type="password"
                                     autoComplete="new-password"
+                                    {...fieldA11y('router-edit-password', form.errors.password)}
                                     value={form.data.password}
                                     onChange={(event) => form.setData('password', event.target.value)}
                                 />
-                                {form.errors.password && <p className="field-error" role="alert">{t(form.errors.password)}</p>}
+                                {fieldError('router-edit-password', form.errors.password)}
                             </label>
                             <label>
                                 <span className="field-label">{t('router_show.new_radius')}</span>
                                 <input
+                                    id="router-edit-radius-secret"
                                     className="field"
                                     type="password"
                                     autoComplete="new-password"
+                                    {...fieldA11y('router-edit-radius-secret', form.errors.radius_secret)}
                                     value={form.data.radius_secret}
                                     onChange={(event) => form.setData('radius_secret', event.target.value)}
                                 />
+                                {fieldError('router-edit-radius-secret', form.errors.radius_secret)}
                             </label>
                             <label>
                                 <span className="field-label">{t('router_create.coa_port')}</span>
                                 <input
+                                    id="router-edit-coa-port"
                                     className="field"
                                     type="number"
                                     min={1}
                                     max={65535}
+                                    {...fieldA11y('router-edit-coa-port', form.errors.coa_port)}
                                     value={form.data.coa_port}
                                     onChange={(event) => form.setData('coa_port', event.target.value)}
                                 />
+                                {fieldError('router-edit-coa-port', form.errors.coa_port)}
                             </label>
                         </div>
                         <label className="flex items-center gap-3 text-sm font-medium">
                             <input
+                                id="router-edit-tls"
                                 type="checkbox"
+                                {...fieldA11y('router-edit-tls', form.errors.tls_verify)}
                                 checked={form.data.tls_verify}
                                 onChange={(event) => form.setData('tls_verify', event.target.checked)}
                             />{' '}
                             {t('router_create.verify_tls')}
                         </label>
+                        {fieldError('router-edit-tls', form.errors.tls_verify)}
                         <div className="flex justify-end border-t border-line pt-5">
                             <button type="submit" className="button-primary" disabled={form.processing}>
                                 <Save size={16} /> {t('router_show.save')}
