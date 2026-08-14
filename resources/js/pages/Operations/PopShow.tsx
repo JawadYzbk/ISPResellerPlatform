@@ -40,6 +40,16 @@ type Props = {
 export default function PopShowPage({ pop, canManage, statuses, currencies }: Props) {
     const page = usePage<PageProps>();
     const t = createTranslator(page.props.app.locale);
+    const fieldA11y = (id: string, error?: string) => ({
+        'aria-invalid': Boolean(error),
+        'aria-describedby': error ? `${id}-error` : undefined,
+    });
+    const fieldError = (id: string, error?: string) =>
+        error ? (
+            <p id={`${id}-error`} className="field-error" role="alert">
+                {t(error)}
+            </p>
+        ) : null;
     const popForm = useForm({ name: pop.name, code: pop.code, address: pop.address ?? '', status: pop.status });
     const [editingLinkId, setEditingLinkId] = useState<number | null>(null);
     const linkForm = useForm({
@@ -131,34 +141,42 @@ export default function PopShowPage({ pop, canManage, statuses, currencies }: Pr
                         <label>
                             <span className="field-label">{t('Name')}</span>
                             <input
+                                id="pop-edit-name"
                                 className="field"
+                                {...fieldA11y('pop-edit-name', popForm.errors.name)}
                                 value={popForm.data.name}
                                 onChange={(event) => popForm.setData('name', event.target.value)}
                             />
-                            {popForm.errors.name && <p className="field-error" role="alert">{t(popForm.errors.name)}</p>}
+                            {fieldError('pop-edit-name', popForm.errors.name)}
                         </label>
                         <label>
                             <span className="field-label">{t('Code')}</span>
                             <input
+                                id="pop-edit-code"
                                 className="field uppercase"
+                                {...fieldA11y('pop-edit-code', popForm.errors.code)}
                                 value={popForm.data.code}
                                 onChange={(event) => popForm.setData('code', event.target.value)}
                             />
-                            {popForm.errors.code && <p className="field-error" role="alert">{t(popForm.errors.code)}</p>}
+                            {fieldError('pop-edit-code', popForm.errors.code)}
                         </label>
                         <label>
                             <span className="field-label">{t('Address')}</span>
                             <input
+                                id="pop-edit-address"
                                 className="field"
+                                {...fieldA11y('pop-edit-address', popForm.errors.address)}
                                 value={popForm.data.address}
                                 onChange={(event) => popForm.setData('address', event.target.value)}
                             />
-                            {popForm.errors.address && <p className="field-error" role="alert">{t(popForm.errors.address)}</p>}
+                            {fieldError('pop-edit-address', popForm.errors.address)}
                         </label>
                         <label>
                             <span className="field-label">{t('Status')}</span>
                             <ResponsiveSelect
+                                id="pop-edit-status"
                                 className="field"
+                                {...fieldA11y('pop-edit-status', popForm.errors.status)}
                                 value={popForm.data.status}
                                 onChange={(event) => popForm.setData('status', event.target.value as Status)}
                             >
@@ -168,7 +186,7 @@ export default function PopShowPage({ pop, canManage, statuses, currencies }: Pr
                                     </option>
                                 ))}
                             </ResponsiveSelect>
-                            {popForm.errors.status && <p className="field-error" role="alert">{t(popForm.errors.status)}</p>}
+                            {fieldError('pop-edit-status', popForm.errors.status)}
                         </label>
                     </div>
                     <div className="flex justify-end">
@@ -216,92 +234,93 @@ export default function PopShowPage({ pop, canManage, statuses, currencies }: Pr
                                 <label>
                                     <span className="field-label">{t('Provider')}</span>
                                     <input
+                                        id="upstream-provider"
                                         className="field"
+                                        {...fieldA11y('upstream-provider', linkForm.errors.provider_name)}
                                         value={linkForm.data.provider_name}
                                         onChange={(event) => linkForm.setData('provider_name', event.target.value)}
                                         placeholder={t('Transit provider')}
                                     />
-                                    {linkForm.errors.provider_name && (
-                                        <p className="field-error" role="alert">{t(linkForm.errors.provider_name)}</p>
-                                    )}
+                                    {fieldError('upstream-provider', linkForm.errors.provider_name)}
                                 </label>
                                 <label>
                                     <span className="field-label">{t('Capacity (Mbps)')}</span>
                                     <input
+                                        id="upstream-capacity"
                                         type="number"
                                         min="0"
                                         className="field"
+                                        {...fieldA11y('upstream-capacity', linkForm.errors.capacity_mbps)}
                                         value={linkForm.data.capacity_mbps}
                                         onChange={(event) => linkForm.setData('capacity_mbps', event.target.value)}
                                         placeholder="1000"
                                     />
-                                    {linkForm.errors.capacity_mbps && (
-                                        <p className="field-error" role="alert">{t(linkForm.errors.capacity_mbps)}</p>
-                                    )}
+                                    {fieldError('upstream-capacity', linkForm.errors.capacity_mbps)}
                                 </label>
                                 <label>
                                     <span className="field-label">{t('Monthly cost (minor units)')}</span>
                                     <input
+                                        id="upstream-monthly-cost"
                                         type="number"
                                         min="0"
                                         className="field"
+                                        {...fieldA11y('upstream-monthly-cost', linkForm.errors.monthly_cost_amount)}
                                         value={linkForm.data.monthly_cost_amount}
                                         onChange={(event) =>
                                             linkForm.setData('monthly_cost_amount', event.target.value)
                                         }
                                         placeholder="125000"
                                     />
-                                    {linkForm.errors.monthly_cost_amount && (
-                                        <p className="field-error" role="alert">{t(linkForm.errors.monthly_cost_amount)}</p>
-                                    )}
+                                    {fieldError('upstream-monthly-cost', linkForm.errors.monthly_cost_amount)}
                                 </label>
                                 <label>
                                     <span className="field-label">{t('Currency')}</span>
                                     <CurrencyCombobox
-                                        id="upstream_currency"
+                                        id="upstream-currency"
                                         className="field uppercase"
+                                        {...fieldA11y('upstream-currency', linkForm.errors.currency)}
                                         value={linkForm.data.currency}
                                         currencies={currencies}
                                         onChange={(value) => linkForm.setData('currency', value)}
                                     />
-                                    {linkForm.errors.currency && (
-                                        <p className="field-error" role="alert">{t(linkForm.errors.currency)}</p>
-                                    )}
+                                    {fieldError('upstream-currency', linkForm.errors.currency)}
                                 </label>
                                 <label>
                                     <span className="field-label">{t('Contract starts')}</span>
                                     <input
+                                        id="upstream-contract-start"
                                         type="date"
                                         className="field"
+                                        {...fieldA11y('upstream-contract-start', linkForm.errors.contract_start)}
                                         value={linkForm.data.contract_start}
                                         onChange={(event) => linkForm.setData('contract_start', event.target.value)}
                                     />
-                                    {linkForm.errors.contract_start && (
-                                        <p className="field-error" role="alert">{t(linkForm.errors.contract_start)}</p>
-                                    )}
+                                    {fieldError('upstream-contract-start', linkForm.errors.contract_start)}
                                 </label>
                                 <label>
                                     <span className="field-label">{t('Contract ends')}</span>
                                     <input
+                                        id="upstream-contract-end"
                                         type="date"
                                         className="field"
+                                        {...fieldA11y('upstream-contract-end', linkForm.errors.contract_end)}
                                         value={linkForm.data.contract_end}
                                         onChange={(event) => linkForm.setData('contract_end', event.target.value)}
                                     />
-                                    {linkForm.errors.contract_end && (
-                                        <p className="field-error" role="alert">{t(linkForm.errors.contract_end)}</p>
-                                    )}
+                                    {fieldError('upstream-contract-end', linkForm.errors.contract_end)}
                                 </label>
                             </div>
                             <label>
                                 <span className="field-label">{t('Notes')}</span>
                                 <textarea
+                                    id="upstream-notes"
                                     className="field min-h-20"
+                                    {...fieldA11y('upstream-notes', linkForm.errors.notes)}
                                     value={linkForm.data.notes}
                                     onChange={(event) => linkForm.setData('notes', event.target.value)}
                                     placeholder={t('Primary transit')}
                                 />
-                                {linkForm.errors.notes && <p className="field-error" role="alert">{t(linkForm.errors.notes)}</p>}
+                                {fieldError('upstream-notes', linkForm.errors.notes)}
                             </label>
                             <div className="flex justify-end">
                                 <button type="submit" className="button-primary" disabled={linkForm.processing}>
@@ -318,99 +337,99 @@ export default function PopShowPage({ pop, canManage, statuses, currencies }: Pr
                                         <label>
                                             <span className="field-label">{t('Provider')}</span>
                                             <input
+                                                id="upstream-edit-provider"
                                                 className="field"
+                                                {...fieldA11y('upstream-edit-provider', linkEditForm.errors.provider_name)}
                                                 value={linkEditForm.data.provider_name}
                                                 onChange={(event) =>
                                                     linkEditForm.setData('provider_name', event.target.value)
                                                 }
                                                 required
                                             />
-                                            {linkEditForm.errors.provider_name && (
-                                                <p className="field-error" role="alert">{t(linkEditForm.errors.provider_name)}</p>
-                                            )}
+                                            {fieldError('upstream-edit-provider', linkEditForm.errors.provider_name)}
                                         </label>
                                         <label>
                                             <span className="field-label">{t('Capacity (Mbps)')}</span>
                                             <input
+                                                id="upstream-edit-capacity"
                                                 type="number"
                                                 min="0"
                                                 className="field"
+                                                {...fieldA11y('upstream-edit-capacity', linkEditForm.errors.capacity_mbps)}
                                                 value={linkEditForm.data.capacity_mbps}
                                                 onChange={(event) =>
                                                     linkEditForm.setData('capacity_mbps', event.target.value)
                                                 }
                                             />
-                                            {linkEditForm.errors.capacity_mbps && (
-                                                <p className="field-error" role="alert">{t(linkEditForm.errors.capacity_mbps)}</p>
-                                            )}
+                                            {fieldError('upstream-edit-capacity', linkEditForm.errors.capacity_mbps)}
                                         </label>
                                         <label>
                                             <span className="field-label">{t('Monthly cost (minor units)')}</span>
                                             <input
+                                                id="upstream-edit-monthly-cost"
                                                 type="number"
                                                 min="0"
                                                 className="field"
+                                                {...fieldA11y('upstream-edit-monthly-cost', linkEditForm.errors.monthly_cost_amount)}
                                                 value={linkEditForm.data.monthly_cost_amount}
                                                 onChange={(event) =>
                                                     linkEditForm.setData('monthly_cost_amount', event.target.value)
                                                 }
                                                 required
                                             />
-                                            {linkEditForm.errors.monthly_cost_amount && (
-                                                <p className="field-error" role="alert">{t(linkEditForm.errors.monthly_cost_amount)}</p>
-                                            )}
+                                            {fieldError('upstream-edit-monthly-cost', linkEditForm.errors.monthly_cost_amount)}
                                         </label>
                                         <label>
                                             <span className="field-label">{t('Currency')}</span>
                                             <CurrencyCombobox
+                                                id="upstream-edit-currency"
                                                 className="field uppercase"
+                                                {...fieldA11y('upstream-edit-currency', linkEditForm.errors.currency)}
                                                 value={linkEditForm.data.currency}
                                                 currencies={currencies}
                                                 onChange={(value) => linkEditForm.setData('currency', value)}
                                             />
-                                            {linkEditForm.errors.currency && (
-                                                <p className="field-error" role="alert">{t(linkEditForm.errors.currency)}</p>
-                                            )}
+                                            {fieldError('upstream-edit-currency', linkEditForm.errors.currency)}
                                         </label>
                                         <label>
                                             <span className="field-label">{t('Contract starts')}</span>
                                             <input
+                                                id="upstream-edit-contract-start"
                                                 type="date"
                                                 className="field"
+                                                {...fieldA11y('upstream-edit-contract-start', linkEditForm.errors.contract_start)}
                                                 value={linkEditForm.data.contract_start}
                                                 onChange={(event) =>
                                                     linkEditForm.setData('contract_start', event.target.value)
                                                 }
                                                 required
                                             />
-                                            {linkEditForm.errors.contract_start && (
-                                                <p className="field-error" role="alert">{t(linkEditForm.errors.contract_start)}</p>
-                                            )}
+                                            {fieldError('upstream-edit-contract-start', linkEditForm.errors.contract_start)}
                                         </label>
                                         <label>
                                             <span className="field-label">{t('Contract ends')}</span>
                                             <input
+                                                id="upstream-edit-contract-end"
                                                 type="date"
                                                 className="field"
+                                                {...fieldA11y('upstream-edit-contract-end', linkEditForm.errors.contract_end)}
                                                 value={linkEditForm.data.contract_end}
                                                 onChange={(event) =>
                                                     linkEditForm.setData('contract_end', event.target.value)
                                                 }
                                             />
-                                            {linkEditForm.errors.contract_end && (
-                                                <p className="field-error" role="alert">{t(linkEditForm.errors.contract_end)}</p>
-                                            )}
+                                            {fieldError('upstream-edit-contract-end', linkEditForm.errors.contract_end)}
                                         </label>
                                         <label className="md:col-span-2">
                                             <span className="field-label">{t('Notes')}</span>
                                             <textarea
+                                                id="upstream-edit-notes"
                                                 className="field min-h-20"
+                                                {...fieldA11y('upstream-edit-notes', linkEditForm.errors.notes)}
                                                 value={linkEditForm.data.notes}
                                                 onChange={(event) => linkEditForm.setData('notes', event.target.value)}
                                             />
-                                            {linkEditForm.errors.notes && (
-                                                <p className="field-error" role="alert">{t(linkEditForm.errors.notes)}</p>
-                                            )}
+                                            {fieldError('upstream-edit-notes', linkEditForm.errors.notes)}
                                         </label>
                                         <div className="flex gap-2 md:col-span-2">
                                             <button
