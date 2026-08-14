@@ -7784,6 +7784,16 @@ export function normalizeLocale(locale: string): Locale {
     return locale === 'ar' || locale === 'fr' ? locale : 'en';
 }
 
+function humanizeTranslationKey(key: string): string | null {
+    const segment = key.split('.').at(-1)?.replaceAll('_', ' ').trim();
+
+    if (!segment || !/[A-Za-z]/.test(segment)) {
+        return null;
+    }
+
+    return segment.replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
+
 export function createTranslator(locale: string) {
     const normalizedLocale = normalizeLocale(locale);
     const dictionary = {
@@ -7792,7 +7802,8 @@ export function createTranslator(locale: string) {
         ...(messages[normalizedLocale as Exclude<Locale, 'en'>] ?? {}),
     };
 
-    return (key: string): string => dictionary?.[key] ?? runtimeTranslation(normalizedLocale, key) ?? key;
+    return (key: string): string =>
+        dictionary?.[key] ?? runtimeTranslation(normalizedLocale, key) ?? humanizeTranslationKey(key) ?? key;
 }
 
 export function roleLabel(role: string, translate: (key: string) => string): string {
