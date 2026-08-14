@@ -71,6 +71,7 @@ SVG;
 
         $this->call(CapabilitySeeder::class);
         $this->seedPlatformOperator();
+        $this->seedSuperAdmin();
 
         $staff = [];
         foreach (self::DEMO_STAFF_ACCOUNTS as $account) {
@@ -275,6 +276,23 @@ SVG;
                 'email_verified_at' => now(),
             ],
         );
+
+    }
+
+    private function seedSuperAdmin(): void
+    {
+        User::updateOrCreate(
+            ['email' => 'superadmin@example.com'],
+            [
+                'tenant_id' => null,
+                'name' => 'NexaISP Super Admin',
+                'password' => Hash::make('password'),
+                'role' => 'super_admin',
+                'locale' => null,
+                'email_verified_at' => now(),
+            ],
+        );
+
     }
 
     private function seedDemoLogo(Tenant $tenant): void

@@ -13,7 +13,7 @@ return [
     |
     */
 
-    'name' => env('APP_NAME', 'ISP Manager'),
+    'name' => env('APP_NAME', 'NexaISP'),
     'version' => env('APP_VERSION', '1.0.0'),
     'min_supported_version' => env('MIN_SUPPORTED_APP_VERSION', '1.0.0'),
     'maintenance_mode' => (bool) env('APP_MAINTENANCE', false),

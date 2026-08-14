@@ -3794,7 +3794,7 @@ const messages: Record<Exclude<Locale, 'en'>, Messages> = {
         'auth.accept_invitation': 'قبول الدعوة',
         'auth.tenant_invitation': 'دعوة المستأجر',
         'auth.create_operator_account': 'إنشاء حساب المشغل',
-        'auth.invitation_description': 'اضبط اسمك وكلمة مرورك للانضمام إلى مساحة عمل ISP Manager.',
+        'auth.invitation_description': 'اضبط اسمك وكلمة مرورك للانضمام إلى مساحة عمل NexaISP.',
         'auth.full_name': 'الاسم الكامل',
         'auth.minimum_password': 'استخدم 12 حرفاً على الأقل.',
         'auth.confirm_password': 'تأكيد كلمة المرور',
@@ -5714,7 +5714,7 @@ const messages: Record<Exclude<Locale, 'en'>, Messages> = {
         'auth.tenant_invitation': 'Invitation du locataire',
         'auth.create_operator_account': 'Créer votre compte opérateur',
         'auth.invitation_description':
-            'Définissez votre nom et votre mot de passe pour rejoindre l’espace ISP Manager.',
+            'Définissez votre nom et votre mot de passe pour rejoindre l’espace NexaISP.',
         'auth.full_name': 'Nom complet',
         'auth.minimum_password': 'Utilisez au moins 12 caractères.',
         'auth.confirm_password': 'Confirmer le mot de passe',

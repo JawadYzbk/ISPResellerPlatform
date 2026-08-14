@@ -18,6 +18,7 @@ use App\Listeners\RecordScheduledTaskFinished;
 use App\Models\Customer;
 use App\Models\Plan;
 use App\Models\Service;
+use App\Models\User;
 use App\Policies\CustomerPolicy;
 use App\Policies\PlanPolicy;
 use App\Policies\ServicePolicy;
@@ -73,6 +74,7 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(Customer::class, CustomerPolicy::class);
         Gate::policy(Plan::class, PlanPolicy::class);
         Gate::policy(Service::class, ServicePolicy::class);
+        Gate::before(fn (User $user): ?bool => $user->isSuperAdmin() ? true : null);
         RateLimiter::for('login', function (Request $request): array {
             $email = Str::lower($request->string('email')->toString());
 

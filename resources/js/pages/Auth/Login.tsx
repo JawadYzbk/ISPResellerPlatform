@@ -20,7 +20,7 @@ export default function Login() {
                     <div className="mb-5 grid size-10 place-items-center rounded-xl bg-brand text-white">
                         <LockKeyhole size={20} />
                     </div>
-                    <p className="font-display text-xl font-bold">ISP Manager</p>
+                    <p className="font-display text-xl font-bold">{page.props.app.name}</p>
                 </div>
                 <div className="mb-8">
                     <p className="mb-2 text-sm font-semibold uppercase tracking-[0.18em] text-brand">

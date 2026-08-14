@@ -24,7 +24,7 @@ final readonly class UpdateTenantUserRole implements Action
             throw new DomainException('You cannot change your own role.');
         }
 
-        if (in_array((string) $member->role, ['admin', 'platform_operator', 'tenant_owner'], true)) {
+        if (in_array((string) $member->role, ['admin', 'super_admin', 'platform_operator', 'tenant_owner'], true)) {
             throw new DomainException('Protected workspace roles must be changed through a break-glass procedure.');
         }
 

@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title desc">
+  <title id="title">NexaISP</title>
+  <desc id="desc">A connected node mark for the NexaISP operations platform.</desc>
+  <defs>
+    <linearGradient id="bg" x1="14" y1="8" x2="112" y2="120" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#123b58"/>
+      <stop offset="1" stop-color="#0d766f"/>
+    </linearGradient>
+  </defs>
+  <rect width="128" height="128" rx="32" fill="url(#bg)"/>
+  <path d="M27 77 50 49l19 14 27-27" fill="none" stroke="#f8fbfa" stroke-linecap="round" stroke-linejoin="round" stroke-width="9"/>
+  <circle cx="27" cy="77" r="9" fill="#f9c74f"/>
+  <circle cx="50" cy="49" r="9" fill="#f8fbfa"/>
+  <circle cx="69" cy="63" r="9" fill="#f8fbfa"/>
+  <circle cx="96" cy="36" r="9" fill="#f9c74f"/>
+  <path d="M31 101h66" stroke="#f8fbfa" stroke-linecap="round" stroke-opacity=".55" stroke-width="5"/>
+</svg>

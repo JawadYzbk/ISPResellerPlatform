@@ -1,5 +1,4 @@
 import { usePage } from '@inertiajs/react';
-import { Activity } from 'lucide-react';
 import type { PropsWithChildren } from 'react';
 
 import { Toaster } from '@/components/ui/toaster';
@@ -8,6 +7,7 @@ import type { PageProps } from '@/types';
 
 export default function AuthLayout({ children }: PropsWithChildren) {
     const page = usePage<PageProps>();
+    const { app } = page.props;
     const t = createTranslator(page.props.app.locale);
 
     return (
@@ -34,10 +34,8 @@ export default function AuthLayout({ children }: PropsWithChildren) {
                         <span className="auth-signal auth-signal-two" />
                     </div>
                     <div className="relative z-10 flex items-center gap-3">
-                        <div className="grid size-10 place-items-center rounded-xl bg-white/15">
-                            <Activity size={21} />
-                        </div>
-                        <span className="font-display text-lg font-bold">ISP Manager</span>
+                        <img src="/brand/nexa-isp.svg" alt="" className="size-10 rounded-xl" />
+                        <span className="font-display text-lg font-bold">{app.name}</span>
                     </div>
                     <div className="relative z-10 max-w-lg">
                         <p className="mb-6 text-sm font-semibold uppercase tracking-[0.2em] text-white/60">

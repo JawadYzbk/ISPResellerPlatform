@@ -3,6 +3,7 @@
 use App\Models\ExchangeRate;
 use App\Models\Payment;
 use App\Models\Tenant;
+use App\Models\User;
 use App\Support\Tenancy;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -26,6 +27,8 @@ it('seeds the Lebanese demo tenant with an LBP collection path', function (): vo
         ->and($payment->currency)->toBe('LBP')
         ->and($payment->ledger_currency)->toBe('USD')
         ->and($payment->base_amount)->toBeGreaterThan(0);
+
+    expect(User::query()->where('email', 'superadmin@example.com')->value('role'))->toBe('super_admin');
 
     Storage::disk((string) config('filesystems.default', 'local'))->assertExists($tenant->logo_path);
 });

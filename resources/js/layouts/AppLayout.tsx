@@ -1,6 +1,5 @@
 import { Form, Link, router, usePage } from '@inertiajs/react';
 import {
-    Activity,
     BarChart3,
     Banknote,
     Bell,
@@ -495,11 +494,11 @@ export default function AppLayout({ children }: PropsWithChildren) {
                         {auth.tenant?.logo_url ? (
                             <img src={auth.tenant.logo_url} alt="" className="size-full object-cover" />
                         ) : (
-                            <Activity size={19} />
+                            <img src="/brand/nexa-isp.svg" alt="" className="size-full object-cover" />
                         )}
                     </div>
                     <div>
-                        <p className="font-display text-sm font-bold tracking-tight">ISP Manager</p>
+                        <p className="font-display text-sm font-bold tracking-tight">{app.name}</p>
                         <p className="text-xs text-muted">{t('Operations desk')}</p>
                     </div>
                 </div>
@@ -557,7 +556,7 @@ export default function AppLayout({ children }: PropsWithChildren) {
                     >
                         <div className="flex h-20 shrink-0 items-center justify-between border-b border-line px-5">
                             <div>
-                                <p className="font-display text-sm font-bold tracking-tight">ISP Manager</p>
+                                <p className="font-display text-sm font-bold tracking-tight">{app.name}</p>
                                 <p className="text-xs text-muted">{t('Operations desk')}</p>
                             </div>
                             <button

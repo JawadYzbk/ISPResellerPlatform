@@ -53,6 +53,25 @@ it('sends a platform operator to the tenant workspace after login', function ():
         );
 });
 
+it('treats a super admin as a platform operator with full authorization', function (): void {
+    $superAdmin = User::create([
+        'tenant_id' => null,
+        'name' => 'NexaISP Super Admin',
+        'email' => 'superadmin-test@example.test',
+        'password' => Hash::make('password'),
+        'role' => 'super_admin',
+        'last_authenticated_at' => now(),
+    ]);
+
+    expect($superAdmin->isSuperAdmin())->toBeTrue()
+        ->and($superAdmin->isPlatformOperator())->toBeTrue()
+        ->and($superAdmin->can('settings.manage'))->toBeTrue();
+
+    $this->actingAs($superAdmin)->get(route('admin.tenants'))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page->component('Admin/Tenants/Index'));
+});
+
 it('provisions a tenant, owner, defaults and an audit record from the platform workspace', function (): void {
     $platform = platformOperatorForTest();
 

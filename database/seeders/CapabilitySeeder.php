@@ -65,8 +65,10 @@ class CapabilitySeeder extends Seeder
         app(PermissionRegistrar::class)->forgetCachedPermissions();
 
         app(PermissionRegistrar::class)->setPermissionsTeamId(null);
-        $platformRole = Role::findOrCreate('platform_operator', 'web');
-        $platformRole->syncPermissions(PermissionCatalog::ALL);
+        foreach (['super_admin', 'platform_operator'] as $platformRoleName) {
+            $platformRole = Role::findOrCreate($platformRoleName, 'web');
+            $platformRole->syncPermissions(PermissionCatalog::ALL);
+        }
 
         Tenant::query()->each(function (Tenant $tenant): void {
             app(Tenancy::class)->run($tenant, function () use ($tenant): void {

@@ -4,7 +4,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title inertia>{{ config('app.name', 'ISP Manager') }}</title>
+    <title inertia>{{ config('app.name', 'NexaISP') }}</title>
+    <link rel="icon" href="{{ asset('brand/nexa-isp.svg') }}" type="image/svg+xml">
     @viteReactRefresh
     @vite(['resources/css/app.css', 'resources/js/app.tsx'])
     @inertiaHead
