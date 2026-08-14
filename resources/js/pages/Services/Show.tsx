@@ -151,8 +151,18 @@ export default function ServiceShow({
     plans,
     availableAddons,
 }: Props) {
-   const page = usePage<PageProps>();
+    const page = usePage<PageProps>();
     const t = useMemo(() => createTranslator(page.props.app.locale), [page.props.app.locale]);
+    const fieldA11y = (id: string, error?: string) => ({
+        'aria-invalid': Boolean(error),
+        'aria-describedby': error ? `${id}-error` : undefined,
+    });
+    const fieldError = (id: string, error?: string) =>
+        error ? (
+            <p id={`${id}-error`} className="field-error" role="alert">
+                {t(error)}
+            </p>
+        ) : null;
     const planForm = useForm({ plan_id: plans[0]?.id.toString() ?? '', effective: 'next_cycle' });
     const [planPreview, setPlanPreview] = useState<PlanPreview | null>(null);
     const [planPreviewError, setPlanPreviewError] = useState<string | null>(null);
@@ -655,7 +665,9 @@ export default function ServiceShow({
                                 <label>
                                     <span className="field-label">{t('Monthly anchor day')}</span>
                                     <ResponsiveSelect
+                                        id="cycle-anchor-day"
                                         className="field"
+                                        {...fieldA11y('cycle-anchor-day', cycleForm.errors.anchor_day)}
                                         value={cycleForm.data.anchor_day}
                                         onChange={(event) => cycleForm.setData('anchor_day', event.target.value)}
                                     >
@@ -665,11 +677,13 @@ export default function ServiceShow({
                                             </option>
                                         ))}
                                     </ResponsiveSelect>
-                                    {cycleForm.errors.anchor_day && (
-                                        <p className="field-error" role="alert">{t(cycleForm.errors.anchor_day)}</p>
-                                    )}
+                                    {fieldError('cycle-anchor-day', cycleForm.errors.anchor_day)}
                                 </label>
-                                {cyclePreviewError && <p className="field-error" role="alert">{cyclePreviewError}</p>}
+                                {cyclePreviewError && (
+                                    <p id="cycle-preview-error" className="field-error" role="alert">
+                                        {cyclePreviewError}
+                                    </p>
+                                )}
                                 {cyclePreview && (
                                     <div className="rounded-xl border border-line bg-sand/60 p-4">
                                         <div className="flex items-center justify-between gap-3">
@@ -724,7 +738,9 @@ export default function ServiceShow({
                                 <label>
                                     <span className="field-label">{t('New plan')}</span>
                                     <ResponsiveSelect
+                                        id="change-plan"
                                         className="field"
+                                        {...fieldA11y('change-plan', planForm.errors.plan_id)}
                                         value={planForm.data.plan_id}
                                         onChange={(event) => setPlanSelection('plan_id', event.target.value)}
                                     >
@@ -734,9 +750,7 @@ export default function ServiceShow({
                                             </option>
                                         ))}
                                     </ResponsiveSelect>
-                                    {planForm.errors.plan_id && (
-                                        <p className="field-error" role="alert">{t(planForm.errors.plan_id)}</p>
-                                    )}
+                                    {fieldError('change-plan', planForm.errors.plan_id)}
                                 </label>
                                 <label>
                                     <span className="field-label">{t('Effective')}</span>
@@ -754,7 +768,11 @@ export default function ServiceShow({
                                         {t('The unused part of the current plan is credited and the remainder of the new plan is charged in the customer ledger currency.')}
                                     </p>
                                 )}
-                                {planPreviewError && <p className="field-error" role="alert">{planPreviewError}</p>}
+                                {planPreviewError && (
+                                    <p id="change-plan-preview-error" className="field-error" role="alert">
+                                        {planPreviewError}
+                                    </p>
+                                )}
                                 {planPreview && (
                                     <div className="rounded-xl border border-line bg-sand/60 p-4 text-sm">
                                         <div className="flex items-center justify-between gap-3">
@@ -907,7 +925,9 @@ export default function ServiceShow({
                                     <label className="sm:col-span-2">
                                         <span className="field-label">{t('Add-on')}</span>
                                         <ResponsiveSelect
+                                            id="service-addon"
                                             className="field"
+                                            {...fieldA11y('service-addon', addonForm.errors.addon_id)}
                                             value={addonForm.data.addon_id}
                                             onChange={(event) => addonForm.setData('addon_id', event.target.value)}
                                         >
@@ -920,47 +940,45 @@ export default function ServiceShow({
                                                 </option>
                                             ))}
                                         </ResponsiveSelect>
-                                        {addonForm.errors.addon_id && (
-                                            <p className="field-error" role="alert">{t(addonForm.errors.addon_id)}</p>
-                                        )}
+                                        {fieldError('service-addon', addonForm.errors.addon_id)}
                                     </label>
                                     <label>
                                         <span className="field-label">{t('Quantity')}</span>
                                         <input
+                                            id="service-addon-quantity"
                                             className="field"
                                             type="number"
                                             min="1"
                                             max="1000"
+                                            {...fieldA11y('service-addon-quantity', addonForm.errors.quantity)}
                                             value={addonForm.data.quantity}
                                             onChange={(event) => addonForm.setData('quantity', event.target.value)}
                                         />
-                                        {addonForm.errors.quantity && (
-                                            <p className="field-error" role="alert">{t(addonForm.errors.quantity)}</p>
-                                        )}
+                                        {fieldError('service-addon-quantity', addonForm.errors.quantity)}
                                     </label>
                                     <label>
                                         <span className="field-label">{t('Starts')}</span>
                                         <input
+                                            id="service-addon-starts-at"
                                             className="field"
                                             type="date"
+                                            {...fieldA11y('service-addon-starts-at', addonForm.errors.starts_at)}
                                             value={addonForm.data.starts_at}
                                             onChange={(event) => addonForm.setData('starts_at', event.target.value)}
                                         />
-                                        {addonForm.errors.starts_at && (
-                                            <p className="field-error" role="alert">{t(addonForm.errors.starts_at)}</p>
-                                        )}
+                                        {fieldError('service-addon-starts-at', addonForm.errors.starts_at)}
                                     </label>
                                     <label>
                                         <span className="field-label">{t('Ends')} ({t('optional')})</span>
                                         <input
+                                            id="service-addon-ends-at"
                                             className="field"
                                             type="date"
+                                            {...fieldA11y('service-addon-ends-at', addonForm.errors.ends_at)}
                                             value={addonForm.data.ends_at}
                                             onChange={(event) => addonForm.setData('ends_at', event.target.value)}
                                         />
-                                        {addonForm.errors.ends_at && (
-                                            <p className="field-error" role="alert">{t(addonForm.errors.ends_at)}</p>
-                                        )}
+                                        {fieldError('service-addon-ends-at', addonForm.errors.ends_at)}
                                     </label>
                                     <div className="flex items-end justify-end sm:col-span-2">
                                         <button type="submit" className="button-primary" disabled={addonForm.processing}>
