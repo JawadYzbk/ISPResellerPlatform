@@ -58,6 +58,7 @@ it('keeps shared props available when a stale form token expires', function (): 
     $page = json_decode($response->getContent(), true);
 
     expect($response->status())->toBe(419)
+        ->and($response->headers->get('Set-Cookie'))->toContain('XSRF-TOKEN=deleted')
         ->and($page['component'])->toBe('Errors/Http')
         ->and($page['props']['status'])->toBe(419)
         ->and($page['props']['app']['locale'])->toBe('en')

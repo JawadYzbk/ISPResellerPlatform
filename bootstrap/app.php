@@ -151,11 +151,17 @@ return Application::configure(basePath: dirname(__DIR__))
                             ],
                         ];
 
-                    return Inertia::render('Errors/Http', [
+                    $response = Inertia::render('Errors/Http', [
                         ...$sharedProps,
                         'status' => $status,
                         ...$pages[$status],
                     ])->toResponse($request)->setStatusCode($status);
+
+                    if ($status === 419) {
+                        $response->withoutCookie('XSRF-TOKEN', config('session.path', '/'), config('session.domain'));
+                    }
+
+                    return $response;
                 }
 
                 return null;
