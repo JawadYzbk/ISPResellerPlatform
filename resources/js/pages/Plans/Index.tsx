@@ -83,6 +83,16 @@ export default function PlansIndex({
 }: Props) {
     const { props } = usePage<PageProps>();
     const t = createTranslator(props.app.locale);
+    const fieldA11y = (id: string, error?: string) => ({
+        'aria-invalid': Boolean(error),
+        'aria-describedby': error ? `${id}-error` : undefined,
+    });
+    const fieldError = (id: string, error?: string) =>
+        error ? (
+            <p id={`${id}-error`} className="field-error" role="alert">
+                {t(error)}
+            </p>
+        ) : null;
     const [search, setSearch] = useState(filters.search ?? '');
     const [status, setStatus] = useState(filters.status ?? '');
     const [selectedPromoPlans, setSelectedPromoPlans] = useState<string[]>([]);
@@ -108,6 +118,7 @@ export default function PlansIndex({
         max_redemptions: '',
         is_active: true,
     });
+    const promotionAppliesToError = (promotionForm.errors as Record<string, string | undefined>).applies_to;
     const usageRateForm = useForm({
         plan_public_id: availablePlans[0]?.public_id ?? '',
         name: 'Data overage',
@@ -301,64 +312,78 @@ export default function PlansIndex({
                         <label>
                             <span className="field-label">{t('Name')}</span>
                             <input
+                                id="addon-name"
                                 className="field"
+                                {...fieldA11y('addon-name', addonForm.errors.name)}
                                 value={addonForm.data.name}
                                 onChange={(event) => addonForm.setData('name', event.target.value)}
                                 placeholder={t('plan.static_ip')}
                             />
-                            {addonForm.errors.name && <p className="field-error" role="alert">{t(addonForm.errors.name)}</p>}
+                            {fieldError('addon-name', addonForm.errors.name)}
                         </label>
                         <label>
                             <span className="field-label">{t('Price')}</span>
                             <input
+                                id="addon-amount"
                                 className="field"
                                 inputMode="decimal"
+                                {...fieldA11y('addon-amount', addonForm.errors.amount)}
                                 value={addonForm.data.amount}
                                 onChange={(event) => addonForm.setData('amount', event.target.value)}
                                 placeholder="5.00"
                             />
-                            {addonForm.errors.amount && <p className="field-error" role="alert">{t(addonForm.errors.amount)}</p>}
+                            {fieldError('addon-amount', addonForm.errors.amount)}
                         </label>
                         <label>
                             <span className="field-label">{t('Currency')}</span>
                             <CurrencyCombobox
-                                id="addon_currency"
+                                id="addon-currency"
                                 className="field uppercase"
+                                {...fieldA11y('addon-currency', addonForm.errors.currency)}
                                 value={addonForm.data.currency}
                                 currencies={currencies}
                                 onChange={(value) => addonForm.setData('currency', value)}
                             />
+                            {fieldError('addon-currency', addonForm.errors.currency)}
                         </label>
                         <label>
                             <span className="field-label">{t('plan.billing_period_days')}</span>
                             <input
+                                id="addon-billing-period"
                                 className="field"
                                 type="number"
                                 min="1"
+                                {...fieldA11y('addon-billing-period', addonForm.errors.billing_period_days)}
                                 value={addonForm.data.billing_period_days}
                                 onChange={(event) => addonForm.setData('billing_period_days', event.target.value)}
                                 placeholder={t('plan.one_off_if_blank')}
                             />
+                            {fieldError('addon-billing-period', addonForm.errors.billing_period_days)}
                         </label>
                         <label>
                             <span className="field-label">{t('Status')}</span>
                             <ResponsiveSelect
+                                id="addon-status"
                                 className="field"
+                                {...fieldA11y('addon-status', addonForm.errors.status)}
                                 value={addonForm.data.status}
                                 onChange={(event) => addonForm.setData('status', event.target.value)}
                             >
                                 <option value="active">{t('Active')}</option>
                                 <option value="inactive">{t('Archived')}</option>
                             </ResponsiveSelect>
-                            {addonForm.errors.status && <p className="field-error" role="alert">{t(addonForm.errors.status)}</p>}
+                            {fieldError('addon-status', addonForm.errors.status)}
                         </label>
                         <label className="sm:col-span-2">
                             <span className="field-label">{t('Description')}</span>
                             <input
+                                id="addon-description"
                                 className="field"
+                                {...fieldA11y('addon-description', addonForm.errors.description)}
                                 value={addonForm.data.description}
                                 onChange={(event) => addonForm.setData('description', event.target.value)}
                             />
+                            {fieldError('addon-description', addonForm.errors.description)}
                         </label>
                         <button
                             type="submit"
@@ -430,25 +455,33 @@ export default function PlansIndex({
                         <label>
                             <span className="field-label">{t('Name')}</span>
                             <input
+                                id="promotion-name"
                                 className="field"
+                                {...fieldA11y('promotion-name', promotionForm.errors.name)}
                                 value={promotionForm.data.name}
                                 onChange={(event) => promotionForm.setData('name', event.target.value)}
                                 placeholder={t('plan.summer_discount')}
                             />
+                            {fieldError('promotion-name', promotionForm.errors.name)}
                         </label>
                         <label>
                             <span className="field-label">{t('Code')}</span>
                             <input
+                                id="promotion-code"
                                 className="field uppercase"
+                                {...fieldA11y('promotion-code', promotionForm.errors.code)}
                                 value={promotionForm.data.code}
                                 onChange={(event) => promotionForm.setData('code', event.target.value.toUpperCase())}
                                 placeholder="SUMMER10"
                             />
+                            {fieldError('promotion-code', promotionForm.errors.code)}
                         </label>
                         <label>
                             <span className="field-label">{t('Type')}</span>
                             <ResponsiveSelect
+                                id="promotion-type"
                                 className="field"
+                                {...fieldA11y('promotion-type', promotionForm.errors.type)}
                                 value={promotionForm.data.type}
                                 onChange={(event) => promotionForm.setData('type', event.target.value)}
                             >
@@ -456,54 +489,68 @@ export default function PlansIndex({
                                 <option value="fixed">{t('plan.fixed_minor_units')}</option>
                                 <option value="free_days">{t('plan.free_days')}</option>
                             </ResponsiveSelect>
+                            {fieldError('promotion-type', promotionForm.errors.type)}
                         </label>
                         <label>
                             <span className="field-label">
                                 {t('Value')} {promotionForm.data.type === 'percent' ? '(%)' : ''}
                             </span>
                             <input
+                                id="promotion-value"
                                 className="field"
                                 type="number"
                                 min="0"
                                 step={promotionForm.data.type === 'percent' ? '0.01' : '1'}
+                                {...fieldA11y('promotion-value', promotionForm.errors.value)}
                                 value={promotionForm.data.value}
                                 onChange={(event) => promotionForm.setData('value', event.target.value)}
                             />
-                            {promotionForm.errors.value && <p className="field-error" role="alert">{t(promotionForm.errors.value)}</p>}
+                            {fieldError('promotion-value', promotionForm.errors.value)}
                         </label>
                         <label>
                             <span className="field-label">{t('plan.starts')}</span>
                             <input
+                                id="promotion-starts-at"
                                 className="field"
                                 type="date"
+                                {...fieldA11y('promotion-starts-at', promotionForm.errors.starts_at)}
                                 value={promotionForm.data.starts_at}
                                 onChange={(event) => promotionForm.setData('starts_at', event.target.value)}
                             />
+                            {fieldError('promotion-starts-at', promotionForm.errors.starts_at)}
                         </label>
                         <label>
                             <span className="field-label">{t('plan.ends_optional')}</span>
                             <input
+                                id="promotion-ends-at"
                                 className="field"
                                 type="date"
+                                {...fieldA11y('promotion-ends-at', promotionForm.errors.ends_at)}
                                 value={promotionForm.data.ends_at}
                                 onChange={(event) => promotionForm.setData('ends_at', event.target.value)}
                             />
+                            {fieldError('promotion-ends-at', promotionForm.errors.ends_at)}
                         </label>
                         <label>
                             <span className="field-label">{t('plan.max_redemptions')}</span>
                             <input
+                                id="promotion-max-redemptions"
                                 className="field"
                                 type="number"
                                 min="1"
+                                {...fieldA11y('promotion-max-redemptions', promotionForm.errors.max_redemptions)}
                                 value={promotionForm.data.max_redemptions}
                                 onChange={(event) => promotionForm.setData('max_redemptions', event.target.value)}
                                 placeholder={t('Unlimited')}
                             />
+                            {fieldError('promotion-max-redemptions', promotionForm.errors.max_redemptions)}
                         </label>
                         <label>
                             <span className="field-label">{t('Status')}</span>
                             <ResponsiveSelect
+                                id="promotion-status"
                                 className="field"
+                                {...fieldA11y('promotion-status', promotionForm.errors.is_active)}
                                 value={promotionForm.data.is_active ? 'active' : 'inactive'}
                                 onChange={(event) =>
                                     promotionForm.setData('is_active', event.target.value === 'active')
@@ -512,8 +559,12 @@ export default function PlansIndex({
                                 <option value="active">{t('Active')}</option>
                                 <option value="inactive">{t('Archived')}</option>
                             </ResponsiveSelect>
+                            {fieldError('promotion-status', promotionForm.errors.is_active)}
                         </label>
-                        <fieldset className="sm:col-span-2">
+                        <fieldset
+                            className="sm:col-span-2"
+                            {...fieldA11y('promotion-plans', promotionAppliesToError)}
+                        >
                             <legend className="field-label">{t('plan.apply_to_plans')}</legend>
                             <div className="mt-2 flex flex-wrap gap-3">
                                 {availablePlans.map((plan) => (
@@ -536,6 +587,7 @@ export default function PlansIndex({
                                     </label>
                                 ))}
                             </div>
+                            {fieldError('promotion-plans', promotionAppliesToError)}
                         </fieldset>
                         <button
                             type="submit"
@@ -608,7 +660,9 @@ export default function PlansIndex({
                     <label>
                         <span className="field-label">{t('Plan')}</span>
                         <ResponsiveSelect
+                            id="usage-rate-plan"
                             className="field"
+                            {...fieldA11y('usage-rate-plan', usageRateForm.errors.plan_public_id)}
                             value={usageRateForm.data.plan_public_id}
                             onChange={(event) => usageRateForm.setData('plan_public_id', event.target.value)}
                         >
@@ -618,74 +672,79 @@ export default function PlansIndex({
                                 </option>
                             ))}
                         </ResponsiveSelect>
-                        {usageRateForm.errors.plan_public_id && (
-                            <p className="field-error" role="alert">{t(usageRateForm.errors.plan_public_id)}</p>
-                        )}
+                        {fieldError('usage-rate-plan', usageRateForm.errors.plan_public_id)}
                     </label>
                     <label>
                         <span className="field-label">{t('plan.rate_name')}</span>
                         <input
+                            id="usage-rate-name"
                             className="field"
+                            {...fieldA11y('usage-rate-name', usageRateForm.errors.name)}
                             value={usageRateForm.data.name}
                             onChange={(event) => usageRateForm.setData('name', event.target.value)}
                             placeholder={t('plan.data_overage')}
                         />
-                        {usageRateForm.errors.name && <p className="field-error" role="alert">{t(usageRateForm.errors.name)}</p>}
+                        {fieldError('usage-rate-name', usageRateForm.errors.name)}
                     </label>
                     <label>
                         <span className="field-label">{t('plan.included_gb')}</span>
                         <input
+                            id="usage-rate-included-gb"
                             className="field"
                             type="number"
                             min="0"
                             step="0.01"
+                            {...fieldA11y('usage-rate-included-gb', usageRateForm.errors.included_gb)}
                             value={usageRateForm.data.included_gb}
                             onChange={(event) => usageRateForm.setData('included_gb', event.target.value)}
                         />
-                        {usageRateForm.errors.included_gb && (
-                            <p className="field-error" role="alert">{t(usageRateForm.errors.included_gb)}</p>
-                        )}
+                        {fieldError('usage-rate-included-gb', usageRateForm.errors.included_gb)}
                     </label>
                     <label>
                         <span className="field-label">{t('plan.price_per_gb')}</span>
                         <input
+                            id="usage-rate-amount"
                             className="field"
                             inputMode="decimal"
+                            {...fieldA11y('usage-rate-amount', usageRateForm.errors.amount)}
                             value={usageRateForm.data.amount}
                             onChange={(event) => usageRateForm.setData('amount', event.target.value)}
                             placeholder="1.00"
                         />
-                        {usageRateForm.errors.amount && <p className="field-error" role="alert">{t(usageRateForm.errors.amount)}</p>}
+                        {fieldError('usage-rate-amount', usageRateForm.errors.amount)}
                     </label>
                     <label>
                         <span className="field-label">{t('plan.billing_unit_gb')}</span>
                         <input
+                            id="usage-rate-unit-gb"
                             className="field"
                             type="number"
                             min="0.01"
                             step="0.01"
+                            {...fieldA11y('usage-rate-unit-gb', usageRateForm.errors.unit_gb)}
                             value={usageRateForm.data.unit_gb}
                             onChange={(event) => usageRateForm.setData('unit_gb', event.target.value)}
                         />
-                        {usageRateForm.errors.unit_gb && <p className="field-error" role="alert">{t(usageRateForm.errors.unit_gb)}</p>}
+                        {fieldError('usage-rate-unit-gb', usageRateForm.errors.unit_gb)}
                     </label>
                     <label>
                         <span className="field-label">{t('Currency')}</span>
                         <CurrencyCombobox
-                            id="usage_rate_currency"
+                            id="usage-rate-currency"
                             className="field uppercase"
+                            {...fieldA11y('usage-rate-currency', usageRateForm.errors.currency)}
                             value={usageRateForm.data.currency}
                             currencies={currencies}
                             onChange={(value) => usageRateForm.setData('currency', value)}
                         />
-                        {usageRateForm.errors.currency && (
-                            <p className="field-error" role="alert">{t(usageRateForm.errors.currency)}</p>
-                        )}
+                        {fieldError('usage-rate-currency', usageRateForm.errors.currency)}
                     </label>
                     <label>
                         <span className="field-label">{t('Rounding')}</span>
                         <ResponsiveSelect
+                            id="usage-rate-rounding"
                             className="field"
+                            {...fieldA11y('usage-rate-rounding', usageRateForm.errors.rounding)}
                             value={usageRateForm.data.rounding}
                             onChange={(event) => usageRateForm.setData('rounding', event.target.value)}
                         >
@@ -693,41 +752,45 @@ export default function PlansIndex({
                             <option value="half_up">{t('Half up')}</option>
                             <option value="floor">{t('Round down')}</option>
                         </ResponsiveSelect>
+                        {fieldError('usage-rate-rounding', usageRateForm.errors.rounding)}
                     </label>
                     <label>
                         <span className="field-label">{t('plan.effective_from')}</span>
                         <input
+                            id="usage-rate-effective-from"
                             className="field"
                             type="date"
+                            {...fieldA11y('usage-rate-effective-from', usageRateForm.errors.effective_from)}
                             value={usageRateForm.data.effective_from}
                             onChange={(event) => usageRateForm.setData('effective_from', event.target.value)}
                         />
-                        {usageRateForm.errors.effective_from && (
-                            <p className="field-error" role="alert">{t(usageRateForm.errors.effective_from)}</p>
-                        )}
+                        {fieldError('usage-rate-effective-from', usageRateForm.errors.effective_from)}
                     </label>
                     <label>
                         <span className="field-label">{t('plan.effective_to_optional')}</span>
                         <input
+                            id="usage-rate-effective-to"
                             className="field"
                             type="date"
+                            {...fieldA11y('usage-rate-effective-to', usageRateForm.errors.effective_to)}
                             value={usageRateForm.data.effective_to}
                             onChange={(event) => usageRateForm.setData('effective_to', event.target.value)}
                         />
-                        {usageRateForm.errors.effective_to && (
-                            <p className="field-error" role="alert">{t(usageRateForm.errors.effective_to)}</p>
-                        )}
+                        {fieldError('usage-rate-effective-to', usageRateForm.errors.effective_to)}
                     </label>
                     <label>
                         <span className="field-label">{t('Status')}</span>
                         <ResponsiveSelect
+                            id="usage-rate-status"
                             className="field"
+                            {...fieldA11y('usage-rate-status', usageRateForm.errors.status)}
                             value={usageRateForm.data.status}
                             onChange={(event) => usageRateForm.setData('status', event.target.value)}
                         >
                             <option value="active">{t('Active')}</option>
                             <option value="inactive">{t('Archived')}</option>
                         </ResponsiveSelect>
+                        {fieldError('usage-rate-status', usageRateForm.errors.status)}
                     </label>
                     <button type="submit" className="button-secondary self-end" disabled={usageRateForm.processing}>
                         <Plus size={15} /> {editingUsageRateId ? t('plan.save_usage_rate') : t('plan.add_usage_rate')}
