@@ -243,6 +243,16 @@ export default function FieldIndex({
 }: Props) {
     const { props } = usePage<PageProps>();
     const t = useMemo(() => createTranslator(props.app.locale), [props.app.locale]);
+    const fieldA11y = (id: string, error?: string, describedById = `${id}-error`) => ({
+        'aria-invalid': Boolean(error),
+        'aria-describedby': error ? describedById : undefined,
+    });
+    const fieldError = (id: string, error?: string) =>
+        error ? (
+            <p id={`${id}-error`} className="field-error" role="alert">
+                {t(error)}
+            </p>
+        ) : null;
     const fieldValue = (value: string) => t('field.value.' + value);
     const [customers, setCustomers] = useState(snapshot.data.customers);
     const [currencyOptions, setCurrencyOptions] = useState(currencies);
@@ -307,6 +317,9 @@ export default function FieldIndex({
     });
     const [saleQuantity, setSaleQuantity] = useState('');
     const [saleUnitPrice, setSaleUnitPrice] = useState('');
+    const stockRequestErrors = stockRequestForm.errors as Record<string, string | undefined>;
+    const stockCountErrors = stockCountForm.errors as Record<string, string | undefined>;
+    const saleErrors = saleForm.errors as Record<string, string | undefined>;
 
     const submitStockRequest = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -1137,18 +1150,23 @@ export default function FieldIndex({
                             <label className="field-label">
                                 {t('field.request_type')}
                                 <ResponsiveSelect
+                                    id="field-stock-request-type"
                                     className="mt-1"
+                                    {...fieldA11y('field-stock-request-type', stockRequestErrors.type)}
                                     value={stockRequestForm.data.type}
                                     onChange={(event) => stockRequestForm.setData('type', event.target.value)}
                                 >
                                     <option value="replenishment">{t('field.replenishment')}</option>
                                     <option value="return">{t('field.return_unused_stock')}</option>
                                 </ResponsiveSelect>
+                                {fieldError('field-stock-request-type', stockRequestErrors.type)}
                             </label>
                             <label className="field-label">
                                 {t('field.material')}
                                 <ResponsiveSelect
+                                    id="field-stock-request-material"
                                     className="mt-1"
+                                    {...fieldA11y('field-stock-request-material', stockRequestErrors.inventory_item_id)}
                                     value={stockRequestForm.data.inventory_item_id}
                                     onChange={(event) =>
                                         stockRequestForm.setData('inventory_item_id', event.target.value)
@@ -1161,11 +1179,14 @@ export default function FieldIndex({
                                         </option>
                                     ))}
                                 </ResponsiveSelect>
+                                {fieldError('field-stock-request-material', stockRequestErrors.inventory_item_id)}
                             </label>
                             <label className="field-label">
                                 {t('field.stock_location')}
                                 <ResponsiveSelect
+                                    id="field-stock-request-location"
                                     className="mt-1"
+                                    {...fieldA11y('field-stock-request-location', stockRequestErrors.location_id)}
                                     value={stockRequestForm.data.location_id}
                                     onChange={(event) => stockRequestForm.setData('location_id', event.target.value)}
                                 >
@@ -1176,11 +1197,14 @@ export default function FieldIndex({
                                         </option>
                                     ))}
                                 </ResponsiveSelect>
+                                {fieldError('field-stock-request-location', stockRequestErrors.location_id)}
                             </label>
                             <label className="field-label">
                                 {t('field.central_warehouse')}
                                 <ResponsiveSelect
+                                    id="field-stock-request-central"
                                     className="mt-1"
+                                    {...fieldA11y('field-stock-request-central', stockRequestErrors.central_id)}
                                     value={stockRequestForm.data.central_id}
                                     onChange={(event) => stockRequestForm.setData('central_id', event.target.value)}
                                 >
@@ -1191,28 +1215,32 @@ export default function FieldIndex({
                                         </option>
                                     ))}
                                 </ResponsiveSelect>
+                                {fieldError('field-stock-request-central', stockRequestErrors.central_id)}
                             </label>
                             <label className="field-label">
                                 {t('field.quantity')}
                                 <input
+                                    id="field-stock-request-quantity"
                                     className="field mt-1 tabular-nums"
                                     inputMode="decimal"
+                                    {...fieldA11y('field-stock-request-quantity', stockRequestErrors.quantity)}
                                     value={stockRequestForm.data.quantity}
                                     onChange={(event) => stockRequestForm.setData('quantity', event.target.value)}
                                     placeholder="0.000"
                                 />
-                                {stockRequestForm.errors.quantity && (
-                                    <span className="field-error" role="alert">{t(stockRequestForm.errors.quantity)}</span>
-                                )}
+                                {fieldError('field-stock-request-quantity', stockRequestErrors.quantity)}
                             </label>
                             <label className="field-label">
                                 {t('field.note_optional')}
                                 <input
+                                    id="field-stock-request-note"
                                     className="field mt-1"
+                                    {...fieldA11y('field-stock-request-note', stockRequestErrors.note)}
                                     value={stockRequestForm.data.note}
                                     onChange={(event) => stockRequestForm.setData('note', event.target.value)}
                                     placeholder={t('field.route_context')}
                                 />
+                                {fieldError('field-stock-request-note', stockRequestErrors.note)}
                             </label>
                             <div className="flex justify-end sm:col-span-2 lg:col-span-3">
                                 <button type="submit" className="button-primary" disabled={stockRequestForm.processing}>
@@ -1231,8 +1259,10 @@ export default function FieldIndex({
                                 <label className="field-label">
                                     {t('field.customer')}
                                     <CustomerCombobox
+                                        id="field-sale-customer"
                                         className="mt-1"
                                         aria-label={t('field.sale_customer')}
+                                        {...fieldA11y('field-sale-customer', saleErrors.customer_id)}
                                         value={saleForm.data.customer_id}
                                         customers={customers.map((customer) => ({
                                             id: customer.id,
@@ -1245,11 +1275,14 @@ export default function FieldIndex({
                                         }))}
                                         onChange={(value) => saleForm.setData('customer_id', value)}
                                     />
+                                    {fieldError('field-sale-customer', saleErrors.customer_id)}
                                 </label>
                                 <label className="field-label">
                                     {t('field.stock_location')}
                                     <ResponsiveSelect
+                                        id="field-sale-location"
                                         className="mt-1"
+                                        {...fieldA11y('field-sale-location', saleErrors.warehouse_id)}
                                         value={saleForm.data.warehouse_id}
                                         onChange={(event) => saleForm.setData('warehouse_id', event.target.value)}
                                     >
@@ -1262,11 +1295,14 @@ export default function FieldIndex({
                                                 </option>
                                             ))}
                                     </ResponsiveSelect>
+                                    {fieldError('field-sale-location', saleErrors.warehouse_id)}
                                 </label>
                                 <label className="field-label">
                                     {t('field.item')}
                                     <ResponsiveSelect
+                                        id="field-sale-item"
                                         className="mt-1"
+                                        {...fieldA11y('field-sale-item', saleErrors.inventory_item_id)}
                                         value={saleForm.data.inventory_item_id}
                                         onChange={(event) => saleForm.setData('inventory_item_id', event.target.value)}
                                     >
@@ -1279,12 +1315,15 @@ export default function FieldIndex({
                                                 </option>
                                             ))}
                                     </ResponsiveSelect>
+                                    {fieldError('field-sale-item', saleErrors.inventory_item_id)}
                                 </label>
                                 <label className="field-label">
                                     {t('field.quantity')}
                                     <input
+                                        id="field-sale-quantity"
                                         className="field mt-1 tabular-nums"
                                         inputMode="decimal"
+                                        {...fieldA11y('field-sale-quantity', saleErrors.lines, 'field-sale-lines-error')}
                                         value={saleQuantity}
                                         onChange={(event) => setSaleQuantity(event.target.value)}
                                         placeholder="0.000"
@@ -1293,8 +1332,10 @@ export default function FieldIndex({
                                 <label className="field-label">
                                     {t('field.unit_price')}
                                     <input
+                                        id="field-sale-unit-price"
                                         className="field mt-1 tabular-nums"
                                         inputMode="decimal"
+                                        {...fieldA11y('field-sale-unit-price', saleErrors.lines, 'field-sale-lines-error')}
                                         value={saleUnitPrice}
                                         onChange={(event) => setSaleUnitPrice(event.target.value)}
                                         placeholder="0.00"
@@ -1303,16 +1344,21 @@ export default function FieldIndex({
                                 <label className="field-label">
                                     {t('field.currency')}
                                     <CurrencyCombobox
+                                        id="field-sale-currency"
                                         className="field mt-1"
+                                        {...fieldA11y('field-sale-currency', saleErrors.currency)}
                                         value={saleForm.data.currency}
                                         currencies={currencyOptions}
                                         onChange={(value) => saleForm.setData('currency', value)}
                                     />
+                                    {fieldError('field-sale-currency', saleErrors.currency)}
                                 </label>
                                 <label className="field-label">
                                     {t('field.payment_method')}
                                     <ResponsiveSelect
+                                        id="field-sale-payment-method"
                                         className="mt-1"
+                                        {...fieldA11y('field-sale-payment-method', saleErrors.payment_method)}
                                         value={saleForm.data.payment_method}
                                         onChange={(event) => saleForm.setData('payment_method', event.target.value)}
                                     >
@@ -1321,18 +1367,22 @@ export default function FieldIndex({
                                         <option value="card">{t('field.card')}</option>
                                         <option value="bank_transfer">{t('field.bank_transfer')}</option>
                                     </ResponsiveSelect>
+                                    {fieldError('field-sale-payment-method', saleErrors.payment_method)}
                                 </label>
                                 <label className="field-label sm:col-span-2">
                                     {t('field.note_optional')}
                                     <input
+                                        id="field-sale-note"
                                         className="field mt-1"
+                                        {...fieldA11y('field-sale-note', saleErrors.note)}
                                         value={saleForm.data.note}
                                         onChange={(event) => saleForm.setData('note', event.target.value)}
                                         placeholder={t('field.item_handover')}
                                     />
+                                    {fieldError('field-sale-note', saleErrors.note)}
                                 </label>
                             </div>
-                            {saleForm.errors.lines && <p className="field-error mt-3" role="alert">{t(saleForm.errors.lines)}</p>}
+                            {fieldError('field-sale-lines', saleErrors.lines)}
                             <div className="mt-4 flex items-center justify-between gap-4">
                                 <p className="text-sm text-muted">
                                     {t('field.total')}:{' '}
@@ -1396,7 +1446,9 @@ export default function FieldIndex({
                                 <label className="field-label">
                                     {t('field.stock_location')}
                                     <ResponsiveSelect
+                                        id="field-stock-count-location"
                                         className="mt-1"
+                                        {...fieldA11y('field-stock-count-location', stockCountErrors.warehouse_id)}
                                         value={stockCountForm.data.warehouse_id}
                                         onChange={(event) => {
                                             stockCountForm.setData('warehouse_id', event.target.value);
@@ -1412,21 +1464,33 @@ export default function FieldIndex({
                                                 </option>
                                             ))}
                                     </ResponsiveSelect>
+                                    {fieldError('field-stock-count-location', stockCountErrors.warehouse_id)}
                                 </label>
                                 <label className="field-label">
                                     {t('field.count_note')}
                                     <input
+                                        id="field-stock-count-note"
                                         className="field mt-1"
+                                        {...fieldA11y('field-stock-count-note', stockCountErrors.note)}
                                         value={stockCountForm.data.note}
                                         onChange={(event) => stockCountForm.setData('note', event.target.value)}
                                         placeholder={t('field.end_route')}
                                     />
+                                    {fieldError('field-stock-count-note', stockCountErrors.note)}
                                 </label>
                             </div>
                             {stock.locations.find(
                                 (location) => String(location.id) === stockCountForm.data.warehouse_id,
                             ) && (
-                                <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                                <fieldset
+                                    id="field-stock-count-lines"
+                                    className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3"
+                                    aria-invalid={Boolean(stockCountErrors.lines)}
+                                    aria-describedby={
+                                        stockCountErrors.lines ? 'field-stock-count-lines-error' : undefined
+                                    }
+                                >
+                                    <legend className="sr-only">{t('field.physical_quantity')}</legend>
                                     {stock.locations
                                         .find((location) => String(location.id) === stockCountForm.data.warehouse_id)
                                         ?.balances.map((balance) => (
@@ -1439,6 +1503,7 @@ export default function FieldIndex({
                                                     {t('field.system')}: <span className="tabular-nums">{balance.quantity}</span>
                                                 </span>
                                                 <input
+                                                    id={`field-stock-count-${balance.item_id}`}
                                                     className="field mt-2 tabular-nums"
                                                     inputMode="decimal"
                                                     value={countedQuantities[balance.item_id] ?? ''}
@@ -1452,11 +1517,9 @@ export default function FieldIndex({
                                                 />
                                             </label>
                                         ))}
-                                </div>
+                                </fieldset>
                             )}
-                            {stockCountForm.errors.lines && (
-                                <p className="field-error mt-3" role="alert">{t(stockCountForm.errors.lines)}</p>
-                            )}
+                            {fieldError('field-stock-count-lines', stockCountErrors.lines)}
                             <div className="mt-4 flex justify-end">
                                 <ConfirmDialog
                                     title={t('field.submit_count_title')}
