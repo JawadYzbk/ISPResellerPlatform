@@ -38,6 +38,16 @@ type Props = {
 export default function CollectorCustody({ filters, collectors, entries, currencies }: Props) {
     const { props } = usePage<PageProps>();
     const t = createTranslator(props.app.locale);
+    const fieldA11y = (id: string, error?: string) => ({
+        'aria-invalid': Boolean(error),
+        'aria-describedby': error ? `${id}-error` : undefined,
+    });
+    const fieldError = (id: string, error?: string) =>
+        error ? (
+            <p id={`${id}-error`} className="field-error" role="alert">
+                {t(error)}
+            </p>
+        ) : null;
     const [displayAmount, setDisplayAmount] = useState('');
     const [reviewNotes, setReviewNotes] = useState<Record<string, string>>({});
     const selectedCollector = collectors.find((item) => item.id === filters.collector) ?? collectors[0] ?? null;
@@ -170,7 +180,9 @@ export default function CollectorCustody({ filters, collectors, entries, currenc
                     <label className="field-label">
                         {t('Collector')}
                         <ResponsiveSelect
+                            id="custody-collector"
                             className="mt-1"
+                            {...fieldA11y('custody-collector', form.errors.collector_id)}
                             value={form.data.collector_id}
                             onChange={(event) => form.setData('collector_id', Number(event.target.value))}
                         >
@@ -180,11 +192,14 @@ export default function CollectorCustody({ filters, collectors, entries, currenc
                                 </option>
                             ))}
                         </ResponsiveSelect>
+                        {fieldError('custody-collector', form.errors.collector_id)}
                     </label>
                     <label className="field-label">
                         {t('collector_custody.entry_type')}
                         <ResponsiveSelect
+                            id="custody-type"
                             className="mt-1"
+                            {...fieldA11y('custody-type', form.errors.type)}
                             value={form.data.type}
                             onChange={(event) => form.setData('type', event.target.value)}
                         >
@@ -193,18 +208,22 @@ export default function CollectorCustody({ filters, collectors, entries, currenc
                             <option value="expense">{t('collector_custody.expense')}</option>
                             <option value="handover">{t('collector_custody.handover')}</option>
                         </ResponsiveSelect>
+                        {fieldError('custody-type', form.errors.type)}
                     </label>
                     {form.data.type === 'adjustment' ? (
                         <label className="field-label">
                             {t('collector_custody.direction')}
                             <ResponsiveSelect
+                                id="custody-direction"
                                 className="mt-1"
+                                {...fieldA11y('custody-direction', form.errors.direction)}
                                 value={form.data.direction}
                                 onChange={(event) => form.setData('direction', event.target.value)}
                             >
                                 <option value="credit">{t('collector_custody.add_to_custody')}</option>
                                 <option value="debit">{t('collector_custody.remove_from_custody')}</option>
                             </ResponsiveSelect>
+                            {fieldError('custody-direction', form.errors.direction)}
                         </label>
                     ) : (
                         <div />
@@ -212,42 +231,51 @@ export default function CollectorCustody({ filters, collectors, entries, currenc
                     <label className="field-label">
                         {t('Currency')}
                         <CurrencyCombobox
+                            id="custody-currency"
                             className="field mt-1"
+                            {...fieldA11y('custody-currency', form.errors.currency)}
                             value={form.data.currency}
                             currencies={currencies}
                             onChange={(value) => form.setData('currency', value)}
                         />
+                        {fieldError('custody-currency', form.errors.currency)}
                     </label>
                     <label className="field-label">
                         {t('Amount')}
                         <input
+                            id="custody-amount"
                             className="field mt-1 tabular-nums"
                             inputMode="decimal"
+                            {...fieldA11y('custody-amount', form.errors.amount)}
                             value={displayAmount}
                             onChange={(event) => setDisplayAmount(event.target.value)}
                         />
+                        {fieldError('custody-amount', form.errors.amount)}
                     </label>
                     <label className="field-label">
                         {t('Reference')} ({t('Optional').toLocaleLowerCase()})
                         <input
+                            id="custody-reference"
                             className="field mt-1"
                             value={form.data.reference}
                             maxLength={120}
+                            {...fieldA11y('custody-reference', form.errors.reference)}
                             onChange={(event) => form.setData('reference', event.target.value)}
                         />
+                        {fieldError('custody-reference', form.errors.reference)}
                     </label>
                     <label className="field-label lg:col-span-3">
                         {t('Reason / description')}
                         <textarea
+                            id="custody-description"
                             className="field mt-1 min-h-20"
                             value={form.data.description}
                             maxLength={2000}
+                            {...fieldA11y('custody-description', form.errors.description)}
                             onChange={(event) => form.setData('description', event.target.value)}
                         />
+                        {fieldError('custody-description', form.errors.description)}
                     </label>
-                    {(form.errors.amount || form.errors.description) && (
-                        <p className="field-error lg:col-span-3" role="alert">{t(form.errors.amount ?? form.errors.description ?? '')}</p>
-                    )}
                     <div className="flex justify-end lg:col-span-3">
                         <button
                             type="submit"

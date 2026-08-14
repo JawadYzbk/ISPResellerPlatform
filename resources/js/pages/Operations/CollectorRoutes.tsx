@@ -57,6 +57,16 @@ type Props = {
 export default function CollectorRoutes({ date, collectors, customers, routes }: Props) {
     const { props } = usePage<PageProps>();
     const t = createTranslator(props.app.locale);
+    const fieldA11y = (id: string, error?: string) => ({
+        'aria-invalid': Boolean(error),
+        'aria-describedby': error ? `${id}-error` : undefined,
+    });
+    const fieldError = (id: string, error?: string) =>
+        error ? (
+            <p id={`${id}-error`} className="field-error mt-3" role="alert">
+                {t(error)}
+            </p>
+        ) : null;
     const [search, setSearch] = useState('');
     const initialCollectorId = collectors[0]?.id ?? 0;
     const initialRoute = routes.find((item) => item.collector.id === initialCollectorId);
@@ -130,8 +140,10 @@ export default function CollectorRoutes({ date, collectors, customers, routes }:
                 <label className="field-label">
                     {t('collector_routes.route_date')}
                     <input
+                        id="collector-route-date"
                         className="field mt-1"
                         type="date"
+                        {...fieldA11y('collector-route-date', form.errors.route_date)}
                         value={date}
                         onChange={(event) =>
                             router.get(
@@ -141,6 +153,7 @@ export default function CollectorRoutes({ date, collectors, customers, routes }:
                             )
                         }
                     />
+                    {fieldError('collector-route-date', form.errors.route_date)}
                 </label>
             </div>
 
@@ -153,7 +166,9 @@ export default function CollectorRoutes({ date, collectors, customers, routes }:
                     <label className="mt-5 block">
                         <span className="field-label">{t('Collector')}</span>
                         <ResponsiveSelect
+                            id="collector-route-collector"
                             className="field"
+                            {...fieldA11y('collector-route-collector', form.errors.collector_id)}
                             value={form.data.collector_id}
                             onChange={(event) => selectCollector(Number(event.target.value))}
                         >
@@ -166,6 +181,7 @@ export default function CollectorRoutes({ date, collectors, customers, routes }:
                                 </option>
                             ))}
                         </ResponsiveSelect>
+                        {fieldError('collector-route-collector', form.errors.collector_id)}
                     </label>
 
                     {collectors.length === 0 && (
@@ -190,7 +206,11 @@ export default function CollectorRoutes({ date, collectors, customers, routes }:
                                     aria-label={t('collector_routes.search_customers')}
                                 />
                             </div>
-                            <div className="mt-3 max-h-80 divide-y divide-line overflow-y-auto rounded-xl border border-line">
+                            <fieldset
+                                className="mt-3 max-h-80 divide-y divide-line overflow-y-auto rounded-xl border border-line"
+                                {...fieldA11y('collector-route-customers', form.errors.customer_ids)}
+                            >
+                                <legend className="sr-only">{t('collector_routes.choose_customers')}</legend>
                                 {eligibleCustomers.map((customer) => (
                                     <label key={customer.id} className="flex items-start gap-3 px-4 py-3 hover:bg-sand">
                                         <input
@@ -224,12 +244,11 @@ export default function CollectorRoutes({ date, collectors, customers, routes }:
                                         </p>
                                     </div>
                                 )}
-                            </div>
+                            </fieldset>
                         </div>
                     )}
 
-                    {form.errors.customer_ids && <p className="field-error mt-3" role="alert">{t(form.errors.customer_ids)}</p>}
-                    {form.errors.collector_id && <p className="field-error mt-3" role="alert">{t(form.errors.collector_id)}</p>}
+                    {fieldError('collector-route-customers', form.errors.customer_ids)}
                 </section>
 
                 <section className="card p-6">
