@@ -71,6 +71,16 @@ function Pager({ shifts, t }: { shifts: Paginator<Shift>; t: (key: string) => st
 export default function ShiftsPage({ shifts, currentShift, currencies, canViewReport, dailyReport }: Props) {
     const { props } = usePage<PageProps>();
     const t = createTranslator(props.app.locale);
+    const fieldA11y = (id: string, error?: string) => ({
+        'aria-invalid': Boolean(error),
+        'aria-describedby': error ? `${id}-error` : undefined,
+    });
+    const fieldError = (id: string, error?: string) =>
+        error ? (
+            <p id={`${id}-error`} className="field-error mt-2" role="alert">
+                {t(error)}
+            </p>
+        ) : null;
     const [declaredTotals, setDeclaredTotals] = useState<Record<string, string>>(
         Object.fromEntries(currencies.map((currency) => [currency, ''])),
     );
@@ -148,17 +158,31 @@ export default function ShiftsPage({ shifts, currentShift, currencies, canViewRe
                         ))}
                     </div>
                     <form onSubmit={submitClose} className="mt-6 border-t border-line pt-6">
-                        <div className="grid gap-5 sm:grid-cols-2">
+                        <fieldset
+                            className="grid gap-5 sm:grid-cols-2"
+                            aria-invalid={Boolean(form.errors.declared_totals)}
+                            aria-describedby={
+                                form.errors.declared_totals ? 'cash-shift-declared-totals-error' : undefined
+                            }
+                        >
+                            <legend className="sr-only">{t('shifts.counted_cash')}</legend>
                             {currencies.map((currency) => (
                                 <label key={currency}>
                                     <span className="field-label">
                                         {t('shifts.counted_cash')} ({currency})
                                     </span>
                                     <input
+                                        id={`cash-shift-counted-${currency.toLowerCase()}`}
                                         className="field"
                                         type="number"
                                         min="0"
                                         step={currency === 'JPY' ? '1' : '0.01'}
+                                        aria-invalid={Boolean(form.errors.declared_totals)}
+                                        aria-describedby={
+                                            form.errors.declared_totals
+                                                ? 'cash-shift-declared-totals-error'
+                                                : undefined
+                                        }
                                         value={declaredTotals[currency] ?? ''}
                                         onChange={(event) =>
                                             setDeclaredTotals((values) => ({
@@ -170,19 +194,20 @@ export default function ShiftsPage({ shifts, currentShift, currencies, canViewRe
                                     />
                                 </label>
                             ))}
-                        </div>
+                        </fieldset>
+                        {fieldError('cash-shift-declared-totals', form.errors.declared_totals)}
                         <label className="mt-5 block">
                             <span className="field-label">{t('shifts.variance_note')}</span>
                             <textarea
+                                id="cash-shift-variance-note"
                                 className="field min-h-24"
+                                {...fieldA11y('cash-shift-variance-note', form.errors.variance_note)}
                                 value={form.data.variance_note}
                                 onChange={(event) => form.setData('variance_note', event.target.value)}
                                 placeholder={t('shifts.variance_placeholder')}
                             />
+                            {fieldError('cash-shift-variance-note', form.errors.variance_note)}
                         </label>
-                        {form.errors.declared_totals && (
-                            <p className="field-error mt-2" role="alert">{t(form.errors.declared_totals)}</p>
-                        )}
                         <div className="mt-5 flex justify-end">
                             <button type="submit" className="button-primary" disabled={form.processing}>
                                 <CheckCircle2 size={16} /> {t('shifts.close_reconcile')}
