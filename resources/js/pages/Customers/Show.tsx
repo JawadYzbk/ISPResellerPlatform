@@ -89,6 +89,16 @@ export default function CustomerShow({
 }: Props) {
     const { app } = usePage<PageProps>().props;
     const t = createTranslator(app.locale);
+    const fieldA11y = (id: string, error?: string) => ({
+        'aria-invalid': Boolean(error),
+        'aria-describedby': error ? `${id}-error` : undefined,
+    });
+    const fieldError = (id: string, error?: string) =>
+        error ? (
+            <p id={`${id}-error`} className="field-error" role="alert">
+                {t(error)}
+            </p>
+        ) : null;
     const fullName = `${customer.first_name} ${customer.last_name ?? ''}`.trim();
     const nextExpiry =
         customer.services
@@ -677,21 +687,23 @@ export default function CustomerShow({
                                 <label>
                                     <span className="field-label">{t('Add PDF or image')}</span>
                                     <input
+                                        id="customer-document-file"
                                         type="file"
                                         accept="application/pdf,image/jpeg,image/png,image/webp"
                                         className="field"
+                                        {...fieldA11y('customer-document-file', documentForm.errors.file)}
                                         onChange={(event) =>
                                             documentForm.setData('file', event.target.files?.[0] ?? null)
                                         }
                                     />
-                                    {documentForm.errors.file && (
-                                        <p className="field-error" role="alert">{t(documentForm.errors.file)}</p>
-                                    )}
+                                    {fieldError('customer-document-file', documentForm.errors.file)}
                                 </label>
                                 <label>
                                     <span className="field-label">{t('Document type')}</span>
                                     <ResponsiveSelect
+                                        id="customer-document-type"
                                         className="field"
+                                        {...fieldA11y('customer-document-type', documentForm.errors.document_type)}
                                         value={documentForm.data.document_type}
                                         onChange={(event) => documentForm.setData('document_type', event.target.value)}
                                     >
@@ -700,22 +712,26 @@ export default function CustomerShow({
                                         <option value="proof_of_address">{t('Proof of address')}</option>
                                         <option value="other">{t('Other')}</option>
                                     </ResponsiveSelect>
-                                    {documentForm.errors.document_type && (
-                                        <p className="field-error" role="alert">{t(documentForm.errors.document_type)}</p>
-                                    )}
+                                    {fieldError('customer-document-type', documentForm.errors.document_type)}
                                 </label>
                                 <label>
                                     <span className="field-label">{t('Retain until (optional)')}</span>
                                     <input
+                                        id="customer-document-retention-until"
                                         type="date"
                                         className="field"
+                                        {...fieldA11y(
+                                            'customer-document-retention-until',
+                                            documentForm.errors.retention_until,
+                                        )}
                                         value={documentForm.data.retention_until}
                                         onChange={(event) =>
                                             documentForm.setData('retention_until', event.target.value)
                                         }
                                     />
-                                    {documentForm.errors.retention_until && (
-                                        <p className="field-error" role="alert">{t(documentForm.errors.retention_until)}</p>
+                                    {fieldError(
+                                        'customer-document-retention-until',
+                                        documentForm.errors.retention_until,
                                     )}
                                 </label>
                                 <button
