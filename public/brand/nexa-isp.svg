@@ -1,17 +1,50 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title desc">
   <title id="title">NexaISP</title>
-  <desc id="desc">A connected node mark for the NexaISP operations platform.</desc>
+  <desc id="desc">An animated signal path connecting three nodes for the NexaISP operations platform.</desc>
   <defs>
-    <linearGradient id="bg" x1="14" y1="8" x2="112" y2="120" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#123b58"/>
-      <stop offset="1" stop-color="#0d766f"/>
+    <linearGradient id="surface" x1="12" y1="8" x2="116" y2="120" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#081c35" />
+      <stop offset="0.58" stop-color="#0b3d5a" />
+      <stop offset="1" stop-color="#0e766f" />
     </linearGradient>
+    <linearGradient id="signal" x1="24" y1="96" x2="106" y2="26" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#28a7ff" />
+      <stop offset="0.52" stop-color="#43e1c1" />
+      <stop offset="1" stop-color="#ffd166" />
+    </linearGradient>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="3" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+    <style>
+      .signal-path { stroke-dasharray: 12 9; animation: flow 2.8s linear infinite; }
+      .node { transform-box: fill-box; transform-origin: center; animation: breathe 2.8s ease-in-out infinite; }
+      .node:nth-of-type(2) { animation-delay: .35s; }
+      .node:nth-of-type(3) { animation-delay: .7s; }
+      @keyframes flow { to { stroke-dashoffset: -42; } }
+      @keyframes breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.08); } }
+      @media (prefers-reduced-motion: reduce) {
+        .signal-path, .node { animation: none; }
+      }
+    </style>
   </defs>
-  <rect width="128" height="128" rx="32" fill="url(#bg)"/>
-  <path d="M27 77 50 49l19 14 27-27" fill="none" stroke="#f8fbfa" stroke-linecap="round" stroke-linejoin="round" stroke-width="9"/>
-  <circle cx="27" cy="77" r="9" fill="#f9c74f"/>
-  <circle cx="50" cy="49" r="9" fill="#f8fbfa"/>
-  <circle cx="69" cy="63" r="9" fill="#f8fbfa"/>
-  <circle cx="96" cy="36" r="9" fill="#f9c74f"/>
-  <path d="M31 101h66" stroke="#f8fbfa" stroke-linecap="round" stroke-opacity=".55" stroke-width="5"/>
+  <rect width="128" height="128" rx="32" fill="url(#surface)" />
+  <path d="M22 93c13-18 24-27 38-29 15-2 20-12 28-23 5-7 10-11 18-15" fill="none" stroke="#06152a" stroke-linecap="round" stroke-width="16" opacity=".58" />
+  <path class="signal-path" d="M22 93c13-18 24-27 38-29 15-2 20-12 28-23 5-7 10-11 18-15" fill="none" stroke="url(#signal)" stroke-linecap="round" stroke-width="8" filter="url(#glow)" />
+  <path d="M25 76c-5 3-9 8-12 14M35 104c-4 3-8 5-13 6M66 48c-4-6-8-9-14-12M83 75c6 3 10 7 13 12M101 22c4 3 7 7 9 12" fill="none" stroke="#52e4c4" stroke-linecap="round" stroke-width="5" opacity=".78" />
+  <g class="node" filter="url(#glow)">
+    <circle cx="22" cy="93" r="12" fill="#0b5ec4" />
+    <circle cx="22" cy="93" r="5" fill="#a4eeff" />
+  </g>
+  <g class="node" filter="url(#glow)">
+    <circle cx="60" cy="64" r="12" fill="#0d9d9c" />
+    <circle cx="60" cy="64" r="5" fill="#d2fff3" />
+  </g>
+  <g class="node" filter="url(#glow)">
+    <circle cx="106" cy="26" r="12" fill="#e9a51d" />
+    <circle cx="106" cy="26" r="5" fill="#fff2b0" />
+  </g>
 </svg>
