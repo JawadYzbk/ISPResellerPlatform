@@ -2,6 +2,7 @@ import { Form, Link, router, usePage } from '@inertiajs/react';
 import {
     BarChart3,
     Banknote,
+    BookOpen,
     Bell,
     Building2,
     CalendarDays,
@@ -615,6 +616,17 @@ export default function AppLayout({ children }: PropsWithChildren) {
                         )}
                     </div>
                     <div className="flex items-center gap-3">
+                        <a
+                            href="/docs/api"
+                            target="_blank"
+                            rel="noreferrer"
+                            className="flex items-center gap-2 rounded-lg border border-line bg-white px-3 py-2 text-sm font-semibold text-muted transition hover:border-brand/40 hover:text-brand"
+                            title={t('Open API documentation')}
+                            aria-label={t('Open API documentation')}
+                        >
+                            <BookOpen size={17} aria-hidden="true" />
+                            <span className="hidden sm:inline">{t('API docs')}</span>
+                        </a>
                         {!isPlatformOperator && (
                             <Link
                                 href="/notifications"
