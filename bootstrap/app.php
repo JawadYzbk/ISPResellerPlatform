@@ -126,7 +126,33 @@ return Application::configure(basePath: dirname(__DIR__))
                 ];
 
                 if (isset($pages[$status])) {
+                    $sharedProps = $request->hasSession()
+                        ? app(HandleInertiaRequests::class)->share($request)
+                        : [
+                            'errors' => [],
+                            'app' => [
+                                'name' => config('app.name'),
+                                'locale' => config('app.locale', 'en'),
+                                'direction' => 'ltr',
+                            ],
+                            'auth' => [
+                                'user' => null,
+                                'isPlatformOperator' => false,
+                                'permissions' => [],
+                                'tenant' => null,
+                            ],
+                            'flash' => [
+                                'id' => null,
+                                'successTitle' => null,
+                                'success' => null,
+                                'error' => null,
+                                'importResult' => null,
+                                'publicLink' => null,
+                            ],
+                        ];
+
                     return Inertia::render('Errors/Http', [
+                        ...$sharedProps,
                         'status' => $status,
                         ...$pages[$status],
                     ])->toResponse($request)->setStatusCode($status);

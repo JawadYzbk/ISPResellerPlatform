@@ -6,6 +6,7 @@ use App\Support\Tenancy;
 use Database\Seeders\CapabilitySeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Route;
 
 uses(RefreshDatabase::class);
 
@@ -41,4 +42,24 @@ it('renders a useful Inertia page when a staff capability is missing', function 
             ->where('status', 403)
             ->where('title', 'This action is unauthorized.')
         );
+});
+
+it('keeps shared props available when a stale form token expires', function (): void {
+    Route::post('/test-expired', fn () => abort(419));
+
+    $response = $this->withHeaders([
+        'X-Inertia' => 'true',
+        'X-Requested-With' => 'XMLHttpRequest',
+        'Accept' => 'text/html, application/xhtml+xml',
+    ])->post('/test-expired', [
+        '_token' => 'stale-token',
+    ]);
+
+    $page = json_decode($response->getContent(), true);
+
+    expect($response->status())->toBe(419)
+        ->and($page['component'])->toBe('Errors/Http')
+        ->and($page['props']['status'])->toBe(419)
+        ->and($page['props']['app']['locale'])->toBe('en')
+        ->and($page['props']['auth']['user'])->toBeNull();
 });

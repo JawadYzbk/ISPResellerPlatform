@@ -1,5 +1,5 @@
 import { Link, usePage } from '@inertiajs/react';
-import { ArrowLeft, Home } from 'lucide-react';
+import { ArrowLeft, Home, RefreshCw } from 'lucide-react';
 
 import AuthLayout from '@/layouts/AuthLayout';
 import { createTranslator } from '@/lib/i18n';
@@ -13,8 +13,9 @@ type Props = {
 
 export default function HttpError({ status, title, message }: Props) {
     const { props } = usePage<PageProps>();
-    const { auth } = props;
-    const t = createTranslator(props.app.locale);
+    const auth = props.auth ?? { user: null, isPlatformOperator: false };
+    const app = props.app ?? { locale: 'en', direction: 'ltr' as const };
+    const t = createTranslator(app.locale);
     const destination = auth.user === null ? '/login' : auth.isPlatformOperator ? '/admin/tenants' : '/dashboard';
     const destinationLabel =
         auth.user === null
@@ -35,6 +36,12 @@ export default function HttpError({ status, title, message }: Props) {
                 </div>
 
                 <div className="flex flex-wrap gap-3">
+                    {status === 419 && (
+                        <button type="button" className="button-primary" onClick={() => window.location.reload()}>
+                            <RefreshCw size={16} />
+                            {t('error.refresh')}
+                        </button>
+                    )}
                     <Link href={destination} className="button-primary">
                         <Home size={16} />
                         {destinationLabel}

@@ -3517,6 +3517,14 @@ const accessibilityMessages: Record<Exclude<Locale, 'en'>, Messages> = {
     },
 };
 
+const englishMessages: Messages = {
+    'error.title': 'Error',
+    'error.go_to_sign_in': 'Go to sign in',
+    'error.back_to_tenants': 'Back to tenants',
+    'error.go_back': 'Go back',
+    'error.refresh': 'Refresh page',
+};
+
 const messages: Record<Exclude<Locale, 'en'>, Messages> = {
     ar: {
         'Rate for 1 unit': 'سعر وحدة واحدة',
@@ -3808,6 +3816,7 @@ const messages: Record<Exclude<Locale, 'en'>, Messages> = {
         'error.go_to_sign_in': 'الانتقال إلى تسجيل الدخول',
         'error.back_to_tenants': 'العودة إلى المستأجرين',
         'error.go_back': 'العودة',
+        'error.refresh': 'تحديث الصفحة',
         'setup.workspace_launch': 'إطلاق مساحة العمل',
         'setup.subtitle':
             'أعد مساحة العمل بالترتيب الذي يحتاجه المشغلون. لا تُعتبر جاهزة حتى تنجح فحوصات المستأجر المباشرة أدناه.',
@@ -5728,6 +5737,7 @@ const messages: Record<Exclude<Locale, 'en'>, Messages> = {
         'error.go_to_sign_in': 'Accéder à la connexion',
         'error.back_to_tenants': 'Retour aux locataires',
         'error.go_back': 'Retour',
+        'error.refresh': 'Actualiser la page',
         'setup.workspace_launch': 'Lancement de l’espace',
         'setup.subtitle':
             'Configurez l’espace dans l’ordre nécessaire aux opérateurs. Il n’est prêt que lorsque les contrôles du locataire en direct ci-dessous réussissent.',
@@ -7777,6 +7787,7 @@ export function normalizeLocale(locale: string): Locale {
 export function createTranslator(locale: string) {
     const normalizedLocale = normalizeLocale(locale);
     const dictionary = {
+        ...(normalizedLocale === 'en' ? englishMessages : {}),
         ...(accessibilityMessages[normalizedLocale as Exclude<Locale, 'en'>] ?? {}),
         ...(messages[normalizedLocale as Exclude<Locale, 'en'>] ?? {}),
     };
