@@ -30,6 +30,16 @@ type Props = {
 function CollectorTerritoryCard({ collector, zones }: { collector: Collector; zones: Zone[] }) {
     const { props } = usePage<PageProps>();
     const t = createTranslator(props.app.locale);
+    const fieldA11y = (id: string, error?: string) => ({
+        'aria-invalid': Boolean(error),
+        'aria-describedby': error ? `${id}-error` : undefined,
+    });
+    const fieldError = (id: string, error?: string) =>
+        error ? (
+            <p id={`${id}-error`} className="field-error mt-3" role="alert">
+                {t(error)}
+            </p>
+        ) : null;
     const form = useForm({
         all_zones: collector.all_zones,
         zone_ids: collector.zone_ids,
@@ -64,7 +74,9 @@ function CollectorTerritoryCard({ collector, zones }: { collector: Collector; zo
 
             <label className="mt-5 flex items-start gap-3 rounded-xl border border-line bg-sand/50 p-4">
                 <input
+                    id={`collector-${collector.id}-all-zones`}
                     type="checkbox"
+                    {...fieldA11y(`collector-${collector.id}-all-zones`, form.errors.all_zones)}
                     checked={form.data.all_zones}
                     onChange={(event) => form.setData('all_zones', event.target.checked)}
                     className="mt-0.5"
@@ -76,9 +88,15 @@ function CollectorTerritoryCard({ collector, zones }: { collector: Collector; zo
                     </span>
                 </span>
             </label>
+            {fieldError(`collector-${collector.id}-all-zones`, form.errors.all_zones)}
 
             {!form.data.all_zones && (
-                <fieldset className="mt-5">
+                <fieldset
+                    id={`collector-${collector.id}-zones`}
+                    className="mt-5"
+                    aria-invalid={Boolean(form.errors.zone_ids)}
+                    aria-describedby={form.errors.zone_ids ? `collector-${collector.id}-zones-error` : undefined}
+                >
                     <legend className="field-label">{t('territories.assigned_zones')}</legend>
                     <div className="mt-2 grid max-h-72 gap-2 overflow-y-auto rounded-xl border border-line p-3 sm:grid-cols-2">
                         {zones.map((zone) => (
@@ -87,6 +105,7 @@ function CollectorTerritoryCard({ collector, zones }: { collector: Collector; zo
                                 className="flex items-start gap-3 rounded-lg px-3 py-2.5 hover:bg-sand"
                             >
                                 <input
+                                    id={`collector-${collector.id}-zone-${zone.id}`}
                                     type="checkbox"
                                     className="mt-0.5"
                                     checked={form.data.zone_ids.includes(zone.id)}
@@ -113,8 +132,7 @@ function CollectorTerritoryCard({ collector, zones }: { collector: Collector; zo
                 </fieldset>
             )}
 
-            {form.errors.all_zones && <p className="field-error mt-3" role="alert">{t(form.errors.all_zones)}</p>}
-            {form.errors.zone_ids && <p className="field-error mt-3" role="alert">{t(form.errors.zone_ids)}</p>}
+            {fieldError(`collector-${collector.id}-zones`, form.errors.zone_ids)}
         </form>
     );
 }
