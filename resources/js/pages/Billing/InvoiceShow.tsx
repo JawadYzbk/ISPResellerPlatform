@@ -64,6 +64,16 @@ export default function InvoiceShowPage({
 }) {
    const { props } = usePage<PageProps>();
    const t = createTranslator(props.app.locale);
+   const fieldA11y = (id: string, error?: string) => ({
+       'aria-invalid': Boolean(error),
+       'aria-describedby': error ? `${id}-error` : undefined,
+   });
+   const fieldError = (id: string, error?: string) =>
+       error ? (
+           <p id={`${id}-error`} className="field-error" role="alert">
+               {t(error)}
+           </p>
+       ) : null;
     const methodLabel = (method: string) =>
         t(
             method === 'bank_transfer'
@@ -211,24 +221,28 @@ export default function InvoiceShowPage({
                             <label>
                                 <span className="field-label">{t('Amount (minor units)')}</span>
                                 <input
+                                    id="invoice-credit-amount"
                                     type="number"
                                     min="1"
                                     className="field"
+                                    {...fieldA11y('invoice-credit-amount', creditForm.errors.amount)}
                                     value={creditForm.data.amount}
                                     onChange={(event) => creditForm.setData('amount', event.target.value)}
                                     placeholder="1000"
                                 />
-                                {creditForm.errors.amount && <p className="field-error" role="alert">{t(creditForm.errors.amount)}</p>}
+                                {fieldError('invoice-credit-amount', creditForm.errors.amount)}
                             </label>
                             <label>
                                 <span className="field-label">{t('Reason')}</span>
                                 <textarea
+                                    id="invoice-credit-reason"
                                     className="field min-h-20"
+                                    {...fieldA11y('invoice-credit-reason', creditForm.errors.reason)}
                                     value={creditForm.data.reason}
                                     onChange={(event) => creditForm.setData('reason', event.target.value)}
                                     placeholder={t('Service interruption')}
                                 />
-                                {creditForm.errors.reason && <p className="field-error" role="alert">{t(creditForm.errors.reason)}</p>}
+                                {fieldError('invoice-credit-reason', creditForm.errors.reason)}
                             </label>
                             <button type="submit" className="button-secondary w-full" disabled={creditForm.processing}>
                                 {t('Issue credit note')}
