@@ -137,6 +137,16 @@ export default function WorkOrderShowPage({
 }: Props) {
     const page = usePage<PageProps>();
     const t = createTranslator(page.props.app.locale);
+    const fieldA11y = (id: string, error?: string) => ({
+        'aria-invalid': Boolean(error),
+        'aria-describedby': error ? `${id}-error` : undefined,
+    });
+    const fieldError = (id: string, error?: string) =>
+        error ? (
+            <p id={`${id}-error`} className="field-error" role="alert">
+                {t(error)}
+            </p>
+        ) : null;
     const installationNeedsAcceptance =
         workOrder.installation.enabled &&
         workOrder.installation.requires_acceptance &&
@@ -323,14 +333,14 @@ export default function WorkOrderShowPage({
                                         {t('Tenant local time')} ({timezone})
                                     </span>
                                     <input
+                                        id="work-order-scheduled-at"
                                         type="datetime-local"
                                         className="field"
+                                        {...fieldA11y('work-order-scheduled-at', scheduleForm.errors.scheduled_at)}
                                         value={scheduleForm.data.scheduled_at}
                                         onChange={(event) => scheduleForm.setData('scheduled_at', event.target.value)}
                                     />
-                                    {scheduleForm.errors.scheduled_at && (
-                                        <p className="field-error" role="alert">{t(scheduleForm.errors.scheduled_at)}</p>
-                                    )}
+                                    {fieldError('work-order-scheduled-at', scheduleForm.errors.scheduled_at)}
                                 </label>
                                 <button
                                     type="submit"
@@ -365,7 +375,9 @@ export default function WorkOrderShowPage({
                                     <label>
                                         <span className="field-label">{t('Building')}</span>
                                         <ResponsiveSelect
+                                            id="work-order-building"
                                             className="field"
+                                            {...fieldA11y('work-order-building', installationForm.errors.network_building_id)}
                                             value={installationForm.data.network_building_id}
                                             onChange={(event) => {
                                                 installationForm.setData('network_building_id', event.target.value);
@@ -380,14 +392,14 @@ export default function WorkOrderShowPage({
                                                 </option>
                                             ))}
                                         </ResponsiveSelect>
-                                        {installationForm.errors.network_building_id && (
-                                            <p className="field-error" role="alert">{t(installationForm.errors.network_building_id)}</p>
-                                        )}
+                                        {fieldError('work-order-building', installationForm.errors.network_building_id)}
                                     </label>
                                     <label>
                                         <span className="field-label">{t('Distribution box')}</span>
                                         <ResponsiveSelect
+                                            id="work-order-distribution-box"
                                             className="field"
+                                            {...fieldA11y('work-order-distribution-box', installationForm.errors.distribution_box_id)}
                                             value={installationForm.data.distribution_box_id}
                                             disabled={!selectedBuilding}
                                             onChange={(event) => {
@@ -402,17 +414,17 @@ export default function WorkOrderShowPage({
                                                 </option>
                                             ))}
                                         </ResponsiveSelect>
-                                        {installationForm.errors.distribution_box_id && (
-                                            <p className="field-error" role="alert">{t(installationForm.errors.distribution_box_id)}</p>
-                                        )}
+                                        {fieldError('work-order-distribution-box', installationForm.errors.distribution_box_id)}
                                     </label>
                                     <label>
                                         <span className="field-label">{t('Network port')}</span>
                                         <input
+                                            id="work-order-network-port"
                                             className="field tabular-nums"
                                             type="number"
                                             min={1}
                                             max={selectedBox?.capacity_ports}
+                                            {...fieldA11y('work-order-network-port', installationForm.errors.network_port)}
                                             value={installationForm.data.network_port}
                                             onChange={(event) =>
                                                 installationForm.setData('network_port', event.target.value)
@@ -422,9 +434,7 @@ export default function WorkOrderShowPage({
                                             }
                                             disabled={!selectedBox}
                                         />
-                                        {installationForm.errors.network_port && (
-                                            <p className="field-error" role="alert">{t(installationForm.errors.network_port)}</p>
-                                        )}
+                                        {fieldError('work-order-network-port', installationForm.errors.network_port)}
                                     </label>
                                     <label>
                                         <span className="field-label">
@@ -432,16 +442,16 @@ export default function WorkOrderShowPage({
                                             <span className="font-normal text-muted">({t('required for fiber')})</span>
                                         </span>
                                         <input
+                                            id="work-order-onu-serial"
                                             className="field"
+                                            {...fieldA11y('work-order-onu-serial', installationForm.errors.onu_serial)}
                                             value={installationForm.data.onu_serial}
                                             onChange={(event) =>
                                                 installationForm.setData('onu_serial', event.target.value)
                                             }
                                             placeholder={t('Scan or enter the ONU serial')}
                                         />
-                                        {installationForm.errors.onu_serial && (
-                                            <p className="field-error" role="alert">{t(installationForm.errors.onu_serial)}</p>
-                                        )}
+                                        {fieldError('work-order-onu-serial', installationForm.errors.onu_serial)}
                                     </label>
                                 </div>
 
@@ -454,7 +464,9 @@ export default function WorkOrderShowPage({
                                         <label>
                                             <span className="field-label">{t('Unit / apartment')}</span>
                                             <input
+                                                id="work-order-unit-label"
                                                 className="field"
+                                                {...fieldA11y('work-order-unit-label', installationErrors['survey.unit_label'])}
                                                 value={installationForm.data.survey.unit_label}
                                                 onChange={(event) =>
                                                     installationForm.setData('survey', {
@@ -464,11 +476,14 @@ export default function WorkOrderShowPage({
                                                 }
                                                 placeholder={t('Building 2 · Apt 301')}
                                             />
+                                            {fieldError('work-order-unit-label', installationErrors['survey.unit_label'])}
                                         </label>
                                         <label>
                                             <span className="field-label">{t('Power available')}</span>
                                             <ResponsiveSelect
+                                                id="work-order-power-available"
                                                 className="field"
+                                                {...fieldA11y('work-order-power-available', installationErrors['survey.power_available'])}
                                                 value={installationForm.data.survey.power_available}
                                                 onChange={(event) =>
                                                     installationForm.setData('survey', {
@@ -481,11 +496,14 @@ export default function WorkOrderShowPage({
                                                 <option value="yes">{t('Yes')}</option>
                                                 <option value="no">{t('No')}</option>
                                             </ResponsiveSelect>
+                                            {fieldError('work-order-power-available', installationErrors['survey.power_available'])}
                                         </label>
                                         <label>
                                             <span className="field-label">{t('Cable route')}</span>
                                             <input
+                                                id="work-order-cable-route"
                                                 className="field"
+                                                {...fieldA11y('work-order-cable-route', installationErrors['survey.cable_route'])}
                                                 value={installationForm.data.survey.cable_route}
                                                 onChange={(event) =>
                                                     installationForm.setData('survey', {
@@ -495,11 +513,14 @@ export default function WorkOrderShowPage({
                                                 }
                                                 placeholder={t('Riser · east facade · 35 m')}
                                             />
+                                            {fieldError('work-order-cable-route', installationErrors['survey.cable_route'])}
                                         </label>
                                         <label>
                                             <span className="field-label">{t('Access notes')}</span>
                                             <input
+                                                id="work-order-access-notes"
                                                 className="field"
+                                                {...fieldA11y('work-order-access-notes', installationErrors['survey.access_notes'])}
                                                 value={installationForm.data.survey.access_notes}
                                                 onChange={(event) =>
                                                     installationForm.setData('survey', {
@@ -509,6 +530,7 @@ export default function WorkOrderShowPage({
                                                 }
                                                 placeholder={t('Caretaker contact or access instructions')}
                                             />
+                                            {fieldError('work-order-access-notes', installationErrors['survey.access_notes'])}
                                         </label>
                                     </div>
                                 </div>
@@ -574,15 +596,15 @@ export default function WorkOrderShowPage({
                                                 <span className="font-normal text-muted">({t('optional')})</span>
                                             </span>
                                             <textarea
+                                                id="work-order-acceptance-note"
                                                 className="field min-h-20 resize-y"
+                                                {...fieldA11y('work-order-acceptance-note', acceptanceErrors.note)}
                                                 value={acceptanceForm.data.note}
                                                 onChange={(event) => acceptanceForm.setData('note', event.target.value)}
                                                 placeholder={t('Customer confirmed service handover')}
                                             />
                                         </label>
-                                        {acceptanceErrors.activation && (
-                                            <p className="field-error" role="alert">{acceptanceErrors.activation}</p>
-                                        )}
+                                        {fieldError('work-order-acceptance-note', acceptanceErrors.note ?? acceptanceErrors.activation)}
                                         <button
                                             type="submit"
                                             className="button-primary"
@@ -659,7 +681,9 @@ export default function WorkOrderShowPage({
                                     <label>
                                         <span className="field-label">{t('Material')}</span>
                                         <ResponsiveSelect
+                                            id="work-order-material-item"
                                             className="field"
+                                            {...fieldA11y('work-order-material-item', materialForm.errors.inventory_item_id)}
                                             value={materialForm.data.inventory_item_id}
                                             onChange={(event) =>
                                                 materialForm.setData('inventory_item_id', event.target.value)
@@ -675,11 +699,14 @@ export default function WorkOrderShowPage({
                                                 </option>
                                             ))}
                                         </ResponsiveSelect>
+                                        {fieldError('work-order-material-item', materialForm.errors.inventory_item_id)}
                                     </label>
                                     <label>
                                         <span className="field-label">{t('Warehouse')}</span>
                                         <ResponsiveSelect
+                                            id="work-order-material-warehouse"
                                             className="field"
+                                            {...fieldA11y('work-order-material-warehouse', materialForm.errors.warehouse_id)}
                                             value={materialForm.data.warehouse_id}
                                             onChange={(event) =>
                                                 materialForm.setData('warehouse_id', event.target.value)
@@ -700,36 +727,34 @@ export default function WorkOrderShowPage({
                                                     </option>
                                                 ))}
                                         </ResponsiveSelect>
+                                        {fieldError('work-order-material-warehouse', materialForm.errors.warehouse_id)}
                                     </label>
                                     <label>
                                         <span className="field-label">{t('Quantity')}</span>
                                         <input
+                                            id="work-order-material-quantity"
                                             className="field"
                                             inputMode="decimal"
+                                            {...fieldA11y('work-order-material-quantity', materialForm.errors.quantity)}
                                             value={materialForm.data.quantity}
                                             onChange={(event) => materialForm.setData('quantity', event.target.value)}
                                             placeholder="0.000"
                                         />
-                                        {materialForm.errors.quantity && (
-                                            <p className="field-error" role="alert">{t(materialForm.errors.quantity)}</p>
-                                        )}
+                                        {fieldError('work-order-material-quantity', materialForm.errors.quantity)}
                                     </label>
                                     <label>
                                         <span className="field-label">{t('Note')}</span>
                                         <input
+                                            id="work-order-material-note"
                                             className="field"
+                                            {...fieldA11y('work-order-material-note', materialForm.errors.note)}
                                             value={materialForm.data.note}
                                             onChange={(event) => materialForm.setData('note', event.target.value)}
                                             placeholder={t('Optional site note')}
                                         />
+                                        {fieldError('work-order-material-note', materialForm.errors.note)}
                                     </label>
                                 </div>
-                                {materialForm.errors.inventory_item_id && (
-                                    <p className="field-error" role="alert">{t(materialForm.errors.inventory_item_id)}</p>
-                                )}
-                                {materialForm.errors.warehouse_id && (
-                                    <p className="field-error" role="alert">{t(materialForm.errors.warehouse_id)}</p>
-                                )}
                                 <button type="submit" className="button-secondary" disabled={materialForm.processing}>
                                     {t('Record material')}
                                 </button>
@@ -747,7 +772,9 @@ export default function WorkOrderShowPage({
                                     <label key={key}>
                                         <span className="field-label capitalize">{enumLabel(key, t)}</span>
                                         <input
+                                            id={`work-order-reading-${key}`}
                                             className="field"
+                                            {...fieldA11y(`work-order-reading-${key}`, readingsForm.errors[`readings.${key}`])}
                                             value={readingsForm.data.readings[key]}
                                             onChange={(event) =>
                                                 readingsForm.setData('readings', {
@@ -759,9 +786,7 @@ export default function WorkOrderShowPage({
                                     </label>
                                 ))}
                             </div>
-                            {readingsForm.errors.readings && (
-                                <p className="field-error" role="alert">{t(readingsForm.errors.readings)}</p>
-                            )}
+                            {fieldError('work-order-readings', readingsForm.errors.readings)}
                             <button type="submit" className="button-secondary" disabled={readingsForm.processing}>
                                 {t('Save readings')}
                             </button>
@@ -790,19 +815,17 @@ export default function WorkOrderShowPage({
                                     <label>
                                     <span className="field-label">{t('Signer name')}</span>
                                         <input
+                                            id="work-order-signer-name"
                                             className="field"
+                                            {...fieldA11y('work-order-signer-name', signatureForm.errors.signer_name)}
                                             value={signatureForm.data.signer_name}
                                             onChange={(event) =>
                                                 signatureForm.setData('signer_name', event.target.value)
                                             }
                                         />
-                                        {signatureForm.errors.signer_name && (
-                                            <p className="field-error" role="alert">{t(signatureForm.errors.signer_name)}</p>
-                                        )}
+                                        {fieldError('work-order-signer-name', signatureForm.errors.signer_name)}
                                     </label>
-                                    {signatureForm.errors.file && (
-                                        <p className="field-error" role="alert">{t(signatureForm.errors.file)}</p>
-                                    )}
+                                    {fieldError('work-order-signature-file', signatureForm.errors.file)}
                                     <button
                                         type="submit"
                                         className="button-secondary"
