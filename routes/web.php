@@ -56,7 +56,9 @@ use App\Http\Controllers\Web\WorkOrderOperationsController;
 use App\Http\Controllers\Web\WorkspaceSearchController;
 use App\Models\User;
 use App\Support\WorkspacePageCatalog;
+use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Route;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 Route::get('/', function (WorkspacePageCatalog $pages) {
     $user = auth()->user();
@@ -68,12 +70,16 @@ Route::get('/', function (WorkspacePageCatalog $pages) {
     return redirect()->to($pages->defaultDestination($user));
 });
 
-Route::get('/docs/api', function () {
+Route::get('/docs/api', function (): View {
+    return view('docs.api');
+})->name('docs.api');
+
+Route::get('/docs/api/openapi.yaml', function (): BinaryFileResponse {
     return response()->file(base_path('openapi/isp-platform-v1.yaml'), [
         'Content-Type' => 'application/yaml; charset=UTF-8',
         'Content-Disposition' => 'inline; filename="isp-platform-v1.yaml"',
     ]);
-})->name('docs.api');
+})->name('docs.api.spec');
 
 Route::prefix('portal/{tenant:slug}')->group(function (): void {
     Route::get('/', [PortalPageController::class, 'signIn'])->name('portal.sign-in');

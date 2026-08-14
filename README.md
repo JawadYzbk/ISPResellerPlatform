@@ -12,6 +12,7 @@
 <p align="center">
   <a href="#what-nexaisp-does">Features</a> |
   <a href="#integrations">Integrations</a> |
+  <a href="#api-documentation">API docs</a> |
   <a href="#screenshots">Screenshots</a> |
   <a href="#quick-start">Quick start</a>
 </p>
@@ -49,6 +50,15 @@ NexaISP is a tenant-aware ISP operations platform that connects subscriber CRM, 
 | **Laravel Reverb + Echo** | Optional realtime updates for operational queues and network state. |
 | **Redis, database queues, and S3-compatible storage** | Production-ready cache/queue options and private media, backup, receipt, and tenant-logo storage. |
 | **Webhook adapters** | Optional SMS, FCM, external network, monitoring, and delivery integrations through signed webhooks. |
+
+## API documentation
+
+The versioned OpenAPI 3.1 contract is presented through a branded [Stoplight Elements](https://stoplight.io/open-source/elements) portal:
+
+- Interactive docs: `GET /docs/api`
+- Raw contract: `GET /docs/api/openapi.yaml`
+
+The portal reads the checked-in [`openapi/isp-platform-v1.yaml`](openapi/isp-platform-v1.yaml), so the route inventory test fails when an API endpoint and its contract drift apart.
 
 ## Multi-tenancy and super admin
 
