@@ -39,6 +39,11 @@ final class SecurityHeaders
             ];
         }
 
+        if ($request->routeIs('docs.api')) {
+            $styleSources[] = 'https://unpkg.com';
+            $scriptSources[] = 'https://unpkg.com';
+        }
+
         $reverbOptions = config('broadcasting.connections.reverb.options', []);
         $reverbHost = is_array($reverbOptions) && is_string($reverbOptions['host'] ?? null) ? trim($reverbOptions['host']) : '';
         if ($reverbHost !== '') {

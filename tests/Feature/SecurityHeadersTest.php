@@ -52,3 +52,11 @@ it('allows Stripe.js only when the Stripe payment driver is enabled', function (
         ->toContain('https://api.stripe.com')
         ->toContain('frame-src');
 });
+
+it('allows Stoplight assets only on the API documentation route', function (): void {
+    $docsPolicy = $this->get('/docs/api')->headers->get('Content-Security-Policy');
+    $appPolicy = $this->get('/login')->headers->get('Content-Security-Policy');
+
+    expect($docsPolicy)->toContain('https://unpkg.com')
+        ->and($appPolicy)->not->toContain('https://unpkg.com');
+});
