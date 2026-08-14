@@ -86,6 +86,16 @@ function PriceBookEditorRow({
 }) {
     const { props } = usePage<PageProps>();
     const t = createTranslator(props.app.locale);
+    const fieldA11y = (id: string, error?: string) => ({
+        'aria-invalid': Boolean(error),
+        'aria-describedby': error ? `${id}-error` : undefined,
+    });
+    const fieldError = (id: string, error?: string) =>
+        error ? (
+            <p id={`${id}-error`} className="field-error" role="alert">
+                {t(error)}
+            </p>
+        ) : null;
     const form = useForm({
         plan_id: plan.id,
         currency: plan.currency,
@@ -127,69 +137,81 @@ function PriceBookEditorRow({
             <label>
                 <span className="field-label">{t('partner.commercial.buy')}</span>
                 <input
+                    id={`partner-price-buy-${plan.id}`}
                     className="field"
                     type="number"
                     min="0"
+                    {...fieldA11y(`partner-price-buy-${plan.id}`, form.errors.buy_amount_minor)}
                     value={form.data.buy_amount_minor}
                     onChange={(event) => form.setData('buy_amount_minor', event.target.value)}
                     required
                 />
-                {form.errors.buy_amount_minor && <p className="field-error" role="alert">{t(form.errors.buy_amount_minor)}</p>}
+                {fieldError(`partner-price-buy-${plan.id}`, form.errors.buy_amount_minor)}
             </label>
             <label>
                 <span className="field-label">{t('partner.commercial.sell')}</span>
                 <input
+                    id={`partner-price-sell-${plan.id}`}
                     className="field"
                     type="number"
                     min="0"
+                    {...fieldA11y(`partner-price-sell-${plan.id}`, form.errors.sell_amount_minor)}
                     value={form.data.sell_amount_minor}
                     onChange={(event) => form.setData('sell_amount_minor', event.target.value)}
                     required
                 />
-                {form.errors.sell_amount_minor && <p className="field-error" role="alert">{t(form.errors.sell_amount_minor)}</p>}
+                {fieldError(`partner-price-sell-${plan.id}`, form.errors.sell_amount_minor)}
             </label>
             <label>
                 <span className="field-label">{t('partner.commercial.floor')}</span>
                 <input
+                    id={`partner-price-floor-${plan.id}`}
                     className="field"
                     type="number"
                     min="0"
+                    {...fieldA11y(`partner-price-floor-${plan.id}`, form.errors.min_amount_minor)}
                     value={form.data.min_amount_minor}
                     onChange={(event) => form.setData('min_amount_minor', event.target.value)}
                 />
-                {form.errors.min_amount_minor && <p className="field-error" role="alert">{t(form.errors.min_amount_minor)}</p>}
+                {fieldError(`partner-price-floor-${plan.id}`, form.errors.min_amount_minor)}
             </label>
             <label>
                 <span className="field-label">{t('partner.commercial.ceiling')}</span>
                 <input
+                    id={`partner-price-ceiling-${plan.id}`}
                     className="field"
                     type="number"
                     min="0"
+                    {...fieldA11y(`partner-price-ceiling-${plan.id}`, form.errors.max_amount_minor)}
                     value={form.data.max_amount_minor}
                     onChange={(event) => form.setData('max_amount_minor', event.target.value)}
                 />
-                {form.errors.max_amount_minor && <p className="field-error" role="alert">{t(form.errors.max_amount_minor)}</p>}
+                {fieldError(`partner-price-ceiling-${plan.id}`, form.errors.max_amount_minor)}
             </label>
             <label>
                 <span className="field-label">{t('partner.commercial.currency')}</span>
                 <CurrencyCombobox
+                    id={`partner-price-currency-${plan.id}`}
                     className="field"
+                    {...fieldA11y(`partner-price-currency-${plan.id}`, form.errors.currency)}
                     value={form.data.currency}
                     currencies={currencies}
                     onChange={(value) => form.setData('currency', value)}
                 />
-                {form.errors.currency && <p className="field-error" role="alert">{t(form.errors.currency)}</p>}
+                {fieldError(`partner-price-currency-${plan.id}`, form.errors.currency)}
             </label>
             <label>
                 <span className="field-label">{t('partner.commercial.effective_from')}</span>
                 <input
+                    id={`partner-price-effective-from-${plan.id}`}
                     className="field"
                     type="date"
+                    {...fieldA11y(`partner-price-effective-from-${plan.id}`, form.errors.effective_from)}
                     value={form.data.effective_from}
                     onChange={(event) => form.setData('effective_from', event.target.value)}
                     required
                 />
-                {form.errors.effective_from && <p className="field-error" role="alert">{t(form.errors.effective_from)}</p>}
+                {fieldError(`partner-price-effective-from-${plan.id}`, form.errors.effective_from)}
             </label>
             <div className="flex items-end">
                 <button type="submit" className="button-primary w-full" disabled={form.processing}>
@@ -214,6 +236,16 @@ export default function Commercial({
 }: Props) {
     const { props } = usePage<PageProps>();
     const t = createTranslator(props.app.locale);
+    const fieldA11y = (id: string, error?: string) => ({
+        'aria-invalid': Boolean(error),
+        'aria-describedby': error ? `${id}-error` : undefined,
+    });
+    const fieldError = (id: string, error?: string) =>
+        error ? (
+            <p id={`${id}-error`} className="field-error" role="alert">
+                {t(error)}
+            </p>
+        ) : null;
     const [editOpen, setEditOpen] = useState(false);
     const form = useForm({
         name: '',
@@ -364,38 +396,45 @@ export default function Commercial({
                         <label>
                             <span className="field-label">{t('Name')}</span>
                             <input
+                                id="partner-create-name"
                                 className="field"
+                                {...fieldA11y('partner-create-name', form.errors.name)}
                                 value={form.data.name}
                                 onChange={(event) => form.setData('name', event.target.value)}
                             />
-                            {form.errors.name && <span className="field-error" role="alert">{t(form.errors.name)}</span>}
+                            {fieldError('partner-create-name', form.errors.name)}
                         </label>
                         <label>
                             <span className="field-label">{t('Code')}</span>
                             <input
+                                id="partner-create-code"
                                 className="field"
+                                {...fieldA11y('partner-create-code', form.errors.code)}
                                 value={form.data.code}
                                 onChange={(event) => form.setData('code', event.target.value)}
                             />
-                            {form.errors.code && <span className="field-error" role="alert">{t(form.errors.code)}</span>}
+                            {fieldError('partner-create-code', form.errors.code)}
                         </label>
                         <label>
                             <span className="field-label">{t('partner.commercial.currency')}</span>
                             <CurrencyCombobox
-                                id="partner_currency"
+                                id="partner-create-currency"
                                 className="field uppercase"
+                                {...fieldA11y('partner-create-currency', form.errors.currency)}
                                 value={form.data.currency}
                                 currencies={currencies}
                                 onChange={(value) => form.setData('currency', value)}
                             />
-                            {form.errors.currency && <span className="field-error" role="alert">{t(form.errors.currency)}</span>}
+                            {fieldError('partner-create-currency', form.errors.currency)}
                         </label>
                     </div>
                     <div className="grid gap-4 md:grid-cols-3">
                         <label>
                             <span className="field-label">{t('partner.commercial.parent_account')}</span>
                             <ResponsiveSelect
+                                id="partner-create-parent"
                                 className="field"
+                                {...fieldA11y('partner-create-parent', form.errors.parent_id)}
                                 value={form.data.parent_id}
                                 onChange={(event) => form.setData('parent_id', event.target.value)}
                             >
@@ -406,33 +445,33 @@ export default function Commercial({
                                     </option>
                                 ))}
                             </ResponsiveSelect>
-                            {form.errors.parent_id && <span className="field-error" role="alert">{t(form.errors.parent_id)}</span>}
+                            {fieldError('partner-create-parent', form.errors.parent_id)}
                         </label>
                         <label>
                             <span className="field-label">{t('partner.commercial.credit_limit')}</span>
                             <input
+                                id="partner-create-credit-limit"
                                 className="field"
                                 type="number"
                                 min="0"
+                                {...fieldA11y('partner-create-credit-limit', form.errors.credit_limit)}
                                 value={form.data.credit_limit}
                                 onChange={(event) => form.setData('credit_limit', Number(event.target.value))}
                             />
-                            {form.errors.credit_limit && (
-                                <span className="field-error" role="alert">{t(form.errors.credit_limit)}</span>
-                            )}
+                            {fieldError('partner-create-credit-limit', form.errors.credit_limit)}
                         </label>
                         <label>
                             <span className="field-label">{t('partner.commercial.low_balance_alert')}</span>
                             <input
+                                id="partner-create-low-balance"
                                 className="field"
                                 type="number"
                                 min="0"
+                                {...fieldA11y('partner-create-low-balance', form.errors.low_balance_threshold)}
                                 value={form.data.low_balance_threshold}
                                 onChange={(event) => form.setData('low_balance_threshold', Number(event.target.value))}
                             />
-                            {form.errors.low_balance_threshold && (
-                                <span className="field-error" role="alert">{t(form.errors.low_balance_threshold)}</span>
-                            )}
+                            {fieldError('partner-create-low-balance', form.errors.low_balance_threshold)}
                         </label>
                     </div>
                     <div className="flex justify-end">
@@ -462,66 +501,70 @@ export default function Commercial({
                             <label>
                                 <span className="field-label">{t('Name')}</span>
                                 <input
+                                    id="partner-edit-name"
                                     className="field"
+                                    {...fieldA11y('partner-edit-name', editForm.errors.name)}
                                     value={editForm.data.name}
                                     onChange={(event) => editForm.setData('name', event.target.value)}
                                     required
                                 />
-                                {editForm.errors.name && <span className="field-error" role="alert">{t(editForm.errors.name)}</span>}
+                                {fieldError('partner-edit-name', editForm.errors.name)}
                             </label>
                             <label>
                                 <span className="field-label">{t('Code')}</span>
                                 <input
+                                    id="partner-edit-code"
                                     className="field uppercase"
+                                    {...fieldA11y('partner-edit-code', editForm.errors.code)}
                                     value={editForm.data.code}
                                     onChange={(event) => editForm.setData('code', event.target.value)}
                                     required
                                 />
-                                {editForm.errors.code && <span className="field-error" role="alert">{t(editForm.errors.code)}</span>}
+                                {fieldError('partner-edit-code', editForm.errors.code)}
                             </label>
                             <label>
                                 <span className="field-label">{t('partner.commercial.credit_limit')}</span>
                                 <input
+                                    id="partner-edit-credit-limit"
                                     className="field"
                                     type="number"
                                     min="0"
+                                    {...fieldA11y('partner-edit-credit-limit', editForm.errors.credit_limit)}
                                     value={editForm.data.credit_limit}
                                     onChange={(event) => editForm.setData('credit_limit', Number(event.target.value))}
                                     required
                                 />
-                                {editForm.errors.credit_limit && (
-                                    <span className="field-error" role="alert">{t(editForm.errors.credit_limit)}</span>
-                                )}
+                                {fieldError('partner-edit-credit-limit', editForm.errors.credit_limit)}
                             </label>
                             <label>
                                 <span className="field-label">{t('partner.commercial.low_balance_alert')}</span>
                                 <input
+                                    id="partner-edit-low-balance"
                                     className="field"
                                     type="number"
                                     min="0"
+                                    {...fieldA11y('partner-edit-low-balance', editForm.errors.low_balance_threshold)}
                                     value={editForm.data.low_balance_threshold}
                                     onChange={(event) =>
                                         editForm.setData('low_balance_threshold', Number(event.target.value))
                                     }
                                     required
                                 />
-                                {editForm.errors.low_balance_threshold && (
-                                    <span className="field-error" role="alert">{t(editForm.errors.low_balance_threshold)}</span>
-                                )}
+                                {fieldError('partner-edit-low-balance', editForm.errors.low_balance_threshold)}
                             </label>
                             <label>
                                 <span className="field-label">{t('Status')}</span>
                                 <ResponsiveSelect
+                                    id="partner-edit-status"
                                     className="field"
+                                    {...fieldA11y('partner-edit-status', editForm.errors.status)}
                                     value={editForm.data.status}
                                     onChange={(event) => editForm.setData('status', event.target.value)}
                                 >
                                     <option value="active">{t('Active')}</option>
                                     <option value="suspended">{t('Suspended')}</option>
                                 </ResponsiveSelect>
-                                {editForm.errors.status && (
-                                    <span className="field-error" role="alert">{t(editForm.errors.status)}</span>
-                                )}
+                                {fieldError('partner-edit-status', editForm.errors.status)}
                             </label>
                             <div className="flex items-end gap-2 md:col-span-2 xl:col-span-5">
                                 <button type="submit" className="button-primary" disabled={editForm.processing}>
@@ -579,10 +622,12 @@ export default function Commercial({
                                         {t('Amount')} ({selectedPartner.wallet?.currency ?? selectedPartner.currency ?? 'USD'})
                                     </span>
                                     <input
+                                        id="partner-wallet-amount"
                                         className="field"
                                         type="number"
                                         inputMode="decimal"
                                         min="0"
+                                        {...fieldA11y('partner-wallet-amount', walletForm.errors.amount)}
                                         step={
                                             currencyFractionDigits(
                                                 selectedPartner.wallet?.currency ?? selectedPartner.currency ?? 'USD',
@@ -594,9 +639,7 @@ export default function Commercial({
                                         onChange={(event) => walletForm.setData('amount', event.target.value)}
                                         required
                                     />
-                                    {walletForm.errors.amount && (
-                                        <p className="field-error" role="alert">{t(walletForm.errors.amount)}</p>
-                                    )}
+                                    {fieldError('partner-wallet-amount', walletForm.errors.amount)}
                                 </label>
                                 <button type="submit" className="button-primary mt-4" disabled={walletForm.processing}>
                                     <Plus size={15} /> {t('partner.commercial.fund_wallet')}
@@ -613,8 +656,10 @@ export default function Commercial({
                                     <label>
                                         <span className="field-label">{t('From')}</span>
                                         <input
+                                            id="partner-settlement-from"
                                             className="field"
                                             type="date"
+                                            {...fieldA11y('partner-settlement-from', settlementForm.errors.period_start)}
                                             value={settlementForm.data.period_start}
                                             onChange={(event) =>
                                                 settlementForm.setData('period_start', event.target.value)
@@ -625,8 +670,10 @@ export default function Commercial({
                                     <label>
                                         <span className="field-label">{t('Through')}</span>
                                         <input
+                                            id="partner-settlement-through"
                                             className="field"
                                             type="date"
+                                            {...fieldA11y('partner-settlement-through', settlementForm.errors.period_end)}
                                             value={settlementForm.data.period_end}
                                             onChange={(event) =>
                                                 settlementForm.setData('period_end', event.target.value)
@@ -635,15 +682,9 @@ export default function Commercial({
                                         />
                                     </label>
                                 </div>
-                                {(settlementForm.errors.period_start ||
-                                    settlementForm.errors.period_end ||
-                                    settlementForm.errors.currency) && (
-                                    <p className="field-error" role="alert">
-                                        {t(settlementForm.errors.period_start ??
-                                            settlementForm.errors.period_end ??
-                                            settlementForm.errors.currency ?? '')}
-                                    </p>
-                                )}
+                                    {fieldError('partner-settlement-from', settlementForm.errors.period_start)}
+                                    {fieldError('partner-settlement-through', settlementForm.errors.period_end)}
+                                    {fieldError('partner-settlement-currency', settlementForm.errors.currency)}
                                 <button
                                     type="submit"
                                     className="button-primary mt-4"
