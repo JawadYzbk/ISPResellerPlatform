@@ -126,7 +126,9 @@ function PriceBookEditorRow({
                 <p className="font-semibold">{plan.name}</p>
                 <p className="mt-1 text-xs text-muted">
                     {plan.duration_days} {t('partner.commercial.days')} · {t('partner.commercial.base')}{' '}
-                    {plan.base_amount_minor === null ? t('partner.commercial.not_set') : formatMoney(plan.base_amount_minor, plan.currency)}
+                    {plan.base_amount_minor === null
+                        ? t('partner.commercial.not_set')
+                        : formatMoney(plan.base_amount_minor, plan.currency)}
                 </p>
                 {plan.override && (
                     <p className="mt-1 text-xs font-semibold text-brand">
@@ -387,9 +389,7 @@ export default function Commercial({
                         </div>
                         <div>
                             <h2 className="section-title">{t('partner.commercial.add_account')}</h2>
-                            <p className="mt-1 text-sm text-muted">
-                                {t('partner.commercial.add_account_description')}
-                            </p>
+                            <p className="mt-1 text-sm text-muted">{t('partner.commercial.add_account_description')}</p>
                         </div>
                     </div>
                     <div className="grid gap-4 md:grid-cols-3">
@@ -486,9 +486,7 @@ export default function Commercial({
                     <div className="flex items-start justify-between gap-4">
                         <div>
                             <p className="section-title">{t('partner.commercial.partner_account')}</p>
-                            <p className="mt-1 text-sm text-muted">
-                                {t('partner.commercial.account_description')}
-                            </p>
+                            <p className="mt-1 text-sm text-muted">{t('partner.commercial.account_description')}</p>
                         </div>
                         {!editOpen && (
                             <button type="button" className="button-quiet" onClick={startEdit}>
@@ -590,10 +588,8 @@ export default function Commercial({
                             <WalletCards size={19} />
                         </div>
                         <div>
-                        <h2 className="section-title">{t('partner.commercial.wallet_operations')}</h2>
-                            <p className="mt-1 text-sm text-muted">
-                                {t('partner.commercial.wallet_description')}
-                            </p>
+                            <h2 className="section-title">{t('partner.commercial.wallet_operations')}</h2>
+                            <p className="mt-1 text-sm text-muted">{t('partner.commercial.wallet_description')}</p>
                         </div>
                     </div>
                     <div className="mt-5 grid gap-4 lg:grid-cols-[0.8fr_1.2fr_1.2fr]">
@@ -619,7 +615,8 @@ export default function Commercial({
                                 <p className="mt-1 text-xs text-muted">{t('partner.commercial.fund_description')}</p>
                                 <label className="mt-4 block">
                                     <span className="field-label">
-                                        {t('Amount')} ({selectedPartner.wallet?.currency ?? selectedPartner.currency ?? 'USD'})
+                                        {t('Amount')} (
+                                        {selectedPartner.wallet?.currency ?? selectedPartner.currency ?? 'USD'})
                                     </span>
                                     <input
                                         id="partner-wallet-amount"
@@ -659,7 +656,10 @@ export default function Commercial({
                                             id="partner-settlement-from"
                                             className="field"
                                             type="date"
-                                            {...fieldA11y('partner-settlement-from', settlementForm.errors.period_start)}
+                                            {...fieldA11y(
+                                                'partner-settlement-from',
+                                                settlementForm.errors.period_start,
+                                            )}
                                             value={settlementForm.data.period_start}
                                             onChange={(event) =>
                                                 settlementForm.setData('period_start', event.target.value)
@@ -673,7 +673,10 @@ export default function Commercial({
                                             id="partner-settlement-through"
                                             className="field"
                                             type="date"
-                                            {...fieldA11y('partner-settlement-through', settlementForm.errors.period_end)}
+                                            {...fieldA11y(
+                                                'partner-settlement-through',
+                                                settlementForm.errors.period_end,
+                                            )}
                                             value={settlementForm.data.period_end}
                                             onChange={(event) =>
                                                 settlementForm.setData('period_end', event.target.value)
@@ -682,9 +685,9 @@ export default function Commercial({
                                         />
                                     </label>
                                 </div>
-                                    {fieldError('partner-settlement-from', settlementForm.errors.period_start)}
-                                    {fieldError('partner-settlement-through', settlementForm.errors.period_end)}
-                                    {fieldError('partner-settlement-currency', settlementForm.errors.currency)}
+                                {fieldError('partner-settlement-from', settlementForm.errors.period_start)}
+                                {fieldError('partner-settlement-through', settlementForm.errors.period_end)}
+                                {fieldError('partner-settlement-currency', settlementForm.errors.currency)}
                                 <button
                                     type="submit"
                                     className="button-primary mt-4"
@@ -702,11 +705,11 @@ export default function Commercial({
                     <div className="flex items-start justify-between gap-4 px-6 py-5">
                         <div>
                             <p className="section-title">{t('partner.commercial.price_book')}</p>
-                            <p className="mt-1 text-sm text-muted">
-                                {t('partner.commercial.price_book_description')}
-                            </p>
+                            <p className="mt-1 text-sm text-muted">{t('partner.commercial.price_book_description')}</p>
                         </div>
-                        <span className="status-badge">{pricingPlans.length} {t('partner.commercial.plans')}</span>
+                        <span className="status-badge">
+                            {pricingPlans.length} {t('partner.commercial.plans')}
+                        </span>
                     </div>
                     {pricingPlans.length > 0 ? (
                         pricingPlans.map((plan) => (
@@ -742,7 +745,8 @@ export default function Commercial({
                                     <div>
                                         <p className="font-semibold">{item.name}</p>
                                         <p className="mt-1 text-xs text-muted">
-                                            {item.duration_days} {t('partner.commercial.days')} · {item.price_book ?? t('partner.commercial.default_price_book')}
+                                            {item.duration_days} {t('partner.commercial.days')} ·{' '}
+                                            {item.price_book ?? t('partner.commercial.default_price_book')}
                                         </p>
                                     </div>
                                     <div className="text-end">
@@ -751,7 +755,8 @@ export default function Commercial({
                                         </p>
                                         {showCost && item.buy_amount_minor !== null && (
                                             <p className="mt-1 text-xs text-muted">
-                                                {t('partner.commercial.buy')} {formatMoney(item.buy_amount_minor, item.currency)}
+                                                {t('partner.commercial.buy')}{' '}
+                                                {formatMoney(item.buy_amount_minor, item.currency)}
                                             </p>
                                         )}
                                     </div>
@@ -771,7 +776,9 @@ export default function Commercial({
                             </div>
                             <div>
                                 <h2 className="section-title">{t('partner.commercial.settlement_statements')}</h2>
-                                <p className="mt-1 text-sm text-muted">{t('partner.commercial.settlement_statements_description')}</p>
+                                <p className="mt-1 text-sm text-muted">
+                                    {t('partner.commercial.settlement_statements_description')}
+                                </p>
                             </div>
                         </div>
                         <div className="divide-y divide-line">
@@ -787,13 +794,17 @@ export default function Commercial({
                                     </div>
                                     <div className="mt-3 grid grid-cols-2 gap-3 text-sm">
                                         <div>
-                                            <p className="text-xs text-muted">{t('partner.commercial.closing_wallet')}</p>
+                                            <p className="text-xs text-muted">
+                                                {t('partner.commercial.closing_wallet')}
+                                            </p>
                                             <p className="mt-1 font-semibold">
                                                 {formatMoney(settlement.closing_amount, settlement.currency)}
                                             </p>
                                         </div>
                                         <div>
-                                            <p className="text-xs text-muted">{t('partner.commercial.commission_due')}</p>
+                                            <p className="text-xs text-muted">
+                                                {t('partner.commercial.commission_due')}
+                                            </p>
                                             <p className="mt-1 font-semibold">
                                                 {formatMoney(settlement.due_amount, settlement.currency)}
                                             </p>
@@ -820,7 +831,13 @@ export default function Commercial({
                                             {settlement.status === 'approved' && (
                                                 <ConfirmDialog
                                                     title={t('partner.commercial.pay_statement_title')}
-                                                    description={t('partner.commercial.post_approved') + ' ' + formatMoney(settlement.due_amount, settlement.currency) + ' ' + t('partner.commercial.to_tenant_ledger')}
+                                                    description={
+                                                        t('partner.commercial.post_approved') +
+                                                        ' ' +
+                                                        formatMoney(settlement.due_amount, settlement.currency) +
+                                                        ' ' +
+                                                        t('partner.commercial.to_tenant_ledger')
+                                                    }
                                                     confirmLabel={t('partner.commercial.pay_settlement')}
                                                     onConfirm={() => actOnSettlement(settlement.id, 'pay')}
                                                 >
@@ -834,7 +851,9 @@ export default function Commercial({
                                                 </ConfirmDialog>
                                             )}
                                             {settlementActionForm.errors.status && (
-                                                <p className="field-error" role="alert">{t(settlementActionForm.errors.status)}</p>
+                                                <p className="field-error" role="alert">
+                                                    {t(settlementActionForm.errors.status)}
+                                                </p>
                                             )}
                                         </div>
                                     )}

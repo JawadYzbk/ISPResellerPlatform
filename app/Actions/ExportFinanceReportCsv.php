@@ -22,7 +22,7 @@ final readonly class ExportFinanceReportCsv implements Action
         fputcsv($stream, ['to', '', $report['to']]);
         fputcsv($stream, ['invoice_count', '', $report['invoice_count']]);
         fputcsv($stream, ['payment_count', '', $report['payment_count']]);
-        foreach (['invoiced_by_currency', 'collected_by_currency', 'customer_balances_by_currency', 'outstanding_by_currency'] as $metric) {
+        foreach (['gross_invoiced_by_currency', 'credited_by_currency', 'net_invoiced_by_currency', 'collected_by_currency', 'current_customer_balances_by_currency', 'outstanding_by_currency'] as $metric) {
             foreach ($report[$metric] as $currency => $amount) {
                 fputcsv($stream, [$metric, $currency, $amount]);
             }
@@ -48,8 +48,14 @@ final readonly class ExportFinanceReportCsv implements Action
         fputcsv($stream, ['cash_closed_shift_count', '', $report['cash_reconciliation']['closed_shift_count']]);
         fputcsv($stream, ['cash_variance_shift_count', '', $report['cash_reconciliation']['variance_shift_count']]);
         foreach ($report['collection_trend'] as $day) {
-            foreach ($day['invoiced_by_currency'] as $currency => $amount) {
-                fputcsv($stream, ['trend_invoiced:'.$day['date'], $currency, $amount]);
+            foreach ($day['gross_invoiced_by_currency'] as $currency => $amount) {
+                fputcsv($stream, ['trend_gross_invoiced:'.$day['date'], $currency, $amount]);
+            }
+            foreach ($day['credited_by_currency'] as $currency => $amount) {
+                fputcsv($stream, ['trend_credited:'.$day['date'], $currency, $amount]);
+            }
+            foreach ($day['net_invoiced_by_currency'] as $currency => $amount) {
+                fputcsv($stream, ['trend_net_invoiced:'.$day['date'], $currency, $amount]);
             }
             foreach ($day['collected_by_currency'] as $currency => $amount) {
                 fputcsv($stream, ['trend_collected:'.$day['date'], $currency, $amount]);
@@ -60,7 +66,7 @@ final readonly class ExportFinanceReportCsv implements Action
                 fputcsv($stream, ['aging_'.$bucket, $currency, $amount]);
             }
         }
-        foreach (['revenue_by_plan', 'revenue_by_zone'] as $metric) {
+        foreach (['gross_revenue_by_plan', 'gross_revenue_by_zone'] as $metric) {
             foreach ($report[$metric] as $dimension => $amounts) {
                 foreach ($amounts as $currency => $amount) {
                     fputcsv($stream, [$metric.':'.$dimension, $currency, $amount]);
@@ -68,27 +74,24 @@ final readonly class ExportFinanceReportCsv implements Action
             }
         }
         foreach ($report['margin_by_pop'] as $pop => $amounts) {
-            foreach ($amounts['revenue_by_currency'] as $currency => $amount) {
-                fputcsv($stream, ['revenue_by_pop:'.$pop, $currency, $amount]);
+            foreach ($amounts['gross_revenue_by_currency'] as $currency => $amount) {
+                fputcsv($stream, ['gross_revenue_by_pop:'.$pop, $currency, $amount]);
             }
             foreach ($amounts['upstream_cost_by_currency'] as $currency => $amount) {
                 fputcsv($stream, ['upstream_cost_by_pop:'.$pop, $currency, $amount]);
             }
-            foreach ($amounts['margin_by_currency'] as $currency => $amount) {
-                fputcsv($stream, ['margin_by_pop:'.$pop, $currency, $amount]);
+            foreach ($amounts['gross_margin_by_currency'] as $currency => $amount) {
+                fputcsv($stream, ['gross_margin_by_pop:'.$pop, $currency, $amount]);
             }
         }
         foreach ($report['tax_by_currency'] as $currency => $amount) {
             fputcsv($stream, ['tax_by_currency', $currency, $amount]);
         }
-        foreach ($report['arpu_by_currency'] as $currency => $amount) {
-            fputcsv($stream, ['arpu_by_currency', $currency, $amount]);
+        foreach ($report['cash_collected_per_current_active_customer_by_currency'] as $currency => $amount) {
+            fputcsv($stream, ['cash_collected_per_current_active_customer_by_currency', $currency, $amount]);
         }
-        fputcsv($stream, ['active_customer_count', '', $report['active_customer_count']]);
-        fputcsv($stream, ['churned_services', '', $report['churned_services']]);
-        foreach ($report['retention_by_period'] as $metric => $value) {
-            fputcsv($stream, ['retention:'.$metric, '', $value]);
-        }
+        fputcsv($stream, ['current_active_customer_count', '', $report['current_active_customer_count']]);
+        fputcsv($stream, ['service_termination_events_by_period', '', $report['service_termination_events_by_period']]);
         foreach ($report['collector_performance'] as $collector) {
             foreach ($collector['totals_by_currency'] as $currency => $amount) {
                 fputcsv($stream, ['collector:'.$collector['collector'], $currency, $amount]);

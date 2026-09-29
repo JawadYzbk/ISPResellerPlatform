@@ -358,9 +358,7 @@ export default function CollectorRoutes({ date, collectors, customers, routes }:
                                     <span className="min-w-0 flex-1 truncate text-sm font-medium">
                                         {stop.customer.name}
                                     </span>
-                                    <span className="text-xs capitalize text-muted">
-                                        {enumLabel(stop.outcome, t)}
-                                    </span>
+                                    <span className="text-xs capitalize text-muted">{enumLabel(stop.outcome, t)}</span>
                                 </div>
                             ))}
                         </div>

@@ -54,10 +54,8 @@ final class BillingController extends Controller
             if (! $invoice instanceof Invoice) {
                 throw new \LogicException('Invoice paginator contained an invalid record.');
             }
-            $allocated = $invoice->payments->sum(fn (Payment $payment): int => $payment->allocations
-                ->where('invoice_id', $invoice->id)
-                ->sum('amount'));
-            $credited = $invoice->creditNotes->sum('amount');
+            $allocated = $invoice->effectiveAllocatedAmount();
+            $credited = $invoice->creditNotes->where('status', 'issued')->sum('amount');
 
             return [
                 'public_id' => $invoice->public_id,
@@ -69,7 +67,7 @@ final class BillingController extends Controller
                 'total_amount' => $invoice->total_amount,
                 'allocated_amount' => $allocated,
                 'credited_amount' => $credited,
-                'outstanding_amount' => max(0, $invoice->total_amount - $allocated - $credited),
+                'outstanding_amount' => $invoice->outstandingAmount(),
                 'due_at' => $invoice->due_at?->toIso8601String(),
                 'issued_at' => $invoice->issued_at?->toIso8601String(),
                 'customer' => [
@@ -300,10 +298,8 @@ final class BillingController extends Controller
         $user = $request->user();
         abort_unless($user instanceof User && $user->can('billing.invoices.view'), 403);
         $invoice = $getDetails->handle($invoice);
-        $allocated = $invoice->payments->sum(fn (Payment $payment): int => $payment->allocations
-            ->where('invoice_id', $invoice->id)
-            ->sum('amount'));
-        $credited = $invoice->creditNotes->sum('amount');
+        $allocated = $invoice->effectiveAllocatedAmount();
+        $credited = $invoice->creditNotes->where('status', 'issued')->sum('amount');
 
         return Inertia::render('Billing/InvoiceShow', [
             'invoice' => [
@@ -316,7 +312,7 @@ final class BillingController extends Controller
                 'total_amount' => $invoice->total_amount,
                 'allocated_amount' => $allocated,
                 'credited_amount' => $credited,
-                'outstanding_amount' => max(0, $invoice->total_amount - $allocated - $credited),
+                'outstanding_amount' => $invoice->outstandingAmount(),
                 'due_at' => $invoice->due_at?->toIso8601String(),
                 'issued_at' => $invoice->issued_at?->toIso8601String(),
                 'voided_at' => $invoice->voided_at?->toIso8601String(),

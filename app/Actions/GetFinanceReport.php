@@ -4,7 +4,6 @@ namespace App\Actions;
 
 use App\Contracts\Action;
 use App\Enums\InvoiceStatus;
-use App\Enums\PaymentStatus;
 use App\Models\CashShift;
 use App\Models\CreditNote;
 use App\Models\Customer;
@@ -28,19 +27,19 @@ final readonly class GetFinanceReport implements Action
     public function handle(CarbonImmutable $from, CarbonImmutable $to): array
     {
         $invoices = Invoice::query()->where('status', InvoiceStatus::Issued)->whereBetween('issued_at', [$from->startOfDay(), $to->endOfDay()]);
-        $payments = Payment::query()->where('status', PaymentStatus::Posted)->whereBetween('received_at', [$from->startOfDay(), $to->endOfDay()]);
+        $payments = Payment::query()->effectiveAt($to->endOfDay())->whereBetween('received_at', [$from->startOfDay(), $to->endOfDay()]);
         $grossInvoicedByCurrency = $invoices->clone()->selectRaw('currency, SUM(total_amount) as total')->groupBy('currency')->pluck('total', 'currency')->map(fn ($value): int => (int) $value)->all();
         $creditedByCurrency = CreditNote::query()->where('status', 'issued')->whereBetween('issued_at', [$from->startOfDay(), $to->endOfDay()])->selectRaw('currency, SUM(amount) as total')->groupBy('currency')->pluck('total', 'currency')->map(fn ($value): int => (int) $value)->all();
-        $invoicedByCurrency = [];
+        $netInvoicedByCurrency = [];
         foreach (array_unique([...array_keys($grossInvoicedByCurrency), ...array_keys($creditedByCurrency)]) as $currency) {
-            $invoicedByCurrency[$currency] = max(0, ($grossInvoicedByCurrency[$currency] ?? 0) - ($creditedByCurrency[$currency] ?? 0));
+            $netInvoicedByCurrency[$currency] = ($grossInvoicedByCurrency[$currency] ?? 0) - ($creditedByCurrency[$currency] ?? 0);
         }
         $collectedByCurrency = $payments->clone()->selectRaw('currency, SUM(amount) as total')->groupBy('currency')->pluck('total', 'currency')->map(fn ($value): int => (int) $value)->all();
         $collectionRates = [];
-        foreach (array_unique([...array_keys($invoicedByCurrency), ...array_keys($collectedByCurrency)]) as $currency) {
-            $invoiced = $invoicedByCurrency[$currency] ?? 0;
+        foreach (array_unique([...array_keys($netInvoicedByCurrency), ...array_keys($collectedByCurrency)]) as $currency) {
+            $invoiced = $netInvoicedByCurrency[$currency] ?? 0;
             $collected = $collectedByCurrency[$currency] ?? 0;
-            $collectionRates[$currency] = $invoiced === 0 ? null : round(($collected / $invoiced) * 100, 2);
+            $collectionRates[$currency] = $invoiced <= 0 ? null : round(($collected / $invoiced) * 100, 2);
         }
         $aging = $this->aging($to);
         $breakdowns = $this->breakdowns(
@@ -56,19 +55,25 @@ final readonly class GetFinanceReport implements Action
             'to' => $to->toDateString(),
             'invoice_count' => (int) $invoices->count(),
             'payment_count' => (int) $payments->count(),
-            'invoiced_by_currency' => $invoicedByCurrency,
+            'gross_invoiced_by_currency' => $grossInvoicedByCurrency,
             'credited_by_currency' => $creditedByCurrency,
+            'net_invoiced_by_currency' => $netInvoicedByCurrency,
             'collected_by_currency' => $collectedByCurrency,
             'collection_rate_by_currency' => $collectionRates,
             'cash_reconciliation' => $this->cashReconciliation($from, $to),
             'aging_by_currency' => $aging['aging_by_currency'],
             'outstanding_by_currency' => $aging['outstanding_by_currency'],
-            'customer_balances_by_currency' => Customer::query()->selectRaw('balance_currency, SUM(balance_amount) as total')->groupBy('balance_currency')->pluck('total', 'balance_currency')->map(fn ($value): int => (int) $value)->all(),
+            'current_customer_balances_by_currency' => Customer::query()->selectRaw('balance_currency, SUM(balance_amount) as total')->groupBy('balance_currency')->pluck('total', 'balance_currency')->map(fn ($value): int => (int) $value)->all(),
             ...$breakdowns,
         ];
     }
 
-    /** @param Collection<int, Invoice> $invoices @param array<string, int> $collectedByCurrency @param Collection<int, Payment> $payments @return array<string, mixed> */
+    /**
+     * @param  Collection<int, Invoice>  $invoices
+     * @param  array<string, int>  $collectedByCurrency
+     * @param  Collection<int, Payment>  $payments
+     * @return array<string, mixed>
+     */
     private function breakdowns(Collection $invoices, CarbonImmutable $from, CarbonImmutable $to, array $collectedByCurrency, Collection $payments): array
     {
         $revenueByPlan = [];
@@ -88,24 +93,23 @@ final readonly class GetFinanceReport implements Action
             }
         }
 
-        $activeCustomerCount = (int) Service::query()->where('status', 'active')->distinct()->count('customer_id');
-        $arpu = [];
+        $currentActiveCustomerCount = (int) Service::query()->where('status', 'active')->distinct()->count('customer_id');
+        $cashCollectedPerCurrentActiveCustomer = [];
         foreach ($collectedByCurrency as $currency => $amount) {
-            $arpu[$currency] = $activeCustomerCount === 0 ? null : round($amount / $activeCustomerCount, 2);
+            $cashCollectedPerCurrentActiveCustomer[$currency] = $currentActiveCustomerCount === 0 ? null : round($amount / $currentActiveCustomerCount, 2);
         }
 
         return [
-            'revenue_by_plan' => $revenueByPlan,
-            'revenue_by_zone' => $revenueByZone,
+            'gross_revenue_by_plan' => $revenueByPlan,
+            'gross_revenue_by_zone' => $revenueByZone,
             'margin_by_pop' => $this->marginByPop($revenueByPop, $from, $to),
             'tax_by_currency' => $taxByCurrency,
-            'churned_services' => ServiceEvent::query()->where('to_status', 'terminated')->whereBetween('created_at', [$from->startOfDay(), $to->endOfDay()])->count(),
-            'retention_by_period' => $this->retention($from, $to),
-            'active_customer_count' => $activeCustomerCount,
-            'arpu_by_currency' => $arpu,
+            'service_termination_events_by_period' => (int) ServiceEvent::query()->where('to_status', 'terminated')->whereBetween('created_at', [$from->startOfDay(), $to->endOfDay()])->count(),
+            'current_active_customer_count' => $currentActiveCustomerCount,
+            'cash_collected_per_current_active_customer_by_currency' => $cashCollectedPerCurrentActiveCustomer,
             'top_usage' => $this->topUsage($from, $to),
             'collector_performance' => $this->collectorPerformance($payments),
-            'collection_trend' => $this->collectionTrend($invoices, $payments),
+            'collection_trend' => $this->collectionTrend($invoices, $payments, $from, $to),
             'supplier_payables' => $this->supplierPayables->handle($from, $to),
         ];
     }
@@ -136,8 +140,12 @@ final readonly class GetFinanceReport implements Action
         ];
     }
 
-    /** @param Collection<int, Invoice> $invoices @param Collection<int, Payment> $payments @return list<array{date: string, invoiced_by_currency: array<string, int>, collected_by_currency: array<string, int>}> */
-    private function collectionTrend(Collection $invoices, Collection $payments): array
+    /**
+     * @param  Collection<int, Invoice>  $invoices
+     * @param  Collection<int, Payment>  $payments
+     * @return list<array{date: string, gross_invoiced_by_currency: array<string, int>, credited_by_currency: array<string, int>, net_invoiced_by_currency: array<string, int>, collected_by_currency: array<string, int>}>
+     */
+    private function collectionTrend(Collection $invoices, Collection $payments, CarbonImmutable $from, CarbonImmutable $to): array
     {
         $trend = [];
 
@@ -147,7 +155,20 @@ final readonly class GetFinanceReport implements Action
                 continue;
             }
             $trend[$date]['date'] = $date;
-            $trend[$date]['invoiced_by_currency'][$invoice->currency] = ($trend[$date]['invoiced_by_currency'][$invoice->currency] ?? 0) + $invoice->total_amount;
+            $trend[$date]['gross_invoiced_by_currency'][$invoice->currency] = ($trend[$date]['gross_invoiced_by_currency'][$invoice->currency] ?? 0) + $invoice->total_amount;
+        }
+
+        $credits = CreditNote::query()
+            ->where('status', 'issued')
+            ->whereBetween('issued_at', [$from->startOfDay(), $to->endOfDay()])
+            ->get(['issued_at', 'currency', 'amount']);
+        foreach ($credits as $credit) {
+            $date = $credit->issued_at?->toDateString();
+            if ($date === null) {
+                continue;
+            }
+            $trend[$date]['date'] = $date;
+            $trend[$date]['credited_by_currency'][$credit->currency] = ($trend[$date]['credited_by_currency'][$credit->currency] ?? 0) + $credit->amount;
         }
 
         foreach ($payments as $payment) {
@@ -161,11 +182,22 @@ final readonly class GetFinanceReport implements Action
 
         ksort($trend);
 
-        return collect($trend)->map(fn (array $day): array => [
-            'date' => $day['date'],
-            'invoiced_by_currency' => $day['invoiced_by_currency'] ?? [],
-            'collected_by_currency' => $day['collected_by_currency'] ?? [],
-        ])->values()->all();
+        return collect($trend)->map(function (array $day): array {
+            $gross = $day['gross_invoiced_by_currency'] ?? [];
+            $credited = $day['credited_by_currency'] ?? [];
+            $net = [];
+            foreach (array_unique([...array_keys($gross), ...array_keys($credited)]) as $currency) {
+                $net[$currency] = ($gross[$currency] ?? 0) - ($credited[$currency] ?? 0);
+            }
+
+            return [
+                'date' => $day['date'],
+                'gross_invoiced_by_currency' => $gross,
+                'credited_by_currency' => $credited,
+                'net_invoiced_by_currency' => $net,
+                'collected_by_currency' => $day['collected_by_currency'] ?? [],
+            ];
+        })->values()->all();
     }
 
     /** @param array<string, array<string, int>> $revenueByPop @return array<string, array<string, array<string, int>>> */
@@ -198,9 +230,9 @@ final readonly class GetFinanceReport implements Action
                 $margin[$currency] = ($revenue[$currency] ?? 0) - ($cost[$currency] ?? 0);
             }
             $report[$pop] = [
-                'revenue_by_currency' => $revenue,
+                'gross_revenue_by_currency' => $revenue,
                 'upstream_cost_by_currency' => $cost,
-                'margin_by_currency' => $margin,
+                'gross_margin_by_currency' => $margin,
             ];
         }
 
@@ -220,30 +252,10 @@ final readonly class GetFinanceReport implements Action
         return $total;
     }
 
-    /** @return array{active_at_period_start: int, terminated_services: int, retention_rate_percent: float|null} */
-    private function retention(CarbonImmutable $from, CarbonImmutable $to): array
-    {
-        $terminatedBeforeStart = ServiceEvent::query()
-            ->where('to_status', 'terminated')
-            ->where('created_at', '<=', $from->endOfDay())
-            ->pluck('service_id');
-        $activeAtPeriodStart = (int) Service::query()
-            ->where('created_at', '<=', $from->endOfDay())
-            ->whereNotIn('id', $terminatedBeforeStart)
-            ->count();
-        $terminated = (int) ServiceEvent::query()
-            ->where('to_status', 'terminated')
-            ->whereBetween('created_at', [$from->startOfDay(), $to->endOfDay()])
-            ->count();
-
-        return [
-            'active_at_period_start' => $activeAtPeriodStart,
-            'terminated_services' => $terminated,
-            'retention_rate_percent' => $activeAtPeriodStart === 0 ? null : round(max(0, $activeAtPeriodStart - $terminated) / $activeAtPeriodStart * 100, 2),
-        ];
-    }
-
-    /** @param Collection<int, Payment> $payments @return list<array{collector: string, payment_count: int, totals_by_currency: array<string, int>}> */
+    /**
+     * @param  Collection<int, Payment>  $payments
+     * @return list<array{collector: string, payment_count: int, totals_by_currency: array<string, int>}>
+     */
     private function collectorPerformance(Collection $payments): array
     {
         /** @var array<string, array{collector: string, payment_count: int, totals_by_currency: array<string, int>}> $performance */
@@ -287,6 +299,7 @@ final readonly class GetFinanceReport implements Action
             ->get(['id', 'currency', 'total_amount', 'due_at']);
         $allocated = PaymentAllocation::query()
             ->whereIn('invoice_id', $invoices->pluck('id'))
+            ->whereIn('payment_id', Payment::query()->effectiveAt($asOf->endOfDay())->select('id'))
             ->where('created_at', '<=', $asOf->endOfDay())
             ->selectRaw('invoice_id, SUM(amount) as total')
             ->groupBy('invoice_id')

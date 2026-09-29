@@ -153,7 +153,9 @@ export default function Expenses({
                     <p className="eyebrow">{t('Expense control')}</p>
                     <h1 className="page-title text-balance">{t('Operational expenses')}</h1>
                     <p className="page-subtitle text-pretty">
-                        {t('Submit receipts, review spending, and post approved cash, bank, or collector payments to the ledger.')}
+                        {t(
+                            'Submit receipts, review spending, and post approved cash, bank, or collector payments to the ledger.',
+                        )}
                     </p>
                 </div>
                 <div className="grid gap-2 sm:grid-cols-3">
@@ -485,7 +487,9 @@ export default function Expenses({
                         <div>
                             <h2 className="section-title text-balance">{t('Recurring expenses')}</h2>
                             <p className="mt-1 text-pretty text-sm text-muted">
-                                {t('Generate pending rent, fuel, upstream, and office costs on schedule. Every occurrence still requires approval.')}
+                                {t(
+                                    'Generate pending rent, fuel, upstream, and office costs on schedule. Every occurrence still requires approval.',
+                                )}
                             </p>
                         </div>
                     </div>
@@ -674,8 +678,9 @@ export default function Expenses({
                                         </span>
                                     </div>
                                     <p className="mt-1 text-xs text-muted">
-                                        {schedule.category.name} · {schedule.vendor?.name ?? t('No vendor')} · {t('every')}{' '}
-                                        {schedule.interval} {t(schedule.frequency)} · {t('next')} {schedule.next_run_on}
+                                        {schedule.category.name} · {schedule.vendor?.name ?? t('No vendor')} ·{' '}
+                                        {t('every')} {schedule.interval} {t(schedule.frequency)} · {t('next')}{' '}
+                                        {schedule.next_run_on}
                                     </p>
                                 </div>
                                 <div className="flex items-center gap-3">
@@ -747,7 +752,9 @@ export default function Expenses({
                                 onChange={(event) => categoryForm.setData('code', event.target.value)}
                             />
                             {fieldError('expense-category-code', categoryForm.errors.code)}
-                            <button type="submit" className="button-secondary">{t('Add category')}</button>
+                            <button type="submit" className="button-secondary">
+                                {t('Add category')}
+                            </button>
                         </form>
                         <div className="mt-4 flex flex-wrap gap-2">
                             {categories.map((item) => (
@@ -818,7 +825,9 @@ export default function Expenses({
                             />
                             {fieldError('expense-vendor-tax-number', vendorForm.errors.tax_number)}
                             <div className="flex justify-end sm:col-span-2">
-                                <button type="submit" className="button-secondary">{t('Add vendor')}</button>
+                                <button type="submit" className="button-secondary">
+                                    {t('Add vendor')}
+                                </button>
                             </div>
                         </form>
                         <p className="mt-4 text-xs text-muted tabular-nums">

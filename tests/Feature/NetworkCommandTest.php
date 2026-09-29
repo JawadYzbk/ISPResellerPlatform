@@ -35,16 +35,28 @@ it('uses the planned backoff for transient network failures', function (): void 
     expect($job->tries)->toBe(3)->and($job->backoff())->toBe([10, 60, 300]);
 });
 
-it('refuses stale commands and records fake driver success', function (): void {
+it('refuses stale commands before reaching a network driver', function (): void {
     $tenant = Tenant::create(['name' => 'Southline', 'slug' => 'southline', 'base_currency' => 'USD', 'collection_currency' => 'USD']);
     app(Tenancy::class)->set($tenant);
     $service = Service::factory()->create();
     $command = app(EnqueueNetworkCommand::class)->handle($service, 'activate');
     $service->increment('desired_state_version');
-    $fake = new FakeDriver(['activate' => DriverResult::success('activated')]);
-    app()->instance(FakeDriver::class, $fake);
     $job = new ExecuteNetworkCommand($command->id, $tenant->id);
     $job->handle(app(DriverManager::class));
 
     expect($command->refresh()->status)->toBe('stale');
+});
+
+it('executes current network commands through an explicitly bound fake driver', function (): void {
+    Queue::fake();
+    $fake = new FakeDriver(['activate' => DriverResult::success('activated')]);
+    app()->instance(FakeDriver::class, $fake);
+    $tenant = Tenant::create(['name' => 'Eastline', 'slug' => 'eastline', 'base_currency' => 'USD', 'collection_currency' => 'USD']);
+    app(Tenancy::class)->set($tenant);
+    $service = Service::factory()->create();
+    $command = app(EnqueueNetworkCommand::class)->handle($service, 'activate');
+
+    (new ExecuteNetworkCommand($command->id, $tenant->id))->handle(app(DriverManager::class));
+
+    expect($command->refresh()->status)->toBe('completed');
 });

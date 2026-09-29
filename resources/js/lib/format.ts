@@ -1,4 +1,8 @@
-export function formatMoney(amountMinor: number, currency: string | null | undefined, locale = browserLocale()): string {
+export function formatMoney(
+    amountMinor: number,
+    currency: string | null | undefined,
+    locale = browserLocale(),
+): string {
     const normalizedCurrency = normalizeCurrencyCode(currency);
     if (normalizedCurrency === null) return '—';
 
@@ -62,7 +66,11 @@ function normalizeCurrencyCode(currency: string | null | undefined): string | nu
 
 type Translate = (key: string) => string;
 
-export function formatDuration(startedAt: string | null, endedAt: string | null, translate: Translate = (key) => key): string {
+export function formatDuration(
+    startedAt: string | null,
+    endedAt: string | null,
+    translate: Translate = (key) => key,
+): string {
     if (!startedAt || !endedAt) return translate('Uptime unavailable');
 
     const minutes = Math.max(0, Math.floor((new Date(endedAt).getTime() - new Date(startedAt).getTime()) / 60000));

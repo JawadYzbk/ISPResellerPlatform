@@ -120,9 +120,7 @@ export default function PaymentShowPage({ payment, canReverse, canShare, publicL
                         </div>
                         <div>
                             <dt className="field-label">{t('Method')}</dt>
-                            <dd className="mt-1 text-sm font-semibold capitalize">
-                                {methodLabel(payment.method)}
-                            </dd>
+                            <dd className="mt-1 text-sm font-semibold capitalize">{methodLabel(payment.method)}</dd>
                         </div>
                         <div>
                             <dt className="field-label">{t('Invoice')}</dt>
@@ -180,12 +178,12 @@ export default function PaymentShowPage({ payment, canReverse, canShare, publicL
                             <div>
                                 <dt className="field-label">{t('payment.fx_policy')}</dt>
                                 <dd className="mt-1 text-sm font-semibold">
-                                {enumLabel(payment.fx_rounding_mode, t)}
+                                    {enumLabel(payment.fx_rounding_mode, t)}
                                     <span className="mt-1 block text-xs font-normal text-muted">
                                         {payment.fx_rate_source ?? t('stored rate')}
                                         {payment.fx_rate_effective_from
                                             ? ` · ${t('effective')} ${formatDate(payment.fx_rate_effective_from)}`
-                                           : ''}
+                                            : ''}
                                     </span>
                                 </dd>
                             </div>

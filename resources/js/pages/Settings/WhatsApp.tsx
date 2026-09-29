@@ -281,7 +281,11 @@ export default function WhatsAppSettings({ setup }: Props) {
                     </div>
                     {setup.qr_code ? (
                         <div className="mx-auto rounded-2xl border border-line bg-white p-3 shadow-sm">
-                            <img src={setup.qr_code} alt={t('Scan to pair WhatsApp Web.js')} className="block size-48" />
+                            <img
+                                src={setup.qr_code}
+                                alt={t('Scan to pair WhatsApp Web.js')}
+                                className="block size-48"
+                            />
                             <p className="mt-2 text-center text-xs text-muted">
                                 {t('QR expires when the bridge refreshes it.')}
                             </p>

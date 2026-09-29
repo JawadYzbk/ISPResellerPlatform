@@ -4,9 +4,9 @@ namespace App\Actions;
 
 use App\Contracts\Action;
 use App\Enums\InvoiceStatus;
-use App\Enums\PaymentStatus;
 use App\Models\Customer;
 use App\Models\Invoice;
+use App\Models\PaymentAllocation;
 use Carbon\CarbonImmutable;
 
 final readonly class GetCustomerPaymentGrid implements Action
@@ -24,9 +24,7 @@ final readonly class GetCustomerPaymentGrid implements Action
             ->whereBetween('issued_at', [$start, $end])
             ->with([
                 'creditNotes',
-                'payments' => fn ($query) => $query
-                    ->where('status', PaymentStatus::Posted)
-                    ->with('allocations'),
+                'paymentAllocations.payment',
             ])
             ->orderBy('issued_at')
             ->get();
@@ -38,17 +36,13 @@ final readonly class GetCustomerPaymentGrid implements Action
 
             foreach ($monthInvoices->groupBy('currency') as $currency => $currencyInvoices) {
                 $billed = $currencyInvoices->sum('total_amount');
-                $credited = $currencyInvoices->sum(fn (Invoice $invoice): int => $invoice->creditNotes->sum('amount'));
+                $credited = $currencyInvoices->sum(fn (Invoice $invoice): int => $invoice->creditNotes->where('status', 'issued')->sum('amount'));
                 $paid = 0;
 
                 foreach ($currencyInvoices as $invoice) {
-                    foreach ($invoice->payments as $payment) {
-                        $allocations = $payment->allocations->where('invoice_id', $invoice->id);
-                        if ($allocations->isNotEmpty()) {
-                            $paymentCount++;
-                            $paid += $allocations->sum('amount');
-                        }
-                    }
+                    $activeAllocations = $invoice->paymentAllocations->filter(fn (PaymentAllocation $allocation): bool => $allocation->payment->isEffectiveAt());
+                    $paymentCount += $activeAllocations->unique('payment_id')->count();
+                    $paid += $invoice->effectiveAllocatedAmount();
                 }
 
                 $due = max($billed - $credited, 0);

@@ -133,7 +133,9 @@ function BillPaymentForm({ bill, onDone }: { bill: Bill; onDone: () => void }) {
                 <FieldError id={fieldId('paid-at')} message={form.errors.paid_at} t={t} />
             </label>
             <label className="sm:col-span-3">
-                <span className="field-label">{t('Payment reference')} ({t('optional')})</span>
+                <span className="field-label">
+                    {t('Payment reference')} ({t('optional')})
+                </span>
                 <input
                     id={fieldId('reference')}
                     className="field"
@@ -389,7 +391,11 @@ function SupplierCard({
                             onChange={(event) => contractForm.setData('service_type', event.target.value)}
                             required
                         />
-                        <FieldError id={fieldId('contract-service-type')} message={contractForm.errors.service_type} t={t} />
+                        <FieldError
+                            id={fieldId('contract-service-type')}
+                            message={contractForm.errors.service_type}
+                            t={t}
+                        />
                     </label>
                     <label>
                         <span className="field-label">{t('Wholesale currency')}</span>
@@ -401,7 +407,11 @@ function SupplierCard({
                             currencies={currencies}
                             onChange={(value) => contractForm.setData('wholesale_currency', value)}
                         />
-                        <FieldError id={fieldId('contract-currency')} message={contractForm.errors.wholesale_currency} t={t} />
+                        <FieldError
+                            id={fieldId('contract-currency')}
+                            message={contractForm.errors.wholesale_currency}
+                            t={t}
+                        />
                     </label>
                     <label>
                         <span className="field-label">{t('Effective from')}</span>
@@ -414,7 +424,11 @@ function SupplierCard({
                             onChange={(event) => contractForm.setData('effective_from', event.target.value)}
                             required
                         />
-                        <FieldError id={fieldId('contract-effective-from')} message={contractForm.errors.effective_from} t={t} />
+                        <FieldError
+                            id={fieldId('contract-effective-from')}
+                            message={contractForm.errors.effective_from}
+                            t={t}
+                        />
                     </label>
                     <label>
                         <span className="field-label">{t('Effective to')}</span>
@@ -426,7 +440,11 @@ function SupplierCard({
                             value={contractForm.data.effective_to}
                             onChange={(event) => contractForm.setData('effective_to', event.target.value)}
                         />
-                        <FieldError id={fieldId('contract-effective-to')} message={contractForm.errors.effective_to} t={t} />
+                        <FieldError
+                            id={fieldId('contract-effective-to')}
+                            message={contractForm.errors.effective_to}
+                            t={t}
+                        />
                     </label>
                     <label>
                         <span className="field-label">{t('Status')}</span>
@@ -552,32 +570,46 @@ function SupplierCard({
                                 {editingContractId === contract.id ? (
                                     <div className="grid gap-3 rounded-lg bg-sand/50 p-4 md:grid-cols-2">
                                         <label>
-                                        <span className="field-label">{t('Service type')}</span>
+                                            <span className="field-label">{t('Service type')}</span>
                                             <input
                                                 id={fieldId('contract-edit-service-type')}
                                                 className="field"
-                                                {...fieldA11y(fieldId('contract-edit-service-type'), contractEditForm.errors.service_type)}
+                                                {...fieldA11y(
+                                                    fieldId('contract-edit-service-type'),
+                                                    contractEditForm.errors.service_type,
+                                                )}
                                                 value={contractEditForm.data.service_type}
                                                 onChange={(event) =>
                                                     contractEditForm.setData('service_type', event.target.value)
                                                 }
                                                 required
                                             />
-                                            <FieldError id={fieldId('contract-edit-service-type')} message={contractEditForm.errors.service_type} t={t} />
+                                            <FieldError
+                                                id={fieldId('contract-edit-service-type')}
+                                                message={contractEditForm.errors.service_type}
+                                                t={t}
+                                            />
                                         </label>
                                         <label>
                                             <span className="field-label">{t('Wholesale currency')}</span>
                                             <CurrencyCombobox
                                                 id={fieldId('contract-edit-currency')}
                                                 className="field"
-                                                {...fieldA11y(fieldId('contract-edit-currency'), contractEditForm.errors.wholesale_currency)}
+                                                {...fieldA11y(
+                                                    fieldId('contract-edit-currency'),
+                                                    contractEditForm.errors.wholesale_currency,
+                                                )}
                                                 value={contractEditForm.data.wholesale_currency}
                                                 currencies={currencies}
                                                 onChange={(value) =>
                                                     contractEditForm.setData('wholesale_currency', value)
                                                 }
                                             />
-                                            <FieldError id={fieldId('contract-edit-currency')} message={contractEditForm.errors.wholesale_currency} t={t} />
+                                            <FieldError
+                                                id={fieldId('contract-edit-currency')}
+                                                message={contractEditForm.errors.wholesale_currency}
+                                                t={t}
+                                            />
                                         </label>
                                         <label>
                                             <span className="field-label">{t('Effective from')}</span>
@@ -585,14 +617,21 @@ function SupplierCard({
                                                 id={fieldId('contract-edit-effective-from')}
                                                 className="field"
                                                 type="date"
-                                                {...fieldA11y(fieldId('contract-edit-effective-from'), contractEditForm.errors.effective_from)}
+                                                {...fieldA11y(
+                                                    fieldId('contract-edit-effective-from'),
+                                                    contractEditForm.errors.effective_from,
+                                                )}
                                                 value={contractEditForm.data.effective_from}
                                                 onChange={(event) =>
                                                     contractEditForm.setData('effective_from', event.target.value)
                                                 }
                                                 required
                                             />
-                                            <FieldError id={fieldId('contract-edit-effective-from')} message={contractEditForm.errors.effective_from} t={t} />
+                                            <FieldError
+                                                id={fieldId('contract-edit-effective-from')}
+                                                message={contractEditForm.errors.effective_from}
+                                                t={t}
+                                            />
                                         </label>
                                         <label>
                                             <span className="field-label">{t('Effective to')}</span>
@@ -600,20 +639,30 @@ function SupplierCard({
                                                 id={fieldId('contract-edit-effective-to')}
                                                 className="field"
                                                 type="date"
-                                                {...fieldA11y(fieldId('contract-edit-effective-to'), contractEditForm.errors.effective_to)}
+                                                {...fieldA11y(
+                                                    fieldId('contract-edit-effective-to'),
+                                                    contractEditForm.errors.effective_to,
+                                                )}
                                                 value={contractEditForm.data.effective_to}
                                                 onChange={(event) =>
                                                     contractEditForm.setData('effective_to', event.target.value)
                                                 }
                                             />
-                                            <FieldError id={fieldId('contract-edit-effective-to')} message={contractEditForm.errors.effective_to} t={t} />
+                                            <FieldError
+                                                id={fieldId('contract-edit-effective-to')}
+                                                message={contractEditForm.errors.effective_to}
+                                                t={t}
+                                            />
                                         </label>
                                         <label>
                                             <span className="field-label">{t('Status')}</span>
                                             <ResponsiveSelect
                                                 id={fieldId('contract-edit-status')}
                                                 className="field"
-                                                {...fieldA11y(fieldId('contract-edit-status'), contractEditForm.errors.status)}
+                                                {...fieldA11y(
+                                                    fieldId('contract-edit-status'),
+                                                    contractEditForm.errors.status,
+                                                )}
                                                 value={contractEditForm.data.status}
                                                 onChange={(event) =>
                                                     contractEditForm.setData('status', event.target.value)
@@ -623,7 +672,11 @@ function SupplierCard({
                                                 <option value="suspended">{t('Suspended')}</option>
                                                 <option value="expired">{t('Expired')}</option>
                                             </ResponsiveSelect>
-                                            <FieldError id={fieldId('contract-edit-status')} message={contractEditForm.errors.status} t={t} />
+                                            <FieldError
+                                                id={fieldId('contract-edit-status')}
+                                                message={contractEditForm.errors.status}
+                                                t={t}
+                                            />
                                         </label>
                                         <div className="flex items-end gap-2">
                                             <button
@@ -694,7 +747,8 @@ function SupplierCard({
                                         <div className="text-end">
                                             <p className="font-semibold">{formatMoney(bill.amount, bill.currency)}</p>
                                             <p className="mt-1 text-xs text-muted">
-                                {t('Paid')} {formatMoney(bill.paid_amount, bill.currency)} · {enumLabel(bill.status, t)}
+                                                {t('Paid')} {formatMoney(bill.paid_amount, bill.currency)} ·{' '}
+                                                {enumLabel(bill.status, t)}
                                             </p>
                                         </div>
                                     </div>
@@ -788,7 +842,11 @@ export default function SuppliersPage({ suppliers, canManage, currencies }: Prop
                             onChange={(event) => supplierForm.setData('contact_email', event.target.value)}
                             placeholder={t('billing@example.com')}
                         />
-                        <FieldError id="supplier-create-contact-email" message={supplierForm.errors.contact_email} t={t} />
+                        <FieldError
+                            id="supplier-create-contact-email"
+                            message={supplierForm.errors.contact_email}
+                            t={t}
+                        />
                     </label>
                     <div className="flex items-end justify-end">
                         <button type="submit" className="button-primary" disabled={supplierForm.processing}>

@@ -3,11 +3,10 @@
 namespace App\Actions;
 
 use App\Contracts\Action;
+use App\Enums\InvoiceStatus;
 use App\Enums\PaymentStatus;
-use App\Models\CreditNote;
 use App\Models\Invoice;
 use App\Models\Payment;
-use App\Models\PaymentAllocation;
 
 final readonly class GetPublicBillingPageData implements Action
 {
@@ -50,9 +49,7 @@ final readonly class GetPublicBillingPageData implements Action
     /** @return array<string, mixed> */
     private function invoice(Invoice $invoice): array
     {
-        $invoice->loadMissing(['lines', 'payments.allocations', 'creditNotes']);
-        $allocated = (int) PaymentAllocation::query()->where('invoice_id', $invoice->id)->sum('amount');
-        $credited = (int) CreditNote::query()->where('invoice_id', $invoice->id)->where('status', 'issued')->sum('amount');
+        $invoice->loadMissing(['lines', 'paymentAllocations.payment', 'creditNotes']);
 
         return [
             'public_id' => $invoice->public_id,
@@ -62,7 +59,7 @@ final readonly class GetPublicBillingPageData implements Action
             'subtotal_amount' => $invoice->subtotal_amount,
             'tax_amount' => $invoice->tax_amount,
             'total_amount' => $invoice->total_amount,
-            'outstanding_amount' => max(0, $invoice->total_amount - $allocated - $credited),
+            'outstanding_amount' => $invoice->outstandingAmount(),
             'issued_at' => $invoice->issued_at?->toIso8601String(),
             'due_at' => $invoice->due_at?->toIso8601String(),
             'lines' => $invoice->lines->map(fn ($line): array => [
@@ -101,7 +98,9 @@ final readonly class GetPublicBillingPageData implements Action
     {
         $invoices = Invoice::query()
             ->where('customer_id', $customerId)
-            ->with(['lines', 'payments.allocations', 'creditNotes'])
+            ->where('status', InvoiceStatus::Issued)
+            ->whereNotNull('issued_at')
+            ->with(['lines', 'paymentAllocations.payment', 'creditNotes'])
             ->latest('issued_at')
             ->limit(24)
             ->get()

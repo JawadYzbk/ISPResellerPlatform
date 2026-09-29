@@ -160,9 +160,9 @@ export default function OperationsReportPage({ report }: Props) {
                             {supplierCredentials.to}; {t('live state is current.')}
                         </p>
                     </div>
-                            <span className="text-xs text-muted">
-                                {t('Expiring within')} {supplierCredentials.expiring_days} {t('days')}
-                            </span>
+                    <span className="text-xs text-muted">
+                        {t('Expiring within')} {supplierCredentials.expiring_days} {t('days')}
+                    </span>
                 </div>
                 <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
                     {entriesOrEmpty(supplierCredentials.totals).map(([metric, total]) => (
@@ -212,7 +212,9 @@ export default function OperationsReportPage({ report }: Props) {
                         </tbody>
                     </table>
                     {supplierCredentials.by_supplier.length === 0 && (
-                        <p className="py-4 text-sm text-muted">{t('No supplier credential batches have been recorded.')}</p>
+                        <p className="py-4 text-sm text-muted">
+                            {t('No supplier credential batches have been recorded.')}
+                        </p>
                     )}
                 </div>
                 {supplierCredentials.by_supplier.some((supplier) => supplier.contracts.length > 0) && (
@@ -228,7 +230,9 @@ export default function OperationsReportPage({ report }: Props) {
                                         <span>
                                             <b>{supplier.name}</b>
                                             <span className="ms-2 text-muted">
-                                                {contract.reference ?? contract.service_type ?? t('Unspecified contract')}
+                                                {contract.reference ??
+                                                    contract.service_type ??
+                                                    t('Unspecified contract')}
                                             </span>
                                         </span>
                                         <span className="text-muted">

@@ -181,7 +181,8 @@ export default function CredentialsPage({
                                 <option value="">{t('credentials.no_contract')}</option>
                                 {selectedSupplier?.contracts.map((contract) => (
                                     <option key={contract.id} value={contract.id}>
-                                        {t(contract.service_type)} · {contract.wholesale_currency} · {enumLabel(contract.status, t)}
+                                        {t(contract.service_type)} · {contract.wholesale_currency} ·{' '}
+                                        {enumLabel(contract.status, t)}
                                     </option>
                                 ))}
                             </ResponsiveSelect>

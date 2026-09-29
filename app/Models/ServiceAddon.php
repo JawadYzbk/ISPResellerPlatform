@@ -32,16 +32,19 @@ class ServiceAddon extends Model
         });
     }
 
+    /** @return BelongsTo<Tenant, $this> */
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);
     }
 
+    /** @return BelongsTo<Service, $this> */
     public function service(): BelongsTo
     {
         return $this->belongsTo(Service::class);
     }
 
+    /** @return BelongsTo<Addon, $this> */
     public function addon(): BelongsTo
     {
         return $this->belongsTo(Addon::class);

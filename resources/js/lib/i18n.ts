@@ -6,20 +6,24 @@ const serviceArabic: Messages = {
     'Back to services': 'العودة إلى الخدمات',
     'Subscriber service': 'خدمة المشترك',
     'Suspend this service?': 'تعليق هذه الخدمة؟',
-    'The service will be suspended and its network access will be restricted.': 'سيتم تعليق الخدمة وتقييد الوصول إلى الشبكة.',
+    'The service will be suspended and its network access will be restricted.':
+        'سيتم تعليق الخدمة وتقييد الوصول إلى الشبكة.',
     'Suspend service': 'تعليق الخدمة',
     Suspend: 'تعليق',
     'Pause this service?': 'إيقاف هذه الخدمة مؤقتًا؟',
-    'The service will pause without closing the account or removing its plan.': 'ستتوقف الخدمة مؤقتًا من دون إغلاق الحساب أو إزالة الباقة.',
+    'The service will pause without closing the account or removing its plan.':
+        'ستتوقف الخدمة مؤقتًا من دون إغلاق الحساب أو إزالة الباقة.',
     'Pause service': 'إيقاف الخدمة مؤقتًا',
     Pause: 'إيقاف مؤقت',
     'Resume this service from pause?': 'استئناف هذه الخدمة بعد الإيقاف المؤقت؟',
     'Resume this service?': 'استئناف هذه الخدمة؟',
-    'The service will be active again and network provisioning will resume.': 'ستصبح الخدمة نشطة مجددًا ويُستأنف تجهيز الشبكة.',
+    'The service will be active again and network provisioning will resume.':
+        'ستصبح الخدمة نشطة مجددًا ويُستأنف تجهيز الشبكة.',
     'Resume service': 'استئناف الخدمة',
     Resume: 'استئناف',
     'Terminate this service?': 'إنهاء هذه الخدمة؟',
-    'Equipment will be marked for recovery and this service cannot be reactivated.': 'سيتم وضع المعدات للاسترداد ولا يمكن إعادة تفعيل هذه الخدمة.',
+    'Equipment will be marked for recovery and this service cannot be reactivated.':
+        'سيتم وضع المعدات للاسترداد ولا يمكن إعادة تفعيل هذه الخدمة.',
     'Terminate service': 'إنهاء الخدمة',
     Terminate: 'إنهاء',
     'Re-sync': 'إعادة المزامنة',
@@ -63,7 +67,8 @@ const serviceArabic: Messages = {
     Applies: 'يسري في',
     Requested: 'طُلب في',
     'Cancel this scheduled plan change?': 'إلغاء تغيير الباقة المجدول؟',
-    'The customer will keep the current plan at the next renewal. No ledger entry will be posted.': 'سيحتفظ العميل بالباقة الحالية عند التجديد التالي. لن يُسجّل قيد في الدفتر.',
+    'The customer will keep the current plan at the next renewal. No ledger entry will be posted.':
+        'سيحتفظ العميل بالباقة الحالية عند التجديد التالي. لن يُسجّل قيد في الدفتر.',
     'Cancel scheduled change': 'إلغاء التغيير المجدول',
     Cancel: 'إلغاء',
     'Scheduled billing cycle': 'دورة الفوترة المجدولة',
@@ -73,7 +78,8 @@ const serviceArabic: Messages = {
     days: 'يومًا',
     through: 'حتى',
     'Cancel this scheduled billing-cycle change?': 'إلغاء تغيير دورة الفوترة المجدول؟',
-    'The current anchor stays in place. Cancellation is blocked after its renewal invoice is created.': 'سيبقى يوم الاستحقاق الحالي كما هو. يُمنع الإلغاء بعد إنشاء فاتورة التجديد.',
+    'The current anchor stays in place. Cancellation is blocked after its renewal invoice is created.':
+        'سيبقى يوم الاستحقاق الحالي كما هو. يُمنع الإلغاء بعد إنشاء فاتورة التجديد.',
     'Billing cycle': 'دورة الفوترة',
     'Invoices currently renew on day': 'تتجدد الفواتير حاليًا في اليوم',
     'of each month.': 'من كل شهر.',
@@ -82,7 +88,8 @@ const serviceArabic: Messages = {
     Day: 'اليوم',
     'Transition quote': 'عرض سعر الانتقال',
     'Schedule this billing-cycle change?': 'جدولة تغيير دورة الفوترة هذه؟',
-    'The displayed prorated amount will be used for the transition invoice. Once that invoice exists, settle or void it before changing the schedule.': 'سيُستخدم المبلغ النسبي الظاهر لفاتورة الانتقال. بعد إنشاء الفاتورة، قم بتسويتها أو إبطالها قبل تغيير الجدولة.',
+    'The displayed prorated amount will be used for the transition invoice. Once that invoice exists, settle or void it before changing the schedule.':
+        'سيُستخدم المبلغ النسبي الظاهر لفاتورة الانتقال. بعد إنشاء الفاتورة، قم بتسويتها أو إبطالها قبل تغيير الجدولة.',
     'Schedule change': 'جدولة التغيير',
     'Set billing anchor': 'تعيين يوم الاستحقاق',
     'Schedule billing cycle': 'جدولة دورة الفوترة',
@@ -92,7 +99,8 @@ const serviceArabic: Messages = {
     Effective: 'السريان',
     'At next renewal': 'عند التجديد التالي',
     'Immediately with proration': 'فورًا مع احتساب نسبي',
-    'The unused part of the current plan is credited and the remainder of the new plan is charged in the customer ledger currency.': 'يُضاف الجزء غير المستخدم من الباقة الحالية كرصيد وتُحصّل بقية الباقة الجديدة بعملة دفتر العميل.',
+    'The unused part of the current plan is credited and the remainder of the new plan is charged in the customer ledger currency.':
+        'يُضاف الجزء غير المستخدم من الباقة الحالية كرصيد وتُحصّل بقية الباقة الجديدة بعملة دفتر العميل.',
     'Immediate quote': 'عرض السعر الفوري',
     'Scheduled change': 'التغيير المجدول',
     Now: 'الآن',
@@ -100,22 +108,27 @@ const serviceArabic: Messages = {
     'Unused credit': 'الرصيد غير المستخدم',
     'New plan charge': 'رسوم الباقة الجديدة',
     'Net ledger impact': 'صافي أثر الدفتر',
-    'No charge is posted until renewal. The new plan will be applied when this service expires.': 'لا تُسجّل أي رسوم حتى التجديد. ستُطبّق الباقة الجديدة عند انتهاء هذه الخدمة.',
+    'No charge is posted until renewal. The new plan will be applied when this service expires.':
+        'لا تُسجّل أي رسوم حتى التجديد. ستُطبّق الباقة الجديدة عند انتهاء هذه الخدمة.',
     'Apply this plan change now?': 'تطبيق تغيير الباقة الآن؟',
     'Schedule this plan change?': 'جدولة تغيير الباقة؟',
-    'The current plan credit and new plan charge will be posted to the customer ledger immediately.': 'سيُسجّل رصيد الباقة الحالية ورسوم الباقة الجديدة في دفتر العميل فورًا.',
-    'The current plan remains active until renewal, then the selected plan will be applied.': 'تبقى الباقة الحالية نشطة حتى التجديد، ثم تُطبّق الباقة المحددة.',
+    'The current plan credit and new plan charge will be posted to the customer ledger immediately.':
+        'سيُسجّل رصيد الباقة الحالية ورسوم الباقة الجديدة في دفتر العميل فورًا.',
+    'The current plan remains active until renewal, then the selected plan will be applied.':
+        'تبقى الباقة الحالية نشطة حتى التجديد، ثم تُطبّق الباقة المحددة.',
     'Apply now': 'تطبيق الآن',
     'Applying…': 'جارٍ التطبيق…',
     'Apply plan change': 'تطبيق تغيير الباقة',
     'Schedule plan change': 'جدولة تغيير الباقة',
     'Recurring add-ons': 'الإضافات المتكررة',
-    'Attach optional recurring charges to this service. They are copied to the next renewal invoice with a fixed price snapshot.': 'أرفق رسومًا متكررة اختيارية بهذه الخدمة. تُنسخ إلى فاتورة التجديد التالية مع تثبيت السعر.',
+    'Attach optional recurring charges to this service. They are copied to the next renewal invoice with a fixed price snapshot.':
+        'أرفق رسومًا متكررة اختيارية بهذه الخدمة. تُنسخ إلى فاتورة التجديد التالية مع تثبيت السعر.',
     'Recurring add-on': 'إضافة متكررة',
     'Price unavailable': 'السعر غير متاح',
     Starts: 'تبدأ في',
     'Cancel this add-on?': 'إلغاء هذه الإضافة؟',
-    'The add-on will stop being included in future renewal invoices. Existing invoices are unchanged.': 'لن تُدرج الإضافة في فواتير التجديد المستقبلية. لا تتغير الفواتير الحالية.',
+    'The add-on will stop being included in future renewal invoices. Existing invoices are unchanged.':
+        'لن تُدرج الإضافة في فواتير التجديد المستقبلية. لا تتغير الفواتير الحالية.',
     'Cancel add-on': 'إلغاء الإضافة',
     'No recurring add-ons are attached to this service.': 'لا توجد إضافات متكررة مرتبطة بهذه الخدمة.',
     'Add-on': 'الإضافة',
@@ -124,7 +137,8 @@ const serviceArabic: Messages = {
     optional: 'اختياري',
     'Adding…': 'جارٍ الإضافة…',
     'Add recurring add-on': 'إضافة إضافة متكررة',
-    'Create an active add-on in Plans before attaching one to a service.': 'أنشئ إضافة نشطة في الباقات قبل ربطها بخدمة.',
+    'Create an active add-on in Plans before attaching one to a service.':
+        'أنشئ إضافة نشطة في الباقات قبل ربطها بخدمة.',
     'Assigned equipment': 'المعدات المعيّنة',
     'Serialized equipment': 'معدات ذات رقم تسلسلي',
     Assigned: 'مُعيّنة',
@@ -142,20 +156,24 @@ const serviceFrench: Messages = {
     'Back to services': 'Retour aux services',
     'Subscriber service': 'Service abonné',
     'Suspend this service?': 'Suspendre ce service ?',
-    'The service will be suspended and its network access will be restricted.': 'Le service sera suspendu et son accès réseau sera restreint.',
+    'The service will be suspended and its network access will be restricted.':
+        'Le service sera suspendu et son accès réseau sera restreint.',
     'Suspend service': 'Suspendre le service',
     Suspend: 'Suspendre',
     'Pause this service?': 'Mettre ce service en pause ?',
-    'The service will pause without closing the account or removing its plan.': 'Le service sera mis en pause sans fermer le compte ni retirer son forfait.',
+    'The service will pause without closing the account or removing its plan.':
+        'Le service sera mis en pause sans fermer le compte ni retirer son forfait.',
     'Pause service': 'Mettre le service en pause',
     Pause: 'Pause',
     'Resume this service from pause?': 'Reprendre ce service après la pause ?',
     'Resume this service?': 'Reprendre ce service ?',
-    'The service will be active again and network provisioning will resume.': 'Le service sera de nouveau actif et le provisionnement réseau reprendra.',
+    'The service will be active again and network provisioning will resume.':
+        'Le service sera de nouveau actif et le provisionnement réseau reprendra.',
     'Resume service': 'Reprendre le service',
     Resume: 'Reprendre',
     'Terminate this service?': 'Résilier ce service ?',
-    'Equipment will be marked for recovery and this service cannot be reactivated.': 'Le matériel sera marqué pour récupération et ce service ne pourra pas être réactivé.',
+    'Equipment will be marked for recovery and this service cannot be reactivated.':
+        'Le matériel sera marqué pour récupération et ce service ne pourra pas être réactivé.',
     'Terminate service': 'Résilier le service',
     Terminate: 'Résilier',
     'Re-sync': 'Resynchroniser',
@@ -168,7 +186,8 @@ const serviceFrench: Messages = {
     Quota: 'Quota',
     Unlimited: 'Illimité',
     'Current session': 'Session actuelle',
-    'Live accounting state from the latest interim update.': 'État comptable en direct depuis la dernière mise à jour intermédiaire.',
+    'Live accounting state from the latest interim update.':
+        'État comptable en direct depuis la dernière mise à jour intermédiaire.',
     Status: 'Statut',
     Online: 'En ligne',
     Uptime: 'Temps de fonctionnement',
@@ -176,14 +195,16 @@ const serviceFrench: Messages = {
     'Not reported': 'Non renseigné',
     Traffic: 'Trafic',
     'Disconnect the current network session?': 'Déconnecter la session réseau actuelle ?',
-    'The active network session will be disconnected immediately.': 'La session réseau active sera déconnectée immédiatement.',
+    'The active network session will be disconnected immediately.':
+        'La session réseau active sera déconnectée immédiatement.',
     'Disconnect session': 'Déconnecter la session',
     Disconnect: 'Déconnecter',
     'No active session is currently reported.': 'Aucune session active n’est actuellement signalée.',
     'Usage, last 24 hours': 'Utilisation des dernières 24 heures',
     'No daily usage has been rolled up yet.': 'Aucune utilisation quotidienne n’a encore été agrégée.',
     'Usage history': 'Historique d’utilisation',
-    'Daily RADIUS or session totals for the latest 31 days.': 'Totaux RADIUS ou de session quotidiens des 31 derniers jours.',
+    'Daily RADIUS or session totals for the latest 31 days.':
+        'Totaux RADIUS ou de session quotidiens des 31 derniers jours.',
     'FUP applied': 'FUP appliquée',
     'No FUP action is currently applied.': 'Aucune action FUP n’est actuellement appliquée.',
     Date: 'Date',
@@ -199,7 +220,8 @@ const serviceFrench: Messages = {
     Applies: 'S’applique le',
     Requested: 'Demandé le',
     'Cancel this scheduled plan change?': 'Annuler ce changement de forfait planifié ?',
-    'The customer will keep the current plan at the next renewal. No ledger entry will be posted.': 'Le client conservera le forfait actuel au prochain renouvellement. Aucune écriture ne sera passée.',
+    'The customer will keep the current plan at the next renewal. No ledger entry will be posted.':
+        'Le client conservera le forfait actuel au prochain renouvellement. Aucune écriture ne sera passée.',
     'Cancel scheduled change': 'Annuler le changement planifié',
     Cancel: 'Annuler',
     'Scheduled billing cycle': 'Cycle de facturation planifié',
@@ -209,7 +231,8 @@ const serviceFrench: Messages = {
     days: 'jours',
     through: 'au',
     'Cancel this scheduled billing-cycle change?': 'Annuler ce changement de cycle de facturation planifié ?',
-    'The current anchor stays in place. Cancellation is blocked after its renewal invoice is created.': 'Le jour d’ancrage actuel reste inchangé. L’annulation est bloquée après la création de la facture de renouvellement.',
+    'The current anchor stays in place. Cancellation is blocked after its renewal invoice is created.':
+        'Le jour d’ancrage actuel reste inchangé. L’annulation est bloquée après la création de la facture de renouvellement.',
     'Billing cycle': 'Cycle de facturation',
     'Invoices currently renew on day': 'Les factures se renouvellent actuellement le jour',
     'of each month.': 'de chaque mois.',
@@ -218,17 +241,20 @@ const serviceFrench: Messages = {
     Day: 'Jour',
     'Transition quote': 'Devis de transition',
     'Schedule this billing-cycle change?': 'Planifier ce changement de cycle de facturation ?',
-    'The displayed prorated amount will be used for the transition invoice. Once that invoice exists, settle or void it before changing the schedule.': 'Le montant proratisé affiché sera utilisé pour la facture de transition. Une fois créée, soldez-la ou annulez-la avant de modifier la planification.',
+    'The displayed prorated amount will be used for the transition invoice. Once that invoice exists, settle or void it before changing the schedule.':
+        'Le montant proratisé affiché sera utilisé pour la facture de transition. Une fois créée, soldez-la ou annulez-la avant de modifier la planification.',
     'Schedule change': 'Planifier le changement',
     'Set billing anchor': 'Définir le jour d’ancrage',
     'Schedule billing cycle': 'Planifier le cycle de facturation',
     'Change plan': 'Changer de forfait',
-    'Schedule the next cycle or apply a prorated change now.': 'Planifiez le prochain cycle ou appliquez un changement proratisé maintenant.',
+    'Schedule the next cycle or apply a prorated change now.':
+        'Planifiez le prochain cycle ou appliquez un changement proratisé maintenant.',
     'New plan': 'Nouveau forfait',
     Effective: 'Prise d’effet',
     'At next renewal': 'Au prochain renouvellement',
     'Immediately with proration': 'Immédiatement avec proratisation',
-    'The unused part of the current plan is credited and the remainder of the new plan is charged in the customer ledger currency.': 'La partie inutilisée du forfait actuel est créditée et le solde du nouveau forfait est débité dans la devise du compte client.',
+    'The unused part of the current plan is credited and the remainder of the new plan is charged in the customer ledger currency.':
+        'La partie inutilisée du forfait actuel est créditée et le solde du nouveau forfait est débité dans la devise du compte client.',
     'Immediate quote': 'Devis immédiat',
     'Scheduled change': 'Changement planifié',
     Now: 'Maintenant',
@@ -236,22 +262,27 @@ const serviceFrench: Messages = {
     'Unused credit': 'Crédit inutilisé',
     'New plan charge': 'Frais du nouveau forfait',
     'Net ledger impact': 'Impact net sur le compte',
-    'No charge is posted until renewal. The new plan will be applied when this service expires.': 'Aucun frais ne sera passé avant le renouvellement. Le nouveau forfait sera appliqué à l’expiration de ce service.',
+    'No charge is posted until renewal. The new plan will be applied when this service expires.':
+        'Aucun frais ne sera passé avant le renouvellement. Le nouveau forfait sera appliqué à l’expiration de ce service.',
     'Apply this plan change now?': 'Appliquer ce changement de forfait maintenant ?',
     'Schedule this plan change?': 'Planifier ce changement de forfait ?',
-    'The current plan credit and new plan charge will be posted to the customer ledger immediately.': 'Le crédit du forfait actuel et les frais du nouveau forfait seront passés immédiatement au compte client.',
-    'The current plan remains active until renewal, then the selected plan will be applied.': 'Le forfait actuel reste actif jusqu’au renouvellement, puis le forfait sélectionné sera appliqué.',
+    'The current plan credit and new plan charge will be posted to the customer ledger immediately.':
+        'Le crédit du forfait actuel et les frais du nouveau forfait seront passés immédiatement au compte client.',
+    'The current plan remains active until renewal, then the selected plan will be applied.':
+        'Le forfait actuel reste actif jusqu’au renouvellement, puis le forfait sélectionné sera appliqué.',
     'Apply now': 'Appliquer maintenant',
     'Applying…': 'Application…',
     'Apply plan change': 'Appliquer le changement de forfait',
     'Schedule plan change': 'Planifier le changement de forfait',
     'Recurring add-ons': 'Options récurrentes',
-    'Attach optional recurring charges to this service. They are copied to the next renewal invoice with a fixed price snapshot.': 'Ajoutez des frais récurrents facultatifs à ce service. Ils seront copiés sur la prochaine facture avec un instantané de prix fixe.',
+    'Attach optional recurring charges to this service. They are copied to the next renewal invoice with a fixed price snapshot.':
+        'Ajoutez des frais récurrents facultatifs à ce service. Ils seront copiés sur la prochaine facture avec un instantané de prix fixe.',
     'Recurring add-on': 'Option récurrente',
     'Price unavailable': 'Prix indisponible',
     Starts: 'Début',
     'Cancel this add-on?': 'Annuler cette option ?',
-    'The add-on will stop being included in future renewal invoices. Existing invoices are unchanged.': 'L’option ne figurera plus sur les prochaines factures de renouvellement. Les factures existantes restent inchangées.',
+    'The add-on will stop being included in future renewal invoices. Existing invoices are unchanged.':
+        'L’option ne figurera plus sur les prochaines factures de renouvellement. Les factures existantes restent inchangées.',
     'Cancel add-on': 'Annuler l’option',
     'No recurring add-ons are attached to this service.': 'Aucune option récurrente n’est attachée à ce service.',
     'Add-on': 'Option',
@@ -260,7 +291,8 @@ const serviceFrench: Messages = {
     optional: 'facultatif',
     'Adding…': 'Ajout…',
     'Add recurring add-on': 'Ajouter une option récurrente',
-    'Create an active add-on in Plans before attaching one to a service.': 'Créez une option active dans les forfaits avant de l’attacher à un service.',
+    'Create an active add-on in Plans before attaching one to a service.':
+        'Créez une option active dans les forfaits avant de l’attacher à un service.',
     'Assigned equipment': 'Matériel attribué',
     'Serialized equipment': 'Matériel sérialisé',
     Assigned: 'Attribué',
@@ -330,7 +362,41 @@ const portalArabic: Messages = {
     'portal.dashboard.rating_thanks': 'شكرًا لتقييمك للدعم الذي تلقيته.',
     'portal.dashboard.rating_error': 'تعذر حفظ تقييمك.',
     'portal.dashboard.load_error': 'تعذر تحميل البوابة.',
+    'portal.dashboard.retry': 'إعادة المحاولة',
+    'portal.dashboard.loading': 'جارٍ التحميل…',
+    'portal.dashboard.load_older': 'تحميل الأقدم',
+    'portal.dashboard.loading_older': 'جارٍ تحميل السجلات الأقدم…',
+    'portal.dashboard.no_due_date': 'لا يوجد تاريخ استحقاق',
+    'portal.dashboard.outstanding': 'مستحق',
+    'portal.dashboard.paid': 'مدفوع',
+    'portal.dashboard.view_details': 'عرض التفاصيل',
+    'portal.dashboard.hide_details': 'إخفاء التفاصيل',
+    'portal.dashboard.download_invoice': 'تنزيل PDF',
+    'portal.dashboard.downloading': 'جارٍ التنزيل…',
+    'portal.dashboard.invoice_detail_error': 'تعذر تحميل تفاصيل الفاتورة.',
+    'portal.dashboard.invoice_download_error': 'تعذر تنزيل هذه الفاتورة.',
+    'portal.dashboard.ticket_sent': 'تم إرسال تذكرة الدعم.',
+    'portal.dashboard.restart_requested': 'تم طلب إعادة التشغيل. قد ينقطع اتصالك لفترة قصيرة.',
     'portal.dashboard.return_to_sign_in': 'العودة إلى تسجيل دخول البوابة',
+    'Gross invoiced': 'إجمالي الفواتير',
+    'Net invoiced': 'صافي الفواتير',
+    'Cash collected divided by positive net invoiced': 'التحصيلات النقدية مقسومة على صافي الفواتير الموجب',
+    'Invoices less effective allocations and credits at period end':
+        'الفواتير بعد طرح التخصيصات الفعلية والإشعارات الدائنة في نهاية الفترة',
+    'Daily gross invoices, credits, net invoices and collections':
+        'الفواتير الإجمالية اليومية والإشعارات الدائنة وصافي الفواتير والتحصيلات',
+    'Gross billed by plan': 'إجمالي المبالغ المفوترة حسب الباقة',
+    'Before invoice tax and credit notes; credits are recorded against invoices':
+        'قبل ضريبة الفاتورة والإشعارات الدائنة؛ تُسجَّل الأرصدة الدائنة على الفواتير',
+    'Gross billed margin by POP': 'هامش الفوترة الإجمالي حسب نقطة الحضور (POP)',
+    'Gross billed less upstream cost, before invoice tax and credit notes':
+        'إجمالي الفوترة ناقص تكلفة الربط، قبل ضريبة الفاتورة والإشعارات الدائنة',
+    'Tax on issued invoices, before credit notes': 'ضريبة الفواتير الصادرة، قبل الإشعارات الدائنة',
+    'Cash per current active customer': 'النقد المحصّل لكل عميل نشط حاليًا',
+    'Collections per customer active now': 'التحصيلات لكل عميل نشط حاليًا',
+    'currently active customers': 'العملاء النشطون حاليًا',
+    'Termination events': 'أحداث الإنهاء',
+    'Termination events in the selected period': 'أحداث الإنهاء في الفترة المحددة',
     'portal.category.no_service': 'لا توجد خدمة',
     'portal.category.slow': 'اتصال بطيء',
     'portal.category.billing': 'الفوترة',
@@ -363,12 +429,14 @@ const portalFrench: Messages = {
     'portal.dashboard.payment_history': 'Historique des paiements',
     'portal.dashboard.no_payments': 'Aucun paiement pour le moment.',
     'portal.dashboard.pay_invoice': 'Payer une facture',
-    'portal.dashboard.payment_confirmation_note': 'Le fournisseur confirme le paiement avant la mise à jour de votre compte.',
+    'portal.dashboard.payment_confirmation_note':
+        'Le fournisseur confirme le paiement avant la mise à jour de votre compte.',
     'portal.dashboard.invoice': 'Facture',
     'portal.dashboard.opening_checkout': 'Ouverture du paiement…',
     'portal.dashboard.continue_payment': 'Continuer vers le paiement',
     'portal.dashboard.incomplete_checkout': 'Le fournisseur a renvoyé une session de paiement incomplète.',
-    'portal.dashboard.payment_submitted': 'Paiement envoyé. Votre solde sera mis à jour après confirmation du fournisseur.',
+    'portal.dashboard.payment_submitted':
+        'Paiement envoyé. Votre solde sera mis à jour après confirmation du fournisseur.',
     'portal.dashboard.payment_start_error': 'Impossible de démarrer le paiement.',
     'portal.dashboard.payment_confirm_error': 'Impossible de confirmer le paiement.',
     'portal.dashboard.confirming_payment': 'Confirmation du paiement…',
@@ -394,7 +462,41 @@ const portalFrench: Messages = {
     'portal.dashboard.rating_thanks': 'Merci d’avoir évalué le support reçu.',
     'portal.dashboard.rating_error': 'Impossible d’enregistrer votre note.',
     'portal.dashboard.load_error': 'Impossible de charger le portail.',
+    'portal.dashboard.retry': 'Réessayer',
+    'portal.dashboard.loading': 'Chargement…',
+    'portal.dashboard.load_older': 'Charger les plus anciens',
+    'portal.dashboard.loading_older': 'Chargement des entrées plus anciennes…',
+    'portal.dashboard.no_due_date': 'Aucune date d’échéance',
+    'portal.dashboard.outstanding': 'À payer',
+    'portal.dashboard.paid': 'Payée',
+    'portal.dashboard.view_details': 'Voir les détails',
+    'portal.dashboard.hide_details': 'Masquer les détails',
+    'portal.dashboard.download_invoice': 'Télécharger le PDF',
+    'portal.dashboard.downloading': 'Téléchargement…',
+    'portal.dashboard.invoice_detail_error': 'Impossible de charger les détails de la facture.',
+    'portal.dashboard.invoice_download_error': 'Impossible de télécharger cette facture.',
+    'portal.dashboard.ticket_sent': 'Votre ticket de support a été envoyé.',
+    'portal.dashboard.restart_requested': 'Redémarrage demandé. Votre connexion peut être brièvement interrompue.',
     'portal.dashboard.return_to_sign_in': 'Retour à la connexion du portail',
+    'Gross invoiced': 'Montant brut facturé',
+    'Net invoiced': 'Montant net facturé',
+    'Cash collected divided by positive net invoiced': 'Encaissements divisés par le montant net facturé positif',
+    'Invoices less effective allocations and credits at period end':
+        'Factures moins allocations effectives et avoirs à la fin de la période',
+    'Daily gross invoices, credits, net invoices and collections':
+        'Factures brutes, avoirs, factures nettes et encaissements quotidiens',
+    'Gross billed by plan': 'Montant brut facturé par forfait',
+    'Before invoice tax and credit notes; credits are recorded against invoices':
+        'Avant la taxe sur facture et les avoirs ; les crédits sont enregistrés sur les factures',
+    'Gross billed margin by POP': 'Marge brute facturée par POP',
+    'Gross billed less upstream cost, before invoice tax and credit notes':
+        'Montant brut facturé moins coût amont, avant la taxe sur facture et les avoirs',
+    'Tax on issued invoices, before credit notes': 'Taxes sur les factures émises, avant les avoirs',
+    'Cash per current active customer': 'Encaissements par client actuellement actif',
+    'Collections per customer active now': 'Encaissements par client actif actuellement',
+    'currently active customers': 'clients actuellement actifs',
+    'Termination events': 'Événements de résiliation',
+    'Termination events in the selected period': 'Événements de résiliation sur la période sélectionnée',
     'portal.category.no_service': 'Pas de service',
     'portal.category.slow': 'Connexion lente',
     'portal.category.billing': 'Facturation',
@@ -466,7 +568,8 @@ const publicBillingFrench: Messages = {
     'public.billing.invoice_paid': 'Cette facture est payée',
     'public.billing.no_invoice_balance': 'Il ne reste aucun solde sur cette facture.',
     'public.billing.pay': 'Payer',
-    'public.billing.payment_method_note': 'Choisissez un moyen de paiement en ligne configuré. La confirmation est enregistrée par le callback du fournisseur.',
+    'public.billing.payment_method_note':
+        'Choisissez un moyen de paiement en ligne configuré. La confirmation est enregistrée par le callback du fournisseur.',
     'public.billing.starting': 'Démarrage…',
     'public.billing.pay_by_card': 'Payer par carte',
     'public.billing.pay_with_whish': 'Payer avec Whish',
@@ -530,7 +633,8 @@ const partnerCommercialArabic: Messages = {
     'partner.commercial.low_balance_alert': 'تنبيه انخفاض الرصيد',
     'partner.commercial.create_partner': 'إنشاء شريك',
     'partner.commercial.partner_account': 'حساب الشريك',
-    'partner.commercial.account_description': 'حدّث الحدود التشغيلية والحالة. تبقى العملة والتسلسل الهرمي ثابتين بعد الإنشاء.',
+    'partner.commercial.account_description':
+        'حدّث الحدود التشغيلية والحالة. تبقى العملة والتسلسل الهرمي ثابتين بعد الإنشاء.',
     'partner.commercial.edit_account': 'تعديل الحساب',
     'partner.commercial.save_changes': 'حفظ التغييرات',
     'partner.commercial.wallet_operations': 'عمليات المحفظة',
@@ -543,7 +647,8 @@ const partnerCommercialArabic: Messages = {
     'partner.commercial.settlement_description': 'التقاط نشاط المحفظة والعمولة المستحقة لفترة.',
     'partner.commercial.create_statement': 'إنشاء كشف',
     'partner.commercial.price_book': 'دفتر أسعار الموزع',
-    'partner.commercial.price_book_description': 'حدّد سعر شراء الشريك وسعر البيع والحد الأدنى والأقصى وتاريخ السريان. تحتفظ التجديدات الحالية بلقطة السعر الأصلية.',
+    'partner.commercial.price_book_description':
+        'حدّد سعر شراء الشريك وسعر البيع والحد الأدنى والأقصى وتاريخ السريان. تحتفظ التجديدات الحالية بلقطة السعر الأصلية.',
     'partner.commercial.plans': 'باقات',
     'partner.commercial.create_plan_first': 'أنشئ باقة نشطة قبل ضبط أسعار الموزع.',
     'partner.commercial.catalog': 'كتالوج الموزع',
@@ -555,7 +660,8 @@ const partnerCommercialArabic: Messages = {
     'partner.commercial.closing_wallet': 'رصيد الإغلاق',
     'partner.commercial.commission_due': 'العمولة المستحقة',
     'partner.commercial.approve_statement_title': 'اعتماد كشف التسوية؟',
-    'partner.commercial.approve_statement_description': 'يثبّت الاعتماد مبلغ العمولة لهذه الفترة حتى يمكن دفعه عبر الدفتر.',
+    'partner.commercial.approve_statement_description':
+        'يثبّت الاعتماد مبلغ العمولة لهذه الفترة حتى يمكن دفعه عبر الدفتر.',
     'partner.commercial.approve_statement': 'اعتماد الكشف',
     'partner.commercial.approve': 'اعتماد',
     'partner.commercial.pay_statement_title': 'دفع كشف التسوية؟',
@@ -564,7 +670,8 @@ const partnerCommercialArabic: Messages = {
     'partner.commercial.pay_settlement': 'دفع التسوية',
     'partner.commercial.no_settlements': 'لا توجد كشوف تسوية بعد.',
     'partner.commercial.setup_required': 'إعداد الشريك مطلوب',
-    'partner.commercial.setup_description': 'لا توجد حسابات شركاء لهذا المستأجر بعد. أنشئ شريكًا عبر مسار تهيئة الشريك قبل إدارة أسعار الموزع أو كشوف التسوية.',
+    'partner.commercial.setup_description':
+        'لا توجد حسابات شركاء لهذا المستأجر بعد. أنشئ شريكًا عبر مسار تهيئة الشريك قبل إدارة أسعار الموزع أو كشوف التسوية.',
 };
 
 const partnerCommercialFrench: Messages = {
@@ -588,27 +695,32 @@ const partnerCommercialFrench: Messages = {
     'partner.commercial.effective_from': 'Valide à partir du',
     'partner.commercial.save_price': 'Enregistrer le prix',
     'partner.commercial.add_account': 'Ajouter un compte revendeur',
-    'partner.commercial.add_account_description': 'Créez un portefeuille partenaire et placez-le dans la hiérarchie visible.',
+    'partner.commercial.add_account_description':
+        'Créez un portefeuille partenaire et placez-le dans la hiérarchie visible.',
     'partner.commercial.parent_account': 'Compte parent',
     'partner.commercial.tenant_account': 'Compte du tenant',
     'partner.commercial.credit_limit': 'Limite de crédit',
     'partner.commercial.low_balance_alert': 'Alerte de solde bas',
     'partner.commercial.create_partner': 'Créer le partenaire',
     'partner.commercial.partner_account': 'Compte partenaire',
-    'partner.commercial.account_description': 'Mettez à jour les limites opérationnelles et le statut. La devise et la hiérarchie restent fixes après création.',
+    'partner.commercial.account_description':
+        'Mettez à jour les limites opérationnelles et le statut. La devise et la hiérarchie restent fixes après création.',
     'partner.commercial.edit_account': 'Modifier le compte',
     'partner.commercial.save_changes': 'Enregistrer les modifications',
     'partner.commercial.wallet_operations': 'Opérations du portefeuille',
-    'partner.commercial.wallet_description': 'Alimentez le solde du revendeur et clôturez les périodes de commission avec un règlement auditable.',
+    'partner.commercial.wallet_description':
+        'Alimentez le solde du revendeur et clôturez les périodes de commission avec un règlement auditable.',
     'partner.commercial.current_balance': 'Solde actuel',
     'partner.commercial.available_with_credit': 'Disponible avec crédit :',
     'partner.commercial.fund_wallet': 'Alimenter le portefeuille',
     'partner.commercial.fund_description': 'Le financement en espèces est inscrit au grand livre du tenant.',
     'partner.commercial.create_settlement': 'Créer un règlement',
-    'partner.commercial.settlement_description': 'Capturez l’activité du portefeuille et la commission acquise pour une période.',
+    'partner.commercial.settlement_description':
+        'Capturez l’activité du portefeuille et la commission acquise pour une période.',
     'partner.commercial.create_statement': 'Créer le relevé',
     'partner.commercial.price_book': 'Livre de prix revendeur',
-    'partner.commercial.price_book_description': 'Définissez le prix d’achat, le prix de vente, le plancher, le plafond et la date d’effet. Les renouvellements existants gardent leur instantané d’origine.',
+    'partner.commercial.price_book_description':
+        'Définissez le prix d’achat, le prix de vente, le plancher, le plafond et la date d’effet. Les renouvellements existants gardent leur instantané d’origine.',
     'partner.commercial.plans': 'forfaits',
     'partner.commercial.create_plan_first': 'Créez un forfait actif avant de définir les prix revendeur.',
     'partner.commercial.catalog': 'Catalogue revendeur',
@@ -620,7 +732,8 @@ const partnerCommercialFrench: Messages = {
     'partner.commercial.closing_wallet': 'Portefeuille de clôture',
     'partner.commercial.commission_due': 'Commission due',
     'partner.commercial.approve_statement_title': 'Approuver le relevé de règlement ?',
-    'partner.commercial.approve_statement_description': 'L’approbation fige la commission de cette période afin qu’elle puisse être payée via le grand livre.',
+    'partner.commercial.approve_statement_description':
+        'L’approbation fige la commission de cette période afin qu’elle puisse être payée via le grand livre.',
     'partner.commercial.approve_statement': 'Approuver le relevé',
     'partner.commercial.approve': 'Approuver',
     'partner.commercial.pay_statement_title': 'Payer le relevé de règlement ?',
@@ -629,7 +742,8 @@ const partnerCommercialFrench: Messages = {
     'partner.commercial.pay_settlement': 'Payer le règlement',
     'partner.commercial.no_settlements': 'Aucun relevé de règlement pour le moment.',
     'partner.commercial.setup_required': 'Configuration du partenaire requise',
-    'partner.commercial.setup_description': 'Aucun compte partenaire n’existe encore pour ce tenant. Créez un partenaire via le parcours de provisionnement avant de gérer les prix revendeur ou les relevés de règlement.',
+    'partner.commercial.setup_description':
+        'Aucun compte partenaire n’existe encore pour ce tenant. Créez un partenaire via le parcours de provisionnement avant de gérer les prix revendeur ou les relevés de règlement.',
 };
 
 const inventoryArabic: Messages = {
@@ -642,7 +756,8 @@ const inventoryArabic: Messages = {
     'inventory.all_statuses': 'كل الحالات',
     'inventory.apply_filters': 'تطبيق الفلاتر',
     'inventory.setup': 'إعداد المخزون',
-    'inventory.setup_description': 'أنشئ سجلات العناصر والتخزين أولاً، ثم استلم الكميات أو الوحدات ذات الأرقام التسلسلية.',
+    'inventory.setup_description':
+        'أنشئ سجلات العناصر والتخزين أولاً، ثم استلم الكميات أو الوحدات ذات الأرقام التسلسلية.',
     'inventory.new_item': 'عنصر مخزون جديد',
     'inventory.inventory_type': 'نوع المخزون',
     'inventory.bulk_quantity': 'كمية كبيرة',
@@ -719,7 +834,8 @@ const inventoryArabic: Messages = {
     'inventory.optional_transfer_note': 'ملاحظة العهدة أو إعادة التزويد الاختيارية',
     'inventory.transfer_stock': 'نقل المخزون',
     'inventory.movement_audit': 'تدقيق حركات المخزون',
-    'inventory.movement_audit_description': 'آخر أحداث المخزون المتسلسل والكمي، بما في ذلك الاستلام واستهلاك أوامر العمل.',
+    'inventory.movement_audit_description':
+        'آخر أحداث المخزون المتسلسل والكمي، بما في ذلك الاستلام واستهلاك أوامر العمل.',
     'inventory.movement_type': 'نوع الحركة',
     'inventory.all_movement_types': 'كل أنواع الحركات',
     'inventory.receive': 'استلام',
@@ -782,7 +898,8 @@ const inventoryFrench: Messages = {
     'inventory.all_statuses': 'Tous les états',
     'inventory.apply_filters': 'Appliquer les filtres',
     'inventory.setup': 'Configurer l’inventaire',
-    'inventory.setup_description': 'Créez d’abord les articles et les emplacements, puis réceptionnez les quantités ou les unités sérialisées.',
+    'inventory.setup_description':
+        'Créez d’abord les articles et les emplacements, puis réceptionnez les quantités ou les unités sérialisées.',
     'inventory.new_item': 'Nouvel article d’inventaire',
     'inventory.inventory_type': 'Type d’inventaire',
     'inventory.bulk_quantity': 'Quantité en vrac',
@@ -803,7 +920,8 @@ const inventoryFrench: Messages = {
     'inventory.serial_number': 'Numéro de série',
     'inventory.receive_serialized': 'Réceptionner une unité sérialisée',
     'inventory.catalog': 'Catalogue d’inventaire',
-    'inventory.catalog_description': 'Mettez à jour les articles et emplacements sans supprimer l’historique des mouvements. Les éléments désactivés restent visibles pour l’audit.',
+    'inventory.catalog_description':
+        'Mettez à jour les articles et emplacements sans supprimer l’historique des mouvements. Les éléments désactivés restent visibles pour l’audit.',
     'inventory.items': 'Articles',
     'inventory.save_item': 'Enregistrer l’article',
     'inventory.reorder_at': 'Réapprovisionner à',
@@ -812,7 +930,8 @@ const inventoryFrench: Messages = {
     'inventory.save_location': 'Enregistrer l’emplacement',
     'inventory.no_locations': 'Aucun emplacement de stockage n’a encore été enregistré.',
     'inventory.stock_counts': 'Inventaires physiques',
-    'inventory.stock_counts_description': 'Enregistrez les écarts vérifiés ou refusez les inventaires anciens et inexpliqués.',
+    'inventory.stock_counts_description':
+        'Enregistrez les écarts vérifiés ou refusez les inventaires anciens et inexpliqués.',
     'inventory.field_user': 'Utilisateur terrain',
     'inventory.system': 'Système',
     'inventory.counted': 'Compté',
@@ -822,13 +941,15 @@ const inventoryFrench: Messages = {
     'inventory.stock_count_review_note': 'Note de révision de l’inventaire',
     'inventory.review_note': 'Note de révision',
     'inventory.post_variance_title': 'Comptabiliser cet écart de stock ?',
-    'inventory.post_variance_description': 'Les soldes seront ajustés aux quantités comptées. La validation est refusée si le stock a bougé après le comptage.',
+    'inventory.post_variance_description':
+        'Les soldes seront ajustés aux quantités comptées. La validation est refusée si le stock a bougé après le comptage.',
     'inventory.post_variance': 'Comptabiliser l’écart',
     'inventory.reject_count_title': 'Refuser cet inventaire ?',
     'inventory.reject_count_description': 'Les soldes de stock ne changeront pas.',
     'inventory.reject_count': 'Refuser l’inventaire',
     'inventory.stock_requests': 'Demandes de stock terrain',
-    'inventory.stock_requests_description': 'L’approbation d’une demande comptabilise immédiatement le transfert audité entre les deux emplacements.',
+    'inventory.stock_requests_description':
+        'L’approbation d’une demande comptabilise immédiatement le transfert audité entre les deux emplacements.',
     'inventory.unknown_item': 'Article inconnu',
     'inventory.optional_handover_note': 'Note de remise facultative',
     'inventory.approve_transfer_title': 'Approuver ce transfert de stock ?',
@@ -851,7 +972,8 @@ const inventoryFrench: Messages = {
     'inventory.note': 'Note',
     'inventory.optional_receiving_note': 'Note de réception facultative',
     'inventory.move_stock': 'Déplacer le stock entre emplacements',
-    'inventory.move_stock_description': 'Réapprovisionnez un collecteur ou un technicien, ou retournez le stock inutilisé à l’entrepôt.',
+    'inventory.move_stock_description':
+        'Réapprovisionnez un collecteur ou un technicien, ou retournez le stock inutilisé à l’entrepôt.',
     'inventory.select_source': 'Choisir la source',
     'inventory.select_destination': 'Choisir la destination',
     'inventory.quantity': 'Quantité',
@@ -859,7 +981,8 @@ const inventoryFrench: Messages = {
     'inventory.optional_transfer_note': 'Note facultative de remise ou de réapprovisionnement',
     'inventory.transfer_stock': 'Transférer le stock',
     'inventory.movement_audit': 'Audit des mouvements',
-    'inventory.movement_audit_description': 'Derniers événements de stock sérialisé et en vrac, y compris les réceptions et consommations des ordres de travail.',
+    'inventory.movement_audit_description':
+        'Derniers événements de stock sérialisé et en vrac, y compris les réceptions et consommations des ordres de travail.',
     'inventory.movement_type': 'Type de mouvement',
     'inventory.all_movement_types': 'Tous les types de mouvement',
     'inventory.receive': 'Réception',
@@ -915,7 +1038,8 @@ const inventoryFrench: Messages = {
 const sharedArabic: Messages = {
     'Search pages, settings, customers, services…': 'البحث في الصفحات والإعدادات والعملاء والخدمات…',
     'Default view after sign in': 'الواجهة الافتراضية بعد تسجيل الدخول',
-    'This is used when there is no page you were trying to open before signing in.': 'يُستخدم هذا الخيار عندما لا تكون قد حاولت فتح صفحة قبل تسجيل الدخول.',
+    'This is used when there is no page you were trying to open before signing in.':
+        'يُستخدم هذا الخيار عندما لا تكون قد حاولت فتح صفحة قبل تسجيل الدخول.',
     'Workspace signals': 'إشارات مساحة العمل',
     'Notifications and attention': 'الإشعارات والتنبيهات',
     'Current operational items needing follow-up. The list respects permissions and comes from the active workspace queue.':
@@ -970,17 +1094,16 @@ const sharedArabic: Messages = {
     'Saving…': 'جارٍ الحفظ…',
     'Save outcome': 'حفظ النتيجة',
     'the calculated total': 'الإجمالي المحسوب',
-    'day': 'يوم',
-    'ago': 'منذ',
+    day: 'يوم',
+    ago: 'منذ',
     'Expires in': 'تنتهي خلال',
-    'd': 'ي',
-    'h': 'س',
-    'm': 'د',
+    d: 'ي',
+    h: 'س',
+    m: 'د',
     'Offline. Keep typed changes safe and submit them when the connection returns.':
         'أنت غير متصل. حافظ على التغييرات المكتوبة وأرسلها عند عودة الاتصال.',
     'Service location': 'موقع الخدمة',
-    'Optional GPS coordinates for field work and dispatch.':
-        'إحداثيات GPS اختيارية للعمل الميداني والإرسال.',
+    'Optional GPS coordinates for field work and dispatch.': 'إحداثيات GPS اختيارية للعمل الميداني والإرسال.',
     'This browser does not provide location access.': 'هذا المتصفح لا يوفر الوصول إلى الموقع.',
     'Location access was unavailable. Enter coordinates manually or allow browser access.':
         'تعذّر الوصول إلى الموقع. أدخل الإحداثيات يدويًا أو اسمح للمتصفح بالوصول.',
@@ -1004,10 +1127,10 @@ const sharedArabic: Messages = {
     'One-time link': 'رابط لمرة واحدة',
     Copied: 'تم النسخ',
     Copy: 'نسخ',
-    'Expires': 'ينتهي',
+    Expires: 'ينتهي',
     Active: 'نشط',
     Revoked: 'ملغى',
-    'Expired': 'منتهٍ',
+    Expired: 'منتهٍ',
     'Revoke this public link?': 'إلغاء هذا الرابط العام؟',
     'Anyone using the existing URL will immediately lose access. A new link can be created later.':
         'سيفقد أي شخص يستخدم الرابط الحالي الوصول فورًا. يمكن إنشاء رابط جديد لاحقًا.',
@@ -1064,12 +1187,13 @@ const sharedArabic: Messages = {
     'Unknown customer': 'عميل غير معروف',
     'No code': 'بدون رمز',
     'No due services found': 'لا توجد خدمات مستحقة',
-    'Adjust the date or search to find services ready for renewal.': 'عدل التاريخ أو البحث للعثور على خدمات جاهزة للتجديد.',
+    'Adjust the date or search to find services ready for renewal.':
+        'عدل التاريخ أو البحث للعثور على خدمات جاهزة للتجديد.',
     'Preview as of': 'معاينة حتى',
     'Open invoices are reused safely.': 'تُعاد استخدام الفواتير المفتوحة بأمان.',
     'Retry selected renewals': 'إعادة محاولة التجديدات المحددة',
     'Issue selected renewals': 'إصدار التجديدات المحددة',
-    'active': 'نشط',
+    active: 'نشط',
     'Supplier credential reconciliation': 'مطابقة اعتمادات المورد',
     'Purchased from': 'المشتريات من',
     'Purchased through': 'المشتريات حتى',
@@ -1283,7 +1407,8 @@ const sharedArabic: Messages = {
     'No WhatsApp delivery accounts are configured. Add an account to begin QR pairing.':
         'لا توجد حسابات تسليم WhatsApp مضبوطة. أضف حسابًا لبدء الاقتران عبر QR.',
     'Missing deployment values:': 'قيم النشر المفقودة:',
-    'WHISH_ENDPOINT must be a valid HTTPS URL in production.': 'يجب أن يكون WHISH_ENDPOINT رابط HTTPS صالحًا في بيئة الإنتاج.',
+    'WHISH_ENDPOINT must be a valid HTTPS URL in production.':
+        'يجب أن يكون WHISH_ENDPOINT رابط HTTPS صالحًا في بيئة الإنتاج.',
     '2026-08-13 (Y-m-d)': '2026-08-13 (Y-m-d)',
     '13/08/2026 (d/m/Y)': '13/08/2026 (d/m/Y)',
     '08/13/2026 (m/d/Y)': '08/13/2026 (m/d/Y)',
@@ -1312,7 +1437,8 @@ const sharedArabic: Messages = {
         'أكمل بيانات تاجر Whish Pay والموقع وإعدادات نقطة النهاية.',
     'Create a default branch before onboarding staff.': 'أنشئ فرعًا افتراضيًا قبل إضافة الموظفين.',
     'Create an active plan with an effective price.': 'أنشئ باقة فعّالة بسعر ساري.',
-    'Create at least one service zone before importing customers.': 'أنشئ منطقة خدمة واحدة على الأقل قبل استيراد العملاء.',
+    'Create at least one service zone before importing customers.':
+        'أنشئ منطقة خدمة واحدة على الأقل قبل استيراد العملاء.',
     'Customer record created': 'تم إنشاء سجل العميل',
     'Expired active service': 'خدمة فعّالة منتهية',
     'Expiring supplier credential': 'بيانات اعتماد مورد قاربت على الانتهاء',
@@ -1327,7 +1453,8 @@ const sharedArabic: Messages = {
     'Stripe account API returned an unexpected response.': 'أعادت واجهة حساب Stripe استجابة غير متوقعة.',
     'Stripe credentials and webhook configuration are present.': 'بيانات اعتماد Stripe وإعدادات webhook موجودة.',
     'Stripe is not the selected online payment driver.': 'Stripe ليس مزود الدفع الإلكتروني المحدد.',
-    'Stripe is not the selected payment driver; cash remains available.': 'Stripe ليس مزود الدفع المحدد؛ يبقى التحصيل النقدي متاحًا.',
+    'Stripe is not the selected payment driver; cash remains available.':
+        'Stripe ليس مزود الدفع المحدد؛ يبقى التحصيل النقدي متاحًا.',
     'The private Web.js bridge is configured but is not ready for delivery.':
         'جسر Web.js الخاص مضبوط لكنه غير جاهز للتسليم.',
     'The private Web.js bridge is configured but is waiting for account pairing to finish.':
@@ -1343,7 +1470,8 @@ const sharedArabic: Messages = {
         'WhatsApp Web.js معطّل؛ فعّله بعد اقتران حساب أعمال مخصص.',
     'WhatsApp notifications are not configured; configure Cloud API or opt into Web.js.':
         'إشعارات WhatsApp غير مضبوطة؛ اضبط Cloud API أو فعّل Web.js.',
-    'Whish Pay QR and provider-verified callbacks are configured.': 'تم إعداد QR الخاص بـ Whish Pay وعمليات callback الموثقة من المزود.',
+    'Whish Pay QR and provider-verified callbacks are configured.':
+        'تم إعداد QR الخاص بـ Whish Pay وعمليات callback الموثقة من المزود.',
     'Whish Pay credentials, website and endpoint configuration are present.':
         'بيانات اعتماد Whish Pay والموقع وإعدادات نقطة النهاية موجودة.',
     'Whish Pay is disabled; enable it after merchant and callback acceptance.':
@@ -1452,52 +1580,75 @@ const sharedArabic: Messages = {
     'That code is not valid.': 'هذا الرمز غير صالح.',
     'That authentication code is not valid.': 'رمز المصادقة هذا غير صالح.',
     'The invitation is invalid or expired.': 'الدعوة غير صالحة أو منتهية الصلاحية.',
-    'The work order and operator must belong to the same tenant.': 'يجب أن ينتمي أمر العمل والمنفذ إلى مساحة العمل نفسها.',
+    'The work order and operator must belong to the same tenant.':
+        'يجب أن ينتمي أمر العمل والمنفذ إلى مساحة العمل نفسها.',
     'Only the assigned technician can accept this installation.': 'يمكن للفني المعين فقط قبول هذا التثبيت.',
     'Activation acceptance is available only for installation work orders.': 'قبول التفعيل متاح لأوامر تثبيت فقط.',
-    'Activation can be accepted only while the installation is assigned or in progress.': 'يمكن قبول التفعيل فقط أثناء تعيين التثبيت أو كونه قيد التنفيذ.',
-    'Assign a building, distribution box, and port before accepting activation.': 'عيّن مبنى وصندوق توزيع ومنفذًا قبل قبول التفعيل.',
+    'Activation can be accepted only while the installation is assigned or in progress.':
+        'يمكن قبول التفعيل فقط أثناء تعيين التثبيت أو كونه قيد التنفيذ.',
+    'Assign a building, distribution box, and port before accepting activation.':
+        'عيّن مبنى وصندوق توزيع ومنفذًا قبل قبول التفعيل.',
     'Record the ONU serial before accepting fiber activation.': 'سجّل الرقم التسلسلي لـ ONU قبل قبول تفعيل الألياف.',
-    'Partner and price book item must belong to the current tenant.': 'يجب أن ينتمي الشريك وعنصر دفتر الأسعار إلى مساحة العمل الحالية.',
+    'Partner and price book item must belong to the current tenant.':
+        'يجب أن ينتمي الشريك وعنصر دفتر الأسعار إلى مساحة العمل الحالية.',
     'This task is not available to you.': 'هذه المهمة غير متاحة لك.',
     'Write a message before sending.': 'اكتب رسالة قبل الإرسال.',
-    'Settlement and approver must belong to the current tenant.': 'يجب أن تنتمي التسوية والمعتمد إلى مساحة العمل الحالية.',
+    'Settlement and approver must belong to the current tenant.':
+        'يجب أن تنتمي التسوية والمعتمد إلى مساحة العمل الحالية.',
     'Only draft settlements can be approved.': 'يمكن اعتماد التسويات المسودة فقط.',
-    'The service, distribution box, and actor must belong to the same tenant.': 'يجب أن تنتمي الخدمة وصندوق التوزيع والمنفذ إلى مساحة العمل نفسها.',
+    'The service, distribution box, and actor must belong to the same tenant.':
+        'يجب أن تنتمي الخدمة وصندوق التوزيع والمنفذ إلى مساحة العمل نفسها.',
     'Terminated services cannot receive a network assignment.': 'لا يمكن للخدمات المنتهية تلقي تعيين شبكي.',
-    'Only active distribution boxes can receive service assignments.': 'يمكن لصناديق التوزيع الفعّالة فقط تلقي تعيينات الخدمة.',
+    'Only active distribution boxes can receive service assignments.':
+        'يمكن لصناديق التوزيع الفعّالة فقط تلقي تعيينات الخدمة.',
     'The selected operator cannot receive support tickets.': 'لا يمكن للمنفذ المحدد استلام تذاكر الدعم.',
-    'Credentials, services, and actors must belong to the same tenant.': 'يجب أن تنتمي بيانات الاعتماد والخدمات والمنفذون إلى مساحة العمل نفسها.',
-    'Credentials can only be assigned to upstream-credential services.': 'يمكن تعيين بيانات الاعتماد لخدمات بيانات اعتماد المصدر الأعلى فقط.',
+    'Credentials, services, and actors must belong to the same tenant.':
+        'يجب أن تنتمي بيانات الاعتماد والخدمات والمنفذون إلى مساحة العمل نفسها.',
+    'Credentials can only be assigned to upstream-credential services.':
+        'يمكن تعيين بيانات الاعتماد لخدمات بيانات اعتماد المصدر الأعلى فقط.',
     'The upstream credential is not available.': 'بيانات اعتماد المصدر الأعلى غير متاحة.',
     'The upstream credential has expired.': 'انتهت صلاحية بيانات اعتماد المصدر الأعلى.',
     'The service already has an upstream credential.': 'تملك الخدمة بيانات اعتماد مصدر أعلى بالفعل.',
-    'The service, add-on, and operator must belong to the same tenant.': 'يجب أن تنتمي الخدمة والإضافة والمنفذ إلى مساحة العمل نفسها.',
+    'The service, add-on, and operator must belong to the same tenant.':
+        'يجب أن تنتمي الخدمة والإضافة والمنفذ إلى مساحة العمل نفسها.',
     'Only active add-ons can be attached to a service.': 'يمكن إرفاق الإضافات الفعّالة فقط بالخدمة.',
-    'Only recurring add-ons can be attached to a service. One-off add-ons belong on a manual invoice.': 'يمكن إرفاق الإضافات المتكررة فقط بالخدمة. توضع الإضافات لمرة واحدة في فاتورة يدوية.',
+    'Only recurring add-ons can be attached to a service. One-off add-ons belong on a manual invoice.':
+        'يمكن إرفاق الإضافات المتكررة فقط بالخدمة. توضع الإضافات لمرة واحدة في فاتورة يدوية.',
     'Terminated services cannot receive recurring add-ons.': 'لا يمكن للخدمات المنتهية تلقي إضافات متكررة.',
     'Add-on quantity must be between one and one thousand.': 'يجب أن تتراوح كمية الإضافة بين واحد وألف.',
-    'The add-on end date must be on or after its start date.': 'يجب أن يكون تاريخ انتهاء الإضافة في تاريخ بدايتها أو بعده.',
+    'The add-on end date must be on or after its start date.':
+        'يجب أن يكون تاريخ انتهاء الإضافة في تاريخ بدايتها أو بعده.',
     'This add-on is already inactive.': 'هذه الإضافة غير فعّالة بالفعل.',
     'The service does not belong to the active tenant.': 'الخدمة لا تنتمي إلى مساحة العمل الفعّالة.',
     'This service has no scheduled billing-cycle change.': 'لا يوجد تغيير مجدول لدورة فوترة هذه الخدمة.',
-    'Settle or void the open renewal invoice before cancelling this billing-cycle change.': 'سوِّ فاتورة التجديد المفتوحة أو ألغها قبل إلغاء تغيير دورة الفوترة هذا.',
+    'Settle or void the open renewal invoice before cancelling this billing-cycle change.':
+        'سوِّ فاتورة التجديد المفتوحة أو ألغها قبل إلغاء تغيير دورة الفوترة هذا.',
     'This service has no scheduled plan change to cancel.': 'لا يوجد تغيير مجدول لباقة هذه الخدمة لإلغائه.',
-    'The work order and signer must belong to the same tenant.': 'يجب أن ينتمي أمر العمل والموقّع إلى مساحة العمل نفسها.',
-    'A completed or cancelled work order cannot receive a new signature.': 'لا يمكن لأمر عمل مكتمل أو ملغى تلقي توقيع جديد.',
+    'The work order and signer must belong to the same tenant.':
+        'يجب أن ينتمي أمر العمل والموقّع إلى مساحة العمل نفسها.',
+    'A completed or cancelled work order cannot receive a new signature.':
+        'لا يمكن لأمر عمل مكتمل أو ملغى تلقي توقيع جديد.',
     'This work order already has a signature.': 'يحتوي أمر العمل هذا على توقيع بالفعل.',
     'The actor must belong to the service tenant.': 'يجب أن ينتمي المنفذ إلى مساحة عمل الخدمة.',
     'The cash shift is already closed.': 'الوردية النقدية مغلقة بالفعل.',
-    'A variance note is required when declared cash does not match the system total.': 'يلزم إدخال ملاحظة فرق عندما لا يطابق النقد المصرح به إجمالي النظام.',
-    'The completion idempotency key was already used for another work order.': 'استُخدم مفتاح منع تكرار الإكمال لأمر عمل آخر بالفعل.',
+    'A variance note is required when declared cash does not match the system total.':
+        'يلزم إدخال ملاحظة فرق عندما لا يطابق النقد المصرح به إجمالي النظام.',
+    'The completion idempotency key was already used for another work order.':
+        'استُخدم مفتاح منع تكرار الإكمال لأمر عمل آخر بالفعل.',
     'Only assigned or in-progress work orders can be completed.': 'يمكن إكمال أوامر العمل المعينة أو قيد التنفيذ فقط.',
-    'Record topology and accept activation before completing this installation.': 'سجّل الهيكلية واقبل التفعيل قبل إكمال هذا التثبيت.',
-    'The work order, item, warehouse, and actor must belong to the same tenant.': 'يجب أن ينتمي أمر العمل والعنصر والمستودع والمنفذ إلى مساحة العمل نفسها.',
+    'Record topology and accept activation before completing this installation.':
+        'سجّل الهيكلية واقبل التفعيل قبل إكمال هذا التثبيت.',
+    'The work order, item, warehouse, and actor must belong to the same tenant.':
+        'يجب أن ينتمي أمر العمل والعنصر والمستودع والمنفذ إلى مساحة العمل نفسها.',
     'Serialized inventory must be assigned as an individual unit.': 'يجب تعيين المخزون المتسلسل كوحدة فردية.',
-    'Only active inventory items and warehouses can provide materials.': 'يمكن لعناصر المخزون والمستودعات الفعّالة فقط توفير المواد.',
-    'Technicians may consume materials only from their assigned van warehouse.': 'يمكن للفنيين استهلاك المواد من مستودع مركبتهم المعين فقط.',
-    'Only the assigned technician can consume materials for this work order.': 'يمكن للفني المعين فقط استهلاك المواد لأمر العمل هذا.',
-    'Completed or cancelled work orders cannot consume new materials.': 'لا يمكن لأوامر العمل المكتملة أو الملغاة استهلاك مواد جديدة.',
+    'Only active inventory items and warehouses can provide materials.':
+        'يمكن لعناصر المخزون والمستودعات الفعّالة فقط توفير المواد.',
+    'Technicians may consume materials only from their assigned van warehouse.':
+        'يمكن للفنيين استهلاك المواد من مستودع مركبتهم المعين فقط.',
+    'Only the assigned technician can consume materials for this work order.':
+        'يمكن للفني المعين فقط استهلاك المواد لأمر العمل هذا.',
+    'Completed or cancelled work orders cannot consume new materials.':
+        'لا يمكن لأوامر العمل المكتملة أو الملغاة استهلاك مواد جديدة.',
     'Insufficient bulk stock for this material.': 'المخزون السائب غير كافٍ لهذه المادة.',
     'The address does not match the pool IP version.': 'العنوان لا يطابق إصدار IP للمجموعة.',
     'This address is already recorded in the selected pool.': 'هذا العنوان مسجل بالفعل في المجموعة المحددة.',
@@ -1516,13 +1667,17 @@ const sharedArabic: Messages = {
     'Choose a supported expense currency.': 'اختر عملة مصروفات مدعومة.',
     'Choose a collector for a collector-paid expense.': 'اختر محصلًا للمصروف المدفوع من المحصل.',
     'A partner parent must belong to the current tenant.': 'يجب أن ينتمي الشريك الأب إلى مساحة العمل الحالية.',
-    'You are not allowed to share billing documents for this customer.': 'ليس مسموحًا لك بمشاركة مستندات الفوترة لهذا العميل.',
-    'Choose a supported link type and expiry from 1 to 90 days.': 'اختر نوع رابط مدعومًا وانتهاءً بين يوم واحد و90 يومًا.',
+    'You are not allowed to share billing documents for this customer.':
+        'ليس مسموحًا لك بمشاركة مستندات الفوترة لهذا العميل.',
+    'Choose a supported link type and expiry from 1 to 90 days.':
+        'اختر نوع رابط مدعومًا وانتهاءً بين يوم واحد و90 يومًا.',
     'Choose an invoice belonging to this customer.': 'اختر فاتورة تنتمي إلى هذا العميل.',
     'Choose a receipt belonging to this customer.': 'اختر إيصالًا ينتمي إلى هذا العميل.',
     'Statement links must target the customer account.': 'يجب أن تستهدف روابط الكشوف حساب العميل.',
-    'The customer and ticket actor must belong to the same tenant.': 'يجب أن ينتمي العميل ومنفذ التذكرة إلى مساحة العمل نفسها.',
-    'A WhatsApp account label is required and must be 80 characters or fewer.': 'اسم حساب WhatsApp مطلوب ويجب ألا يتجاوز 80 حرفًا.',
+    'The customer and ticket actor must belong to the same tenant.':
+        'يجب أن ينتمي العميل ومنفذ التذكرة إلى مساحة العمل نفسها.',
+    'A WhatsApp account label is required and must be 80 characters or fewer.':
+        'اسم حساب WhatsApp مطلوب ويجب ألا يتجاوز 80 حرفًا.',
     'Choose a supported WhatsApp job assignment.': 'اختر تعيين مهمة WhatsApp مدعومًا.',
     'The WhatsApp account relation returned an unexpected model.': 'أعادت علاقة حساب WhatsApp نموذجًا غير متوقع.',
     'The WhatsApp account could not be refreshed.': 'تعذّر تحديث حساب WhatsApp.',
@@ -1534,17 +1689,23 @@ const sharedArabic: Messages = {
     'Partner must belong to the current tenant.': 'يجب أن ينتمي الشريك إلى مساحة العمل الحالية.',
     'Settlement period end must not precede its start.': 'يجب ألا تسبق نهاية فترة التسوية بدايتها.',
     'The CSV file is empty.': 'ملف CSV فارغ.',
-    'The CSV must include customer_code, amount_minor and currency columns.': 'يجب أن يتضمن CSV أعمدة customer_code وamount_minor وcurrency.',
-    'One or more credential identifiers already exist in this tenant.': 'معرّف بيانات اعتماد واحد أو أكثر موجود بالفعل في مساحة العمل هذه.',
+    'The CSV must include customer_code, amount_minor and currency columns.':
+        'يجب أن يتضمن CSV أعمدة customer_code وamount_minor وcurrency.',
+    'One or more credential identifiers already exist in this tenant.':
+        'معرّف بيانات اعتماد واحد أو أكثر موجود بالفعل في مساحة العمل هذه.',
     'The credential CSV is empty.': 'ملف CSV لبيانات الاعتماد فارغ.',
-    'The credential CSV must include identifier and secret columns.': 'يجب أن يتضمن CSV لبيانات الاعتماد عمودي identifier وsecret.',
+    'The credential CSV must include identifier and secret columns.':
+        'يجب أن يتضمن CSV لبيانات الاعتماد عمودي identifier وsecret.',
     'Every credential row requires an identifier and a secret.': 'يتطلب كل صف بيانات اعتماد معرّفًا وسرًا.',
     'The credential CSV contains a duplicate identifier.': 'يحتوي CSV لبيانات الاعتماد على معرّف مكرر.',
     'The credential CSV contains no rows.': 'لا يحتوي CSV لبيانات الاعتماد على صفوف.',
     'The CSV must include first_name and phone columns.': 'يجب أن يتضمن CSV عمودي first_name وphone.',
-    'The CSV must include sku, warehouse_code and serial_number columns.': 'يجب أن يتضمن CSV أعمدة sku وwarehouse_code وserial_number.',
-    'The CSV must include name, download_kbps, upload_kbps, duration_days, amount_minor and currency columns.': 'يجب أن يتضمن CSV أعمدة name وdownload_kbps وupload_kbps وduration_days وamount_minor وcurrency.',
-    'The CSV must include customer_code, plan_slug and username columns.': 'يجب أن يتضمن CSV أعمدة customer_code وplan_slug وusername.',
+    'The CSV must include sku, warehouse_code and serial_number columns.':
+        'يجب أن يتضمن CSV أعمدة sku وwarehouse_code وserial_number.',
+    'The CSV must include name, download_kbps, upload_kbps, duration_days, amount_minor and currency columns.':
+        'يجب أن يتضمن CSV أعمدة name وdownload_kbps وupload_kbps وduration_days وamount_minor وcurrency.',
+    'The CSV must include customer_code, plan_slug and username columns.':
+        'يجب أن يتضمن CSV أعمدة customer_code وplan_slug وusername.',
     'Unsupported tabular import type.': 'نوع الاستيراد الجدولي غير مدعوم.',
     'Credit note amount must be positive.': 'يجب أن يكون مبلغ الإشعار الدائن موجبًا.',
     'A credit note reason is required.': 'سبب الإشعار الدائن مطلوب.',
@@ -1553,13 +1714,15 @@ const sharedArabic: Messages = {
     'Only draft invoices can be issued.': 'يمكن إصدار الفواتير المسودة فقط.',
     'Monitoring alert routing is not configured.': 'لم يتم إعداد توجيه تنبيهات المراقبة.',
     'Monitoring alert delivery failed.': 'فشل تسليم تنبيه المراقبة.',
-    'Opening float must contain non-negative integer amounts keyed by ISO currency.': 'يجب أن يحتوي رصيد الافتتاح على مبالغ صحيحة غير سالبة مرتبطة بعملات ISO.',
+    'Opening float must contain non-negative integer amounts keyed by ISO currency.':
+        'يجب أن يحتوي رصيد الافتتاح على مبالغ صحيحة غير سالبة مرتبطة بعملات ISO.',
     'The cashier already has an open shift.': 'لدى أمين الصندوق وردية مفتوحة بالفعل.',
     'Settlement must belong to the current tenant.': 'يجب أن تنتمي التسوية إلى مساحة العمل الحالية.',
     'Only approved settlements can be paid.': 'يمكن دفع التسويات المعتمدة فقط.',
     'Settlement commission activity changed after approval.': 'تغير نشاط عمولة التسوية بعد الاعتماد.',
     'Terminated services cannot change billing cycles.': 'لا يمكن للخدمات المنتهية تغيير دورات الفوترة.',
-    'The current plan has no effective price for this billing-cycle preview.': 'لا تملك الباقة الحالية سعرًا ساريًا لمعاينة دورة الفوترة هذه.',
+    'The current plan has no effective price for this billing-cycle preview.':
+        'لا تملك الباقة الحالية سعرًا ساريًا لمعاينة دورة الفوترة هذه.',
     'The service plan has no current price.': 'لا تملك باقة الخدمة سعرًا حاليًا.',
     'Unsupported payment gateway webhook.': 'webhook بوابة الدفع غير مدعوم.',
     'Payment intent currency does not match the invoice.': 'عملة نية الدفع لا تطابق الفاتورة.',
@@ -1571,20 +1734,26 @@ const sharedArabic: Messages = {
     'The optical device does not belong to this workspace.': 'الجهاز البصري لا ينتمي إلى مساحة العمل هذه.',
     'The service does not belong to this workspace.': 'الخدمة لا تنتمي إلى مساحة العمل هذه.',
     'The work order does not belong to this workspace.': 'أمر العمل لا ينتمي إلى مساحة العمل هذه.',
-    'The work order and service must refer to the same installation.': 'يجب أن يشير أمر العمل والخدمة إلى التثبيت نفسه.',
+    'The work order and service must refer to the same installation.':
+        'يجب أن يشير أمر العمل والخدمة إلى التثبيت نفسه.',
     'The supplier payment exceeds the bill balance.': 'دفعة المورد تتجاوز رصيد الفاتورة.',
-    'The work order and technician must belong to the same tenant.': 'يجب أن ينتمي أمر العمل والفني إلى مساحة العمل نفسها.',
-    'Completed or cancelled work orders cannot receive new readings.': 'لا يمكن لأوامر العمل المكتملة أو الملغاة تلقي قراءات جديدة.',
+    'The work order and technician must belong to the same tenant.':
+        'يجب أن ينتمي أمر العمل والفني إلى مساحة العمل نفسها.',
+    'Completed or cancelled work orders cannot receive new readings.':
+        'لا يمكن لأوامر العمل المكتملة أو الملغاة تلقي قراءات جديدة.',
     'Only the assigned technician can record readings.': 'يمكن للفني المعين فقط تسجيل القراءات.',
     'Closed tickets cannot receive new replies.': 'لا يمكن للتذاكر المغلقة تلقي ردود جديدة.',
-    'Only your posted collector payments can have receipts resent.': 'يمكن إعادة إرسال إيصالات دفعات المحصلين التي سجلتها أنت فقط.',
+    'Only your posted collector payments can have receipts resent.':
+        'يمكن إعادة إرسال إيصالات دفعات المحصلين التي سجلتها أنت فقط.',
     'Partner and plan must belong to the same tenant.': 'يجب أن ينتمي الشريك والباقة إلى مساحة العمل نفسها.',
     'The selected service is not owned by this customer.': 'الخدمة المحددة ليست مملوكة لهذا العميل.',
     'Terminated services cannot restart a network session.': 'لا يمكن للخدمات المنتهية إعادة تشغيل جلسة شبكة.',
-    'Only failed or abandoned network commands can be retried.': 'يمكن إعادة محاولة أوامر الشبكة الفاشلة أو المتروكة فقط.',
+    'Only failed or abandoned network commands can be retried.':
+        'يمكن إعادة محاولة أوامر الشبكة الفاشلة أو المتروكة فقط.',
     'The command service is no longer available in this tenant.': 'لم تعد خدمة الأمر متاحة في مساحة العمل هذه.',
     'The inventory unit is not assigned to this service.': 'وحدة المخزون غير معينة لهذه الخدمة.',
-    'The service and inventory return actor must belong to the same tenant.': 'يجب أن تنتمي الخدمة ومنفذ إرجاع المخزون إلى مساحة العمل نفسها.',
+    'The service and inventory return actor must belong to the same tenant.':
+        'يجب أن تنتمي الخدمة ومنفذ إرجاع المخزون إلى مساحة العمل نفسها.',
     'Recent authentication is required to reveal credentials.': 'يلزم إجراء مصادقة حديثة لكشف بيانات الاعتماد.',
     'Only posted payments can be reversed.': 'يمكن عكس الدفعات المسجلة فقط.',
     'You are not allowed to review this custody entry.': 'ليس مسموحًا لك بمراجعة قيد العهدة هذا.',
@@ -1593,53 +1762,71 @@ const sharedArabic: Messages = {
     'You are not allowed to review this stock count.': 'ليس مسموحًا لك بمراجعة جرد المخزون هذا.',
     'Choose post variance or reject.': 'اختر تسجيل الفرق أو الرفض.',
     'This stock count has already been reviewed.': 'تمت مراجعة جرد المخزون هذا بالفعل.',
-    'Stock changed after this count. Reject it and submit a fresh count.': 'تغير المخزون بعد هذا الجرد. ارفضه وأرسل جردًا جديدًا.',
+    'Stock changed after this count. Reject it and submit a fresh count.':
+        'تغير المخزون بعد هذا الجرد. ارفضه وأرسل جردًا جديدًا.',
     'You are not allowed to review this stock request.': 'ليس مسموحًا لك بمراجعة طلب المخزون هذا.',
     'This stock request has already been reviewed.': 'تمت مراجعة طلب المخزون هذا بالفعل.',
     'You are not allowed to review this expense.': 'ليس مسموحًا لك بمراجعة هذا المصروف.',
     'This expense has already been reviewed.': 'تمت مراجعة هذا المصروف بالفعل.',
-    'The expense category is not linked to an active expense ledger account.': 'فئة المصروفات غير مرتبطة بحساب دفتر مصروفات فعّال.',
+    'The expense category is not linked to an active expense ledger account.':
+        'فئة المصروفات غير مرتبطة بحساب دفتر مصروفات فعّال.',
     'You are not allowed to revoke this billing link.': 'ليس مسموحًا لك بإلغاء رابط الفوترة هذا.',
-    'Only completed customer, plan, service, equipment or balance imports can be rolled back.': 'يمكن التراجع عن استيرادات العملاء أو الباقات أو الخدمات أو المعدات أو الأرصدة المكتملة فقط.',
-    'An imported plan is already assigned to a service and cannot be rolled back.': 'الباقة المستوردة معينة بالفعل لخدمة ولا يمكن التراجع عنها.',
-    'An imported service is already referenced by billing history and cannot be rolled back.': 'الخدمة المستوردة مستخدمة بالفعل في سجل الفوترة ولا يمكن التراجع عنها.',
-    'An imported equipment unit is already referenced by inventory movement and cannot be rolled back.': 'وحدة المعدات المستوردة مستخدمة بالفعل في حركة مخزون ولا يمكن التراجع عنها.',
-    'Encryption keys must be valid base64: values or raw keys.': 'يجب أن تكون مفاتيح التشفير قيم base64 أو مفاتيح خام صالحة.',
+    'Only completed customer, plan, service, equipment or balance imports can be rolled back.':
+        'يمكن التراجع عن استيرادات العملاء أو الباقات أو الخدمات أو المعدات أو الأرصدة المكتملة فقط.',
+    'An imported plan is already assigned to a service and cannot be rolled back.':
+        'الباقة المستوردة معينة بالفعل لخدمة ولا يمكن التراجع عنها.',
+    'An imported service is already referenced by billing history and cannot be rolled back.':
+        'الخدمة المستوردة مستخدمة بالفعل في سجل الفوترة ولا يمكن التراجع عنها.',
+    'An imported equipment unit is already referenced by inventory movement and cannot be rolled back.':
+        'وحدة المعدات المستوردة مستخدمة بالفعل في حركة مخزون ولا يمكن التراجع عنها.',
+    'Encryption keys must be valid base64: values or raw keys.':
+        'يجب أن تكون مفاتيح التشفير قيم base64 أو مفاتيح خام صالحة.',
     'The backup command did not complete successfully.': 'لم يكتمل أمر النسخ الاحتياطي بنجاح.',
     'Select at least one service for bulk billing.': 'حدد خدمة واحدة على الأقل للفوترة بالجملة.',
-    'This idempotency key was already used for a different service selection.': 'استُخدم مفتاح منع التكرار هذا لاختيار خدمة مختلف بالفعل.',
-    'Only failed rows from this batch can be retried with a partial selection.': 'يمكن إعادة محاولة الصفوف الفاشلة من هذه الدفعة فقط مع اختيار جزئي.',
+    'This idempotency key was already used for a different service selection.':
+        'استُخدم مفتاح منع التكرار هذا لاختيار خدمة مختلف بالفعل.',
+    'Only failed rows from this batch can be retried with a partial selection.':
+        'يمكن إعادة محاولة الصفوف الفاشلة من هذه الدفعة فقط مع اختيار جزئي.',
     'The distribution box must belong to the selected building.': 'يجب أن ينتمي صندوق التوزيع إلى المبنى المحدد.',
-    'Capacity cannot be lower than the number of assigned service ports.': 'لا يمكن أن تكون السعة أقل من عدد منافذ الخدمة المعينة.',
+    'Capacity cannot be lower than the number of assigned service ports.':
+        'لا يمكن أن تكون السعة أقل من عدد منافذ الخدمة المعينة.',
     'The building must belong to the active tenant.': 'يجب أن ينتمي المبنى إلى مساحة العمل الفعّالة.',
     'A partner price book must use the partner wallet currency.': 'يجب أن يستخدم دفتر أسعار الشريك عملة محفظة الشريك.',
     'Topology assignment is available only for installation work orders.': 'تعيين الهيكلية متاح لأوامر التثبيت فقط.',
-    'The installation work order must have a service before topology can be assigned.': 'يجب أن يحتوي أمر التثبيت على خدمة قبل تعيين الهيكلية.',
-    'Completed or cancelled work orders cannot change installation details.': 'لا يمكن لأوامر العمل المكتملة أو الملغاة تغيير تفاصيل التثبيت.',
+    'The installation work order must have a service before topology can be assigned.':
+        'يجب أن يحتوي أمر التثبيت على خدمة قبل تعيين الهيكلية.',
+    'Completed or cancelled work orders cannot change installation details.':
+        'لا يمكن لأوامر العمل المكتملة أو الملغاة تغيير تفاصيل التثبيت.',
     'Only the assigned technician can update this installation.': 'يمكن للفني المعين فقط تحديث هذا التثبيت.',
     'This service already uses that billing anchor day.': 'تستخدم هذه الخدمة يوم تثبيت الفوترة هذا بالفعل.',
-    'Settle or void the open renewal invoice before changing this billing cycle.': 'سوِّ فاتورة التجديد المفتوحة أو ألغها قبل تغيير دورة الفوترة هذه.',
+    'Settle or void the open renewal invoice before changing this billing cycle.':
+        'سوِّ فاتورة التجديد المفتوحة أو ألغها قبل تغيير دورة الفوترة هذه.',
     'Completed or cancelled work orders cannot be rescheduled.': 'لا يمكن إعادة جدولة أوامر العمل المكتملة أو الملغاة.',
-    'Whish payment was confirmed but could not be posted to the ledger.': 'تم تأكيد دفعة Whish لكن تعذّر تسجيلها في دفتر الأستاذ.',
+    'Whish payment was confirmed but could not be posted to the ledger.':
+        'تم تأكيد دفعة Whish لكن تعذّر تسجيلها في دفتر الأستاذ.',
     'The message does not belong to the active workspace.': 'الرسالة لا تنتمي إلى مساحة العمل الفعّالة.',
     'The task attachment could not be stored.': 'تعذّر حفظ مرفق المهمة.',
     'A media upload cannot target more than one record.': 'لا يمكن لرفع الوسائط استهداف أكثر من سجل واحد.',
     'The work order does not belong to the active tenant.': 'أمر العمل لا ينتمي إلى مساحة العمل الفعّالة.',
     'The expense does not belong to the active tenant.': 'المصروف لا ينتمي إلى مساحة العمل الفعّالة.',
     'The media file could not be stored.': 'تعذّر حفظ ملف الوسائط.',
-    'The unit, destination, and actor must belong to the same tenant.': 'يجب أن تنتمي الوحدة والوجهة والمنفذ إلى مساحة العمل نفسها.',
+    'The unit, destination, and actor must belong to the same tenant.':
+        'يجب أن تنتمي الوحدة والوجهة والمنفذ إلى مساحة العمل نفسها.',
     'The destination warehouse is inactive.': 'المستودع الوجهة غير فعّال.',
-    'Only unassigned available or recovered units can be transferred.': 'يمكن نقل الوحدات المتاحة غير المعينة أو المستعادة فقط.',
+    'Only unassigned available or recovered units can be transferred.':
+        'يمكن نقل الوحدات المتاحة غير المعينة أو المستعادة فقط.',
     'The unit is already in this warehouse.': 'الوحدة موجودة بالفعل في هذا المستودع.',
     'The collector does not belong to this workspace.': 'المحصل لا ينتمي إلى مساحة العمل هذه.',
     'You are not allowed to manage collector territories.': 'ليس مسموحًا لك بإدارة مناطق المحصلين.',
     'Territories can only be assigned to collector accounts.': 'يمكن تعيين المناطق لحسابات المحصلين فقط.',
     'Choose at least one service zone or allow all zones.': 'اختر منطقة خدمة واحدة على الأقل أو اسمح بكل المناطق.',
-    'One or more selected zones are not available in this workspace.': 'منطقة محددة واحدة أو أكثر غير متاحة في مساحة العمل هذه.',
+    'One or more selected zones are not available in this workspace.':
+        'منطقة محددة واحدة أو أكثر غير متاحة في مساحة العمل هذه.',
     'The operator does not belong to this workspace.': 'المنفذ لا ينتمي إلى مساحة العمل هذه.',
     'You are not allowed to change operator roles.': 'ليس مسموحًا لك بتغيير أدوار المنفذين.',
     'You cannot change your own role.': 'لا يمكنك تغيير دورك بنفسك.',
-    'Protected workspace roles must be changed through a break-glass procedure.': 'يجب تغيير أدوار مساحة العمل المحمية عبر إجراء طوارئ معتمد.',
+    'Protected workspace roles must be changed through a break-glass procedure.':
+        'يجب تغيير أدوار مساحة العمل المحمية عبر إجراء طوارئ معتمد.',
     'The selected operator role is not available.': 'دور المنفذ المحدد غير متاح.',
     'The accounting session belongs to a different tenant.': 'جلسة المحاسبة تنتمي إلى مساحة عمل مختلفة.',
     'The portal verification code is invalid or expired.': 'رمز التحقق للبوابة غير صالح أو منتهي الصلاحية.',
@@ -1665,7 +1852,8 @@ const sharedArabic: Messages = {
     'Unsupported FX rounding mode.': 'وضع تقريب سعر الصرف غير مدعوم.',
     'The invoice is not payable by this customer.': 'لا يمكن لهذا العميل دفع الفاتورة.',
     'Payments cannot be recorded to a closed cash shift.': 'لا يمكن تسجيل الدفعات في وردية نقدية مغلقة.',
-    'FX overrides must be stated against the tenant base currency.': 'يجب تحديد تجاوزات سعر الصرف مقابل العملة الأساسية لمساحة العمل.',
+    'FX overrides must be stated against the tenant base currency.':
+        'يجب تحديد تجاوزات سعر الصرف مقابل العملة الأساسية لمساحة العمل.',
     'The selected invoice has no outstanding balance.': 'لا يوجد رصيد مستحق على الفاتورة المحددة.',
     'Whish Pay supports only active USD, LBP, and AED currencies.': 'يدعم Whish Pay عملات USD وLBP وAED الفعّالة فقط.',
     'An idempotency key is required.': 'مطلوب مفتاح منع التكرار.',
@@ -1676,25 +1864,33 @@ const sharedArabic: Messages = {
     'Invoice amount must be positive.': 'يجب أن يكون مبلغ الفاتورة موجبًا.',
     'Choose an active workspace currency.': 'اختر عملة فعّالة لمساحة العمل.',
     'Invoice quantity must be positive.': 'يجب أن تكون كمية الفاتورة موجبة.',
-    'Invoice records must belong to the same customer and tenant.': 'يجب أن تنتمي سجلات الفاتورة إلى العميل ومساحة العمل نفسيهما.',
+    'Invoice records must belong to the same customer and tenant.':
+        'يجب أن تنتمي سجلات الفاتورة إلى العميل ومساحة العمل نفسيهما.',
     'The plan has no effective price at the invoice date.': 'لا تملك الباقة سعرًا ساريًا في تاريخ الفاتورة.',
     'Invoice unit amounts cannot be negative.': 'لا يمكن أن تكون مبالغ وحدات الفاتورة سالبة.',
-    'Plan changes must be immediate or scheduled for the next cycle.': 'يجب أن تكون تغييرات الباقة فورية أو مجدولة للدورة التالية.',
+    'Plan changes must be immediate or scheduled for the next cycle.':
+        'يجب أن تكون تغييرات الباقة فورية أو مجدولة للدورة التالية.',
     'The selected plan is not available for this service.': 'الباقة المحددة غير متاحة لهذه الخدمة.',
     'Terminated services cannot change plan.': 'لا يمكن للخدمات المنتهية تغيير الباقة.',
     'Both plans need a current price before an immediate change.': 'تحتاج الباقتان إلى سعر حالي قبل التغيير الفوري.',
-    'Immediate plan changes require both prices to use the customer ledger currency.': 'تتطلب تغييرات الباقة الفورية استخدام عملة دفتر العميل في السعرين.',
-    'The item, warehouse, and actor must belong to the same tenant.': 'يجب أن ينتمي العنصر والمستودع والمنفذ إلى مساحة العمل نفسها.',
+    'Immediate plan changes require both prices to use the customer ledger currency.':
+        'تتطلب تغييرات الباقة الفورية استخدام عملة دفتر العميل في السعرين.',
+    'The item, warehouse, and actor must belong to the same tenant.':
+        'يجب أن ينتمي العنصر والمستودع والمنفذ إلى مساحة العمل نفسها.',
     'Serialized inventory must be received as individual units.': 'يجب استلام المخزون المتسلسل كوحدات فردية.',
-    'Only active inventory items and warehouses can receive stock.': 'يمكن لعناصر المخزون والمستودعات الفعّالة فقط استلام المخزون.',
+    'Only active inventory items and warehouses can receive stock.':
+        'يمكن لعناصر المخزون والمستودعات الفعّالة فقط استلام المخزون.',
     'Bulk items must be received with a quantity.': 'يجب استلام العناصر السائبة مع تحديد كمية.',
     'Only active items and warehouses can receive equipment.': 'يمكن للعناصر والمستودعات الفعّالة فقط استلام المعدات.',
     'That serial number is already registered in this workspace.': 'رقم التسلسل هذا مسجل بالفعل في مساحة العمل هذه.',
-    'The item, stock locations, and actor must belong to the same tenant.': 'يجب أن ينتمي العنصر ومواقع المخزون والمنفذ إلى مساحة العمل نفسها.',
-    'Only active bulk items and stock locations can be transferred.': 'يمكن نقل العناصر السائبة ومواقع المخزون الفعّالة فقط.',
+    'The item, stock locations, and actor must belong to the same tenant.':
+        'يجب أن ينتمي العنصر ومواقع المخزون والمنفذ إلى مساحة العمل نفسها.',
+    'Only active bulk items and stock locations can be transferred.':
+        'يمكن نقل العناصر السائبة ومواقع المخزون الفعّالة فقط.',
     'Choose two different stock locations.': 'اختر موقعي مخزون مختلفين.',
     'Insufficient stock at the source location.': 'المخزون غير كافٍ في الموقع المصدر.',
-    'Inventory units, services, and actors must belong to the same tenant.': 'يجب أن تنتمي وحدات المخزون والخدمات والمنفذون إلى مساحة العمل نفسها.',
+    'Inventory units, services, and actors must belong to the same tenant.':
+        'يجب أن تنتمي وحدات المخزون والخدمات والمنفذون إلى مساحة العمل نفسها.',
     'The serialized inventory unit is already assigned.': 'وحدة المخزون المتسلسلة معينة بالفعل.',
     'Choose a collector from this workspace.': 'اختر محصلًا من مساحة العمل هذه.',
     'You can only submit custody entries for yourself.': 'يمكنك إرسال قيود العهدة لنفسك فقط.',
@@ -1703,7 +1899,7 @@ const sharedArabic: Messages = {
     'Choose a supported custody currency.': 'اختر عملة عهدة مدعومة.',
     'Choose whether the adjustment adds or removes custody.': 'اختر ما إذا كان التعديل يضيف العهدة أو يزيلها.',
     'Only a manager can record advances or adjustments.': 'يمكن للمدير فقط تسجيل السلف أو التعديلات.',
-    'The debit exceeds this collector\'s available cash custody.': 'يتجاوز الخصم العهدة النقدية المتاحة لهذا المحصل.',
+    "The debit exceeds this collector's available cash custody.": 'يتجاوز الخصم العهدة النقدية المتاحة لهذا المحصل.',
     'You are not allowed to assign collector tasks.': 'ليس مسموحًا لك بتعيين مهام المحصلين.',
     'Choose a customer from this workspace.': 'اختر عميلًا من مساحة العمل هذه.',
     'Choose a valid task priority.': 'اختر أولوية مهمة صالحة.',
@@ -1712,43 +1908,52 @@ const sharedArabic: Messages = {
     'Complete the task workflow in order.': 'أكمل سير عمل المهمة بالترتيب.',
     'You can only count stock assigned to you.': 'يمكنك جرد المخزون المعين لك فقط.',
     'Count at least one stock item.': 'اجرد عنصر مخزون واحدًا على الأقل.',
-    'Every counted item must be active bulk stock at this location.': 'يجب أن يكون كل عنصر تم جرده مخزونًا سائبًا فعّالًا في هذا الموقع.',
+    'Every counted item must be active bulk stock at this location.':
+        'يجب أن يكون كل عنصر تم جرده مخزونًا سائبًا فعّالًا في هذا الموقع.',
     'Counted quantities cannot be negative.': 'لا يمكن أن تكون الكميات المجردة سالبة.',
     'Choose replenishment or return.': 'اختر إعادة التزويد أو الإرجاع.',
     'The stock request must stay inside this workspace.': 'يجب أن يبقى طلب المخزون داخل مساحة العمل هذه.',
     'Only active bulk stock can be requested.': 'يمكن طلب المخزون السائب الفعّال فقط.',
-    'Choose your assigned stock location and an active central warehouse.': 'اختر موقع المخزون المعين لك ومستودعًا مركزيًا فعّالًا.',
+    'Choose your assigned stock location and an active central warehouse.':
+        'اختر موقع المخزون المعين لك ومستودعًا مركزيًا فعّالًا.',
     'A matching stock request is already pending.': 'يوجد طلب مخزون مطابق قيد الانتظار بالفعل.',
     'No active field day is available to end.': 'لا يوجد يوم عمل ميداني فعّال لإنهائه.',
     'Only collector accounts can start a field day.': 'يمكن لحسابات المحصلين فقط بدء يوم عمل ميداني.',
     'Your field day is already active.': 'يوم عملك الميداني فعّال بالفعل.',
     'Choose a valid route date.': 'اختر تاريخ مسار صالحًا.',
     'Choose at least one customer stop.': 'اختر محطة عميل واحدة على الأقل.',
-    'One or more customer stops are not available in this workspace.': 'محطة عميل واحدة أو أكثر غير متاحة في مساحة العمل هذه.',
+    'One or more customer stops are not available in this workspace.':
+        'محطة عميل واحدة أو أكثر غير متاحة في مساحة العمل هذه.',
     'A route that has started cannot be replanned.': 'لا يمكن إعادة تخطيط مسار بدأ بالفعل.',
     'You are not allowed to plan this collector route.': 'ليس مسموحًا لك بتخطيط مسار هذا المحصل.',
     'Routes can only be assigned to collector accounts.': 'يمكن تعيين المسارات لحسابات المحصلين فقط.',
     'Choose a valid visit outcome.': 'اختر نتيجة زيارة صالحة.',
     'This stop is not assigned to your route.': 'هذه المحطة غير معينة لمسارك.',
-    'Visit outcomes can only be recorded on today\'s route.': 'يمكن تسجيل نتائج الزيارة في مسار اليوم فقط.',
+    "Visit outcomes can only be recorded on today's route.": 'يمكن تسجيل نتائج الزيارة في مسار اليوم فقط.',
     'Start your field day before recording visit outcomes.': 'ابدأ يوم عملك الميداني قبل تسجيل نتائج الزيارات.',
     'This visit outcome has already been recorded.': 'تم تسجيل نتيجة هذه الزيارة بالفعل.',
     'Enter an international phone number with country code.': 'أدخل رقم هاتف دوليًا مع رمز الدولة.',
-    'The customer and assigned stock location must belong to this workspace.': 'يجب أن ينتمي العميل وموقع المخزون المعين إلى مساحة العمل هذه.',
+    'The customer and assigned stock location must belong to this workspace.':
+        'يجب أن ينتمي العميل وموقع المخزون المعين إلى مساحة العمل هذه.',
     'Add at least one sale item.': 'أضف عنصر بيع واحدًا على الأقل.',
     'Choose a supported payment method.': 'اختر طريقة دفع مدعومة.',
     'Open a cash shift before recording a cash sale.': 'افتح وردية نقدية قبل تسجيل بيع نقدي.',
-    'Every sale line needs active bulk stock, a positive quantity, and a positive unit price.': 'يحتاج كل بند بيع إلى مخزون سائب فعّال وكمية موجبة وسعر وحدة موجب.',
+    'Every sale line needs active bulk stock, a positive quantity, and a positive unit price.':
+        'يحتاج كل بند بيع إلى مخزون سائب فعّال وكمية موجبة وسعر وحدة موجب.',
     'The calculated sale line total must be positive.': 'يجب أن يكون إجمالي بند البيع المحسوب موجبًا.',
-    'An open cash shift is required before recording collector payments.': 'يلزم فتح وردية نقدية قبل تسجيل دفعات المحصلين.',
+    'An open cash shift is required before recording collector payments.':
+        'يلزم فتح وردية نقدية قبل تسجيل دفعات المحصلين.',
     'The payment payload is malformed.': 'بيانات الدفع غير صالحة البنية.',
     'The FX override payload is malformed.': 'بيانات تجاوز سعر الصرف غير صالحة البنية.',
     'The FX rounding mode is malformed.': 'وضع تقريب سعر الصرف غير صالح.',
     'Assign a field stock location to a workspace user.': 'عيّن موقع مخزون ميدانيًا لمستخدم في مساحة العمل.',
-    'Transfer all available stock before changing or deactivating this custodian location.': 'انقل كل المخزون المتاح قبل تغيير موقع العهدة هذا أو تعطيله.',
-    'Inventory type cannot change after serialized units have been received.': 'لا يمكن تغيير نوع المخزون بعد استلام وحدات متسلسلة.',
+    'Transfer all available stock before changing or deactivating this custodian location.':
+        'انقل كل المخزون المتاح قبل تغيير موقع العهدة هذا أو تعطيله.',
+    'Inventory type cannot change after serialized units have been received.':
+        'لا يمكن تغيير نوع المخزون بعد استلام وحدات متسلسلة.',
     'Renewal periods must be between one and twelve.': 'يجب أن تتراوح فترات التجديد بين شهر واحد واثني عشر شهرًا.',
-    'Terminated services require an explicit reactivation workflow.': 'تتطلب الخدمات المنتهية إجراء إعادة تفعيل صريحًا.',
+    'Terminated services require an explicit reactivation workflow.':
+        'تتطلب الخدمات المنتهية إجراء إعادة تفعيل صريحًا.',
     'Whish payment status could not be verified.': 'تعذّر التحقق من حالة دفعة Whish.',
     'A partner with this code already exists.': 'يوجد شريك بهذا الرمز بالفعل.',
     'A plan with this slug already exists.': 'توجد باقة بهذا المعرّف المختصر بالفعل.',
@@ -1771,7 +1976,8 @@ const sharedArabic: Messages = {
     'Enter at least one optical measurement.': 'أدخل قياسًا بصريًا واحدًا على الأقل.',
     'The sell price cannot be below the configured floor.': 'لا يمكن أن يكون سعر البيع أقل من الحد الأدنى المضبوط.',
     'The sell price cannot exceed the configured ceiling.': 'لا يمكن أن يتجاوز سعر البيع الحد الأعلى المضبوط.',
-    'Percent promotions use basis points and cannot exceed 10000 (100%).': 'تستخدم العروض النسب المئوية نقاط الأساس ولا يمكن أن تتجاوز 10000 (100%).',
+    'Percent promotions use basis points and cannot exceed 10000 (100%).':
+        'تستخدم العروض النسب المئوية نقاط الأساس ولا يمكن أن تتجاوز 10000 (100%).',
     'The billing unit must be greater than zero.': 'يجب أن تكون وحدة الفوترة أكبر من صفر.',
     'An addon with this slug already exists.': 'توجد إضافة بهذا المعرّف المختصر بالفعل.',
     'A promotion with this code already exists.': 'يوجد عرض بهذا الرمز بالفعل.',
@@ -1779,21 +1985,25 @@ const sharedArabic: Messages = {
     'Tenant updated': 'تم تحديث مساحة العمل',
     'Scheduled billing-cycle change cancelled.': 'تم إلغاء تغيير دورة الفوترة المجدول.',
     'Choose a WhatsApp account from this workspace.': 'اختر حساب WhatsApp من مساحة العمل هذه.',
-    'Invitation created. Copy the one-time link before leaving this page.': 'تم إنشاء الدعوة. انسخ الرابط أحادي الاستخدام قبل مغادرة هذه الصفحة.',
+    'Invitation created. Copy the one-time link before leaving this page.':
+        'تم إنشاء الدعوة. انسخ الرابط أحادي الاستخدام قبل مغادرة هذه الصفحة.',
     'Frankfurter returned no usable quote.': 'لم تُرجع Frankfurter سعرًا قابلًا للاستخدام.',
     'Frankfurter returned a live USD quote.': 'أعادت Frankfurter سعر USD مباشرًا.',
-    'Frankfurter could not be reached or returned an invalid response.': 'تعذّر الوصول إلى Frankfurter أو أعادت استجابة غير صالحة.',
+    'Frankfurter could not be reached or returned an invalid response.':
+        'تعذّر الوصول إلى Frankfurter أو أعادت استجابة غير صالحة.',
     'Stripe account API could not be reached.': 'تعذّر الوصول إلى واجهة حساب Stripe.',
     'Stripe account probe failed.': 'فشل فحص حساب Stripe.',
     'Whish Pay is disabled.': 'Whish Pay معطّل.',
-    'Whish account endpoint accepted the configured credentials.': 'قبلت نقطة نهاية حساب Whish بيانات الاعتماد المضبوطة.',
+    'Whish account endpoint accepted the configured credentials.':
+        'قبلت نقطة نهاية حساب Whish بيانات الاعتماد المضبوطة.',
     'Whish account probe failed.': 'فشل فحص حساب Whish.',
     'WhatsApp Web.js is not the selected provider.': 'WhatsApp Web.js ليس المزود المحدد.',
     'WhatsApp Web.js bridge token is missing.': 'رمز جسر WhatsApp Web.js مفقود.',
     'WhatsApp Web.js bridge could not be reached.': 'تعذّر الوصول إلى جسر WhatsApp Web.js.',
     'WhatsApp Web.js bridge probe failed.': 'فشل فحص جسر WhatsApp Web.js.',
     'The quote currency must differ from the base currency.': 'يجب أن تختلف عملة التسعير عن العملة الأساسية.',
-    'A rate for this currency pair already exists at that effective time.': 'يوجد سعر لزوج العملات هذا في وقت السريان نفسه بالفعل.',
+    'A rate for this currency pair already exists at that effective time.':
+        'يوجد سعر لزوج العملات هذا في وقت السريان نفسه بالفعل.',
     'The selected plan is not available for this tenant.': 'الباقة المحددة غير متاحة لمساحة العمل هذه.',
     'The selected router is not available for this tenant.': 'الموجّه المحدد غير متاح لمساحة العمل هذه.',
     'The selected service does not belong to this customer.': 'الخدمة المحددة لا تنتمي إلى هذا العميل.',
@@ -1809,10 +2019,12 @@ const sharedArabic: Messages = {
     'WhatsApp Web.js is not configured.': 'لم يتم إعداد WhatsApp Web.js.',
     'The private WhatsApp bridge is unreachable.': 'جسر WhatsApp الخاص غير متاح.',
     'The private WhatsApp bridge returned an invalid response.': 'أعاد جسر WhatsApp الخاص استجابة غير صالحة.',
-    'A journal line must contain exactly one positive debit or credit amount.': 'يجب أن يحتوي سطر اليومية على مبلغ مدين أو دائن موجب واحد فقط.',
+    'A journal line must contain exactly one positive debit or credit amount.':
+        'يجب أن يحتوي سطر اليومية على مبلغ مدين أو دائن موجب واحد فقط.',
     'A journal entry must contain at least two lines.': 'يجب أن تحتوي قيد اليومية على سطرين على الأقل.',
     'The journal line currency does not match the account currency.': 'عملة سطر اليومية لا تطابق عملة الحساب.',
-    'Customer ledger currency does not match the customer balance currency.': 'عملة دفتر العميل لا تطابق عملة رصيد العميل.',
+    'Customer ledger currency does not match the customer balance currency.':
+        'عملة دفتر العميل لا تطابق عملة رصيد العميل.',
     'Frankfurter returned an invalid rate response.': 'أعاد Frankfurter استجابة سعر غير صالحة.',
     'Frankfurter returned a malformed rate row.': 'أعاد Frankfurter صف سعر غير صحيح البنية.',
     'Currency must be a three-letter ISO code.': 'يجب أن تكون العملة رمز ISO من ثلاثة أحرف.',
@@ -1821,7 +2033,8 @@ const sharedArabic: Messages = {
     'FX rate ratios must be positive integers.': 'يجب أن تكون نسب أسعار الصرف أعدادًا صحيحة موجبة.',
     'No online payment gateway is configured for this tenant.': 'لم يتم إعداد بوابة دفع إلكترونية لمساحة العمل هذه.',
     'Stripe is not configured for online payments.': 'لم يتم إعداد Stripe للمدفوعات الإلكترونية.',
-    'The customer tenant could not be resolved for Stripe payment metadata.': 'تعذّر تحديد مساحة العميل لبيانات دفع Stripe.',
+    'The customer tenant could not be resolved for Stripe payment metadata.':
+        'تعذّر تحديد مساحة العميل لبيانات دفع Stripe.',
     'Stripe returned an invalid payment intent response.': 'أعاد Stripe استجابة نية دفع غير صالحة.',
     'Stripe returned an incomplete payment intent response.': 'أعاد Stripe استجابة ناقصة لنية الدفع.',
     'Whish Pay is not enabled.': 'Whish Pay غير مفعّل.',
@@ -1841,7 +2054,8 @@ const sharedArabic: Messages = {
     'Unable to create the XLSX export archive.': 'تعذّر إنشاء أرشيف تصدير XLSX.',
     'The renewal preview is invalid or expired.': 'معاينة التجديد غير صالحة أو انتهت صلاحيتها.',
     'The renewal preview no longer matches the current plan price.': 'لم تعد معاينة التجديد تطابق سعر الباقة الحالي.',
-    'The requested API token ability is not available for this user.': 'صلاحية رمز API المطلوبة غير متاحة لهذا المستخدم.',
+    'The requested API token ability is not available for this user.':
+        'صلاحية رمز API المطلوبة غير متاحة لهذا المستخدم.',
     'The sync token is invalid.': 'رمز المزامنة غير صالح.',
     'Currency must be an ISO-4217 code.': 'يجب أن تكون العملة رمز ISO-4217.',
     'Allocation ratios must be positive integers.': 'يجب أن تكون نسب التخصيص أعدادًا صحيحة موجبة.',
@@ -1849,7 +2063,8 @@ const sharedArabic: Messages = {
     'The phone number could not be parsed.': 'تعذّر تحليل رقم الهاتف.',
     'The phone number is not valid.': 'رقم الهاتف غير صالح.',
     'Request context has not started.': 'لم يبدأ سياق الطلب.',
-    'Stock quantity must be a number with at most three decimal places.': 'يجب أن تكون كمية المخزون رقمًا بثلاث خانات عشرية كحد أقصى.',
+    'Stock quantity must be a number with at most three decimal places.':
+        'يجب أن تكون كمية المخزون رقمًا بثلاث خانات عشرية كحد أقصى.',
     'Stock quantity must be greater than zero.': 'يجب أن تكون كمية المخزون أكبر من صفر.',
     'A tenant context is required for this operation.': 'سياق مساحة العمل مطلوب لهذه العملية.',
     'Branch creation returned an unexpected model.': 'أعاد إنشاء الفرع نموذجًا غير متوقع.',
@@ -1866,7 +2081,8 @@ const sharedArabic: Messages = {
     'Work-order paginator contained an invalid record.': 'احتوى مقسّم صفحات أوامر العمل على سجل غير صالح.',
     'Tenant context middleware requires a TenantAware job.': 'تتطلب برمجية سياق مساحة العمل مهمة TenantAware.',
     'The tenant for this job no longer exists.': 'لم تعد مساحة العمل الخاصة بهذه المهمة موجودة.',
-    'Tenant-owned records must be created inside a tenant context.': 'يجب إنشاء السجلات المملوكة لمساحة العمل داخل سياق مساحة عمل.',
+    'Tenant-owned records must be created inside a tenant context.':
+        'يجب إنشاء السجلات المملوكة لمساحة العمل داخل سياق مساحة عمل.',
     'Inventory movements are append-only.': 'حركات المخزون قابلة للإضافة فقط.',
     'Journal entries are append-only.': 'قيود اليومية قابلة للإضافة فقط.',
     'Journal lines are append-only.': 'سطور اليومية قابلة للإضافة فقط.',
@@ -1921,7 +2137,8 @@ const sharedArabic: Messages = {
     'A tenant membership is required.': 'عضوية مساحة العمل مطلوبة.',
     'A valid portal session is required.': 'جلسة بوابة صالحة مطلوبة.',
     'A valid two-factor code is required to issue an API token.': 'يلزم رمز تحقق ثنائي صالح لإصدار رمز API.',
-    'Add and pair at least one WhatsApp delivery account before enabling customer notifications.': 'أضف حساب تسليم WhatsApp واحدًا واربطه على الأقل قبل تفعيل إشعارات العملاء.',
+    'Add and pair at least one WhatsApp delivery account before enabling customer notifications.':
+        'أضف حساب تسليم WhatsApp واحدًا واربطه على الأقل قبل تفعيل إشعارات العملاء.',
     'All configured provider checks passed.': 'اجتازت جميع فحوصات المزوّد المضبوطة.',
     'An outstanding invoice already exists and will be reused.': 'توجد فاتورة مستحقة بالفعل وسيُعاد استخدامها.',
     'An unexpected error occurred.': 'حدث خطأ غير متوقع.',
@@ -1934,7 +2151,8 @@ const sharedArabic: Messages = {
     'Current network session disconnect queued.': 'وُضع قطع جلسة الشبكة الحالية في قائمة الانتظار.',
     'Custody entry approved.': 'تم اعتماد قيد العهدة.',
     'Custody entry rejected.': 'تم رفض قيد العهدة.',
-    'Demo seed rates cannot satisfy production readiness; run fx:sync-frankfurter or approve a current manual treasury rate.': 'لا تفي أسعار البيانات التجريبية بمتطلبات الجاهزية الإنتاجية؛ شغّل fx:sync-frankfurter أو اعتمد سعر خزينة يدويًا حاليًا.',
+    'Demo seed rates cannot satisfy production readiness; run fx:sync-frankfurter or approve a current manual treasury rate.':
+        'لا تفي أسعار البيانات التجريبية بمتطلبات الجاهزية الإنتاجية؛ شغّل fx:sync-frankfurter أو اعتمد سعر خزينة يدويًا حاليًا.',
     'download_kbps must be a non-negative integer': 'يجب أن يكون download_kbps عددًا صحيحًا غير سالب.',
     'duration_days must be a positive integer': 'يجب أن يكون duration_days عددًا صحيحًا موجبًا.',
     'Expense approved and posted.': 'تم اعتماد المصروف وترحيله.',
@@ -1982,18 +2200,21 @@ const sharedArabic: Messages = {
     'The service is not available in this workspace.': 'الخدمة غير متاحة في مساحة العمل هذه.',
     'This document is outside its retention period.': 'هذا المستند خارج فترة الاحتفاظ به.',
     'Ticket unassigned.': 'تم إلغاء تعيين التذكرة.',
-    'Two-factor authentication must be configured before issuing a staff token.': 'يجب ضبط المصادقة الثنائية قبل إصدار رمز موظف.',
+    'Two-factor authentication must be configured before issuing a staff token.':
+        'يجب ضبط المصادقة الثنائية قبل إصدار رمز موظف.',
     'Two-factor authentication must be configured.': 'يجب ضبط المصادقة الثنائية.',
     'Two-factor authentication is required.': 'المصادقة الثنائية مطلوبة.',
     'Unknown supplier': 'مورد غير معروف',
     'Upstream credential activated.': 'تم تفعيل بيانات اعتماد المصدر الأعلى.',
     'Upstream credential does not require a plan sync.': 'لا تتطلب بيانات اعتماد المصدر الأعلى مزامنة باقة.',
     'Upstream credential released.': 'تم تحرير بيانات اعتماد المصدر الأعلى.',
-    'Upstream credential remains assigned; no session disconnect is required.': 'تبقى بيانات اعتماد المصدر الأعلى معيّنة؛ لا حاجة لقطع الجلسة.',
+    'Upstream credential remains assigned; no session disconnect is required.':
+        'تبقى بيانات اعتماد المصدر الأعلى معيّنة؛ لا حاجة لقطع الجلسة.',
     'Provide between one and one hundred queued payments.': 'أرسل من دفعة واحدة إلى مئة دفعة في قائمة الانتظار.',
     'Provide either csv text or a file upload.': 'أرسل نص CSV أو ارفع ملفًا.',
     'Terminated services cannot be re-synced.': 'لا يمكن إعادة مزامنة الخدمات المنتهية.',
-    'The service issue has been resolved. Please try your connection again and reply here if the problem continues.': 'تم حل مشكلة الخدمة. حاول الاتصال مجددًا وأجب هنا إذا استمرت المشكلة.',
+    'The service issue has been resolved. Please try your connection again and reply here if the problem continues.':
+        'تم حل مشكلة الخدمة. حاول الاتصال مجددًا وأجب هنا إذا استمرت المشكلة.',
     'Wallet debit amount must be positive.': 'يجب أن يكون مبلغ الخصم من المحفظة موجبًا.',
     'Wallet funding amount must be positive.': 'يجب أن يكون مبلغ تمويل المحفظة موجبًا.',
     'Webhook payload must be a JSON object.': 'يجب أن تكون حمولة Webhook كائن JSON.',
@@ -2007,7 +2228,8 @@ const sharedArabic: Messages = {
 const sharedFrench: Messages = {
     'Search pages, settings, customers, services…': 'Rechercher des pages, paramètres, clients et services…',
     'Default view after sign in': 'Vue par défaut après connexion',
-    'This is used when there is no page you were trying to open before signing in.': 'Cette vue est utilisée si vous n’aviez pas de page à ouvrir avant la connexion.',
+    'This is used when there is no page you were trying to open before signing in.':
+        'Cette vue est utilisée si vous n’aviez pas de page à ouvrir avant la connexion.',
     'Workspace signals': 'Signaux de l’espace',
     'Notifications and attention': 'Notifications et attention',
     'Current operational items needing follow-up. The list respects permissions and comes from the active workspace queue.':
@@ -2039,7 +2261,8 @@ const sharedFrench: Messages = {
     'Workspace logo': 'Logo de l’espace',
     'Copy variable': 'Copier la variable',
     'Uptime unavailable': 'Temps de fonctionnement indisponible',
-    'Encrypted field storage is unavailable in this browser.': 'Le stockage terrain chiffré est indisponible dans ce navigateur.',
+    'Encrypted field storage is unavailable in this browser.':
+        'Le stockage terrain chiffré est indisponible dans ce navigateur.',
     'Encrypted field storage key is invalid.': 'La clé du stockage terrain chiffré est invalide.',
     'Encrypted field storage is invalid.': 'Le stockage terrain chiffré est invalide.',
     'Field storage could not be opened.': 'Le stockage terrain n’a pas pu être ouvert.',
@@ -2062,12 +2285,12 @@ const sharedFrench: Messages = {
     'Saving…': 'Enregistrement…',
     'Save outcome': 'Enregistrer le résultat',
     'the calculated total': 'le total calculé',
-    'day': 'jour',
-    'ago': 'il y a',
+    day: 'jour',
+    ago: 'il y a',
     'Expires in': 'Expire dans',
-    'd': 'j',
-    'h': 'h',
-    'm': 'min',
+    d: 'j',
+    h: 'h',
+    m: 'min',
     'Offline. Keep typed changes safe and submit them when the connection returns.':
         'Hors ligne. Conservez vos modifications et envoyez-les au retour de la connexion.',
     'Service location': 'Emplacement du service',
@@ -2160,7 +2383,8 @@ const sharedFrench: Messages = {
     'Unknown customer': 'Client inconnu',
     'No code': 'Aucun code',
     'No due services found': 'Aucun service échu trouvé',
-    'Adjust the date or search to find services ready for renewal.': 'Ajustez la date ou la recherche pour trouver les services prêts au renouvellement.',
+    'Adjust the date or search to find services ready for renewal.':
+        'Ajustez la date ou la recherche pour trouver les services prêts au renouvellement.',
     'Preview as of': 'Aperçu au',
     'Open invoices are reused safely.': 'Les factures ouvertes sont réutilisées en toute sécurité.',
     'Retry selected renewals': 'Réessayer les renouvellements sélectionnés',
@@ -2190,7 +2414,8 @@ const sharedFrench: Messages = {
     Payments: 'Paiements',
     Totals: 'Totaux',
     'Customer rating': 'Évaluation du client',
-    'Enter your staff email and we’ll send a secure reset link.': 'Saisissez votre e-mail professionnel et nous vous enverrons un lien de réinitialisation sécurisé.',
+    'Enter your staff email and we’ll send a secure reset link.':
+        'Saisissez votre e-mail professionnel et nous vous enverrons un lien de réinitialisation sécurisé.',
     'Scan to pair WhatsApp Web.js': 'Scannez pour associer WhatsApp Web.js',
     'Preview due services, issue renewal invoices in one controlled batch, and retry the same batch safely when a row needs attention.':
         'Prévisualisez les services échus, émettez les factures de renouvellement en un lot contrôlé et réessayez le même lot en toute sécurité si une ligne nécessite une attention.',
@@ -2244,7 +2469,8 @@ const sharedFrench: Messages = {
     Queued: 'En file d’attente',
     Saved: 'Enregistré',
     Abandoned: 'Abandonné',
-    'Accept activation before completing this installation.': 'Accepter l’activation avant de terminer cette installation.',
+    'Accept activation before completing this installation.':
+        'Accepter l’activation avant de terminer cette installation.',
     Accepted: 'Accepté',
     Action: 'Action',
     Addresses: 'Adresses',
@@ -2263,7 +2489,8 @@ const sharedFrench: Messages = {
     'Cash reconciliation': 'Rapprochement de caisse',
     Checklist: 'Liste de contrôle',
     'Clear search': 'Effacer la recherche',
-    'Closed collector shifts and declared cash variance': 'Shifts des collecteurs clôturés et écarts de caisse déclarés',
+    'Closed collector shifts and declared cash variance':
+        'Shifts des collecteurs clôturés et écarts de caisse déclarés',
     'Closed shifts': 'Shifts clôturés',
     Closed: 'Fermé',
     'Collection currency': 'Devise d’encaissement',
@@ -2276,7 +2503,8 @@ const sharedFrench: Messages = {
     Conflict: 'Conflit',
     Connection: 'Connexion',
     'Cooldown until': 'Délai jusqu’à',
-    'Daily issued and collected amounts for the selected period': 'Montants facturés et encaissés chaque jour sur la période sélectionnée',
+    'Daily issued and collected amounts for the selected period':
+        'Montants facturés et encaissés chaque jour sur la période sélectionnée',
     Default: 'Par défaut',
     'Delivery safety': 'Sécurité de distribution',
     'Download PDF': 'Télécharger le PDF',
@@ -2354,7 +2582,8 @@ const sharedFrench: Messages = {
     'Workspace navigation': 'Navigation de l’espace de travail',
     Yes: 'Oui',
     'plan.positive_promotion_value': 'Saisissez une valeur promotionnelle positive.',
-    'recent provider failures; delivery remains paced': 'Échecs récents du fournisseur ; la distribution reste cadencée',
+    'recent provider failures; delivery remains paced':
+        'Échecs récents du fournisseur ; la distribution reste cadencée',
     'Click the map to place a pin, or drag the existing pin to refine the service location.':
         'Cliquez sur la carte pour placer un repère ou faites glisser le repère existant pour préciser l’emplacement du service.',
     'Open shifts': 'Shifts ouverts',
@@ -2362,7 +2591,8 @@ const sharedFrench: Messages = {
         'Prolonger une période de facturation à partir de son échéance lorsque le renouvellement avec délai de grâce est activé',
     'Each account has its own private bridge session. Assign a job so billing, support, or operations messages use the intended phone number.':
         'Chaque compte possède sa propre session privée du pont. Attribuez une fonction pour que les messages de facturation, de support et d’opérations utilisent le bon numéro.',
-    'A verified application backup was created successfully.': 'Une sauvegarde vérifiée de l’application a été créée avec succès.',
+    'A verified application backup was created successfully.':
+        'Une sauvegarde vérifiée de l’application a été créée avec succès.',
     'At least one WhatsApp account is waiting for a QR scan.': 'Au moins un compte WhatsApp attend un scan QR.',
     'At least one WhatsApp account needs to be paired.': 'Au moins un compte WhatsApp doit être appairé.',
     'Bridge configuration is present. Open WhatsApp setup to check pairing status.':
@@ -2374,7 +2604,8 @@ const sharedFrench: Messages = {
     'No WhatsApp delivery accounts are configured. Add an account to begin QR pairing.':
         'Aucun compte de distribution WhatsApp n’est configuré. Ajoutez-en un pour commencer l’appairage QR.',
     'Missing deployment values:': 'Valeurs de déploiement manquantes :',
-    'WHISH_ENDPOINT must be a valid HTTPS URL in production.': 'WHISH_ENDPOINT doit être une URL HTTPS valide en production.',
+    'WHISH_ENDPOINT must be a valid HTTPS URL in production.':
+        'WHISH_ENDPOINT doit être une URL HTTPS valide en production.',
     '2026-08-13 (Y-m-d)': '2026-08-13 (Y-m-d)',
     '13/08/2026 (d/m/Y)': '13/08/2026 (d/m/Y)',
     '08/13/2026 (m/d/Y)': '08/13/2026 (m/d/Y)',
@@ -2386,25 +2617,29 @@ const sharedFrench: Messages = {
     '02:30:45 PM (12-hour with seconds)': '14:30:45 (12 heures avec secondes)',
     'Ready to import': 'Prêt à importer',
     'Share securely': 'Partager en sécurité',
-    'A tenant logo is available on the configured storage disk.': 'Un logo d’espace est disponible sur le disque configuré.',
+    'A tenant logo is available on the configured storage disk.':
+        'Un logo d’espace est disponible sur le disque configuré.',
     'Account is ready for operations.': 'Le compte est prêt pour les opérations.',
     'Add a tenant logo before the pilot handoff.': 'Ajoutez un logo d’espace avant la mise en production pilote.',
     'An owner account has its role assignment and critical settings/customer capabilities.':
         'Un compte propriétaire possède son rôle et les autorisations essentielles de configuration et de gestion des clients.',
-    'Available to authorized staff after opening a cash shift.': 'Disponible au personnel autorisé après ouverture d’un shift de caisse.',
+    'Available to authorized staff after opening a cash shift.':
+        'Disponible au personnel autorisé après ouverture d’un shift de caisse.',
     'Backup health could not be checked. Review the server backup configuration.':
         'La santé des sauvegardes n’a pas pu être vérifiée. Consultez la configuration serveur.',
     'Base and collection currencies are the same; no FX rate is required.':
         'Les devises de base et d’encaissement sont identiques ; aucun taux de change n’est requis.',
     'Cloud API credentials are missing.': 'Les identifiants Cloud API sont manquants.',
-    'Complete Stripe credentials and webhook configuration.': 'Complétez les identifiants Stripe et la configuration webhook.',
+    'Complete Stripe credentials and webhook configuration.':
+        'Complétez les identifiants Stripe et la configuration webhook.',
     'Complete Web.js bridge, token, callback URL and callback secret configuration.':
         'Complétez la configuration du pont Web.js, du jeton, de l’URL callback et du secret callback.',
     'Complete Whish Pay merchant credentials, website and endpoint configuration.':
         'Complétez les identifiants marchand Whish Pay, le site et la configuration du point de terminaison.',
     'Create a default branch before onboarding staff.': 'Créez une agence par défaut avant d’ajouter le personnel.',
     'Create an active plan with an effective price.': 'Créez un forfait actif avec un prix effectif.',
-    'Create at least one service zone before importing customers.': 'Créez au moins une zone de service avant d’importer les clients.',
+    'Create at least one service zone before importing customers.':
+        'Créez au moins une zone de service avant d’importer les clients.',
     'Customer record created': 'Fiche client créée',
     'Expired active service': 'Service actif expiré',
     'Expiring supplier credential': 'Identifiant fournisseur arrivant à expiration',
@@ -2413,13 +2648,18 @@ const sharedFrench: Messages = {
     'Owner account needs its capability role and critical settings/customer permissions.':
         'Le compte propriétaire doit recevoir son rôle et les autorisations essentielles de configuration et de gestion des clients.',
     'Paid service failed provisioning': 'Le provisionnement du service payé a échoué',
-    'PaymentIntent checkout and webhook settlement are configured.': 'Le checkout PaymentIntent et le règlement webhook sont configurés.',
+    'PaymentIntent checkout and webhook settlement are configured.':
+        'Le checkout PaymentIntent et le règlement webhook sont configurés.',
     'Stale live session': 'Session active obsolète',
-    'Stripe account API accepted the configured credentials.': 'L’API du compte Stripe a accepté les identifiants configurés.',
+    'Stripe account API accepted the configured credentials.':
+        'L’API du compte Stripe a accepté les identifiants configurés.',
     'Stripe account API returned an unexpected response.': 'L’API du compte Stripe a renvoyé une réponse inattendue.',
-    'Stripe credentials and webhook configuration are present.': 'Les identifiants Stripe et la configuration webhook sont présents.',
-    'Stripe is not the selected online payment driver.': 'Stripe n’est pas le fournisseur de paiement en ligne sélectionné.',
-    'Stripe is not the selected payment driver; cash remains available.': 'Stripe n’est pas le fournisseur sélectionné ; l’encaissement reste disponible.',
+    'Stripe credentials and webhook configuration are present.':
+        'Les identifiants Stripe et la configuration webhook sont présents.',
+    'Stripe is not the selected online payment driver.':
+        'Stripe n’est pas le fournisseur de paiement en ligne sélectionné.',
+    'Stripe is not the selected payment driver; cash remains available.':
+        'Stripe n’est pas le fournisseur sélectionné ; l’encaissement reste disponible.',
     'The private Web.js bridge is configured but is not ready for delivery.':
         'Le pont Web.js privé est configuré mais n’est pas prêt pour la distribution.',
     'The private Web.js bridge is configured but is waiting for account pairing to finish.':
@@ -2430,12 +2670,14 @@ const sharedFrench: Messages = {
     'Unallocated payment': 'Paiement non affecté',
     'WhatsApp Cloud API credentials are present.': 'Les identifiants WhatsApp Cloud API sont présents.',
     'WhatsApp Cloud credentials are configured.': 'Les identifiants WhatsApp Cloud sont configurés.',
-    'WhatsApp Web.js bridge health endpoint is reachable.': 'Le point de contrôle du pont WhatsApp Web.js est accessible.',
+    'WhatsApp Web.js bridge health endpoint is reachable.':
+        'Le point de contrôle du pont WhatsApp Web.js est accessible.',
     'WhatsApp Web.js is disabled; enable it after pairing a dedicated business account.':
         'WhatsApp Web.js est désactivé ; activez-le après l’appairage d’un compte professionnel dédié.',
     'WhatsApp notifications are not configured; configure Cloud API or opt into Web.js.':
         'Les notifications WhatsApp ne sont pas configurées ; configurez Cloud API ou activez Web.js.',
-    'Whish Pay QR and provider-verified callbacks are configured.': 'Le QR Whish Pay et les callbacks vérifiés par le fournisseur sont configurés.',
+    'Whish Pay QR and provider-verified callbacks are configured.':
+        'Le QR Whish Pay et les callbacks vérifiés par le fournisseur sont configurés.',
     'Whish Pay credentials, website and endpoint configuration are present.':
         'Les identifiants Whish Pay, le site et le point de terminaison sont configurés.',
     'Whish Pay is disabled; enable it after merchant and callback acceptance.':
@@ -2476,7 +2718,8 @@ const sharedFrench: Messages = {
     'Expense vendor updated.': 'Fournisseur de dépense mis à jour.',
     'Frankfurter could not provide rates right now. Existing rates were not changed.':
         'Frankfurter ne peut pas fournir les taux actuellement. Les taux existants n’ont pas été modifiés.',
-    'Future renewals will use the updated usage rate.': 'Les prochains renouvellements utiliseront le taux d’usage mis à jour.',
+    'Future renewals will use the updated usage rate.':
+        'Les prochains renouvellements utiliseront le taux d’usage mis à jour.',
     'Identity confirmed.': 'Identité confirmée.',
     'If an account matches that address, a reset link is on its way.':
         'Si un compte correspond à cette adresse, un lien de réinitialisation est en cours d’envoi.',
@@ -2515,8 +2758,10 @@ const sharedFrench: Messages = {
     'Supplier updated.': 'Fournisseur mis à jour.',
     'The backup could not be completed. Review the server backup logs.':
         'La sauvegarde n’a pas pu être terminée. Consultez les journaux de sauvegarde du serveur.',
-    'The plan usage rate is ready for renewal rating.': 'Le taux d’usage du forfait est prêt pour le calcul du renouvellement.',
-    'The rate will no longer be selected for new renewals.': 'Le taux ne sera plus sélectionné pour les nouveaux renouvellements.',
+    'The plan usage rate is ready for renewal rating.':
+        'Le taux d’usage du forfait est prêt pour le calcul du renouvellement.',
+    'The rate will no longer be selected for new renewals.':
+        'Le taux ne sera plus sélectionné pour les nouveaux renouvellements.',
     'The recurring add-on will no longer renew.': 'L’extension récurrente ne sera plus renouvelée.',
     'Ticket response archived.': 'Réponse de ticket archivée.',
     'Ticket response created.': 'Réponse de ticket créée.',
@@ -2537,106 +2782,167 @@ const sharedFrench: Messages = {
     'Work-order signature captured.': 'Signature de l’ordre de travail enregistrée.',
     'Workspace settings updated.': 'Paramètres de l’espace mis à jour.',
     'You are signed in and ready to work.': 'Vous êtes connecté et prêt à travailler.',
-    'Your password has been reset. You can sign in now.': 'Votre mot de passe a été réinitialisé. Vous pouvez vous connecter.',
+    'Your password has been reset. You can sign in now.':
+        'Votre mot de passe a été réinitialisé. Vous pouvez vous connecter.',
     'Those credentials do not match our records.': 'Ces identifiants ne correspondent pas à nos dossiers.',
-    'Please wait before requesting another reset link.': 'Veuillez patienter avant de demander un autre lien de réinitialisation.',
+    'Please wait before requesting another reset link.':
+        'Veuillez patienter avant de demander un autre lien de réinitialisation.',
     'That password is not valid.': 'Ce mot de passe n’est pas valide.',
     'That code is not valid.': 'Ce code n’est pas valide.',
     'That authentication code is not valid.': 'Ce code d’authentification n’est pas valide.',
     'The invitation is invalid or expired.': 'L’invitation est invalide ou expirée.',
-    'The work order and operator must belong to the same tenant.': 'L’ordre de travail et l’opérateur doivent appartenir au même espace.',
-    'Only the assigned technician can accept this installation.': 'Seul le technicien affecté peut accepter cette installation.',
-    'Activation acceptance is available only for installation work orders.': 'L’acceptation de l’activation est disponible uniquement pour les ordres d’installation.',
-    'Activation can be accepted only while the installation is assigned or in progress.': 'L’activation ne peut être acceptée que si l’installation est affectée ou en cours.',
-    'Assign a building, distribution box, and port before accepting activation.': 'Affectez un bâtiment, un boîtier de distribution et un port avant d’accepter l’activation.',
-    'Record the ONU serial before accepting fiber activation.': 'Enregistrez le numéro de série ONU avant d’accepter l’activation fibre.',
-    'Partner and price book item must belong to the current tenant.': 'Le partenaire et l’article du catalogue de prix doivent appartenir à l’espace actuel.',
+    'The work order and operator must belong to the same tenant.':
+        'L’ordre de travail et l’opérateur doivent appartenir au même espace.',
+    'Only the assigned technician can accept this installation.':
+        'Seul le technicien affecté peut accepter cette installation.',
+    'Activation acceptance is available only for installation work orders.':
+        'L’acceptation de l’activation est disponible uniquement pour les ordres d’installation.',
+    'Activation can be accepted only while the installation is assigned or in progress.':
+        'L’activation ne peut être acceptée que si l’installation est affectée ou en cours.',
+    'Assign a building, distribution box, and port before accepting activation.':
+        'Affectez un bâtiment, un boîtier de distribution et un port avant d’accepter l’activation.',
+    'Record the ONU serial before accepting fiber activation.':
+        'Enregistrez le numéro de série ONU avant d’accepter l’activation fibre.',
+    'Partner and price book item must belong to the current tenant.':
+        'Le partenaire et l’article du catalogue de prix doivent appartenir à l’espace actuel.',
     'This task is not available to you.': 'Cette tâche ne vous est pas disponible.',
     'Write a message before sending.': 'Rédigez un message avant l’envoi.',
-    'Settlement and approver must belong to the current tenant.': 'Le règlement et l’approbateur doivent appartenir à l’espace actuel.',
+    'Settlement and approver must belong to the current tenant.':
+        'Le règlement et l’approbateur doivent appartenir à l’espace actuel.',
     'Only draft settlements can be approved.': 'Seuls les règlements à l’état brouillon peuvent être approuvés.',
-    'The service, distribution box, and actor must belong to the same tenant.': 'Le service, le boîtier de distribution et l’opérateur doivent appartenir au même espace.',
-    'Terminated services cannot receive a network assignment.': 'Les services terminés ne peuvent pas recevoir d’affectation réseau.',
-    'Only active distribution boxes can receive service assignments.': 'Seuls les boîtiers de distribution actifs peuvent recevoir des affectations de service.',
-    'The selected operator cannot receive support tickets.': 'L’opérateur sélectionné ne peut pas recevoir de tickets d’assistance.',
-    'Credentials, services, and actors must belong to the same tenant.': 'Les identifiants, services et opérateurs doivent appartenir au même espace.',
-    'Credentials can only be assigned to upstream-credential services.': 'Les identifiants ne peuvent être affectés qu’aux services avec identifiants amont.',
+    'The service, distribution box, and actor must belong to the same tenant.':
+        'Le service, le boîtier de distribution et l’opérateur doivent appartenir au même espace.',
+    'Terminated services cannot receive a network assignment.':
+        'Les services terminés ne peuvent pas recevoir d’affectation réseau.',
+    'Only active distribution boxes can receive service assignments.':
+        'Seuls les boîtiers de distribution actifs peuvent recevoir des affectations de service.',
+    'The selected operator cannot receive support tickets.':
+        'L’opérateur sélectionné ne peut pas recevoir de tickets d’assistance.',
+    'Credentials, services, and actors must belong to the same tenant.':
+        'Les identifiants, services et opérateurs doivent appartenir au même espace.',
+    'Credentials can only be assigned to upstream-credential services.':
+        'Les identifiants ne peuvent être affectés qu’aux services avec identifiants amont.',
     'The upstream credential is not available.': 'L’identifiant amont n’est pas disponible.',
     'The upstream credential has expired.': 'L’identifiant amont a expiré.',
     'The service already has an upstream credential.': 'Le service possède déjà un identifiant amont.',
-    'The service, add-on, and operator must belong to the same tenant.': 'Le service, l’extension et l’opérateur doivent appartenir au même espace.',
-    'Only active add-ons can be attached to a service.': 'Seules les extensions actives peuvent être attachées à un service.',
-    'Only recurring add-ons can be attached to a service. One-off add-ons belong on a manual invoice.': 'Seules les extensions récurrentes peuvent être attachées à un service. Les extensions ponctuelles figurent sur une facture manuelle.',
-    'Terminated services cannot receive recurring add-ons.': 'Les services terminés ne peuvent pas recevoir d’extensions récurrentes.',
-    'Add-on quantity must be between one and one thousand.': 'La quantité d’extension doit être comprise entre un et mille.',
-    'The add-on end date must be on or after its start date.': 'La date de fin de l’extension doit être égale ou postérieure à sa date de début.',
+    'The service, add-on, and operator must belong to the same tenant.':
+        'Le service, l’extension et l’opérateur doivent appartenir au même espace.',
+    'Only active add-ons can be attached to a service.':
+        'Seules les extensions actives peuvent être attachées à un service.',
+    'Only recurring add-ons can be attached to a service. One-off add-ons belong on a manual invoice.':
+        'Seules les extensions récurrentes peuvent être attachées à un service. Les extensions ponctuelles figurent sur une facture manuelle.',
+    'Terminated services cannot receive recurring add-ons.':
+        'Les services terminés ne peuvent pas recevoir d’extensions récurrentes.',
+    'Add-on quantity must be between one and one thousand.':
+        'La quantité d’extension doit être comprise entre un et mille.',
+    'The add-on end date must be on or after its start date.':
+        'La date de fin de l’extension doit être égale ou postérieure à sa date de début.',
     'This add-on is already inactive.': 'Cette extension est déjà inactive.',
     'The service does not belong to the active tenant.': 'Le service n’appartient pas à l’espace actif.',
-    'This service has no scheduled billing-cycle change.': 'Aucun changement de cycle de facturation n’est planifié pour ce service.',
-    'Settle or void the open renewal invoice before cancelling this billing-cycle change.': 'Réglez ou annulez la facture de renouvellement ouverte avant d’annuler ce changement de cycle.',
-    'This service has no scheduled plan change to cancel.': 'Aucun changement de forfait planifié n’est à annuler pour ce service.',
-    'The work order and signer must belong to the same tenant.': 'L’ordre de travail et le signataire doivent appartenir au même espace.',
-    'A completed or cancelled work order cannot receive a new signature.': 'Un ordre de travail terminé ou annulé ne peut pas recevoir une nouvelle signature.',
+    'This service has no scheduled billing-cycle change.':
+        'Aucun changement de cycle de facturation n’est planifié pour ce service.',
+    'Settle or void the open renewal invoice before cancelling this billing-cycle change.':
+        'Réglez ou annulez la facture de renouvellement ouverte avant d’annuler ce changement de cycle.',
+    'This service has no scheduled plan change to cancel.':
+        'Aucun changement de forfait planifié n’est à annuler pour ce service.',
+    'The work order and signer must belong to the same tenant.':
+        'L’ordre de travail et le signataire doivent appartenir au même espace.',
+    'A completed or cancelled work order cannot receive a new signature.':
+        'Un ordre de travail terminé ou annulé ne peut pas recevoir une nouvelle signature.',
     'This work order already has a signature.': 'Cet ordre de travail possède déjà une signature.',
     'The actor must belong to the service tenant.': 'L’opérateur doit appartenir à l’espace du service.',
     'The cash shift is already closed.': 'La caisse est déjà fermée.',
-    'A variance note is required when declared cash does not match the system total.': 'Une note d’écart est requise lorsque l’encaisse déclarée ne correspond pas au total système.',
-    'The completion idempotency key was already used for another work order.': 'La clé d’idempotence de clôture a déjà été utilisée pour un autre ordre de travail.',
-    'Only assigned or in-progress work orders can be completed.': 'Seuls les ordres de travail affectés ou en cours peuvent être terminés.',
-    'Record topology and accept activation before completing this installation.': 'Enregistrez la topologie et acceptez l’activation avant de terminer cette installation.',
-    'The work order, item, warehouse, and actor must belong to the same tenant.': 'L’ordre de travail, l’article, l’entrepôt et l’opérateur doivent appartenir au même espace.',
-    'Serialized inventory must be assigned as an individual unit.': 'Le stock sérialisé doit être affecté comme unité individuelle.',
-    'Only active inventory items and warehouses can provide materials.': 'Seuls les articles de stock et entrepôts actifs peuvent fournir du matériel.',
-    'Technicians may consume materials only from their assigned van warehouse.': 'Les techniciens ne peuvent consommer du matériel que depuis l’entrepôt de leur véhicule affecté.',
-    'Only the assigned technician can consume materials for this work order.': 'Seul le technicien affecté peut consommer du matériel pour cet ordre.',
-    'Completed or cancelled work orders cannot consume new materials.': 'Les ordres de travail terminés ou annulés ne peuvent pas consommer de nouveau matériel.',
+    'A variance note is required when declared cash does not match the system total.':
+        'Une note d’écart est requise lorsque l’encaisse déclarée ne correspond pas au total système.',
+    'The completion idempotency key was already used for another work order.':
+        'La clé d’idempotence de clôture a déjà été utilisée pour un autre ordre de travail.',
+    'Only assigned or in-progress work orders can be completed.':
+        'Seuls les ordres de travail affectés ou en cours peuvent être terminés.',
+    'Record topology and accept activation before completing this installation.':
+        'Enregistrez la topologie et acceptez l’activation avant de terminer cette installation.',
+    'The work order, item, warehouse, and actor must belong to the same tenant.':
+        'L’ordre de travail, l’article, l’entrepôt et l’opérateur doivent appartenir au même espace.',
+    'Serialized inventory must be assigned as an individual unit.':
+        'Le stock sérialisé doit être affecté comme unité individuelle.',
+    'Only active inventory items and warehouses can provide materials.':
+        'Seuls les articles de stock et entrepôts actifs peuvent fournir du matériel.',
+    'Technicians may consume materials only from their assigned van warehouse.':
+        'Les techniciens ne peuvent consommer du matériel que depuis l’entrepôt de leur véhicule affecté.',
+    'Only the assigned technician can consume materials for this work order.':
+        'Seul le technicien affecté peut consommer du matériel pour cet ordre.',
+    'Completed or cancelled work orders cannot consume new materials.':
+        'Les ordres de travail terminés ou annulés ne peuvent pas consommer de nouveau matériel.',
     'Insufficient bulk stock for this material.': 'Stock en vrac insuffisant pour ce matériel.',
     'The address does not match the pool IP version.': 'L’adresse ne correspond pas à la version IP du pool.',
-    'This address is already recorded in the selected pool.': 'Cette adresse est déjà enregistrée dans le pool sélectionné.',
+    'This address is already recorded in the selected pool.':
+        'Cette adresse est déjà enregistrée dans le pool sélectionné.',
     'The CIDR range is invalid.': 'La plage CIDR est invalide.',
-    'The selected IP version does not match the CIDR range.': 'La version IP sélectionnée ne correspond pas à la plage CIDR.',
-    'The gateway must use the same IP version as the pool.': 'La passerelle doit utiliser la même version IP que le pool.',
-    'The price book sell amount exceeds its configured maximum.': 'Le montant de vente du catalogue dépasse son maximum configuré.',
-    'The price book sell amount is below its configured minimum.': 'Le montant de vente du catalogue est inférieur à son minimum configuré.',
+    'The selected IP version does not match the CIDR range.':
+        'La version IP sélectionnée ne correspond pas à la plage CIDR.',
+    'The gateway must use the same IP version as the pool.':
+        'La passerelle doit utiliser la même version IP que le pool.',
+    'The price book sell amount exceeds its configured maximum.':
+        'Le montant de vente du catalogue dépasse son maximum configuré.',
+    'The price book sell amount is below its configured minimum.':
+        'Le montant de vente du catalogue est inférieur à son minimum configuré.',
     'Unsupported commission rule type.': 'Type de règle de commission non pris en charge.',
-    'The add-on and operator must belong to the same tenant.': 'L’extension et l’opérateur doivent appartenir au même espace.',
-    'You are not allowed to submit expenses in this workspace.': 'Vous n’êtes pas autorisé à soumettre des dépenses dans cet espace.',
+    'The add-on and operator must belong to the same tenant.':
+        'L’extension et l’opérateur doivent appartenir au même espace.',
+    'You are not allowed to submit expenses in this workspace.':
+        'Vous n’êtes pas autorisé à soumettre des dépenses dans cet espace.',
     'Choose an active expense category.': 'Choisissez une catégorie de dépense active.',
     'Choose an active expense vendor.': 'Choisissez un fournisseur de dépense actif.',
     'Choose a supported expense payment source.': 'Choisissez une source de paiement de dépense prise en charge.',
     'Provide a positive amount and expense description.': 'Saisissez un montant positif et une description de dépense.',
     'Choose a supported expense currency.': 'Choisissez une devise de dépense prise en charge.',
-    'Choose a collector for a collector-paid expense.': 'Choisissez un collecteur pour une dépense payée par collecteur.',
+    'Choose a collector for a collector-paid expense.':
+        'Choisissez un collecteur pour une dépense payée par collecteur.',
     'A partner parent must belong to the current tenant.': 'Le partenaire parent doit appartenir à l’espace actuel.',
-    'You are not allowed to share billing documents for this customer.': 'Vous n’êtes pas autorisé à partager les documents de facturation de ce client.',
-    'Choose a supported link type and expiry from 1 to 90 days.': 'Choisissez un type de lien pris en charge et une expiration de 1 à 90 jours.',
+    'You are not allowed to share billing documents for this customer.':
+        'Vous n’êtes pas autorisé à partager les documents de facturation de ce client.',
+    'Choose a supported link type and expiry from 1 to 90 days.':
+        'Choisissez un type de lien pris en charge et une expiration de 1 à 90 jours.',
     'Choose an invoice belonging to this customer.': 'Choisissez une facture appartenant à ce client.',
     'Choose a receipt belonging to this customer.': 'Choisissez un reçu appartenant à ce client.',
     'Statement links must target the customer account.': 'Les liens de relevé doivent cibler le compte client.',
-    'The customer and ticket actor must belong to the same tenant.': 'Le client et l’opérateur du ticket doivent appartenir au même espace.',
-    'A WhatsApp account label is required and must be 80 characters or fewer.': 'Le libellé du compte WhatsApp est requis et doit comporter au plus 80 caractères.',
+    'The customer and ticket actor must belong to the same tenant.':
+        'Le client et l’opérateur du ticket doivent appartenir au même espace.',
+    'A WhatsApp account label is required and must be 80 characters or fewer.':
+        'Le libellé du compte WhatsApp est requis et doit comporter au plus 80 caractères.',
     'Choose a supported WhatsApp job assignment.': 'Choisissez une affectation de tâche WhatsApp prise en charge.',
-    'The WhatsApp account relation returned an unexpected model.': 'La relation du compte WhatsApp a renvoyé un modèle inattendu.',
+    'The WhatsApp account relation returned an unexpected model.':
+        'La relation du compte WhatsApp a renvoyé un modèle inattendu.',
     'The WhatsApp account could not be refreshed.': 'Le compte WhatsApp n’a pas pu être actualisé.',
-    'The partner wallet credit limit would be exceeded.': 'La limite de crédit du portefeuille partenaire serait dépassée.',
+    'The partner wallet credit limit would be exceeded.':
+        'La limite de crédit du portefeuille partenaire serait dépassée.',
     'A failure reason is required.': 'Un motif d’échec est requis.',
-    'Only the assigned technician can fail this work order.': 'Seul le technicien affecté peut déclarer cet ordre de travail en échec.',
-    'Only active assigned work orders can be failed.': 'Seuls les ordres de travail actifs et affectés peuvent être déclarés en échec.',
+    'Only the assigned technician can fail this work order.':
+        'Seul le technicien affecté peut déclarer cet ordre de travail en échec.',
+    'Only active assigned work orders can be failed.':
+        'Seuls les ordres de travail actifs et affectés peuvent être déclarés en échec.',
     'The recurring expense frequency is invalid.': 'La fréquence de dépense récurrente est invalide.',
     'Partner must belong to the current tenant.': 'Le partenaire doit appartenir à l’espace actuel.',
-    'Settlement period end must not precede its start.': 'La fin de la période de règlement ne doit pas précéder son début.',
+    'Settlement period end must not precede its start.':
+        'La fin de la période de règlement ne doit pas précéder son début.',
     'The CSV file is empty.': 'Le fichier CSV est vide.',
-    'The CSV must include customer_code, amount_minor and currency columns.': 'Le CSV doit contenir les colonnes customer_code, amount_minor et currency.',
-    'One or more credential identifiers already exist in this tenant.': 'Un ou plusieurs identifiants existent déjà dans cet espace.',
+    'The CSV must include customer_code, amount_minor and currency columns.':
+        'Le CSV doit contenir les colonnes customer_code, amount_minor et currency.',
+    'One or more credential identifiers already exist in this tenant.':
+        'Un ou plusieurs identifiants existent déjà dans cet espace.',
     'The credential CSV is empty.': 'Le CSV des identifiants est vide.',
-    'The credential CSV must include identifier and secret columns.': 'Le CSV des identifiants doit contenir les colonnes identifier et secret.',
-    'Every credential row requires an identifier and a secret.': 'Chaque ligne d’identifiant nécessite un identifiant et un secret.',
+    'The credential CSV must include identifier and secret columns.':
+        'Le CSV des identifiants doit contenir les colonnes identifier et secret.',
+    'Every credential row requires an identifier and a secret.':
+        'Chaque ligne d’identifiant nécessite un identifiant et un secret.',
     'The credential CSV contains a duplicate identifier.': 'Le CSV des identifiants contient un identifiant en double.',
     'The credential CSV contains no rows.': 'Le CSV des identifiants ne contient aucune ligne.',
     'The CSV must include first_name and phone columns.': 'Le CSV doit contenir les colonnes first_name et phone.',
-    'The CSV must include sku, warehouse_code and serial_number columns.': 'Le CSV doit contenir les colonnes sku, warehouse_code et serial_number.',
-    'The CSV must include name, download_kbps, upload_kbps, duration_days, amount_minor and currency columns.': 'Le CSV doit contenir les colonnes name, download_kbps, upload_kbps, duration_days, amount_minor et currency.',
-    'The CSV must include customer_code, plan_slug and username columns.': 'Le CSV doit contenir les colonnes customer_code, plan_slug et username.',
+    'The CSV must include sku, warehouse_code and serial_number columns.':
+        'Le CSV doit contenir les colonnes sku, warehouse_code et serial_number.',
+    'The CSV must include name, download_kbps, upload_kbps, duration_days, amount_minor and currency columns.':
+        'Le CSV doit contenir les colonnes name, download_kbps, upload_kbps, duration_days, amount_minor et currency.',
+    'The CSV must include customer_code, plan_slug and username columns.':
+        'Le CSV doit contenir les colonnes customer_code, plan_slug et username.',
     'Unsupported tabular import type.': 'Type d’import tabulaire non pris en charge.',
     'Credit note amount must be positive.': 'Le montant de l’avoir doit être positif.',
     'A credit note reason is required.': 'Le motif de l’avoir est requis.',
@@ -2645,39 +2951,56 @@ const sharedFrench: Messages = {
     'Only draft invoices can be issued.': 'Seules les factures brouillon peuvent être émises.',
     'Monitoring alert routing is not configured.': 'Le routage des alertes de surveillance n’est pas configuré.',
     'Monitoring alert delivery failed.': 'La livraison de l’alerte de surveillance a échoué.',
-    'Opening float must contain non-negative integer amounts keyed by ISO currency.': 'Le fonds de caisse initial doit contenir des montants entiers non négatifs indexés par devise ISO.',
+    'Opening float must contain non-negative integer amounts keyed by ISO currency.':
+        'Le fonds de caisse initial doit contenir des montants entiers non négatifs indexés par devise ISO.',
     'The cashier already has an open shift.': 'Le caissier a déjà une caisse ouverte.',
     'Settlement must belong to the current tenant.': 'Le règlement doit appartenir à l’espace actuel.',
     'Only approved settlements can be paid.': 'Seuls les règlements approuvés peuvent être payés.',
-    'Settlement commission activity changed after approval.': 'L’activité de commission du règlement a changé après approbation.',
-    'Terminated services cannot change billing cycles.': 'Les services terminés ne peuvent pas changer de cycle de facturation.',
-    'The current plan has no effective price for this billing-cycle preview.': 'Le forfait actuel n’a aucun prix effectif pour cet aperçu de cycle.',
+    'Settlement commission activity changed after approval.':
+        'L’activité de commission du règlement a changé après approbation.',
+    'Terminated services cannot change billing cycles.':
+        'Les services terminés ne peuvent pas changer de cycle de facturation.',
+    'The current plan has no effective price for this billing-cycle preview.':
+        'Le forfait actuel n’a aucun prix effectif pour cet aperçu de cycle.',
     'The service plan has no current price.': 'Le forfait du service n’a pas de prix actuel.',
     'Unsupported payment gateway webhook.': 'Webhook de passerelle de paiement non pris en charge.',
-    'Payment intent currency does not match the invoice.': 'La devise de l’intention de paiement ne correspond pas à la facture.',
+    'Payment intent currency does not match the invoice.':
+        'La devise de l’intention de paiement ne correspond pas à la facture.',
     'Only resolved or closed tickets can be rated.': 'Seuls les tickets résolus ou fermés peuvent être évalués.',
     'Unable to create the customer export stream.': 'Impossible de créer le flux d’export des clients.',
     'Unable to create the finance report export stream.': 'Impossible de créer le flux d’export du rapport financier.',
-    'Unable to create the operations report export stream.': 'Impossible de créer le flux d’export du rapport opérationnel.',
-    'Unable to create the supplier payables export stream.': 'Impossible de créer le flux d’export des dettes fournisseurs.',
+    'Unable to create the operations report export stream.':
+        'Impossible de créer le flux d’export du rapport opérationnel.',
+    'Unable to create the supplier payables export stream.':
+        'Impossible de créer le flux d’export des dettes fournisseurs.',
     'The optical device does not belong to this workspace.': 'L’appareil optique n’appartient pas à cet espace.',
     'The service does not belong to this workspace.': 'Le service n’appartient pas à cet espace.',
     'The work order does not belong to this workspace.': 'L’ordre de travail n’appartient pas à cet espace.',
-    'The work order and service must refer to the same installation.': 'L’ordre de travail et le service doivent concerner la même installation.',
+    'The work order and service must refer to the same installation.':
+        'L’ordre de travail et le service doivent concerner la même installation.',
     'The supplier payment exceeds the bill balance.': 'Le paiement fournisseur dépasse le solde de la facture.',
-    'The work order and technician must belong to the same tenant.': 'L’ordre de travail et le technicien doivent appartenir au même espace.',
-    'Completed or cancelled work orders cannot receive new readings.': 'Les ordres terminés ou annulés ne peuvent pas recevoir de nouvelles mesures.',
+    'The work order and technician must belong to the same tenant.':
+        'L’ordre de travail et le technicien doivent appartenir au même espace.',
+    'Completed or cancelled work orders cannot receive new readings.':
+        'Les ordres terminés ou annulés ne peuvent pas recevoir de nouvelles mesures.',
     'Only the assigned technician can record readings.': 'Seul le technicien affecté peut enregistrer des mesures.',
     'Closed tickets cannot receive new replies.': 'Les tickets fermés ne peuvent pas recevoir de nouvelles réponses.',
-    'Only your posted collector payments can have receipts resent.': 'Seuls vos paiements collecteurs enregistrés peuvent recevoir un reçu renvoyé.',
-    'Partner and plan must belong to the same tenant.': 'Le partenaire et le forfait doivent appartenir au même espace.',
+    'Only your posted collector payments can have receipts resent.':
+        'Seuls vos paiements collecteurs enregistrés peuvent recevoir un reçu renvoyé.',
+    'Partner and plan must belong to the same tenant.':
+        'Le partenaire et le forfait doivent appartenir au même espace.',
     'The selected service is not owned by this customer.': 'Le service sélectionné n’appartient pas à ce client.',
-    'Terminated services cannot restart a network session.': 'Les services terminés ne peuvent pas redémarrer une session réseau.',
-    'Only failed or abandoned network commands can be retried.': 'Seules les commandes réseau échouées ou abandonnées peuvent être réessayées.',
-    'The command service is no longer available in this tenant.': 'Le service de commande n’est plus disponible dans cet espace.',
+    'Terminated services cannot restart a network session.':
+        'Les services terminés ne peuvent pas redémarrer une session réseau.',
+    'Only failed or abandoned network commands can be retried.':
+        'Seules les commandes réseau échouées ou abandonnées peuvent être réessayées.',
+    'The command service is no longer available in this tenant.':
+        'Le service de commande n’est plus disponible dans cet espace.',
     'The inventory unit is not assigned to this service.': 'L’unité de stock n’est pas affectée à ce service.',
-    'The service and inventory return actor must belong to the same tenant.': 'Le service et l’opérateur du retour de stock doivent appartenir au même espace.',
-    'Recent authentication is required to reveal credentials.': 'Une authentification récente est requise pour révéler les identifiants.',
+    'The service and inventory return actor must belong to the same tenant.':
+        'Le service et l’opérateur du retour de stock doivent appartenir au même espace.',
+    'Recent authentication is required to reveal credentials.':
+        'Une authentification récente est requise pour révéler les identifiants.',
     'Only posted payments can be reversed.': 'Seuls les paiements enregistrés peuvent être annulés.',
     'You are not allowed to review this custody entry.': 'Vous n’êtes pas autorisé à examiner cette écriture de garde.',
     'Choose approve or reject.': 'Choisissez approuver ou rejeter.',
@@ -2685,58 +3008,87 @@ const sharedFrench: Messages = {
     'You are not allowed to review this stock count.': 'Vous n’êtes pas autorisé à examiner ce comptage de stock.',
     'Choose post variance or reject.': 'Choisissez enregistrer l’écart ou rejeter.',
     'This stock count has already been reviewed.': 'Ce comptage de stock a déjà été examiné.',
-    'Stock changed after this count. Reject it and submit a fresh count.': 'Le stock a changé après ce comptage. Rejetez-le et envoyez un nouveau comptage.',
+    'Stock changed after this count. Reject it and submit a fresh count.':
+        'Le stock a changé après ce comptage. Rejetez-le et envoyez un nouveau comptage.',
     'You are not allowed to review this stock request.': 'Vous n’êtes pas autorisé à examiner cette demande de stock.',
     'This stock request has already been reviewed.': 'Cette demande de stock a déjà été examinée.',
     'You are not allowed to review this expense.': 'Vous n’êtes pas autorisé à examiner cette dépense.',
     'This expense has already been reviewed.': 'Cette dépense a déjà été examinée.',
-    'The expense category is not linked to an active expense ledger account.': 'La catégorie de dépense n’est pas liée à un compte de grand livre actif.',
+    'The expense category is not linked to an active expense ledger account.':
+        'La catégorie de dépense n’est pas liée à un compte de grand livre actif.',
     'You are not allowed to revoke this billing link.': 'Vous n’êtes pas autorisé à révoquer ce lien de facturation.',
-    'Only completed customer, plan, service, equipment or balance imports can be rolled back.': 'Seuls les imports terminés de clients, forfaits, services, équipements ou soldes peuvent être annulés.',
-    'An imported plan is already assigned to a service and cannot be rolled back.': 'Le forfait importé est déjà affecté à un service et ne peut pas être annulé.',
-    'An imported service is already referenced by billing history and cannot be rolled back.': 'Le service importé est déjà référencé dans l’historique de facturation et ne peut pas être annulé.',
-    'An imported equipment unit is already referenced by inventory movement and cannot be rolled back.': 'L’équipement importé est déjà référencé par un mouvement de stock et ne peut pas être annulé.',
-    'Encryption keys must be valid base64: values or raw keys.': 'Les clés de chiffrement doivent être des valeurs base64 ou des clés brutes valides.',
-    'The backup command did not complete successfully.': 'La commande de sauvegarde ne s’est pas terminée correctement.',
+    'Only completed customer, plan, service, equipment or balance imports can be rolled back.':
+        'Seuls les imports terminés de clients, forfaits, services, équipements ou soldes peuvent être annulés.',
+    'An imported plan is already assigned to a service and cannot be rolled back.':
+        'Le forfait importé est déjà affecté à un service et ne peut pas être annulé.',
+    'An imported service is already referenced by billing history and cannot be rolled back.':
+        'Le service importé est déjà référencé dans l’historique de facturation et ne peut pas être annulé.',
+    'An imported equipment unit is already referenced by inventory movement and cannot be rolled back.':
+        'L’équipement importé est déjà référencé par un mouvement de stock et ne peut pas être annulé.',
+    'Encryption keys must be valid base64: values or raw keys.':
+        'Les clés de chiffrement doivent être des valeurs base64 ou des clés brutes valides.',
+    'The backup command did not complete successfully.':
+        'La commande de sauvegarde ne s’est pas terminée correctement.',
     'Select at least one service for bulk billing.': 'Sélectionnez au moins un service pour la facturation groupée.',
-    'This idempotency key was already used for a different service selection.': 'Cette clé d’idempotence a déjà été utilisée pour une autre sélection de services.',
-    'Only failed rows from this batch can be retried with a partial selection.': 'Seules les lignes échouées de ce lot peuvent être réessayées avec une sélection partielle.',
-    'The distribution box must belong to the selected building.': 'Le boîtier de distribution doit appartenir au bâtiment sélectionné.',
-    'Capacity cannot be lower than the number of assigned service ports.': 'La capacité ne peut pas être inférieure au nombre de ports de service affectés.',
+    'This idempotency key was already used for a different service selection.':
+        'Cette clé d’idempotence a déjà été utilisée pour une autre sélection de services.',
+    'Only failed rows from this batch can be retried with a partial selection.':
+        'Seules les lignes échouées de ce lot peuvent être réessayées avec une sélection partielle.',
+    'The distribution box must belong to the selected building.':
+        'Le boîtier de distribution doit appartenir au bâtiment sélectionné.',
+    'Capacity cannot be lower than the number of assigned service ports.':
+        'La capacité ne peut pas être inférieure au nombre de ports de service affectés.',
     'The building must belong to the active tenant.': 'Le bâtiment doit appartenir à l’espace actif.',
-    'A partner price book must use the partner wallet currency.': 'Le catalogue partenaire doit utiliser la devise du portefeuille partenaire.',
-    'Topology assignment is available only for installation work orders.': 'L’affectation de topologie est disponible uniquement pour les ordres d’installation.',
-    'The installation work order must have a service before topology can be assigned.': 'L’ordre d’installation doit avoir un service avant l’affectation de la topologie.',
-    'Completed or cancelled work orders cannot change installation details.': 'Les ordres de travail terminés ou annulés ne peuvent pas modifier les détails d’installation.',
-    'Only the assigned technician can update this installation.': 'Seul le technicien affecté peut mettre à jour cette installation.',
+    'A partner price book must use the partner wallet currency.':
+        'Le catalogue partenaire doit utiliser la devise du portefeuille partenaire.',
+    'Topology assignment is available only for installation work orders.':
+        'L’affectation de topologie est disponible uniquement pour les ordres d’installation.',
+    'The installation work order must have a service before topology can be assigned.':
+        'L’ordre d’installation doit avoir un service avant l’affectation de la topologie.',
+    'Completed or cancelled work orders cannot change installation details.':
+        'Les ordres de travail terminés ou annulés ne peuvent pas modifier les détails d’installation.',
+    'Only the assigned technician can update this installation.':
+        'Seul le technicien affecté peut mettre à jour cette installation.',
     'This service already uses that billing anchor day.': 'Ce service utilise déjà ce jour d’ancrage de facturation.',
-    'Settle or void the open renewal invoice before changing this billing cycle.': 'Réglez ou annulez la facture de renouvellement ouverte avant de modifier ce cycle.',
-    'Completed or cancelled work orders cannot be rescheduled.': 'Les ordres de travail terminés ou annulés ne peuvent pas être replanifiés.',
-    'Whish payment was confirmed but could not be posted to the ledger.': 'Le paiement Whish a été confirmé mais n’a pas pu être enregistré au grand livre.',
+    'Settle or void the open renewal invoice before changing this billing cycle.':
+        'Réglez ou annulez la facture de renouvellement ouverte avant de modifier ce cycle.',
+    'Completed or cancelled work orders cannot be rescheduled.':
+        'Les ordres de travail terminés ou annulés ne peuvent pas être replanifiés.',
+    'Whish payment was confirmed but could not be posted to the ledger.':
+        'Le paiement Whish a été confirmé mais n’a pas pu être enregistré au grand livre.',
     'The message does not belong to the active workspace.': 'Le message n’appartient pas à l’espace actif.',
     'The task attachment could not be stored.': 'La pièce jointe de la tâche n’a pas pu être enregistrée.',
-    'A media upload cannot target more than one record.': 'Un téléchargement multimédia ne peut cibler qu’un seul enregistrement.',
+    'A media upload cannot target more than one record.':
+        'Un téléchargement multimédia ne peut cibler qu’un seul enregistrement.',
     'The work order does not belong to the active tenant.': 'L’ordre de travail n’appartient pas à l’espace actif.',
     'The expense does not belong to the active tenant.': 'La dépense n’appartient pas à l’espace actif.',
     'The media file could not be stored.': 'Le fichier multimédia n’a pas pu être enregistré.',
-    'The unit, destination, and actor must belong to the same tenant.': 'L’unité, la destination et l’opérateur doivent appartenir au même espace.',
+    'The unit, destination, and actor must belong to the same tenant.':
+        'L’unité, la destination et l’opérateur doivent appartenir au même espace.',
     'The destination warehouse is inactive.': 'L’entrepôt de destination est inactif.',
-    'Only unassigned available or recovered units can be transferred.': 'Seules les unités disponibles non affectées ou récupérées peuvent être transférées.',
+    'Only unassigned available or recovered units can be transferred.':
+        'Seules les unités disponibles non affectées ou récupérées peuvent être transférées.',
     'The unit is already in this warehouse.': 'L’unité se trouve déjà dans cet entrepôt.',
     'The collector does not belong to this workspace.': 'Le collecteur n’appartient pas à cet espace.',
-    'You are not allowed to manage collector territories.': 'Vous n’êtes pas autorisé à gérer les territoires des collecteurs.',
-    'Territories can only be assigned to collector accounts.': 'Les territoires ne peuvent être affectés qu’aux comptes collecteurs.',
-    'Choose at least one service zone or allow all zones.': 'Choisissez au moins une zone de service ou autorisez toutes les zones.',
-    'One or more selected zones are not available in this workspace.': 'Une ou plusieurs zones sélectionnées ne sont pas disponibles dans cet espace.',
+    'You are not allowed to manage collector territories.':
+        'Vous n’êtes pas autorisé à gérer les territoires des collecteurs.',
+    'Territories can only be assigned to collector accounts.':
+        'Les territoires ne peuvent être affectés qu’aux comptes collecteurs.',
+    'Choose at least one service zone or allow all zones.':
+        'Choisissez au moins une zone de service ou autorisez toutes les zones.',
+    'One or more selected zones are not available in this workspace.':
+        'Une ou plusieurs zones sélectionnées ne sont pas disponibles dans cet espace.',
     'The operator does not belong to this workspace.': 'L’opérateur n’appartient pas à cet espace.',
     'You are not allowed to change operator roles.': 'Vous n’êtes pas autorisé à modifier les rôles des opérateurs.',
     'You cannot change your own role.': 'Vous ne pouvez pas modifier votre propre rôle.',
-    'Protected workspace roles must be changed through a break-glass procedure.': 'Les rôles protégés de l’espace doivent être modifiés via une procédure d’urgence.',
+    'Protected workspace roles must be changed through a break-glass procedure.':
+        'Les rôles protégés de l’espace doivent être modifiés via une procédure d’urgence.',
     'The selected operator role is not available.': 'Le rôle d’opérateur sélectionné n’est pas disponible.',
     'The accounting session belongs to a different tenant.': 'La session comptable appartient à un autre espace.',
     'The portal verification code is invalid or expired.': 'Le code de vérification du portail est invalide ou expiré.',
     'The invoice is already void.': 'La facture est déjà annulée.',
-    'An invoice with issued credit notes cannot be voided.': 'Une facture avec des avoirs émis ne peut pas être annulée.',
+    'An invoice with issued credit notes cannot be voided.':
+        'Une facture avec des avoirs émis ne peut pas être annulée.',
     'Main office': 'Bureau principal',
     'North district': 'Quartier nord',
     'Subscriber IPv4': 'IPv4 de l’abonné',
@@ -2752,14 +3104,19 @@ const sharedFrench: Messages = {
     'Access notes, caretaker, or riser details': 'Notes d’accès, gardien ou détails de la colonne montante',
     'Payment amount must be positive.': 'Le montant du paiement doit être positif.',
     'Both FX override ratio values are required.': 'Les deux valeurs du ratio de remplacement du taux sont requises.',
-    'FX override ratio values must be positive.': 'Les valeurs du ratio de remplacement du taux doivent être positives.',
-    'An explanation is required when overriding the FX rate.': 'Une explication est requise pour remplacer le taux de change.',
+    'FX override ratio values must be positive.':
+        'Les valeurs du ratio de remplacement du taux doivent être positives.',
+    'An explanation is required when overriding the FX rate.':
+        'Une explication est requise pour remplacer le taux de change.',
     'Unsupported FX rounding mode.': 'Mode d’arrondi du taux de change non pris en charge.',
     'The invoice is not payable by this customer.': 'Cette facture ne peut pas être payée par ce client.',
-    'Payments cannot be recorded to a closed cash shift.': 'Les paiements ne peuvent pas être enregistrés dans une caisse fermée.',
-    'FX overrides must be stated against the tenant base currency.': 'Les remplacements de taux doivent être exprimés dans la devise de base de l’espace.',
+    'Payments cannot be recorded to a closed cash shift.':
+        'Les paiements ne peuvent pas être enregistrés dans une caisse fermée.',
+    'FX overrides must be stated against the tenant base currency.':
+        'Les remplacements de taux doivent être exprimés dans la devise de base de l’espace.',
     'The selected invoice has no outstanding balance.': 'La facture sélectionnée n’a aucun solde dû.',
-    'Whish Pay supports only active USD, LBP, and AED currencies.': 'Whish Pay prend uniquement en charge les devises USD, LBP et AED actives.',
+    'Whish Pay supports only active USD, LBP, and AED currencies.':
+        'Whish Pay prend uniquement en charge les devises USD, LBP et AED actives.',
     'An idempotency key is required.': 'Une clé d’idempotence est requise.',
     'Whish payment initialization failed.': 'L’initialisation du paiement Whish a échoué.',
     'The customer does not belong to the active tenant.': 'Le client n’appartient pas à l’espace actif.',
@@ -2768,34 +3125,54 @@ const sharedFrench: Messages = {
     'Invoice amount must be positive.': 'Le montant de la facture doit être positif.',
     'Choose an active workspace currency.': 'Choisissez une devise active de l’espace.',
     'Invoice quantity must be positive.': 'La quantité de la facture doit être positive.',
-    'Invoice records must belong to the same customer and tenant.': 'Les factures doivent appartenir au même client et au même espace.',
-    'The plan has no effective price at the invoice date.': 'Le forfait n’a aucun prix effectif à la date de la facture.',
+    'Invoice records must belong to the same customer and tenant.':
+        'Les factures doivent appartenir au même client et au même espace.',
+    'The plan has no effective price at the invoice date.':
+        'Le forfait n’a aucun prix effectif à la date de la facture.',
     'Invoice unit amounts cannot be negative.': 'Les montants unitaires de la facture ne peuvent pas être négatifs.',
-    'Plan changes must be immediate or scheduled for the next cycle.': 'Les changements de forfait doivent être immédiats ou planifiés pour le cycle suivant.',
-    'The selected plan is not available for this service.': 'Le forfait sélectionné n’est pas disponible pour ce service.',
+    'Plan changes must be immediate or scheduled for the next cycle.':
+        'Les changements de forfait doivent être immédiats ou planifiés pour le cycle suivant.',
+    'The selected plan is not available for this service.':
+        'Le forfait sélectionné n’est pas disponible pour ce service.',
     'Terminated services cannot change plan.': 'Les services terminés ne peuvent pas changer de forfait.',
-    'Both plans need a current price before an immediate change.': 'Les deux forfaits doivent avoir un prix actuel avant un changement immédiat.',
-    'Immediate plan changes require both prices to use the customer ledger currency.': 'Les changements immédiats exigent que les deux prix utilisent la devise du grand livre client.',
-    'The item, warehouse, and actor must belong to the same tenant.': 'L’article, l’entrepôt et l’opérateur doivent appartenir au même espace.',
-    'Serialized inventory must be received as individual units.': 'Le stock sérialisé doit être reçu en unités individuelles.',
-    'Only active inventory items and warehouses can receive stock.': 'Seuls les articles de stock et entrepôts actifs peuvent recevoir du stock.',
+    'Both plans need a current price before an immediate change.':
+        'Les deux forfaits doivent avoir un prix actuel avant un changement immédiat.',
+    'Immediate plan changes require both prices to use the customer ledger currency.':
+        'Les changements immédiats exigent que les deux prix utilisent la devise du grand livre client.',
+    'The item, warehouse, and actor must belong to the same tenant.':
+        'L’article, l’entrepôt et l’opérateur doivent appartenir au même espace.',
+    'Serialized inventory must be received as individual units.':
+        'Le stock sérialisé doit être reçu en unités individuelles.',
+    'Only active inventory items and warehouses can receive stock.':
+        'Seuls les articles de stock et entrepôts actifs peuvent recevoir du stock.',
     'Bulk items must be received with a quantity.': 'Les articles en vrac doivent être reçus avec une quantité.',
-    'Only active items and warehouses can receive equipment.': 'Seuls les articles et entrepôts actifs peuvent recevoir du matériel.',
-    'That serial number is already registered in this workspace.': 'Ce numéro de série est déjà enregistré dans cet espace.',
-    'The item, stock locations, and actor must belong to the same tenant.': 'L’article, les emplacements de stock et l’opérateur doivent appartenir au même espace.',
-    'Only active bulk items and stock locations can be transferred.': 'Seuls les articles en vrac et emplacements actifs peuvent être transférés.',
+    'Only active items and warehouses can receive equipment.':
+        'Seuls les articles et entrepôts actifs peuvent recevoir du matériel.',
+    'That serial number is already registered in this workspace.':
+        'Ce numéro de série est déjà enregistré dans cet espace.',
+    'The item, stock locations, and actor must belong to the same tenant.':
+        'L’article, les emplacements de stock et l’opérateur doivent appartenir au même espace.',
+    'Only active bulk items and stock locations can be transferred.':
+        'Seuls les articles en vrac et emplacements actifs peuvent être transférés.',
     'Choose two different stock locations.': 'Choisissez deux emplacements de stock différents.',
     'Insufficient stock at the source location.': 'Stock insuffisant dans l’emplacement source.',
-    'Inventory units, services, and actors must belong to the same tenant.': 'Les unités de stock, services et opérateurs doivent appartenir au même espace.',
+    'Inventory units, services, and actors must belong to the same tenant.':
+        'Les unités de stock, services et opérateurs doivent appartenir au même espace.',
     'The serialized inventory unit is already assigned.': 'L’unité de stock sérialisée est déjà affectée.',
     'Choose a collector from this workspace.': 'Choisissez un collecteur de cet espace.',
-    'You can only submit custody entries for yourself.': 'Vous ne pouvez soumettre des écritures de garde que pour vous-même.',
-    'The selected cash shift does not belong to this collector.': 'La caisse sélectionnée n’appartient pas à ce collecteur.',
-    'Provide a valid custody entry and positive amount.': 'Saisissez une écriture de garde valide et un montant positif.',
+    'You can only submit custody entries for yourself.':
+        'Vous ne pouvez soumettre des écritures de garde que pour vous-même.',
+    'The selected cash shift does not belong to this collector.':
+        'La caisse sélectionnée n’appartient pas à ce collecteur.',
+    'Provide a valid custody entry and positive amount.':
+        'Saisissez une écriture de garde valide et un montant positif.',
     'Choose a supported custody currency.': 'Choisissez une devise de garde prise en charge.',
-    'Choose whether the adjustment adds or removes custody.': 'Choisissez si l’ajustement ajoute ou retire de la garde.',
-    'Only a manager can record advances or adjustments.': 'Seul un responsable peut enregistrer des avances ou ajustements.',
-    'The debit exceeds this collector\'s available cash custody.': 'Le débit dépasse la garde en espèces disponible de ce collecteur.',
+    'Choose whether the adjustment adds or removes custody.':
+        'Choisissez si l’ajustement ajoute ou retire de la garde.',
+    'Only a manager can record advances or adjustments.':
+        'Seul un responsable peut enregistrer des avances ou ajustements.',
+    "The debit exceeds this collector's available cash custody.":
+        'Le débit dépasse la garde en espèces disponible de ce collecteur.',
     'You are not allowed to assign collector tasks.': 'Vous n’êtes pas autorisé à affecter des tâches aux collecteurs.',
     'Choose a customer from this workspace.': 'Choisissez un client de cet espace.',
     'Choose a valid task priority.': 'Choisissez une priorité de tâche valide.',
@@ -2804,50 +3181,68 @@ const sharedFrench: Messages = {
     'Complete the task workflow in order.': 'Terminez le flux de la tâche dans l’ordre.',
     'You can only count stock assigned to you.': 'Vous ne pouvez compter que le stock qui vous est affecté.',
     'Count at least one stock item.': 'Comptez au moins un article de stock.',
-    'Every counted item must be active bulk stock at this location.': 'Chaque article compté doit être un stock en vrac actif à cet emplacement.',
+    'Every counted item must be active bulk stock at this location.':
+        'Chaque article compté doit être un stock en vrac actif à cet emplacement.',
     'Counted quantities cannot be negative.': 'Les quantités comptées ne peuvent pas être négatives.',
     'Choose replenishment or return.': 'Choisissez réapprovisionnement ou retour.',
     'The stock request must stay inside this workspace.': 'La demande de stock doit rester dans cet espace.',
     'Only active bulk stock can be requested.': 'Seul le stock en vrac actif peut être demandé.',
-    'Choose your assigned stock location and an active central warehouse.': 'Choisissez votre emplacement de stock affecté et un entrepôt central actif.',
+    'Choose your assigned stock location and an active central warehouse.':
+        'Choisissez votre emplacement de stock affecté et un entrepôt central actif.',
     'A matching stock request is already pending.': 'Une demande de stock correspondante est déjà en attente.',
     'No active field day is available to end.': 'Aucune journée terrain active n’est disponible pour être terminée.',
-    'Only collector accounts can start a field day.': 'Seuls les comptes collecteurs peuvent démarrer une journée terrain.',
+    'Only collector accounts can start a field day.':
+        'Seuls les comptes collecteurs peuvent démarrer une journée terrain.',
     'Your field day is already active.': 'Votre journée terrain est déjà active.',
     'Choose a valid route date.': 'Choisissez une date de tournée valide.',
     'Choose at least one customer stop.': 'Choisissez au moins un arrêt client.',
-    'One or more customer stops are not available in this workspace.': 'Un ou plusieurs arrêts clients ne sont pas disponibles dans cet espace.',
+    'One or more customer stops are not available in this workspace.':
+        'Un ou plusieurs arrêts clients ne sont pas disponibles dans cet espace.',
     'A route that has started cannot be replanned.': 'Une tournée commencée ne peut pas être replanifiée.',
-    'You are not allowed to plan this collector route.': 'Vous n’êtes pas autorisé à planifier cette tournée de collecteur.',
-    'Routes can only be assigned to collector accounts.': 'Les tournées ne peuvent être affectées qu’aux comptes collecteurs.',
+    'You are not allowed to plan this collector route.':
+        'Vous n’êtes pas autorisé à planifier cette tournée de collecteur.',
+    'Routes can only be assigned to collector accounts.':
+        'Les tournées ne peuvent être affectées qu’aux comptes collecteurs.',
     'Choose a valid visit outcome.': 'Choisissez un résultat de visite valide.',
     'This stop is not assigned to your route.': 'Cet arrêt ne vous est pas affecté.',
-    'Visit outcomes can only be recorded on today\'s route.': 'Les résultats de visite ne peuvent être enregistrés que sur la tournée du jour.',
-    'Start your field day before recording visit outcomes.': 'Démarrez votre journée terrain avant d’enregistrer les résultats de visite.',
+    "Visit outcomes can only be recorded on today's route.":
+        'Les résultats de visite ne peuvent être enregistrés que sur la tournée du jour.',
+    'Start your field day before recording visit outcomes.':
+        'Démarrez votre journée terrain avant d’enregistrer les résultats de visite.',
     'This visit outcome has already been recorded.': 'Ce résultat de visite a déjà été enregistré.',
-    'Enter an international phone number with country code.': 'Saisissez un numéro de téléphone international avec l’indicatif du pays.',
-    'The customer and assigned stock location must belong to this workspace.': 'Le client et l’emplacement de stock affecté doivent appartenir à cet espace.',
+    'Enter an international phone number with country code.':
+        'Saisissez un numéro de téléphone international avec l’indicatif du pays.',
+    'The customer and assigned stock location must belong to this workspace.':
+        'Le client et l’emplacement de stock affecté doivent appartenir à cet espace.',
     'Add at least one sale item.': 'Ajoutez au moins un article de vente.',
     'Choose a supported payment method.': 'Choisissez un mode de paiement pris en charge.',
     'Open a cash shift before recording a cash sale.': 'Ouvrez une caisse avant d’enregistrer une vente en espèces.',
-    'Every sale line needs active bulk stock, a positive quantity, and a positive unit price.': 'Chaque ligne de vente nécessite un stock en vrac actif, une quantité positive et un prix unitaire positif.',
+    'Every sale line needs active bulk stock, a positive quantity, and a positive unit price.':
+        'Chaque ligne de vente nécessite un stock en vrac actif, une quantité positive et un prix unitaire positif.',
     'The calculated sale line total must be positive.': 'Le total calculé de la ligne de vente doit être positif.',
-    'An open cash shift is required before recording collector payments.': 'Une caisse ouverte est requise avant l’enregistrement des paiements collecteurs.',
+    'An open cash shift is required before recording collector payments.':
+        'Une caisse ouverte est requise avant l’enregistrement des paiements collecteurs.',
     'The payment payload is malformed.': 'Les données de paiement sont mal formées.',
     'The FX override payload is malformed.': 'Les données de remplacement du taux sont mal formées.',
     'The FX rounding mode is malformed.': 'Le mode d’arrondi du taux est mal formé.',
-    'Assign a field stock location to a workspace user.': 'Affectez un emplacement de stock terrain à un utilisateur de l’espace.',
-    'Transfer all available stock before changing or deactivating this custodian location.': 'Transférez tout le stock disponible avant de modifier ou désactiver cet emplacement de garde.',
-    'Inventory type cannot change after serialized units have been received.': 'Le type de stock ne peut pas changer après réception d’unités sérialisées.',
-    'Renewal periods must be between one and twelve.': 'Les périodes de renouvellement doivent être comprises entre un et douze mois.',
-    'Terminated services require an explicit reactivation workflow.': 'Les services terminés nécessitent un processus explicite de réactivation.',
+    'Assign a field stock location to a workspace user.':
+        'Affectez un emplacement de stock terrain à un utilisateur de l’espace.',
+    'Transfer all available stock before changing or deactivating this custodian location.':
+        'Transférez tout le stock disponible avant de modifier ou désactiver cet emplacement de garde.',
+    'Inventory type cannot change after serialized units have been received.':
+        'Le type de stock ne peut pas changer après réception d’unités sérialisées.',
+    'Renewal periods must be between one and twelve.':
+        'Les périodes de renouvellement doivent être comprises entre un et douze mois.',
+    'Terminated services require an explicit reactivation workflow.':
+        'Les services terminés nécessitent un processus explicite de réactivation.',
     'Whish payment status could not be verified.': 'Impossible de vérifier l’état du paiement Whish.',
     'A partner with this code already exists.': 'Un partenaire avec ce code existe déjà.',
     'A plan with this slug already exists.': 'Un forfait avec ce slug existe déjà.',
     'A valid Whish external ID is required.': 'Un identifiant externe Whish valide est requis.',
     'Whish payment attempt not found.': 'Tentative de paiement Whish introuvable.',
     'Whish payment attempt identifier is ambiguous.': 'L’identifiant de la tentative de paiement Whish est ambigu.',
-    'Whish callback currency does not match the payment attempt.': 'La devise du callback Whish ne correspond pas à la tentative de paiement.',
+    'Whish callback currency does not match the payment attempt.':
+        'La devise du callback Whish ne correspond pas à la tentative de paiement.',
     'Field day started.': 'Journée terrain démarrée.',
     'Field day ended.': 'Journée terrain terminée.',
     'Visit outcome recorded.': 'Résultat de la visite enregistré.',
@@ -2859,11 +3254,15 @@ const sharedFrench: Messages = {
     'This database encoding cannot store Arabic or French characters. Recreate PostgreSQL with UTF-8 before saving translated text.':
         'Cet encodage de base de données ne peut pas stocker les caractères arabes ou français. Recréez PostgreSQL en UTF-8 avant d’enregistrer le texte traduit.',
     'A service zone cannot be its own parent.': 'Une zone de service ne peut pas être son propre parent.',
-    'Link the reading to a service, work order, or ONU serial.': 'Associez la mesure à un service, un ordre de travail ou un numéro de série ONU.',
+    'Link the reading to a service, work order, or ONU serial.':
+        'Associez la mesure à un service, un ordre de travail ou un numéro de série ONU.',
     'Enter at least one optical measurement.': 'Saisissez au moins une mesure optique.',
-    'The sell price cannot be below the configured floor.': 'Le prix de vente ne peut pas être inférieur au plancher configuré.',
-    'The sell price cannot exceed the configured ceiling.': 'Le prix de vente ne peut pas dépasser le plafond configuré.',
-    'Percent promotions use basis points and cannot exceed 10000 (100%).': 'Les promotions en pourcentage utilisent des points de base et ne peuvent pas dépasser 10000 (100 %).',
+    'The sell price cannot be below the configured floor.':
+        'Le prix de vente ne peut pas être inférieur au plancher configuré.',
+    'The sell price cannot exceed the configured ceiling.':
+        'Le prix de vente ne peut pas dépasser le plafond configuré.',
+    'Percent promotions use basis points and cannot exceed 10000 (100%).':
+        'Les promotions en pourcentage utilisent des points de base et ne peuvent pas dépasser 10000 (100 %).',
     'The billing unit must be greater than zero.': 'L’unité de facturation doit être supérieure à zéro.',
     'An addon with this slug already exists.': 'Une extension avec ce slug existe déjà.',
     'A promotion with this code already exists.': 'Une promotion avec ce code existe déjà.',
@@ -2871,23 +3270,30 @@ const sharedFrench: Messages = {
     'Tenant updated': 'Espace mis à jour',
     'Scheduled billing-cycle change cancelled.': 'Le changement de cycle de facturation planifié a été annulé.',
     'Choose a WhatsApp account from this workspace.': 'Choisissez un compte WhatsApp de cet espace.',
-    'Invitation created. Copy the one-time link before leaving this page.': 'Invitation créée. Copiez le lien à usage unique avant de quitter cette page.',
+    'Invitation created. Copy the one-time link before leaving this page.':
+        'Invitation créée. Copiez le lien à usage unique avant de quitter cette page.',
     'Frankfurter returned no usable quote.': 'Frankfurter n’a renvoyé aucun taux utilisable.',
     'Frankfurter returned a live USD quote.': 'Frankfurter a renvoyé un taux USD en direct.',
-    'Frankfurter could not be reached or returned an invalid response.': 'Frankfurter est inaccessible ou a renvoyé une réponse invalide.',
+    'Frankfurter could not be reached or returned an invalid response.':
+        'Frankfurter est inaccessible ou a renvoyé une réponse invalide.',
     'Stripe account API could not be reached.': 'L’API du compte Stripe est inaccessible.',
     'Stripe account probe failed.': 'Le contrôle du compte Stripe a échoué.',
     'Whish Pay is disabled.': 'Whish Pay est désactivé.',
-    'Whish account endpoint accepted the configured credentials.': 'Le point de terminaison du compte Whish a accepté les identifiants configurés.',
+    'Whish account endpoint accepted the configured credentials.':
+        'Le point de terminaison du compte Whish a accepté les identifiants configurés.',
     'Whish account probe failed.': 'Le contrôle du compte Whish a échoué.',
     'WhatsApp Web.js is not the selected provider.': 'WhatsApp Web.js n’est pas le fournisseur sélectionné.',
     'WhatsApp Web.js bridge token is missing.': 'Le jeton du pont WhatsApp Web.js est manquant.',
     'WhatsApp Web.js bridge could not be reached.': 'Le pont WhatsApp Web.js est inaccessible.',
     'WhatsApp Web.js bridge probe failed.': 'Le contrôle du pont WhatsApp Web.js a échoué.',
-    'The quote currency must differ from the base currency.': 'La devise de cotation doit être différente de la devise de base.',
-    'A rate for this currency pair already exists at that effective time.': 'Un taux pour cette paire de devises existe déjà à cette date d’effet.',
-    'The selected plan is not available for this tenant.': 'Le forfait sélectionné n’est pas disponible pour cet espace.',
-    'The selected router is not available for this tenant.': 'Le routeur sélectionné n’est pas disponible pour cet espace.',
+    'The quote currency must differ from the base currency.':
+        'La devise de cotation doit être différente de la devise de base.',
+    'A rate for this currency pair already exists at that effective time.':
+        'Un taux pour cette paire de devises existe déjà à cette date d’effet.',
+    'The selected plan is not available for this tenant.':
+        'Le forfait sélectionné n’est pas disponible pour cet espace.',
+    'The selected router is not available for this tenant.':
+        'Le routeur sélectionné n’est pas disponible pour cet espace.',
     'The selected service does not belong to this customer.': 'Le service sélectionné n’appartient pas à ce client.',
     'Keep at least one default branch configured.': 'Conservez au moins une agence par défaut configurée.',
     base: 'base',
@@ -2898,7 +3304,8 @@ const sharedFrench: Messages = {
     purchased: 'acheté(s)',
     ports: 'ports',
     'bill(s)': 'facture(s)',
-    'No issued invoices are currently open for this customer.': 'Aucune facture émise n’est actuellement ouverte pour ce client.',
+    'No issued invoices are currently open for this customer.':
+        'Aucune facture émise n’est actuellement ouverte pour ce client.',
     'The first renewal invoice is prorated from its issue date to this day. Days 29–31 clamp to shorter months.':
         'La première facture de renouvellement est calculée au prorata de sa date d’émission jusqu’à ce jour. Les jours 29 à 31 sont ajustés aux mois plus courts.',
     'ticket_responses.archive_disappear': 'disparaîtra du compositeur de tickets.',
@@ -2934,13 +3341,17 @@ const sharedFrench: Messages = {
     'A CSV or XLSX file is required.': 'Un fichier CSV ou XLSX est requis.',
     'A document file is required.': 'Un fichier document est requis.',
     'A media file is required.': 'Un fichier multimédia est requis.',
-    'A session restart can be requested once every five minutes.': 'Un redémarrage de session peut être demandé toutes les cinq minutes.',
+    'A session restart can be requested once every five minutes.':
+        'Un redémarrage de session peut être demandé toutes les cinq minutes.',
     'A signature file is required.': 'Un fichier de signature est requis.',
-    'A tenant context is required for customer authentication.': 'Le contexte de l’espace est requis pour authentifier le client.',
+    'A tenant context is required for customer authentication.':
+        'Le contexte de l’espace est requis pour authentifier le client.',
     'A tenant membership is required.': 'Une appartenance à un espace est requise.',
     'A valid portal session is required.': 'Une session de portail valide est requise.',
-    'A valid two-factor code is required to issue an API token.': 'Un code à deux facteurs valide est requis pour émettre un jeton API.',
-    'Add and pair at least one WhatsApp delivery account before enabling customer notifications.': 'Ajoutez et associez au moins un compte WhatsApp avant d’activer les notifications client.',
+    'A valid two-factor code is required to issue an API token.':
+        'Un code à deux facteurs valide est requis pour émettre un jeton API.',
+    'Add and pair at least one WhatsApp delivery account before enabling customer notifications.':
+        'Ajoutez et associez au moins un compte WhatsApp avant d’activer les notifications client.',
     'All configured provider checks passed.': 'Tous les contrôles des fournisseurs configurés sont réussis.',
     'An outstanding invoice already exists and will be reused.': 'Une facture impayée existe déjà et sera réutilisée.',
     'An unexpected error occurred.': 'Une erreur inattendue est survenue.',
@@ -2949,11 +3360,13 @@ const sharedFrench: Messages = {
     'Request Failed': 'Échec de la requête',
     'Approved physical stock count': 'Inventaire physique approuvé',
     'Approved request': 'Demande approuvée',
-    'Bridge cleanup queued until the bridge is healthy.': 'Le nettoyage du pont est en attente jusqu’à ce que le pont soit sain.',
+    'Bridge cleanup queued until the bridge is healthy.':
+        'Le nettoyage du pont est en attente jusqu’à ce que le pont soit sain.',
     'Current network session disconnect queued.': 'La déconnexion de la session réseau actuelle est en attente.',
     'Custody entry approved.': 'Écriture de garde approuvée.',
     'Custody entry rejected.': 'Écriture de garde rejetée.',
-    'Demo seed rates cannot satisfy production readiness; run fx:sync-frankfurter or approve a current manual treasury rate.': 'Les taux de démonstration ne satisfont pas la préparation à la production ; exécutez fx:sync-frankfurter ou approuvez un taux manuel actuel.',
+    'Demo seed rates cannot satisfy production readiness; run fx:sync-frankfurter or approve a current manual treasury rate.':
+        'Les taux de démonstration ne satisfont pas la préparation à la production ; exécutez fx:sync-frankfurter ou approuvez un taux manuel actuel.',
     'download_kbps must be a non-negative integer': 'download_kbps doit être un entier positif ou nul.',
     'duration_days must be a positive integer': 'duration_days doit être un entier positif.',
     'Expense approved and posted.': 'Dépense approuvée et comptabilisée.',
@@ -2971,56 +3384,72 @@ const sharedFrench: Messages = {
     'items must contain between one and one hundred payments.': 'items doit contenir entre un et cent paiements.',
     'Manual confirmation required.': 'Confirmation manuelle requise.',
     'No active plan price is available for this date.': 'Aucun prix de forfait actif n’est disponible pour cette date.',
-    'No network driver is configured for provisioning mode.': 'Aucun pilote réseau n’est configuré pour le mode de provisionnement.',
+    'No network driver is configured for provisioning mode.':
+        'Aucun pilote réseau n’est configuré pour le mode de provisionnement.',
     'No open cash shift is available.': 'Aucune caisse ouverte n’est disponible.',
     'No upstream credential was assigned.': 'Aucun identifiant amont n’a été affecté.',
-    'One or more renewal rows require review.': 'Une ou plusieurs lignes de renouvellement nécessitent une vérification.',
+    'One or more renewal rows require review.':
+        'Une ou plusieurs lignes de renouvellement nécessitent une vérification.',
     'Only active services can be paused.': 'Seuls les services actifs peuvent être mis en pause.',
     'Opening balances': 'Soldes d’ouverture',
-    'Provider checks completed with actions required.': 'Les contrôles des fournisseurs sont terminés avec des actions requises.',
+    'Provider checks completed with actions required.':
+        'Les contrôles des fournisseurs sont terminés avec des actions requises.',
     'RADIUS CoA accepted.': 'CoA RADIUS accepté.',
     'RADIUS CoA was rejected.': 'CoA RADIUS rejeté.',
-    'RADIUS state synchronized without live-session enforcement.': 'État RADIUS synchronisé sans application des sessions actives.',
+    'RADIUS state synchronized without live-session enforcement.':
+        'État RADIUS synchronisé sans application des sessions actives.',
     'RADIUS state synchronized.': 'État RADIUS synchronisé.',
     'Recurring expense paused.': 'Dépense récurrente mise en pause.',
     'Recurring expense resumed.': 'Dépense récurrente reprise.',
     'RouterOS command accepted.': 'Commande RouterOS acceptée.',
     'RouterOS sessions disconnected.': 'Sessions RouterOS déconnectées.',
     'Scheduled service plan change cancelled.': 'Changement de forfait planifié annulé.',
-    'Stripe is not selected; cash collection remains available.': 'Stripe n’est pas sélectionné ; l’encaissement comptant reste disponible.',
+    'Stripe is not selected; cash collection remains available.':
+        'Stripe n’est pas sélectionné ; l’encaissement comptant reste disponible.',
     'The partner wallet is not available.': 'Le portefeuille partenaire n’est pas disponible.',
-    'The idempotency key was already used for a different request.': 'La clé d’idempotence a déjà été utilisée pour une autre requête.',
+    'The idempotency key was already used for a different request.':
+        'La clé d’idempotence a déjà été utilisée pour une autre requête.',
     'The payment was rejected.': 'Le paiement a été rejeté.',
-    'The private bridge could not be reached from the application.': 'Le pont privé est inaccessible depuis l’application.',
+    'The private bridge could not be reached from the application.':
+        'Le pont privé est inaccessible depuis l’application.',
     'The private bridge did not return a healthy status response.': 'Le pont privé n’a pas renvoyé un état sain.',
     'The private WhatsApp bridge rejected the request.': 'Le pont WhatsApp privé a rejeté la demande.',
     'The provider rejected the payment intent.': 'Le fournisseur a rejeté l’intention de paiement.',
-    'The selected box does not belong to the selected building.': 'Le boîtier sélectionné n’appartient pas au bâtiment sélectionné.',
-    'The staff authentication challenge is invalid or expired.': 'Le défi d’authentification du personnel est invalide ou expiré.',
+    'The selected box does not belong to the selected building.':
+        'Le boîtier sélectionné n’appartient pas au bâtiment sélectionné.',
+    'The staff authentication challenge is invalid or expired.':
+        'Le défi d’authentification du personnel est invalide ou expiré.',
     'The two-factor code is invalid or expired.': 'Le code à deux facteurs est invalide ou expiré.',
     'The service is not available in this workspace.': 'Le service n’est pas disponible dans cet espace.',
     'This document is outside its retention period.': 'Ce document est hors de sa période de conservation.',
     'Ticket unassigned.': 'Ticket désaffecté.',
-    'Two-factor authentication must be configured before issuing a staff token.': 'L’authentification à deux facteurs doit être configurée avant d’émettre un jeton du personnel.',
+    'Two-factor authentication must be configured before issuing a staff token.':
+        'L’authentification à deux facteurs doit être configurée avant d’émettre un jeton du personnel.',
     'Two-factor authentication must be configured.': 'L’authentification à deux facteurs doit être configurée.',
     'Two-factor authentication is required.': 'L’authentification à deux facteurs est requise.',
     'Unknown supplier': 'Fournisseur inconnu',
     'Upstream credential activated.': 'Identifiant amont activé.',
-    'Upstream credential does not require a plan sync.': 'L’identifiant amont ne nécessite pas de synchronisation de forfait.',
+    'Upstream credential does not require a plan sync.':
+        'L’identifiant amont ne nécessite pas de synchronisation de forfait.',
     'Upstream credential released.': 'Identifiant amont libéré.',
-    'Upstream credential remains assigned; no session disconnect is required.': 'L’identifiant amont reste affecté ; aucune déconnexion de session n’est requise.',
+    'Upstream credential remains assigned; no session disconnect is required.':
+        'L’identifiant amont reste affecté ; aucune déconnexion de session n’est requise.',
     'Provide between one and one hundred queued payments.': 'Fournissez entre un et cent paiements en attente.',
     'Provide either csv text or a file upload.': 'Fournissez un texte CSV ou téléversez un fichier.',
     'Terminated services cannot be re-synced.': 'Les services résiliés ne peuvent pas être resynchronisés.',
-    'The service issue has been resolved. Please try your connection again and reply here if the problem continues.': 'Le problème de service est résolu. Réessayez la connexion et répondez ici s’il persiste.',
+    'The service issue has been resolved. Please try your connection again and reply here if the problem continues.':
+        'Le problème de service est résolu. Réessayez la connexion et répondez ici s’il persiste.',
     'Wallet debit amount must be positive.': 'Le montant du débit du portefeuille doit être positif.',
     'Wallet funding amount must be positive.': 'Le montant du financement du portefeuille doit être positif.',
     'Webhook payload must be a JSON object.': 'La charge Webhook doit être un objet JSON.',
     'Webhook payload must be valid JSON.': 'La charge Webhook doit être un JSON valide.',
-    'Whish confirmed the payment, but the ledger posting failed.': 'Whish a confirmé le paiement, mais sa comptabilisation a échoué.',
-    'Whish Pay is disabled; enable it after merchant acceptance.': 'Whish Pay est désactivé ; activez-le après acceptation du commerçant.',
+    'Whish confirmed the payment, but the ledger posting failed.':
+        'Whish a confirmé le paiement, mais sa comptabilisation a échoué.',
+    'Whish Pay is disabled; enable it after merchant acceptance.':
+        'Whish Pay est désactivé ; activez-le après acceptation du commerçant.',
     'Whish reported a failed collection.': 'Whish a signalé un encaissement échoué.',
-    'Whish status did not match the recorded amount or currency.': 'Le statut Whish ne correspondait pas au montant ou à la devise enregistrés.',
+    'Whish status did not match the recorded amount or currency.':
+        'Le statut Whish ne correspondait pas au montant ou à la devise enregistrés.',
 };
 
 const fieldArabic: Messages = {
@@ -3248,11 +3677,14 @@ const fieldFrench: Messages = {
     'field.pending': 'en attente',
     'field.synchronize_now': 'Synchroniser maintenant',
     'field.clear_data_title': 'Effacer les données terrain de cet appareil ?',
-    'field.clear_data_pending': 'La liste client en cache et les paiements en attente seront supprimés définitivement. Synchronisez la file avant de continuer.',
-    'field.clear_data_empty': 'La liste client et le catalogue des devises seront supprimés de cet appareil. Les données serveur ne changent pas.',
+    'field.clear_data_pending':
+        'La liste client en cache et les paiements en attente seront supprimés définitivement. Synchronisez la file avant de continuer.',
+    'field.clear_data_empty':
+        'La liste client et le catalogue des devises seront supprimés de cet appareil. Les données serveur ne changent pas.',
     'field.clear_device_data': 'Effacer les données de l’appareil',
     'field.cash_custody': 'Caisse détenue',
-    'field.cash_custody_description': 'Les encaissements et le fonds d’ouverture restent sous votre responsabilité jusqu’à l’approbation d’une dépense ou d’une remise.',
+    'field.cash_custody_description':
+        'Les encaissements et le fonds d’ouverture restent sous votre responsabilité jusqu’à l’approbation d’une dépense ou d’une remise.',
     'field.pending_review': 'En attente de révision',
     'field.request_type': 'Type de demande',
     'field.field_expense': 'Dépense terrain',
@@ -3270,7 +3702,8 @@ const fieldFrench: Messages = {
     'field.recent_custody': 'Activité récente de caisse',
     'field.manager': 'Responsable',
     'field.field_stock': 'Stock terrain',
-    'field.field_stock_description': 'Consultez le stock sous votre responsabilité et demandez un réapprovisionnement ou le retour du matériel inutilisé.',
+    'field.field_stock_description':
+        'Consultez le stock sous votre responsabilité et demandez un réapprovisionnement ou le retour du matériel inutilisé.',
     'field.no_material': 'Aucun matériel ne vous est actuellement affecté.',
     'field.replenishment': 'Réapprovisionnement',
     'field.return_unused_stock': 'Retour de stock inutilisé',
@@ -3285,7 +3718,8 @@ const fieldFrench: Messages = {
     'field.route_context': 'Contexte de tournée ou de retour',
     'field.submit_stock_request': 'Envoyer la demande de stock',
     'field.sell_stock': 'Vendre du stock à un client',
-    'field.sell_stock_description': 'Crée et règle une facture client, retire le stock de votre caisse et inclut les espèces dans votre poste.',
+    'field.sell_stock_description':
+        'Crée et règle une facture client, retire le stock de votre caisse et inclut les espèces dans votre poste.',
     'field.customer': 'Client',
     'field.sale_customer': 'Client de la vente',
     'field.item': 'Article',
@@ -3300,29 +3734,34 @@ const fieldFrench: Messages = {
     'field.item_handover': 'Contexte de remise de l’article',
     'field.total': 'Total',
     'field.record_sale_title': 'Enregistrer cette vente de stock payée ?',
-    'field.record_sale_description': 'Une facture payée sera créée et l’article sera retiré immédiatement de votre stock.',
+    'field.record_sale_description':
+        'Une facture payée sera créée et l’article sera retiré immédiatement de votre stock.',
     'field.record_sale': 'Enregistrer la vente',
     'field.customer_sale': 'Vente client',
     'field.submit_physical_count': 'Envoyer le comptage physique',
-    'field.physical_count_description': 'Saisissez la quantité réellement présente. Un responsable révise tout écart avant la modification des soldes.',
+    'field.physical_count_description':
+        'Saisissez la quantité réellement présente. Un responsable révise tout écart avant la modification des soldes.',
     'field.count_note': 'Note de comptage (facultatif)',
     'field.end_route': 'Fin de tournée, stock endommagé…',
     'field.system': 'Système',
     'field.physical_quantity': 'Quantité physique',
     'field.submit_count_title': 'Envoyer ce comptage physique ?',
-    'field.submit_count_description': 'Le comptage sera soumis à la révision du responsable. Les soldes ne changent pas avant son approbation.',
+    'field.submit_count_description':
+        'Le comptage sera soumis à la révision du responsable. Les soldes ne changent pas avant son approbation.',
     'field.submit_count': 'Envoyer le comptage',
     'field.review_submit': 'Réviser et envoyer',
     'field.stock_request': 'Demande de stock',
     'field.field_attendance': 'Présence terrain',
-    'field.attendance_description': 'Votre navigateur partage la position uniquement lorsque vous appuyez sur ce bouton. Aucun suivi continu en arrière-plan.',
+    'field.attendance_description':
+        'Votre navigateur partage la position uniquement lorsque vous appuyez sur ce bouton. Aucun suivi continu en arrière-plan.',
     'field.checkout_note': 'Note de sortie (facultatif)',
     'field.checkout_placeholder': 'Remise d’espèces, visites non résolues ou suivi nécessaire',
     'field.capturing': 'Enregistrement de la position…',
     'field.finish_day': 'Terminer la journée terrain',
     'field.start_day': 'Démarrer la journée terrain',
     'field.assigned_tasks': 'Tâches affectées',
-    'field.assigned_tasks_description': 'Accusez réception du travail terrain et gardez les questions avec l’affectation.',
+    'field.assigned_tasks_description':
+        'Accusez réception du travail terrain et gardez les questions avec l’affectation.',
     'field.open_tasks': 'ouvertes',
     'field.unread_messages': 'Messages non lus',
     'field.acknowledge': 'Accuser réception',
@@ -3369,7 +3808,8 @@ const fieldFrench: Messages = {
     'field.field_payment_currency': 'Devise du paiement terrain',
     'field.field_payment_method': 'Mode du paiement terrain',
     'field.save_payment': 'Enregistrer le paiement sur l’appareil',
-    'field.encryption_note': 'Les paiements utilisent une clé d’idempotence unique et sont chiffrés dans ce navigateur jusqu’à leur acceptation ou leur rejet par le serveur.',
+    'field.encryption_note':
+        'Les paiements utilisent une clé d’idempotence unique et sont chiffrés dans ce navigateur jusqu’à leur acceptation ou leur rejet par le serveur.',
     'field.value.advance': 'Avance',
     'field.value.expense': 'Dépense',
     'field.value.handover': 'Remise',
@@ -3403,14 +3843,16 @@ const fieldFrench: Messages = {
     'field.error.choose_customer': 'Choisissez un client avant d’enregistrer un paiement.',
     'field.error.amount': 'Saisissez un montant positif valide.',
     'field.message.queued_online': 'Paiement enregistré localement et ajouté à la synchronisation.',
-    'field.message.queued_offline': 'Paiement enregistré sur l’appareil. Il sera synchronisé au retour de la connexion.',
+    'field.message.queued_offline':
+        'Paiement enregistré sur l’appareil. Il sera synchronisé au retour de la connexion.',
     'field.message.cleared': 'Les données terrain ont été effacées de l’appareil.',
     'field.error.online': 'Connectez-vous à Internet avant d’enregistrer votre présence terrain.',
     'field.error.geolocation': 'La capture de position n’est pas disponible dans ce navigateur.',
     'field.message.day_started': 'Journée terrain démarrée.',
     'field.message.day_ended': 'Journée terrain terminée.',
     'field.error.location_permission': 'La permission de localisation est requise pour enregistrer la présence.',
-    'field.error.location_unreliable': 'Une position fiable n’a pas pu être capturée. Déplacez-vous dans une zone dégagée.',
+    'field.error.location_unreliable':
+        'Une position fiable n’a pas pu être capturée. Déplacez-vous dans une zone dégagée.',
     'field.message.route_sorted': 'Tournée triée selon votre position. L’ordre planifié du responsable reste inchangé.',
     'field.error.nearby_location': 'Une position fiable n’a pas pu être capturée pour le tri par proximité.',
     'field.error.start_day': 'Démarrez votre journée terrain avant d’enregistrer une visite.',
@@ -3424,38 +3866,55 @@ const fieldFrench: Messages = {
     'field.error.custody_amount': 'Saisissez un montant de caisse positif.',
     'field.error.custody_description': 'Décrivez la dépense ou la remise avant l’envoi.',
     'This billing link is invalid or has expired.': 'Ce lien de facturation est invalide ou expiré.',
-    "The expense exceeds this collector's available cash custody.": 'La dépense dépasse la caisse disponible de ce collecteur.',
-    'Partner and plan must belong to the current tenant.': 'Le partenaire et le forfait doivent appartenir à l’espace actuel.',
-    'The collector account changed while its territory was being saved.': 'Le compte du collecteur a changé pendant l’enregistrement de son territoire.',
-    'Only the assigned technician can update this work order.': 'Seul le technicien affecté peut mettre à jour cet ordre de travail.',
-    'A billing anchor day must be between 1 and 31.': 'Le jour d’ancrage de facturation doit être compris entre 1 et 31.',
+    "The expense exceeds this collector's available cash custody.":
+        'La dépense dépasse la caisse disponible de ce collecteur.',
+    'Partner and plan must belong to the current tenant.':
+        'Le partenaire et le forfait doivent appartenir à l’espace actuel.',
+    'The collector account changed while its territory was being saved.':
+        'Le compte du collecteur a changé pendant l’enregistrement de son territoire.',
+    'Only the assigned technician can update this work order.':
+        'Seul le technicien affecté peut mettre à jour cet ordre de travail.',
+    'A billing anchor day must be between 1 and 31.':
+        'Le jour d’ancrage de facturation doit être compris entre 1 et 31.',
     'The full billing amount cannot be negative.': 'Le montant total de facturation ne peut pas être négatif.',
-    'Custom billing periods require at least one day.': 'Les périodes de facturation personnalisées doivent comporter au moins un jour.',
+    'Custom billing periods require at least one day.':
+        'Les périodes de facturation personnalisées doivent comporter au moins un jour.',
     'WhatsApp Web.js is not configured.': 'WhatsApp Web.js n’est pas configuré.',
     'The private WhatsApp bridge is unreachable.': 'Le pont WhatsApp privé est inaccessible.',
-    'The private WhatsApp bridge returned an invalid response.': 'Le pont WhatsApp privé a renvoyé une réponse invalide.',
-    'A journal line must contain exactly one positive debit or credit amount.': 'Une ligne de journal doit contenir exactement un montant positif au débit ou au crédit.',
+    'The private WhatsApp bridge returned an invalid response.':
+        'Le pont WhatsApp privé a renvoyé une réponse invalide.',
+    'A journal line must contain exactly one positive debit or credit amount.':
+        'Une ligne de journal doit contenir exactement un montant positif au débit ou au crédit.',
     'A journal entry must contain at least two lines.': 'Une écriture de journal doit contenir au moins deux lignes.',
-    'The journal line currency does not match the account currency.': 'La devise de la ligne de journal ne correspond pas à celle du compte.',
-    'Customer ledger currency does not match the customer balance currency.': 'La devise du grand livre client ne correspond pas à celle du solde client.',
+    'The journal line currency does not match the account currency.':
+        'La devise de la ligne de journal ne correspond pas à celle du compte.',
+    'Customer ledger currency does not match the customer balance currency.':
+        'La devise du grand livre client ne correspond pas à celle du solde client.',
     'Frankfurter returned an invalid rate response.': 'Frankfurter a renvoyé une réponse de taux invalide.',
     'Frankfurter returned a malformed rate row.': 'Frankfurter a renvoyé une ligne de taux mal formée.',
     'Currency must be a three-letter ISO code.': 'La devise doit être un code ISO de trois lettres.',
     'Frankfurter returned a non-decimal rate.': 'Frankfurter a renvoyé un taux non décimal.',
-    'Frankfurter returned a rate with excessive precision.': 'Frankfurter a renvoyé un taux avec une précision excessive.',
+    'Frankfurter returned a rate with excessive precision.':
+        'Frankfurter a renvoyé un taux avec une précision excessive.',
     'FX rate ratios must be positive integers.': 'Les ratios de taux de change doivent être des entiers positifs.',
-    'No online payment gateway is configured for this tenant.': 'Aucune passerelle de paiement en ligne n’est configurée pour cet espace.',
+    'No online payment gateway is configured for this tenant.':
+        'Aucune passerelle de paiement en ligne n’est configurée pour cet espace.',
     'Stripe is not configured for online payments.': 'Stripe n’est pas configuré pour les paiements en ligne.',
-    'The customer tenant could not be resolved for Stripe payment metadata.': 'L’espace du client n’a pas pu être déterminé pour les métadonnées de paiement Stripe.',
-    'Stripe returned an invalid payment intent response.': 'Stripe a renvoyé une réponse d’intention de paiement invalide.',
-    'Stripe returned an incomplete payment intent response.': 'Stripe a renvoyé une réponse d’intention de paiement incomplète.',
+    'The customer tenant could not be resolved for Stripe payment metadata.':
+        'L’espace du client n’a pas pu être déterminé pour les métadonnées de paiement Stripe.',
+    'Stripe returned an invalid payment intent response.':
+        'Stripe a renvoyé une réponse d’intention de paiement invalide.',
+    'Stripe returned an incomplete payment intent response.':
+        'Stripe a renvoyé une réponse d’intention de paiement incomplète.',
     'Whish Pay is not enabled.': 'Whish Pay n’est pas activé.',
     'Whish environment must be sandbox or production.': 'L’environnement Whish doit être sandbox ou production.',
-    'Whish Pay credentials and website URL are not configured.': 'Les identifiants Whish Pay et l’URL du site ne sont pas configurés.',
+    'Whish Pay credentials and website URL are not configured.':
+        'Les identifiants Whish Pay et l’URL du site ne sont pas configurés.',
     'The router has no RADIUS shared secret configured.': 'Aucun secret partagé RADIUS n’est configuré sur le routeur.',
     'The RADIUS response header is invalid.': 'L’en-tête de réponse RADIUS est invalide.',
     'The RADIUS response authenticator is invalid.': 'L’authentificateur de réponse RADIUS est invalide.',
-    'RADIUS attribute values cannot exceed 253 bytes.': 'Les valeurs d’attribut RADIUS ne peuvent pas dépasser 253 octets.',
+    'RADIUS attribute values cannot exceed 253 bytes.':
+        'Les valeurs d’attribut RADIUS ne peuvent pas dépasser 253 octets.',
     'RADIUS packet could not be sent.': 'Le paquet RADIUS n’a pas pu être envoyé.',
     'Unable to read the XLSX import file.': 'Impossible de lire le fichier d’import XLSX.',
     'The XLSX import archive is invalid.': 'L’archive d’import XLSX est invalide.',
@@ -3465,8 +3924,10 @@ const fieldFrench: Messages = {
     'Unable to allocate an XLSX export file.': 'Impossible d’allouer un fichier d’export XLSX.',
     'Unable to create the XLSX export archive.': 'Impossible de créer l’archive d’export XLSX.',
     'The renewal preview is invalid or expired.': 'L’aperçu du renouvellement est invalide ou expiré.',
-    'The renewal preview no longer matches the current plan price.': 'L’aperçu du renouvellement ne correspond plus au prix actuel du forfait.',
-    'The requested API token ability is not available for this user.': 'La capacité de jeton API demandée n’est pas disponible pour cet utilisateur.',
+    'The renewal preview no longer matches the current plan price.':
+        'L’aperçu du renouvellement ne correspond plus au prix actuel du forfait.',
+    'The requested API token ability is not available for this user.':
+        'La capacité de jeton API demandée n’est pas disponible pour cet utilisateur.',
     'The sync token is invalid.': 'Le jeton de synchronisation est invalide.',
     'Currency must be an ISO-4217 code.': 'La devise doit être un code ISO-4217.',
     'Allocation ratios must be positive integers.': 'Les ratios d’allocation doivent être des entiers positifs.',
@@ -3474,24 +3935,31 @@ const fieldFrench: Messages = {
     'The phone number could not be parsed.': 'Le numéro de téléphone n’a pas pu être analysé.',
     'The phone number is not valid.': 'Le numéro de téléphone est invalide.',
     'Request context has not started.': 'Le contexte de requête n’a pas démarré.',
-    'Stock quantity must be a number with at most three decimal places.': 'La quantité de stock doit être un nombre avec au plus trois décimales.',
+    'Stock quantity must be a number with at most three decimal places.':
+        'La quantité de stock doit être un nombre avec au plus trois décimales.',
     'Stock quantity must be greater than zero.': 'La quantité de stock doit être supérieure à zéro.',
     'A tenant context is required for this operation.': 'Un contexte d’espace est requis pour cette opération.',
     'Branch creation returned an unexpected model.': 'La création de l’agence a renvoyé un modèle inattendu.',
     'Zone creation returned an unexpected model.': 'La création de la zone a renvoyé un modèle inattendu.',
     'Invoice paginator contained an invalid record.': 'Le pagineur des factures contenait un enregistrement invalide.',
-    'Credit-note paginator contained an invalid record.': 'Le pagineur des avoirs contenait un enregistrement invalide.',
-    'Credential paginator contained an invalid record.': 'Le pagineur des identifiants contenait un enregistrement invalide.',
+    'Credit-note paginator contained an invalid record.':
+        'Le pagineur des avoirs contenait un enregistrement invalide.',
+    'Credential paginator contained an invalid record.':
+        'Le pagineur des identifiants contenait un enregistrement invalide.',
     'Import history contained an invalid record.': 'L’historique d’import contenait un enregistrement invalide.',
     'Inventory paginator contained an invalid record.': 'Le pagineur du stock contenait un enregistrement invalide.',
-    'IP address paginator contained an invalid record.': 'Le pagineur des adresses IP contenait un enregistrement invalide.',
+    'IP address paginator contained an invalid record.':
+        'Le pagineur des adresses IP contenait un enregistrement invalide.',
     'Plan paginator contained an invalid record.': 'Le pagineur des forfaits contenait un enregistrement invalide.',
     'Router paginator contained an invalid record.': 'Le pagineur des routeurs contenait un enregistrement invalide.',
     'Ticket paginator contained an invalid record.': 'Le pagineur des tickets contenait un enregistrement invalide.',
-    'Work-order paginator contained an invalid record.': 'Le pagineur des ordres de travail contenait un enregistrement invalide.',
-    'Tenant context middleware requires a TenantAware job.': 'Le middleware de contexte d’espace requiert un job TenantAware.',
+    'Work-order paginator contained an invalid record.':
+        'Le pagineur des ordres de travail contenait un enregistrement invalide.',
+    'Tenant context middleware requires a TenantAware job.':
+        'Le middleware de contexte d’espace requiert un job TenantAware.',
     'The tenant for this job no longer exists.': 'L’espace de ce job n’existe plus.',
-    'Tenant-owned records must be created inside a tenant context.': 'Les enregistrements de l’espace doivent être créés dans un contexte d’espace.',
+    'Tenant-owned records must be created inside a tenant context.':
+        'Les enregistrements de l’espace doivent être créés dans un contexte d’espace.',
     'Inventory movements are append-only.': 'Les mouvements de stock sont en ajout uniquement.',
     'Journal entries are append-only.': 'Les écritures de journal sont en ajout uniquement.',
     'Journal lines are append-only.': 'Les lignes de journal sont en ajout uniquement.',
@@ -3518,11 +3986,101 @@ const accessibilityMessages: Record<Exclude<Locale, 'en'>, Messages> = {
 };
 
 const englishMessages: Messages = {
+    'portal.manage_connection': 'Manage your connection.',
+    'portal.customer_portal': 'Customer portal',
+    'portal.secure_access': 'Secure access',
+    'portal.subtitle': 'Enter the phone number on your account to receive a one-time code.',
+    'portal.sending': 'Sending…',
+    'portal.send_code': 'Send code',
+    'portal.verification_code': 'Verification code',
+    'portal.checking': 'Checking…',
+    'portal.open_portal': 'Open portal',
+    'portal.different_number': 'Use a different phone number',
+    'portal.sign_in_error': 'We could not send your code. Please try again.',
+    'portal.invalid_code': 'That code could not be verified. Check it and try again.',
+    'portal.category.no_service': 'No service',
+    'portal.category.slow': 'Slow connection',
+    'portal.category.billing': 'Billing',
+    'portal.category.relocation': 'Move service',
+    'portal.category.other': 'Other',
+    'portal.dashboard.title': 'Customer portal',
+    'portal.dashboard.customer_portal': 'Customer portal',
+    'portal.dashboard.sign_out': 'Sign out',
+    'portal.dashboard.welcome_back': 'Welcome back',
+    'portal.dashboard.subtitle': 'Your connections and service status at a glance.',
+    'portal.dashboard.account_summary': 'Account summary',
+    'portal.dashboard.current_balance': 'Current balance',
+    'portal.dashboard.next_due': 'Next due',
+    'portal.dashboard.no_outstanding_balance': 'No outstanding balance',
+    'portal.dashboard.account': 'Account',
+    'portal.dashboard.active_connection': 'active connection',
+    'portal.dashboard.connections_linked': 'connections linked to this account',
+    'portal.dashboard.service_notices': 'Service notices',
+    'portal.dashboard.usage_this_period': 'Usage this period',
+    'portal.dashboard.expires': 'Expires',
+    'portal.dashboard.restarting': 'Restarting…',
+    'portal.dashboard.restart_connection': 'Restart connection',
+    'portal.dashboard.no_services': 'No services are linked to this account.',
+    'portal.dashboard.contact_provider': 'Contact your provider if this does not look right.',
+    'portal.dashboard.invoices': 'Invoices',
+    'portal.dashboard.no_invoices': 'No invoices yet.',
+    'portal.dashboard.payment_history': 'Payment history',
+    'portal.dashboard.no_payments': 'No payments yet.',
+    'portal.dashboard.pay_invoice': 'Pay an invoice',
+    'portal.dashboard.payment_confirmation_note':
+        'Your payment provider confirms the payment before your account is updated.',
+    'portal.dashboard.invoice': 'Invoice',
+    'portal.dashboard.opening_checkout': 'Opening checkout…',
+    'portal.dashboard.continue_payment': 'Continue to payment',
+    'portal.dashboard.incomplete_checkout': 'The payment provider returned an incomplete checkout session.',
+    'portal.dashboard.payment_submitted':
+        'Your payment was submitted. Your balance and invoice history will update after the payment provider confirms it.',
+    'portal.dashboard.payment_start_error': 'Unable to start the payment. Please try again.',
+    'portal.dashboard.payment_confirm_error': 'Unable to confirm the payment. Please try again.',
+    'portal.dashboard.confirming_payment': 'Confirming payment…',
+    'portal.dashboard.pay_securely': 'Pay securely',
+    'portal.dashboard.contact_details': 'Contact details',
+    'portal.dashboard.saving': 'Saving…',
+    'portal.dashboard.saved': 'Saved',
+    'portal.dashboard.save_details': 'Save details',
+    'portal.dashboard.profile_error': 'Unable to update your profile. Please try again.',
+    'portal.dashboard.restart_error': 'Unable to restart this connection. Please try again.',
+    'portal.dashboard.support_tickets': 'Support tickets',
+    'portal.dashboard.messages': 'messages',
+    'portal.dashboard.rate_support': 'Rate support',
+    'portal.dashboard.choose_rating': 'Choose a rating',
+    'portal.dashboard.no_tickets': 'No support tickets yet.',
+    'portal.dashboard.open_ticket': 'Open a ticket',
+    'portal.dashboard.category': 'Category',
+    'portal.dashboard.subject': 'Subject',
+    'portal.dashboard.what_happened': 'What happened?',
+    'portal.dashboard.sending': 'Sending…',
+    'portal.dashboard.send_ticket': 'Send ticket',
+    'portal.dashboard.ticket_error': 'Unable to open your ticket. Please try again.',
+    'portal.dashboard.rating_thanks': 'Thank you for rating the support you received.',
+    'portal.dashboard.rating_error': 'Unable to save your rating. Please try again.',
+    'portal.dashboard.load_error': 'Unable to load the portal. Please try again.',
+    'portal.dashboard.return_to_sign_in': 'Return to portal sign in',
     'error.title': 'Error',
     'error.go_to_sign_in': 'Go to sign in',
     'error.back_to_tenants': 'Back to tenants',
     'error.go_back': 'Go back',
     'error.refresh': 'Refresh page',
+    'portal.dashboard.retry': 'Try again',
+    'portal.dashboard.loading': 'Loading…',
+    'portal.dashboard.load_older': 'Load older',
+    'portal.dashboard.loading_older': 'Loading older records…',
+    'portal.dashboard.no_due_date': 'No due date',
+    'portal.dashboard.outstanding': 'Outstanding',
+    'portal.dashboard.paid': 'Paid',
+    'portal.dashboard.view_details': 'View details',
+    'portal.dashboard.hide_details': 'Hide details',
+    'portal.dashboard.download_invoice': 'Download PDF',
+    'portal.dashboard.downloading': 'Downloading…',
+    'portal.dashboard.invoice_detail_error': 'Unable to load invoice details.',
+    'portal.dashboard.invoice_download_error': 'Unable to download this invoice.',
+    'portal.dashboard.ticket_sent': 'Your support ticket was sent.',
+    'portal.dashboard.restart_requested': 'Restart requested. Your connection may briefly disconnect.',
 };
 
 const messages: Record<Exclude<Locale, 'en'>, Messages> = {
@@ -5370,8 +5928,7 @@ const messages: Record<Exclude<Locale, 'en'>, Messages> = {
         Resume: 'استئناف',
         'No recurring expenses configured.': 'لم تُضبط مصروفات متكررة.',
         'Expense categories': 'فئات المصروفات',
-        'Keep reporting labels consistent across the workspace.':
-            'حافظ على اتساق تسميات التقارير في مساحة العمل.',
+        'Keep reporting labels consistent across the workspace.': 'حافظ على اتساق تسميات التقارير في مساحة العمل.',
         'Category name': 'اسم الفئة',
         CODE: 'الرمز',
         'Add category': 'إضافة فئة',
@@ -5713,8 +6270,7 @@ const messages: Record<Exclude<Locale, 'en'>, Messages> = {
         'auth.accept_invitation': 'Accepter l’invitation',
         'auth.tenant_invitation': 'Invitation du locataire',
         'auth.create_operator_account': 'Créer votre compte opérateur',
-        'auth.invitation_description':
-            'Définissez votre nom et votre mot de passe pour rejoindre l’espace NexaISP.',
+        'auth.invitation_description': 'Définissez votre nom et votre mot de passe pour rejoindre l’espace NexaISP.',
         'auth.full_name': 'Nom complet',
         'auth.minimum_password': 'Utilisez au moins 12 caractères.',
         'auth.confirm_password': 'Confirmer le mot de passe',
@@ -7495,8 +8051,8 @@ function runtimeTranslation(locale: Locale, key: string): string | null {
                       ['Credential ', 'بيانات الاعتماد '],
                       ['Inventory item ', 'عنصر المخزون '],
                       ['Inventory unit ', 'وحدة المخزون '],
-                       ['Serialized unit ', 'الوحدة المتسلسلة '],
-                       ['Equipment ', 'المعدة '],
+                      ['Serialized unit ', 'الوحدة المتسلسلة '],
+                      ['Equipment ', 'المعدة '],
                       ['Warehouse ', 'المستودع '],
                       ['IP pool ', 'مجموعة IP '],
                       ['Address ', 'العنوان '],
@@ -7522,8 +8078,8 @@ function runtimeTranslation(locale: Locale, key: string): string | null {
                       ['Credential ', 'Identifiant '],
                       ['Inventory item ', 'Article de stock '],
                       ['Inventory unit ', 'Unité de stock '],
-                       ['Serialized unit ', 'Unité sérialisée '],
-                       ['Equipment ', 'Équipement '],
+                      ['Serialized unit ', 'Unité sérialisée '],
+                      ['Equipment ', 'Équipement '],
                       ['Warehouse ', 'Entrepôt '],
                       ['IP pool ', 'Pool IP '],
                       ['Address ', 'Adresse '],
@@ -7555,24 +8111,45 @@ function runtimeTranslation(locale: Locale, key: string): string | null {
                   [/^(\d+)d (\d+)h$/, (m) => `${m[1]} يوم ${m[2]} ساعة`],
                   [/^(\d+)h (\d+)m$/, (m) => `${m[1]} ساعة ${m[2]} دقيقة`],
                   [/^(\d+)m$/, (m) => `${m[1]} دقيقة`],
-                  [/^This creates a paid invoice for (.+) and immediately removes the item from your stock\.$/, (m) => `ينشئ ذلك فاتورة مدفوعة بقيمة ${m[1]} ويزيل العنصر فورًا من مخزونك.`],
-                  [/^(\d+) renewal\(s\) processed successfully\.$/, (m) => `تمت معالجة ${m[1]} من فواتير التجديد بنجاح.`],
-                  [/^(\d+) renewal\(s\) processed; (\d+) need review\.$/, (m) => `تمت معالجة ${m[1]} من فواتير التجديد؛ وتحتاج ${m[2]} إلى المراجعة.`],
-                  [/^Preview ready: (.+) row\(s\) can be imported\.$/, (m) => `المعاينة جاهزة: يمكن استيراد ${m[1]} من الصفوف.`],
+                  [
+                      /^This creates a paid invoice for (.+) and immediately removes the item from your stock\.$/,
+                      (m) => `ينشئ ذلك فاتورة مدفوعة بقيمة ${m[1]} ويزيل العنصر فورًا من مخزونك.`,
+                  ],
+                  [
+                      /^(\d+) renewal\(s\) processed successfully\.$/,
+                      (m) => `تمت معالجة ${m[1]} من فواتير التجديد بنجاح.`,
+                  ],
+                  [
+                      /^(\d+) renewal\(s\) processed; (\d+) need review\.$/,
+                      (m) => `تمت معالجة ${m[1]} من فواتير التجديد؛ وتحتاج ${m[2]} إلى المراجعة.`,
+                  ],
+                  [
+                      /^Preview ready: (.+) row\(s\) can be imported\.$/,
+                      (m) => `المعاينة جاهزة: يمكن استيراد ${m[1]} من الصفوف.`,
+                  ],
                   [/^(.+) submitted for manager review\.$/, (m) => `تم إرسال ${m[1]} للمراجعة الإدارية.`],
                   [/^Move (.+) earlier$/, (m) => `نقل ${m[1]} إلى الأعلى`],
                   [/^Move (.+) later$/, (m) => `نقل ${m[1]} إلى الأسفل`],
                   [/^Ticket assigned to (.+)\.$/, (m) => `تم تعيين التذكرة إلى ${m[1]}.`],
                   [/^Ticket unassigned\.$/, () => 'تم إلغاء تعيين التذكرة.'],
-                  [/^Unknown variable\(s\): (.+)\. Use one of the listed variables\.$/, (m) => `متغيرات غير معروفة: ${m[1]}. استخدم أحد المتغيرات المدرجة.`],
+                  [
+                      /^Unknown variable\(s\): (.+)\. Use one of the listed variables\.$/,
+                      (m) => `متغيرات غير معروفة: ${m[1]}. استخدم أحد المتغيرات المدرجة.`,
+                  ],
                   [/^Router unreachable: (.+)$/, (m) => `الموجّه غير قابل للوصول: ${m[1]}`],
                   [/^Whish did not return a collection URL\.$/, () => 'لم يُرجع Whish رابط تحصيل.'],
                   [/^Whish payment status could not be verified\.$/, () => 'تعذّر التحقق من حالة دفعة Whish.'],
                   [/^Expired (\d+) day(?:s)? ago$/, (m) => `منتهية منذ ${m[1]} ${m[1] === '1' ? 'يوم' : 'أيام'}`],
                   [/^Expires in (\d+) days$/, (m) => `تنتهي خلال ${m[1]} يومًا`],
                   [/^(.+) created\.$/, (m) => `تم إنشاء ${entity(m[1])}.`],
-                  [/^Service (.+) created and awaiting activation\.$/, (m) => `تم إنشاء الخدمة ${m[1]} وهي بانتظار التفعيل.`],
-                  [/^The work order cannot move from (.+) to (.+)\.$/, (m) => `لا يمكن نقل أمر العمل من ${m[1]} إلى ${m[2]}.`],
+                  [
+                      /^Service (.+) created and awaiting activation\.$/,
+                      (m) => `تم إنشاء الخدمة ${m[1]} وهي بانتظار التفعيل.`,
+                  ],
+                  [
+                      /^The work order cannot move from (.+) to (.+)\.$/,
+                      (m) => `لا يمكن نقل أمر العمل من ${m[1]} إلى ${m[2]}.`,
+                  ],
                   [/^Work order (.+) completed\.$/, (m) => `تم إكمال أمر العمل ${m[1]}.`],
                   [/^Work order (.+) scheduled\.$/, (m) => `تمت جدولة أمر العمل ${m[1]}.`],
                   [/^Ticket (.+) created\.$/, (m) => `تم إنشاء التذكرة ${m[1]}.`],
@@ -7581,24 +8158,48 @@ function runtimeTranslation(locale: Locale, key: string): string | null {
                   [/^Missing template variable \[(.+)\]\.$/, (m) => `متغير القالب مفقود [${m[1]}].`],
                   [/^Journal entry is not balanced in (.+)\.$/, (m) => `قيد اليومية غير متوازن بعملة ${m[1]}.`],
                   [/^Frankfurter is unreachable: (.+)$/, (m) => `تعذّر الوصول إلى Frankfurter: ${m[1]}`],
-                  [/^Frankfurter rejected the rate request with HTTP (.+)\.$/, (m) => `رفض Frankfurter طلب السعر بحالة HTTP ${m[1]}.`],
-                  [/^Frankfurter omitted requested quote currency\/currencies: (.+)\.$/, (m) => `لم يُرجع Frankfurter عملة التسعير المطلوبة: ${m[1]}.`],
+                  [
+                      /^Frankfurter rejected the rate request with HTTP (.+)\.$/,
+                      (m) => `رفض Frankfurter طلب السعر بحالة HTTP ${m[1]}.`,
+                  ],
+                  [
+                      /^Frankfurter omitted requested quote currency\/currencies: (.+)\.$/,
+                      (m) => `لم يُرجع Frankfurter عملة التسعير المطلوبة: ${m[1]}.`,
+                  ],
                   [/^No FX rate exists for (.+) at (.+)\.$/, (m) => `لا يوجد سعر صرف لـ ${m[1]} عند ${m[2]}.`],
-                  [/^The FX rate for (.+) is (.+) hour\(s\) old; refresh it or provide an approved override\.$/, (m) => `سعر الصرف لـ ${m[1]} عمره ${m[2]} ساعة؛ حدّثه أو قدّم تجاوزًا معتمدًا.`],
+                  [
+                      /^The FX rate for (.+) is (.+) hour\(s\) old; refresh it or provide an approved override\.$/,
+                      (m) => `سعر الصرف لـ ${m[1]} عمره ${m[2]} ساعة؛ حدّثه أو قدّم تجاوزًا معتمدًا.`,
+                  ],
                   [/^Unsupported FX rounding mode: (.+)\.$/, (m) => `وضع تقريب سعر الصرف غير مدعوم: ${m[1]}.`],
                   [/^Stripe payment intent creation failed: (.+)$/, (m) => `فشل إنشاء نية دفع Stripe: ${m[1]}`],
                   [/^RADIUS transport unavailable: (.+)$/, (m) => `نقل RADIUS غير متاح: ${m[1]}`],
-                  [/^Service transition (.+) -> (.+) is not allowed\.$/, (m) => `لا يُسمح بانتقال الخدمة من ${m[1]} إلى ${m[2]}.`],
+                  [
+                      /^Service transition (.+) -> (.+) is not allowed\.$/,
+                      (m) => `لا يُسمح بانتقال الخدمة من ${m[1]} إلى ${m[2]}.`,
+                  ],
                   [/^Unknown ticket priority \[(.+)\]\.$/, (m) => `أولوية تذكرة غير معروفة [${m[1]}].`],
-                  [/^Ticket transition (.+) -> (.+) is not allowed\.$/, (m) => `لا يُسمح بانتقال التذكرة من ${m[1]} إلى ${m[2]}.`],
+                  [
+                      /^Ticket transition (.+) -> (.+) is not allowed\.$/,
+                      (m) => `لا يُسمح بانتقال التذكرة من ${m[1]} إلى ${m[2]}.`,
+                  ],
                   [/^Insufficient stock for (.+)\.$/, (m) => `المخزون غير كافٍ للعنصر ${m[1]}.`],
                   [/^Port (.+) is outside the box capacity\.$/, (m) => `المنفذ ${m[1]} خارج سعة الصندوق.`],
                   [/^Port (.+) is already assigned in (.+)\.$/, (m) => `المنفذ ${m[1]} معين بالفعل في ${m[2]}.`],
                   [/^Missing (.+)\.$/, (m) => `مفقود: ${m[1]}.`],
                   [/^(.+) is outside this collector's territory\.$/, (m) => `${m[1]} خارج منطقة هذا المحصل.`],
-                  [/^Recurring add-on (.+) uses (.+); the renewal invoice uses (.+)\.$/, (m) => `تستخدم الإضافة المتكررة ${m[1]} عملة ${m[2]}؛ بينما تستخدم فاتورة التجديد عملة ${m[3]}.`],
-                  [/^Usage metric (.+) is not supported for renewal rating\.$/, (m) => `مقياس الاستخدام ${m[1]} غير مدعوم لتقييم التجديد.`],
-                  [/^Usage rate (.+) uses (.+); the renewal invoice uses (.+)\.$/, (m) => `يستخدم سعر الاستخدام ${m[1]} عملة ${m[2]}؛ بينما تستخدم فاتورة التجديد عملة ${m[3]}.`],
+                  [
+                      /^Recurring add-on (.+) uses (.+); the renewal invoice uses (.+)\.$/,
+                      (m) => `تستخدم الإضافة المتكررة ${m[1]} عملة ${m[2]}؛ بينما تستخدم فاتورة التجديد عملة ${m[3]}.`,
+                  ],
+                  [
+                      /^Usage metric (.+) is not supported for renewal rating\.$/,
+                      (m) => `مقياس الاستخدام ${m[1]} غير مدعوم لتقييم التجديد.`,
+                  ],
+                  [
+                      /^Usage rate (.+) uses (.+); the renewal invoice uses (.+)\.$/,
+                      (m) => `يستخدم سعر الاستخدام ${m[1]} عملة ${m[2]}؛ بينما تستخدم فاتورة التجديد عملة ${m[3]}.`,
+                  ],
                   [/^(.+) updated\.$/, (m) => `تم تحديث ${entity(m[1])}.`],
                   [/^(.+) was updated\.$/, (m) => `تم تحديث ${entity(m[1])}.`],
                   [/^(.+) archived\.$/, (m) => `تمت أرشفة ${entity(m[1])}.`],
@@ -7613,8 +8214,14 @@ function runtimeTranslation(locale: Locale, key: string): string | null {
                   [/^(.+) reversed\.$/, (m) => `تم عكس ${entity(m[1])}.`],
                   [/^(.+) cancelled\.$/, (m) => `تم إلغاء ${entity(m[1])}.`],
                   [/^(.+) is ready for collection\.$/, (m) => `${entity(m[1])} جاهز للتحصيل.`],
-                  [/^(.+) queued for network re-sync\.$/, (m) => `تم وضع ${entity(m[1])} في قائمة إعادة مزامنة الشبكة.`],
-                  [/^(.+) unassigned from the network box\.$/, (m) => `تم إلغاء تعيين ${entity(m[1])} من صندوق الشبكة.`],
+                  [
+                      /^(.+) queued for network re-sync\.$/,
+                      (m) => `تم وضع ${entity(m[1])} في قائمة إعادة مزامنة الشبكة.`,
+                  ],
+                  [
+                      /^(.+) unassigned from the network box\.$/,
+                      (m) => `تم إلغاء تعيين ${entity(m[1])} من صندوق الشبكة.`,
+                  ],
                   [/^(.+)'s route was planned\.$/, (m) => `تم تخطيط مسار ${m[1]}.`],
                   [/^(.+)'s territory was updated\.$/, (m) => `تم تحديث منطقة ${m[1]}.`],
                   [/^(.+)'s role was updated\.$/, (m) => `تم تحديث دور ${m[1]}.`],
@@ -7629,30 +8236,73 @@ function runtimeTranslation(locale: Locale, key: string): string | null {
                   [/^Stock request (.+)\.$/, (m) => `طلب المخزون: ${status[m[1]] ?? m[1]}.`],
                   [/^(.+) request created\.$/, (m) => `تم إنشاء طلب ${m[1]}.`],
                   [/^(\d+) Frankfurter rate\(s\) imported\.$/, (m) => `تم استيراد ${m[1]} من أسعار Frankfurter.`],
-                  [/^Import rolled back\. (\d+) record\(s\) reversed or removed\.$/, (m) => `تم التراجع عن الاستيراد. عُكست أو أزيلت ${m[1]} من السجلات.`],
+                  [
+                      /^Import rolled back\. (\d+) record\(s\) reversed or removed\.$/,
+                      (m) => `تم التراجع عن الاستيراد. عُكست أو أزيلت ${m[1]} من السجلات.`,
+                  ],
                   [/^(\d+) WhatsApp accounts are available\.$/, (m) => `${m[1]} من حسابات WhatsApp متاحة.`],
                   [/^Workspace (.+) is ready\.$/, (m) => `مساحة العمل ${m[1]} جاهزة.`],
                   [/^Workspace (.+) was updated\.$/, (m) => `تم تحديث مساحة العمل ${m[1]}.`],
                   [/^Tenant status is (.+)\.$/, (m) => `حالة مساحة العمل: ${m[1]}.`],
-                  [/^([A-Z]+) is provisioned as the active (base|collection) currency\.$/, (m) => `تم إعداد ${m[1]} كعملة ${m[2] === 'base' ? 'الأساس' : 'التحصيل'} الفعّالة.`],
+                  [
+                      /^([A-Z]+) is provisioned as the active (base|collection) currency\.$/,
+                      (m) => `تم إعداد ${m[1]} كعملة ${m[2] === 'base' ? 'الأساس' : 'التحصيل'} الفعّالة.`,
+                  ],
                   [/^An active plan has an effective ([A-Z]+) price\.$/, (m) => `توجد باقة فعّالة بسعر ${m[1]} ساري.`],
-                  [/^Add an effective ([A-Z]+\/[A-Z]+) rate or run fx:sync-frankfurter\.$/, (m) => `أضف سعر ${m[1]} ساريًا أو شغّل fx:sync-frankfurter.`],
-                  [/^An effective direct or inverse ([A-Z]+\/[A-Z]+) rate from (.+) is available \((.+)\)\.$/, (m) => `سعر ${m[1]} مباشر أو عكسي من ${m[2]} متاح (${m[3]}).`],
-                  [/^All (\d+) active (.+) notification templates are provisioned\.$/, (m) => `تم إعداد جميع قوالب الإشعارات النشطة وعددها ${m[1]} (${m[2]}).`],
-                  [/^(\d+) active (.+) notification template\(s\) are missing; run (.+)\.$/, (m) => `هناك ${m[1]} من قوالب الإشعارات النشطة المفقودة (${m[2]}). شغّل ${m[3]}.`],
-                  [/^It is (\d+) hour\(s\) old; refresh it or approve a current manual treasury rate\.$/, (m) => `عمره ${m[1]} ساعة؛ حدّثه أو وافق على سعر خزينة يدوي حالي.`],
-                  [/^The configured tenant logo could not be verified on the (.+) storage disk\.$/, (m) => `تعذّر التحقق من شعار مساحة العمل على قرص التخزين ${m[1]}.`],
-                  [/^This database uses (.+)\. English templates remain available, but Arabic and French text require a UTF-8 PostgreSQL database\.$/, (m) => `تستخدم قاعدة البيانات هذه الترميز ${m[1]}. تبقى القوالب الإنجليزية متاحة، لكن النصين العربي والفرنسي يتطلبان قاعدة PostgreSQL بترميز UTF-8.`],
-                  [/^The tenant logo path is configured, but the stored file is missing from the (.+) storage disk\.$/, (m) => `مسار الشعار مضبوط، لكن الملف مفقود من قرص التخزين ${m[1]}.`],
-                  [/^(\d+) backup destination\(s\) are reachable and pass the monitored health checks\.$/, (m) => `وجهة/وجهات النسخ الاحتياطي المتاحة وعددها ${m[1]} تجتاز فحوصات الصحة المراقبة.`],
+                  [
+                      /^Add an effective ([A-Z]+\/[A-Z]+) rate or run fx:sync-frankfurter\.$/,
+                      (m) => `أضف سعر ${m[1]} ساريًا أو شغّل fx:sync-frankfurter.`,
+                  ],
+                  [
+                      /^An effective direct or inverse ([A-Z]+\/[A-Z]+) rate from (.+) is available \((.+)\)\.$/,
+                      (m) => `سعر ${m[1]} مباشر أو عكسي من ${m[2]} متاح (${m[3]}).`,
+                  ],
+                  [
+                      /^All (\d+) active (.+) notification templates are provisioned\.$/,
+                      (m) => `تم إعداد جميع قوالب الإشعارات النشطة وعددها ${m[1]} (${m[2]}).`,
+                  ],
+                  [
+                      /^(\d+) active (.+) notification template\(s\) are missing; run (.+)\.$/,
+                      (m) => `هناك ${m[1]} من قوالب الإشعارات النشطة المفقودة (${m[2]}). شغّل ${m[3]}.`,
+                  ],
+                  [
+                      /^It is (\d+) hour\(s\) old; refresh it or approve a current manual treasury rate\.$/,
+                      (m) => `عمره ${m[1]} ساعة؛ حدّثه أو وافق على سعر خزينة يدوي حالي.`,
+                  ],
+                  [
+                      /^The configured tenant logo could not be verified on the (.+) storage disk\.$/,
+                      (m) => `تعذّر التحقق من شعار مساحة العمل على قرص التخزين ${m[1]}.`,
+                  ],
+                  [
+                      /^This database uses (.+)\. English templates remain available, but Arabic and French text require a UTF-8 PostgreSQL database\.$/,
+                      (m) =>
+                          `تستخدم قاعدة البيانات هذه الترميز ${m[1]}. تبقى القوالب الإنجليزية متاحة، لكن النصين العربي والفرنسي يتطلبان قاعدة PostgreSQL بترميز UTF-8.`,
+                  ],
+                  [
+                      /^The tenant logo path is configured, but the stored file is missing from the (.+) storage disk\.$/,
+                      (m) => `مسار الشعار مضبوط، لكن الملف مفقود من قرص التخزين ${m[1]}.`,
+                  ],
+                  [
+                      /^(\d+) backup destination\(s\) are reachable and pass the monitored health checks\.$/,
+                      (m) => `وجهة/وجهات النسخ الاحتياطي المتاحة وعددها ${m[1]} تجتاز فحوصات الصحة المراقبة.`,
+                  ],
                   [/^Stripe configuration is missing: (.+)\.$/, (m) => `إعداد Stripe ناقص: ${m[1]}.`],
                   [/^Stripe account API returned HTTP (\d+)\.$/, (m) => `أعادت واجهة حساب Stripe حالة HTTP ${m[1]}.`],
-                  [/^WhatsApp Web\.js bridge returned HTTP (\d+)\.$/, (m) => `أعاد جسر WhatsApp Web.js حالة HTTP ${m[1]}.`],
+                  [
+                      /^WhatsApp Web\.js bridge returned HTTP (\d+)\.$/,
+                      (m) => `أعاد جسر WhatsApp Web.js حالة HTTP ${m[1]}.`,
+                  ],
                   [/^Frankfurter synchronization is disabled\.$/, () => 'مزامنة Frankfurter معطّلة.'],
                   [/^The (.+) field is required\.$/, (m) => `${fieldLabel(m[1])} مطلوب.`],
                   [/^The selected (.+) is invalid\.$/, (m) => `${fieldLabel(m[1])} المحددة غير صالحة.`],
-                  [/^The (.+) field must be a valid email address\.$/, (m) => `${fieldLabel(m[1])} يجب أن يكون عنوان بريد إلكتروني صالحًا.`],
-                  [/^The (.+) field must be at least (\d+) characters\.$/, (m) => `${fieldLabel(m[1])} يجب ألا يقل عن ${m[2]} أحرف.`],
+                  [
+                      /^The (.+) field must be a valid email address\.$/,
+                      (m) => `${fieldLabel(m[1])} يجب أن يكون عنوان بريد إلكتروني صالحًا.`,
+                  ],
+                  [
+                      /^The (.+) field must be at least (\d+) characters\.$/,
+                      (m) => `${fieldLabel(m[1])} يجب ألا يقل عن ${m[2]} أحرف.`,
+                  ],
                   [/^The (.+) field must be a number\.$/, (m) => `${fieldLabel(m[1])} يجب أن يكون رقمًا.`],
                   [/^The (.+) field must be an integer\.$/, (m) => `${fieldLabel(m[1])} يجب أن يكون عددًا صحيحًا.`],
                   [/^The (.+) has already been taken\.$/, (m) => `${fieldLabel(m[1])} مستخدم بالفعل.`],
@@ -7664,50 +8314,123 @@ function runtimeTranslation(locale: Locale, key: string): string | null {
                   [/^(\d+)d (\d+)h$/, (m) => `${m[1]} j ${m[2]} h`],
                   [/^(\d+)h (\d+)m$/, (m) => `${m[1]} h ${m[2]} min`],
                   [/^(\d+)m$/, (m) => `${m[1]} min`],
-                  [/^This creates a paid invoice for (.+) and immediately removes the item from your stock\.$/, (m) => `Cela crée une facture payée de ${m[1]} et retire immédiatement l’article de votre stock.`],
-                  [/^(\d+) renewal\(s\) processed successfully\.$/, (m) => `${m[1]} factures de renouvellement traitées avec succès.`],
-                  [/^(\d+) renewal\(s\) processed; (\d+) need review\.$/, (m) => `${m[1]} factures de renouvellement traitées ; ${m[2]} nécessitent une vérification.`],
-                  [/^Preview ready: (.+) row\(s\) can be imported\.$/, (m) => `Aperçu prêt : ${m[1]} ligne(s) peuvent être importées.`],
+                  [
+                      /^This creates a paid invoice for (.+) and immediately removes the item from your stock\.$/,
+                      (m) => `Cela crée une facture payée de ${m[1]} et retire immédiatement l’article de votre stock.`,
+                  ],
+                  [
+                      /^(\d+) renewal\(s\) processed successfully\.$/,
+                      (m) => `${m[1]} factures de renouvellement traitées avec succès.`,
+                  ],
+                  [
+                      /^(\d+) renewal\(s\) processed; (\d+) need review\.$/,
+                      (m) => `${m[1]} factures de renouvellement traitées ; ${m[2]} nécessitent une vérification.`,
+                  ],
+                  [
+                      /^Preview ready: (.+) row\(s\) can be imported\.$/,
+                      (m) => `Aperçu prêt : ${m[1]} ligne(s) peuvent être importées.`,
+                  ],
                   [/^(.+) submitted for manager review\.$/, (m) => `${m[1]} envoyé pour vérification du responsable.`],
                   [/^Move (.+) earlier$/, (m) => `Déplacer ${m[1]} vers le haut`],
                   [/^Move (.+) later$/, (m) => `Déplacer ${m[1]} vers le bas`],
                   [/^Ticket assigned to (.+)\.$/, (m) => `Ticket attribué à ${m[1]}.`],
                   [/^Ticket unassigned\.$/, () => 'Ticket désaffecté.'],
-                  [/^Unknown variable\(s\): (.+)\. Use one of the listed variables\.$/, (m) => `Variables inconnues : ${m[1]}. Utilisez une variable de la liste.`],
+                  [
+                      /^Unknown variable\(s\): (.+)\. Use one of the listed variables\.$/,
+                      (m) => `Variables inconnues : ${m[1]}. Utilisez une variable de la liste.`,
+                  ],
                   [/^Router unreachable: (.+)$/, (m) => `Routeur inaccessible : ${m[1]}`],
                   [/^Whish did not return a collection URL\.$/, () => 'Whish n’a pas renvoyé d’URL d’encaissement.'],
-                  [/^Whish payment status could not be verified\.$/, () => 'Impossible de vérifier le statut du paiement Whish.'],
+                  [
+                      /^Whish payment status could not be verified\.$/,
+                      () => 'Impossible de vérifier le statut du paiement Whish.',
+                  ],
                   [/^Expired (\d+) day(?:s)? ago$/, (m) => `Expiré il y a ${m[1]} ${m[1] === '1' ? 'jour' : 'jours'}`],
                   [/^Expires in (\d+) days$/, (m) => `Expire dans ${m[1]} jours`],
                   [/^(.+) created\.$/, (m) => `${entity(m[1])} créé.`],
-                  [/^Service (.+) created and awaiting activation\.$/, (m) => `Service ${m[1]} créé et en attente d’activation.`],
-                  [/^The work order cannot move from (.+) to (.+)\.$/, (m) => `L’ordre de travail ne peut pas passer de ${m[1]} à ${m[2]}.`],
+                  [
+                      /^Service (.+) created and awaiting activation\.$/,
+                      (m) => `Service ${m[1]} créé et en attente d’activation.`,
+                  ],
+                  [
+                      /^The work order cannot move from (.+) to (.+)\.$/,
+                      (m) => `L’ordre de travail ne peut pas passer de ${m[1]} à ${m[2]}.`,
+                  ],
                   [/^Work order (.+) completed\.$/, (m) => `L’ordre de travail ${m[1]} est terminé.`],
                   [/^Work order (.+) scheduled\.$/, (m) => `L’ordre de travail ${m[1]} est planifié.`],
                   [/^Ticket (.+) created\.$/, (m) => `Le ticket ${m[1]} a été créé.`],
                   [/^(.+) assigned to (.+) port (.+)\.$/, (m) => `${m[1]} attribué à ${m[2]}, port ${m[3]}.`],
                   [/^Unknown permission \[(.+)\]\.$/, (m) => `Permission inconnue [${m[1]}].`],
                   [/^Missing template variable \[(.+)\]\.$/, (m) => `Variable de modèle manquante [${m[1]}].`],
-                  [/^Journal entry is not balanced in (.+)\.$/, (m) => `L’écriture de journal n’est pas équilibrée en ${m[1]}.`],
+                  [
+                      /^Journal entry is not balanced in (.+)\.$/,
+                      (m) => `L’écriture de journal n’est pas équilibrée en ${m[1]}.`,
+                  ],
                   [/^Frankfurter is unreachable: (.+)$/, (m) => `Frankfurter est inaccessible : ${m[1]}`],
-                  [/^Frankfurter rejected the rate request with HTTP (.+)\.$/, (m) => `Frankfurter a refusé la demande de taux avec HTTP ${m[1]}.`],
-                  [/^Frankfurter omitted requested quote currency\/currencies: (.+)\.$/, (m) => `Frankfurter n’a pas renvoyé les devises de cotation demandées : ${m[1]}.`],
-                  [/^No FX rate exists for (.+) at (.+)\.$/, (m) => `Aucun taux de change n’existe pour ${m[1]} à ${m[2]}.`],
-                  [/^The FX rate for (.+) is (.+) hour\(s\) old; refresh it or provide an approved override\.$/, (m) => `Le taux de change de ${m[1]} date de ${m[2]} heure(s) ; actualisez-le ou fournissez une dérogation approuvée.`],
-                  [/^Unsupported FX rounding mode: (.+)\.$/, (m) => `Mode d’arrondi du taux de change non pris en charge : ${m[1]}.`],
-                  [/^Stripe payment intent creation failed: (.+)$/, (m) => `Échec de création de l’intention de paiement Stripe : ${m[1]}`],
+                  [
+                      /^Frankfurter rejected the rate request with HTTP (.+)\.$/,
+                      (m) => `Frankfurter a refusé la demande de taux avec HTTP ${m[1]}.`,
+                  ],
+                  [
+                      /^Frankfurter omitted requested quote currency\/currencies: (.+)\.$/,
+                      (m) => `Frankfurter n’a pas renvoyé les devises de cotation demandées : ${m[1]}.`,
+                  ],
+                  [
+                      /^No FX rate exists for (.+) at (.+)\.$/,
+                      (m) => `Aucun taux de change n’existe pour ${m[1]} à ${m[2]}.`,
+                  ],
+                  [
+                      /^The FX rate for (.+) is (.+) hour\(s\) old; refresh it or provide an approved override\.$/,
+                      (m) =>
+                          `Le taux de change de ${m[1]} date de ${m[2]} heure(s) ; actualisez-le ou fournissez une dérogation approuvée.`,
+                  ],
+                  [
+                      /^Unsupported FX rounding mode: (.+)\.$/,
+                      (m) => `Mode d’arrondi du taux de change non pris en charge : ${m[1]}.`,
+                  ],
+                  [
+                      /^Stripe payment intent creation failed: (.+)$/,
+                      (m) => `Échec de création de l’intention de paiement Stripe : ${m[1]}`,
+                  ],
                   [/^RADIUS transport unavailable: (.+)$/, (m) => `Transport RADIUS indisponible : ${m[1]}`],
-                  [/^Service transition (.+) -> (.+) is not allowed\.$/, (m) => `La transition du service de ${m[1]} à ${m[2]} n’est pas autorisée.`],
+                  [
+                      /^Service transition (.+) -> (.+) is not allowed\.$/,
+                      (m) => `La transition du service de ${m[1]} à ${m[2]} n’est pas autorisée.`,
+                  ],
                   [/^Unknown ticket priority \[(.+)\]\.$/, (m) => `Priorité de ticket inconnue [${m[1]}].`],
-                  [/^Ticket transition (.+) -> (.+) is not allowed\.$/, (m) => `La transition du ticket de ${m[1]} à ${m[2]} n’est pas autorisée.`],
+                  [
+                      /^Ticket transition (.+) -> (.+) is not allowed\.$/,
+                      (m) => `La transition du ticket de ${m[1]} à ${m[2]} n’est pas autorisée.`,
+                  ],
                   [/^Insufficient stock for (.+)\.$/, (m) => `Stock insuffisant pour l’article ${m[1]}.`],
-                  [/^Port (.+) is outside the box capacity\.$/, (m) => `Le port ${m[1]} dépasse la capacité du boîtier.`],
-                  [/^Port (.+) is already assigned in (.+)\.$/, (m) => `Le port ${m[1]} est déjà affecté dans ${m[2]}.`],
+                  [
+                      /^Port (.+) is outside the box capacity\.$/,
+                      (m) => `Le port ${m[1]} dépasse la capacité du boîtier.`,
+                  ],
+                  [
+                      /^Port (.+) is already assigned in (.+)\.$/,
+                      (m) => `Le port ${m[1]} est déjà affecté dans ${m[2]}.`,
+                  ],
                   [/^Missing (.+)\.$/, (m) => `Manquant : ${m[1]}.`],
-                  [/^(.+) is outside this collector's territory\.$/, (m) => `${m[1]} est en dehors du territoire de ce collecteur.`],
-                  [/^Recurring add-on (.+) uses (.+); the renewal invoice uses (.+)\.$/, (m) => `L’extension récurrente ${m[1]} utilise ${m[2]} ; la facture de renouvellement utilise ${m[3]}.`],
-                  [/^Usage metric (.+) is not supported for renewal rating\.$/, (m) => `La métrique d’utilisation ${m[1]} n’est pas prise en charge pour le calcul du renouvellement.`],
-                  [/^Usage rate (.+) uses (.+); the renewal invoice uses (.+)\.$/, (m) => `Le taux d’utilisation ${m[1]} utilise ${m[2]} ; la facture de renouvellement utilise ${m[3]}.`],
+                  [
+                      /^(.+) is outside this collector's territory\.$/,
+                      (m) => `${m[1]} est en dehors du territoire de ce collecteur.`,
+                  ],
+                  [
+                      /^Recurring add-on (.+) uses (.+); the renewal invoice uses (.+)\.$/,
+                      (m) =>
+                          `L’extension récurrente ${m[1]} utilise ${m[2]} ; la facture de renouvellement utilise ${m[3]}.`,
+                  ],
+                  [
+                      /^Usage metric (.+) is not supported for renewal rating\.$/,
+                      (m) =>
+                          `La métrique d’utilisation ${m[1]} n’est pas prise en charge pour le calcul du renouvellement.`,
+                  ],
+                  [
+                      /^Usage rate (.+) uses (.+); the renewal invoice uses (.+)\.$/,
+                      (m) =>
+                          `Le taux d’utilisation ${m[1]} utilise ${m[2]} ; la facture de renouvellement utilise ${m[3]}.`,
+                  ],
                   [/^(.+) updated\.$/, (m) => `${entity(m[1])} mis à jour.`],
                   [/^(.+) was updated\.$/, (m) => `${entity(m[1])} mis à jour.`],
                   [/^(.+) archived\.$/, (m) => `${entity(m[1])} archivé.`],
@@ -7722,7 +8445,10 @@ function runtimeTranslation(locale: Locale, key: string): string | null {
                   [/^(.+) reversed\.$/, (m) => `${entity(m[1])} annulé.`],
                   [/^(.+) cancelled\.$/, (m) => `${entity(m[1])} annulé.`],
                   [/^(.+) is ready for collection\.$/, (m) => `${entity(m[1])} est prêt pour l’encaissement.`],
-                  [/^(.+) queued for network re-sync\.$/, (m) => `${entity(m[1])} placé dans la file de resynchronisation réseau.`],
+                  [
+                      /^(.+) queued for network re-sync\.$/,
+                      (m) => `${entity(m[1])} placé dans la file de resynchronisation réseau.`,
+                  ],
                   [/^(.+) unassigned from the network box\.$/, (m) => `${entity(m[1])} retiré du boîtier réseau.`],
                   [/^(.+)'s route was planned\.$/, (m) => `Itinéraire de ${m[1]} planifié.`],
                   [/^(.+)'s territory was updated\.$/, (m) => `Territoire de ${m[1]} mis à jour.`],
@@ -7738,36 +8464,93 @@ function runtimeTranslation(locale: Locale, key: string): string | null {
                   [/^Stock request (.+)\.$/, (m) => `Demande de stock : ${status[m[1]] ?? m[1]}.`],
                   [/^(.+) request created\.$/, (m) => `Demande ${m[1]} créée.`],
                   [/^(\d+) Frankfurter rate\(s\) imported\.$/, (m) => `${m[1]} taux Frankfurter importés.`],
-                  [/^Import rolled back\. (\d+) record\(s\) reversed or removed\.$/, (m) => `Import annulé. ${m[1]} enregistrements inversés ou supprimés.`],
+                  [
+                      /^Import rolled back\. (\d+) record\(s\) reversed or removed\.$/,
+                      (m) => `Import annulé. ${m[1]} enregistrements inversés ou supprimés.`,
+                  ],
                   [/^(\d+) WhatsApp accounts are available\.$/, (m) => `${m[1]} comptes WhatsApp sont disponibles.`],
                   [/^Workspace (.+) is ready\.$/, (m) => `L’espace ${m[1]} est prêt.`],
                   [/^Workspace (.+) was updated\.$/, (m) => `L’espace ${m[1]} a été mis à jour.`],
                   [/^Tenant status is (.+)\.$/, (m) => `Statut de l’espace : ${m[1]}.`],
-                  [/^([A-Z]+) is provisioned as the active (base|collection) currency\.$/, (m) => `${m[1]} est configurée comme devise active ${m[2] === 'base' ? 'de base' : 'd’encaissement'}.`],
-                  [/^An active plan has an effective ([A-Z]+) price\.$/, (m) => `Un forfait actif possède un prix effectif en ${m[1]}.`],
-                  [/^Add an effective ([A-Z]+\/[A-Z]+) rate or run fx:sync-frankfurter\.$/, (m) => `Ajoutez un taux ${m[1]} effectif ou exécutez fx:sync-frankfurter.`],
-                  [/^An effective direct or inverse ([A-Z]+\/[A-Z]+) rate from (.+) is available \((.+)\)\.$/, (m) => `Un taux ${m[1]} direct ou inverse provenant de ${m[2]} est disponible (${m[3]}).`],
-                  [/^All (\d+) active (.+) notification templates are provisioned\.$/, (m) => `Les ${m[1]} modèles de notification actifs (${m[2]}) sont tous configurés.`],
-                  [/^(\d+) active (.+) notification template\(s\) are missing; run (.+)\.$/, (m) => `${m[1]} modèles de notification actifs (${m[2]}) manquent ; exécutez ${m[3]}.`],
-                  [/^It is (\d+) hour\(s\) old; refresh it or approve a current manual treasury rate\.$/, (m) => `Il date de ${m[1]} heure(s) ; actualisez-le ou approuvez un taux manuel actuel.`],
-                  [/^The configured tenant logo could not be verified on the (.+) storage disk\.$/, (m) => `Le logo d’espace n’a pas pu être vérifié sur le disque ${m[1]}.`],
-                  [/^This database uses (.+)\. English templates remain available, but Arabic and French text require a UTF-8 PostgreSQL database\.$/, (m) => `Cette base de données utilise l’encodage ${m[1]}. Les modèles anglais restent disponibles, mais les textes arabe et français nécessitent une base PostgreSQL UTF-8.`],
-                  [/^The tenant logo path is configured, but the stored file is missing from the (.+) storage disk\.$/, (m) => `Le chemin du logo est configuré, mais le fichier manque sur le disque ${m[1]}.`],
-                  [/^(\d+) backup destination\(s\) are reachable and pass the monitored health checks\.$/, (m) => `${m[1]} destination(s) de sauvegarde sont accessibles et réussissent les contrôles surveillés.`],
+                  [
+                      /^([A-Z]+) is provisioned as the active (base|collection) currency\.$/,
+                      (m) =>
+                          `${m[1]} est configurée comme devise active ${m[2] === 'base' ? 'de base' : 'd’encaissement'}.`,
+                  ],
+                  [
+                      /^An active plan has an effective ([A-Z]+) price\.$/,
+                      (m) => `Un forfait actif possède un prix effectif en ${m[1]}.`,
+                  ],
+                  [
+                      /^Add an effective ([A-Z]+\/[A-Z]+) rate or run fx:sync-frankfurter\.$/,
+                      (m) => `Ajoutez un taux ${m[1]} effectif ou exécutez fx:sync-frankfurter.`,
+                  ],
+                  [
+                      /^An effective direct or inverse ([A-Z]+\/[A-Z]+) rate from (.+) is available \((.+)\)\.$/,
+                      (m) => `Un taux ${m[1]} direct ou inverse provenant de ${m[2]} est disponible (${m[3]}).`,
+                  ],
+                  [
+                      /^All (\d+) active (.+) notification templates are provisioned\.$/,
+                      (m) => `Les ${m[1]} modèles de notification actifs (${m[2]}) sont tous configurés.`,
+                  ],
+                  [
+                      /^(\d+) active (.+) notification template\(s\) are missing; run (.+)\.$/,
+                      (m) => `${m[1]} modèles de notification actifs (${m[2]}) manquent ; exécutez ${m[3]}.`,
+                  ],
+                  [
+                      /^It is (\d+) hour\(s\) old; refresh it or approve a current manual treasury rate\.$/,
+                      (m) => `Il date de ${m[1]} heure(s) ; actualisez-le ou approuvez un taux manuel actuel.`,
+                  ],
+                  [
+                      /^The configured tenant logo could not be verified on the (.+) storage disk\.$/,
+                      (m) => `Le logo d’espace n’a pas pu être vérifié sur le disque ${m[1]}.`,
+                  ],
+                  [
+                      /^This database uses (.+)\. English templates remain available, but Arabic and French text require a UTF-8 PostgreSQL database\.$/,
+                      (m) =>
+                          `Cette base de données utilise l’encodage ${m[1]}. Les modèles anglais restent disponibles, mais les textes arabe et français nécessitent une base PostgreSQL UTF-8.`,
+                  ],
+                  [
+                      /^The tenant logo path is configured, but the stored file is missing from the (.+) storage disk\.$/,
+                      (m) => `Le chemin du logo est configuré, mais le fichier manque sur le disque ${m[1]}.`,
+                  ],
+                  [
+                      /^(\d+) backup destination\(s\) are reachable and pass the monitored health checks\.$/,
+                      (m) =>
+                          `${m[1]} destination(s) de sauvegarde sont accessibles et réussissent les contrôles surveillés.`,
+                  ],
                   [/^Stripe configuration is missing: (.+)\.$/, (m) => `Configuration Stripe manquante : ${m[1]}.`],
-                  [/^Stripe account API returned HTTP (\d+)\.$/, (m) => `L’API du compte Stripe a renvoyé HTTP ${m[1]}.`],
-                  [/^WhatsApp Web\.js bridge returned HTTP (\d+)\.$/, (m) => `Le pont WhatsApp Web.js a renvoyé HTTP ${m[1]}.`],
-                  [/^Frankfurter synchronization is disabled\.$/, () => 'La synchronisation Frankfurter est désactivée.'],
+                  [
+                      /^Stripe account API returned HTTP (\d+)\.$/,
+                      (m) => `L’API du compte Stripe a renvoyé HTTP ${m[1]}.`,
+                  ],
+                  [
+                      /^WhatsApp Web\.js bridge returned HTTP (\d+)\.$/,
+                      (m) => `Le pont WhatsApp Web.js a renvoyé HTTP ${m[1]}.`,
+                  ],
+                  [
+                      /^Frankfurter synchronization is disabled\.$/,
+                      () => 'La synchronisation Frankfurter est désactivée.',
+                  ],
                   [/^The (.+) field is required\.$/, (m) => `${fieldLabel(m[1])} est obligatoire.`],
                   [/^The selected (.+) is invalid\.$/, (m) => `${fieldLabel(m[1])} sélectionnée n’est pas valide.`],
-                  [/^The (.+) field must be a valid email address\.$/, (m) => `${fieldLabel(m[1])} doit être une adresse e-mail valide.`],
-                  [/^The (.+) field must be at least (\d+) characters\.$/, (m) => `${fieldLabel(m[1])} doit comporter au moins ${m[2]} caractères.`],
+                  [
+                      /^The (.+) field must be a valid email address\.$/,
+                      (m) => `${fieldLabel(m[1])} doit être une adresse e-mail valide.`,
+                  ],
+                  [
+                      /^The (.+) field must be at least (\d+) characters\.$/,
+                      (m) => `${fieldLabel(m[1])} doit comporter au moins ${m[2]} caractères.`,
+                  ],
                   [/^The (.+) field must be a number\.$/, (m) => `${fieldLabel(m[1])} doit être un nombre.`],
                   [/^The (.+) field must be an integer\.$/, (m) => `${fieldLabel(m[1])} doit être un entier.`],
                   [/^The (.+) has already been taken\.$/, (m) => `${fieldLabel(m[1])} est déjà utilisé.`],
                   [/^Unknown variable\(s\): (.+)$/, (m) => `Variables inconnues : ${m[1]}`],
                   [/^Missing deployment values: (.+)\.$/, (m) => `Valeurs de déploiement manquantes : ${m[1]}.`],
-                  [/^The service is not available in this workspace\.$/, () => 'Le service n’est pas disponible dans cet espace.'],
+                  [
+                      /^The service is not available in this workspace\.$/,
+                      () => 'Le service n’est pas disponible dans cet espace.',
+                  ],
               ];
 
     for (const [pattern, render] of rules) {
@@ -7785,6 +8568,10 @@ export function normalizeLocale(locale: string): Locale {
 }
 
 function humanizeTranslationKey(key: string): string | null {
+    if (!/^[a-z][a-z0-9_-]*(?:\.[a-z0-9_-]+)+$/.test(key)) {
+        return null;
+    }
+
     const segment = key.split('.').at(-1)?.replaceAll('_', ' ').trim();
 
     if (!segment || !/[A-Za-z]/.test(segment)) {

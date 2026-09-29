@@ -7,7 +7,9 @@ use App\Actions\IssueInvoice;
 use App\Actions\RecordPayment;
 use App\Enums\ServiceStatus;
 use App\Models\CashShift;
+use App\Models\CreditNote;
 use App\Models\Customer;
+use App\Models\Payment;
 use App\Models\Plan;
 use App\Models\Pop;
 use App\Models\Router;
@@ -43,23 +45,26 @@ it('reconciles issued revenue and posted collections by currency', function (): 
 
     expect($report['invoice_count'])->toBe(1)
         ->and($report['payment_count'])->toBe(1)
-        ->and($report['invoiced_by_currency']['USD'])->toBe(3500)
+        ->and($report['gross_invoiced_by_currency']['USD'])->toBe(3500)
+        ->and($report['credited_by_currency']['USD'] ?? 0)->toBe(0)
+        ->and($report['net_invoiced_by_currency']['USD'])->toBe(3500)
         ->and($report['collected_by_currency']['USD'])->toBe(1000)
         ->and($report['collection_rate_by_currency']['USD'])->toBe(28.57)
-        ->and($report['collection_trend'][0]['invoiced_by_currency']['USD'])->toBe(3500)
+        ->and($report['collection_trend'][0]['gross_invoiced_by_currency']['USD'])->toBe(3500)
+        ->and($report['collection_trend'][0]['net_invoiced_by_currency']['USD'])->toBe(3500)
         ->and($report['collection_trend'][0]['collected_by_currency']['USD'])->toBe(1000)
         ->and($report['cash_reconciliation']['closed_shift_count'])->toBe(0)
         ->and($report['aging_by_currency']['USD']['1_30'])->toBe(2500)
         ->and($report['outstanding_by_currency']['USD'])->toBe(2500)
-        ->and($report['revenue_by_plan'][$plan->slug]['USD'])->toBe(3500)
-        ->and($report['revenue_by_zone']['unassigned']['USD'])->toBe(3500)
-        ->and($report['active_customer_count'])->toBe(1)
-        ->and($report['arpu_by_currency']['USD'])->toBe(1000.0)
+        ->and($report['gross_revenue_by_plan'][$plan->slug]['USD'])->toBe(3500)
+        ->and($report['gross_revenue_by_zone']['unassigned']['USD'])->toBe(3500)
+        ->and($report['current_active_customer_count'])->toBe(1)
+        ->and($report['cash_collected_per_current_active_customer_by_currency']['USD'])->toBe(1000.0)
         ->and($report['top_usage'][0]['service_id'])->toBe($service->public_id)
         ->and($report['top_usage'][0]['total_octets'])->toBe(1000)
         ->and(app(ExportFinanceReportCsv::class)->handle(CarbonImmutable::now()->subDay(), CarbonImmutable::now()->addDay()))
-        ->toContain('invoiced_by_currency,USD,3500')
-        ->toContain('revenue_by_plan:'.$plan->slug.',USD,3500');
+        ->toContain('gross_invoiced_by_currency,USD,3500')
+        ->toContain('gross_revenue_by_plan:'.$plan->slug.',USD,3500');
 });
 
 it('streams the finance report as CSV for an authorised operator', function (): void {
@@ -143,16 +148,16 @@ it('reports POP margin and collector performance from posted records', function 
     $to = CarbonImmutable::now()->endOfMonth();
     $report = app(GetFinanceReport::class)->handle($from, $to);
 
-    expect($report['margin_by_pop']['CENTRAL']['revenue_by_currency']['USD'])->toBe(3500)
+    expect($report['margin_by_pop']['CENTRAL']['gross_revenue_by_currency']['USD'])->toBe(3500)
         ->and($report['margin_by_pop']['CENTRAL']['upstream_cost_by_currency']['USD'])->toBe(1000)
-        ->and($report['margin_by_pop']['CENTRAL']['margin_by_currency']['USD'])->toBe(2500)
+        ->and($report['margin_by_pop']['CENTRAL']['gross_margin_by_currency']['USD'])->toBe(2500)
         ->and($report['collector_performance'][0]['collector'])->toBe('Nadia Collector')
         ->and($report['collector_performance'][0]['payment_count'])->toBe(1)
         ->and($report['collector_performance'][0]['totals_by_currency']['USD'])->toBe(3500)
         ->and($report['cash_reconciliation']['variance_shift_count'])->toBe(1)
         ->and($report['cash_reconciliation']['variance_by_currency']['USD'])->toBe(-100)
         ->and(app(ExportFinanceReportCsv::class)->handle($from, $to))
-        ->toContain('margin_by_pop:CENTRAL,USD,2500')
+        ->toContain('gross_margin_by_pop:CENTRAL,USD,2500')
         ->toContain('cash_variance_by_currency,USD,-100');
 });
 
@@ -165,4 +170,98 @@ it('prorates upstream costs separately for each calendar month', function (): vo
     $report = app(GetFinanceReport::class)->handle(CarbonImmutable::parse('2026-01-01'), CarbonImmutable::parse('2026-02-28'));
 
     expect($report['margin_by_pop']['EAST']['upstream_cost_by_currency']['USD'])->toBe(2000);
+});
+
+it('keeps finance report collections and aging aligned to the report as-of date', function (): void {
+    $tenant = Tenant::create(['name' => 'As Of Finance', 'slug' => 'as-of-finance', 'base_currency' => 'USD', 'collection_currency' => 'USD']);
+    app(Tenancy::class)->set($tenant);
+    $customer = Customer::factory()->create();
+    $plan = Plan::factory()->create(['amount_minor' => 3500]);
+    $plan->prices()->create(['currency' => 'USD', 'amount_minor' => 3500, 'effective_from' => now()->subYear()]);
+    $firstInvoice = app(IssueInvoice::class)->handle(app(CreateInvoice::class)->handle($customer, $plan));
+    $secondInvoice = app(IssueInvoice::class)->handle(app(CreateInvoice::class)->handle($customer, $plan));
+    $firstInvoice->forceFill(['issued_at' => '2026-08-01', 'due_at' => '2026-08-01'])->save();
+    $secondInvoice->forceFill(['issued_at' => '2026-08-02', 'due_at' => '2026-08-02'])->save();
+    $reversedLater = Payment::create([
+        'number' => 'PAY-ASOF-REVERSED',
+        'customer_id' => $customer->id,
+        'invoice_id' => $firstInvoice->id,
+        'status' => 'reversed',
+        'amount' => 3500,
+        'currency' => 'USD',
+        'method' => 'cash',
+        'idempotency_key' => 'asof-reversed-payment-001',
+        'received_at' => '2026-08-10',
+        'reversed_at' => '2026-08-20',
+    ]);
+    $firstAllocation = $reversedLater->allocations()->create(['invoice_id' => $firstInvoice->id, 'amount' => 3500, 'currency' => 'USD']);
+    $firstAllocation->forceFill(['created_at' => '2026-08-10'])->save();
+    $receivedLater = Payment::create([
+        'number' => 'PAY-ASOF-FUTURE',
+        'customer_id' => $customer->id,
+        'invoice_id' => $secondInvoice->id,
+        'status' => 'posted',
+        'amount' => 3500,
+        'currency' => 'USD',
+        'method' => 'cash',
+        'idempotency_key' => 'asof-future-payment-001',
+        'received_at' => '2026-09-05',
+    ]);
+    $secondAllocation = $receivedLater->allocations()->create(['invoice_id' => $secondInvoice->id, 'amount' => 3500, 'currency' => 'USD']);
+    $secondAllocation->forceFill(['created_at' => '2026-09-05'])->save();
+
+    $beforeReversal = app(GetFinanceReport::class)->handle(CarbonImmutable::parse('2026-08-01'), CarbonImmutable::parse('2026-08-15'));
+    $afterReversal = app(GetFinanceReport::class)->handle(CarbonImmutable::parse('2026-08-01'), CarbonImmutable::parse('2026-08-31'));
+
+    expect($beforeReversal['collected_by_currency']['USD'])->toBe(3500)
+        ->and($beforeReversal['outstanding_by_currency']['USD'])->toBe(3500)
+        ->and($afterReversal['collected_by_currency'])->toBe([])
+        ->and($afterReversal['outstanding_by_currency']['USD'])->toBe(7000);
+});
+
+it('reports net period credits below zero without assigning credits to gross dimensions or tax', function (): void {
+    $tenant = Tenant::create(['name' => 'Negative Net Finance', 'slug' => 'negative-net-finance', 'base_currency' => 'USD', 'collection_currency' => 'USD']);
+    app(Tenancy::class)->set($tenant);
+    $customer = Customer::factory()->create();
+    $plan = Plan::factory()->create(['amount_minor' => 3500]);
+    $plan->prices()->create(['currency' => 'USD', 'amount_minor' => 3500, 'effective_from' => now()->subYear()]);
+    $priorInvoice = app(IssueInvoice::class)->handle(app(CreateInvoice::class)->handle($customer, $plan));
+    $priorInvoice->forceFill(['issued_at' => '2026-07-31'])->save();
+    $secondPriorInvoice = app(IssueInvoice::class)->handle(app(CreateInvoice::class)->handle($customer, $plan));
+    $secondPriorInvoice->forceFill(['issued_at' => '2026-07-30'])->save();
+    $currentInvoice = app(IssueInvoice::class)->handle(app(CreateInvoice::class)->handle($customer, $plan));
+    $currentInvoice->forceFill(['issued_at' => '2026-08-05', 'subtotal_amount' => 3150, 'tax_amount' => 350])->save();
+    CreditNote::create([
+        'invoice_id' => $priorInvoice->id,
+        'customer_id' => $customer->id,
+        'number' => 'CN-FINANCE-001',
+        'amount' => 3500,
+        'currency' => 'USD',
+        'status' => 'issued',
+        'reason' => 'Period credit',
+        'issued_at' => '2026-08-10',
+    ]);
+    CreditNote::create([
+        'invoice_id' => $secondPriorInvoice->id,
+        'customer_id' => $customer->id,
+        'number' => 'CN-FINANCE-002',
+        'amount' => 3500,
+        'currency' => 'USD',
+        'status' => 'issued',
+        'reason' => 'Period credit',
+        'issued_at' => '2026-08-10',
+    ]);
+
+    $report = app(GetFinanceReport::class)->handle(CarbonImmutable::parse('2026-08-01'), CarbonImmutable::parse('2026-08-31'));
+    $csv = app(ExportFinanceReportCsv::class)->handle(CarbonImmutable::parse('2026-08-01'), CarbonImmutable::parse('2026-08-31'));
+
+    expect($report['gross_invoiced_by_currency']['USD'])->toBe(3500)
+        ->and($report['credited_by_currency']['USD'])->toBe(7000)
+        ->and($report['net_invoiced_by_currency']['USD'])->toBe(-3500)
+        ->and($report['collection_rate_by_currency']['USD'])->toBeNull()
+        ->and($report['collection_trend'][1]['credited_by_currency']['USD'])->toBe(7000)
+        ->and($report['tax_by_currency']['USD'])->toBe(350)
+        ->and($report['gross_revenue_by_plan'][$plan->slug]['USD'])->toBe(3500)
+        ->and($csv)->toContain('net_invoiced_by_currency,USD,-3500')
+        ->toContain('trend_credited:2026-08-10,USD,7000');
 });

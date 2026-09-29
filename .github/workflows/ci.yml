@@ -55,7 +55,7 @@ jobs:
         run: vendor/bin/pint --test
 
       - name: Static analysis
-        run: vendor/bin/phpstan analyse --no-progress
+        run: vendor/bin/phpstan analyse --no-progress --memory-limit=1G
 
       - name: Validate Laravel configuration cache
         run: |
@@ -84,6 +84,9 @@ jobs:
 
       - name: Typecheck
         run: npm run typecheck
+
+      - name: Client translation tests
+        run: node --test tests/Unit/i18n.test.ts
 
       - name: JavaScript lint
         run: npm run lint

@@ -6,6 +6,7 @@ use App\Models\Plan;
 use App\Models\Service;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Models\WorkOrder;
 use App\Support\Tenancy;
 use Database\Seeders\CapabilitySeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -23,6 +24,7 @@ it('searches operational records without exposing secrets', function (): void {
     $service = Service::factory()->create(['customer_id' => $customer->id, 'username' => 'nadia.home']);
     $plan = Plan::factory()->create(['name' => 'Lebanon Fiber 100', 'slug' => 'lebanon-fiber-100']);
     Incident::create(['service_id' => $service->id, 'type' => 'service_drift', 'severity' => 'warning', 'status' => 'open', 'title' => 'Nadia drift', 'opened_at' => now()]);
+    $workOrder = WorkOrder::create(['number' => 'WO-SEARCH-001', 'type' => 'installation', 'customer_id' => $customer->id, 'service_id' => $service->id, 'status' => 'pending']);
 
     $this->actingAs($user)
         ->getJson(route('workspace.search', ['q' => 'CUS-SEARCH-001']))
@@ -36,6 +38,13 @@ it('searches operational records without exposing secrets', function (): void {
         ->assertOk()
         ->assertJsonPath('results.0.type', 'service')
         ->assertJsonPath('results.0.href', '/services/'.$service->public_id);
+
+    $this->actingAs($user)
+        ->getJson(route('workspace.search', ['q' => 'WO-SEARCH-001']))
+        ->assertOk()
+        ->assertJsonPath('results.0.type', 'work order')
+        ->assertJsonPath('results.0.href', '/operations/work-orders/'.$workOrder->public_id)
+        ->assertJsonPath('results.0.detail', $customer->full_name.' · pending');
 
     $this->actingAs($user)
         ->getJson(route('workspace.search', ['q' => 'settings']))

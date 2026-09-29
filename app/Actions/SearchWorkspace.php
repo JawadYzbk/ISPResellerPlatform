@@ -145,7 +145,7 @@ final readonly class SearchWorkspace implements Action
                 ->limit($limit)
                 ->get(['public_id', 'number', 'type', 'status', 'customer_id'])
                 ->each(function (WorkOrder $workOrder) use (&$results): void {
-                    $status = $workOrder->status?->value ?? (string) $workOrder->status;
+                    $status = $workOrder->status->value;
                     $results[] = ['type' => 'work order', 'label' => $workOrder->number, 'detail' => $workOrder->customer->full_name.' · '.$status, 'href' => '/operations/work-orders/'.$workOrder->public_id];
                 });
         }

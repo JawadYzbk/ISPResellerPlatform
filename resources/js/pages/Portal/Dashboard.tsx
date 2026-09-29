@@ -1,16 +1,120 @@
 import ResponsiveSelect from '@/components/ui/responsive-select';
 import { Head, Link } from '@inertiajs/react';
-import { AlertTriangle, Check, CreditCard, LogOut, RefreshCw, Send, UserRound, Wifi } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import {
+    AlertTriangle,
+    Check,
+    ChevronDown,
+    ChevronUp,
+    CreditCard,
+    Download,
+    LogOut,
+    RefreshCw,
+    Send,
+    UserRound,
+    Wifi,
+} from 'lucide-react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { StatusBadge } from '@/components/StatusBadge';
 import { formatDate, formatMoney } from '@/lib/format';
 import { createTranslator, enumLabel } from '@/lib/i18n';
 import { createIdempotencyKey } from '@/lib/idempotency';
-import type { Customer, PortalBalance, PortalBilling, PortalNotice, PortalTicket, PublicTenant } from '@/types';
+import type {
+    Customer,
+    PortalBalance,
+    PortalBilling,
+    PortalCursorPage,
+    PortalInvoice,
+    PortalInvoiceDetail,
+    PortalNotice,
+    PortalPayment,
+    PortalTicket,
+    PublicTenant,
+} from '@/types';
 
 type Props = { tenant: PublicTenant };
-type StripeIntent = { clientSecret: string; publishableKey: string; invoiceId: string };
+type StripeIntent = { clientSecret: string; publishableKey: string; invoiceId: string; requestKey: string };
+type PortalLoadKey = 'customer' | 'balance' | 'billing' | 'notices' | 'tickets' | 'invoices' | 'payments';
+type PortalLoadState = Record<PortalLoadKey, { loading: boolean; error: boolean }>;
+
+class PortalAuthenticationError extends Error {
+    constructor() {
+        super('Portal session expired');
+    }
+}
+
+class PortalRequestError extends Error {
+    constructor(
+        public detail: string | null = null,
+        public status: number | null = null,
+    ) {
+        super('Portal request failed');
+    }
+}
+
+function isJsonObject(value: unknown): value is Record<string, unknown> {
+    return typeof value === 'object' && value !== null;
+}
+
+function isCursorPage<T>(value: unknown): value is PortalCursorPage<T> {
+    if (!isJsonObject(value) || !Array.isArray(value.data) || !isJsonObject(value.meta)) {
+        return false;
+    }
+
+    return (
+        (value.meta.next_cursor === null || typeof value.meta.next_cursor === 'string') &&
+        (value.meta.prev_cursor === null || typeof value.meta.prev_cursor === 'string') &&
+        typeof value.meta.per_page === 'number'
+    );
+}
+
+async function fetchPortalResponse(url: string, token: string, init: RequestInit = {}): Promise<Response> {
+    const headers = new Headers(init.headers);
+    headers.set('Authorization', 'Bearer ' + token);
+    const response = await fetch(url, { ...init, headers });
+
+    if (response.status === 401) {
+        throw new PortalAuthenticationError();
+    }
+
+    if (!response.ok) {
+        const payload: unknown = await response.json().catch(() => null);
+        const detail = isJsonObject(payload)
+            ? typeof payload.detail === 'string'
+                ? payload.detail
+                : typeof payload.message === 'string'
+                  ? payload.message
+                  : null
+            : null;
+
+        throw new PortalRequestError(detail, response.status);
+    }
+
+    return response;
+}
+
+async function fetchPortalJson<T>(url: string, token: string, init: RequestInit = {}): Promise<T> {
+    const response = await fetchPortalResponse(url, token, init);
+
+    if (!response.headers.get('content-type')?.toLowerCase().includes('application/json')) {
+        throw new PortalRequestError();
+    }
+
+    const payload: unknown = await response.json().catch(() => null);
+    if (!isJsonObject(payload)) {
+        throw new PortalRequestError();
+    }
+
+    return payload as T;
+}
+
+function portalErrorMessage(error: unknown, t: (key: string) => string, fallback: string): string {
+    return error instanceof PortalRequestError && error.detail ? t(error.detail) : t(fallback);
+}
+
+function isDefinitivePortalFailure(error: unknown): boolean {
+    return error instanceof PortalRequestError && error.status !== null && error.status < 500 && error.status !== 408;
+}
 
 export default function PortalDashboard({ tenant }: Props) {
     const t = useMemo(() => createTranslator(tenant.locale), [tenant.locale]);
@@ -19,11 +123,29 @@ export default function PortalDashboard({ tenant }: Props) {
         document.documentElement.lang = tenant.locale;
         document.documentElement.dir = tenant.locale === 'ar' ? 'rtl' : 'ltr';
     }, [tenant.locale]);
-   const [customer, setCustomer] = useState<Customer | null>(null);
+    const [customer, setCustomer] = useState<Customer | null>(null);
     const [balance, setBalance] = useState<PortalBalance | null>(null);
     const [billing, setBilling] = useState<PortalBilling | null>(null);
+    const [invoices, setInvoices] = useState<PortalInvoice[]>([]);
+    const [payments, setPayments] = useState<PortalPayment[]>([]);
+    const [invoiceCursor, setInvoiceCursor] = useState<string | null>(null);
+    const [paymentCursor, setPaymentCursor] = useState<string | null>(null);
+    const [invoiceDetails, setInvoiceDetails] = useState<Record<string, PortalInvoiceDetail>>({});
+    const [openInvoiceId, setOpenInvoiceId] = useState<string | null>(null);
+    const [invoiceDetailBusy, setInvoiceDetailBusy] = useState<string | null>(null);
+    const [invoiceDetailError, setInvoiceDetailError] = useState<string | null>(null);
+    const [downloadBusyId, setDownloadBusyId] = useState<string | null>(null);
     const [notices, setNotices] = useState<PortalNotice[]>([]);
     const [tickets, setTickets] = useState<PortalTicket[]>([]);
+    const [loadState, setLoadState] = useState<PortalLoadState>({
+        customer: { loading: true, error: false },
+        balance: { loading: true, error: false },
+        billing: { loading: true, error: false },
+        notices: { loading: true, error: false },
+        tickets: { loading: true, error: false },
+        invoices: { loading: true, error: false },
+        payments: { loading: true, error: false },
+    });
     const [ticketForm, setTicketForm] = useState({ category: 'other', subject: '', description: '' });
     const [profileForm, setProfileForm] = useState({ email: '', address: '' });
     const [ticketBusy, setTicketBusy] = useState(false);
@@ -32,47 +154,183 @@ export default function PortalDashboard({ tenant }: Props) {
     const [profileBusy, setProfileBusy] = useState(false);
     const [profileSaved, setProfileSaved] = useState(false);
     const [restartBusy, setRestartBusy] = useState<string | null>(null);
+    const [restartRequestedId, setRestartRequestedId] = useState<string | null>(null);
     const [selectedInvoiceId, setSelectedInvoiceId] = useState('');
     const [paymentIntent, setPaymentIntent] = useState<StripeIntent | null>(null);
     const [paymentBusy, setPaymentBusy] = useState(false);
     const [paymentMessage, setPaymentMessage] = useState<string | null>(null);
+    const [paymentMessageError, setPaymentMessageError] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const tokenKey = `portal_token:${tenant.slug}`;
+    const paymentKeys = useRef(new Map<string, string>());
+    const restartKeys = useRef(new Map<string, string>());
+    const invoicePageCursors = useRef<string[]>([]);
+    const paymentPageCursors = useRef<string[]>([]);
+    const tokenKey = 'portal_token:' + tenant.slug;
+
+    const redirectToSignIn = useCallback(() => {
+        sessionStorage.removeItem(tokenKey);
+        window.location.assign('/portal/' + tenant.slug);
+    }, [tenant.slug, tokenKey]);
+
+    const handleUnauthorized = useCallback(
+        (requestError: unknown): boolean => {
+            if (!(requestError instanceof PortalAuthenticationError)) {
+                return false;
+            }
+
+            redirectToSignIn();
+            return true;
+        },
+        [redirectToSignIn],
+    );
+
+    const loadSection = useCallback(
+        async <T,>(key: PortalLoadKey, path: string, update: (payload: T) => void): Promise<T | null> => {
+            const token = sessionStorage.getItem(tokenKey);
+            if (!token) {
+                redirectToSignIn();
+                return null;
+            }
+
+            setLoadState((current) => ({ ...current, [key]: { loading: true, error: false } }));
+            try {
+                const payload = await fetchPortalJson<T>(path, token);
+                update(payload);
+                setLoadState((current) => ({ ...current, [key]: { loading: false, error: false } }));
+                return payload;
+            } catch (requestError) {
+                if (!handleUnauthorized(requestError)) {
+                    setLoadState((current) => ({ ...current, [key]: { loading: false, error: true } }));
+                }
+                return null;
+            }
+        },
+        [handleUnauthorized, redirectToSignIn, tokenKey],
+    );
+
+    const loadCustomer = useCallback(
+        () =>
+            loadSection<Customer>('customer', '/api/v1/portal/' + tenant.slug + '/me', (payload) => {
+                setCustomer(payload);
+                setProfileForm({ email: payload.email ?? '', address: payload.address ?? '' });
+            }),
+        [loadSection, tenant.slug],
+    );
+    const loadBalance = useCallback(
+        () => loadSection<PortalBalance>('balance', '/api/v1/portal/' + tenant.slug + '/me/balance', setBalance),
+        [loadSection, tenant.slug],
+    );
+    const loadBilling = useCallback(
+        () => loadSection<PortalBilling>('billing', '/api/v1/portal/' + tenant.slug + '/billing', setBilling),
+        [loadSection, tenant.slug],
+    );
+    const loadNotices = useCallback(
+        () =>
+            loadSection<{ data?: PortalNotice[] }>(
+                'notices',
+                '/api/v1/portal/' + tenant.slug + '/me/notices',
+                (payload) => setNotices(payload.data ?? []),
+            ),
+        [loadSection, tenant.slug],
+    );
+    const loadTickets = useCallback(
+        () =>
+            loadSection<{ data?: PortalTicket[] }>(
+                'tickets',
+                '/api/v1/portal/' + tenant.slug + '/me/tickets',
+                (payload) => setTickets(payload.data ?? []),
+            ),
+        [loadSection, tenant.slug],
+    );
+    const loadInvoicePage = useCallback(
+        (cursor?: string, append = false) => {
+            const query = new URLSearchParams({ per_page: '25' });
+            if (cursor) query.set('cursor', cursor);
+
+            return loadSection<PortalCursorPage<PortalInvoice>>(
+                'invoices',
+                '/api/v1/portal/' + tenant.slug + '/me/invoices?' + query.toString(),
+                (payload) => {
+                    if (!isCursorPage<PortalInvoice>(payload)) {
+                        throw new PortalRequestError();
+                    }
+                    if (append && cursor && !invoicePageCursors.current.includes(cursor)) {
+                        invoicePageCursors.current.push(cursor);
+                    } else if (!append) {
+                        invoicePageCursors.current = [];
+                    }
+                    setInvoices((current) => (append ? [...current, ...payload.data] : payload.data));
+                    setInvoiceCursor(payload.meta.next_cursor);
+                },
+            );
+        },
+        [loadSection, tenant.slug],
+    );
+    const loadPaymentPage = useCallback(
+        (cursor?: string, append = false) => {
+            const query = new URLSearchParams({ per_page: '25' });
+            if (cursor) query.set('cursor', cursor);
+
+            return loadSection<PortalCursorPage<PortalPayment>>(
+                'payments',
+                '/api/v1/portal/' + tenant.slug + '/me/payments?' + query.toString(),
+                (payload) => {
+                    if (!isCursorPage<PortalPayment>(payload)) {
+                        throw new PortalRequestError();
+                    }
+                    if (append && cursor && !paymentPageCursors.current.includes(cursor)) {
+                        paymentPageCursors.current.push(cursor);
+                    } else if (!append) {
+                        paymentPageCursors.current = [];
+                    }
+                    setPayments((current) => (append ? [...current, ...payload.data] : payload.data));
+                    setPaymentCursor(payload.meta.next_cursor);
+                },
+            );
+        },
+        [loadSection, tenant.slug],
+    );
 
     useEffect(() => {
-        const token = sessionStorage.getItem(tokenKey);
-        if (!token) {
-            window.location.assign(`/portal/${tenant.slug}`);
-            return;
-        }
-        Promise.all([
-            fetch(`/api/v1/portal/${tenant.slug}/me`, { headers: { Authorization: `Bearer ${token}` } }),
-            fetch(`/api/v1/portal/${tenant.slug}/me/balance`, { headers: { Authorization: `Bearer ${token}` } }),
-            fetch(`/api/v1/portal/${tenant.slug}/billing`, { headers: { Authorization: `Bearer ${token}` } }),
-            fetch(`/api/v1/portal/${tenant.slug}/me/notices`, { headers: { Authorization: `Bearer ${token}` } }),
-            fetch(`/api/v1/portal/${tenant.slug}/me/tickets`, { headers: { Authorization: `Bearer ${token}` } }),
-        ])
-            .then(async ([customerResponse, balanceResponse, billingResponse, noticesResponse, ticketsResponse]) => {
-                if (
-                    !customerResponse.ok ||
-                    !balanceResponse.ok ||
-                    !billingResponse.ok ||
-                    !noticesResponse.ok ||
-                    !ticketsResponse.ok
-                ) {
-                    window.location.assign(`/portal/${tenant.slug}`);
-                    return;
-                }
-                const customerPayload = await customerResponse.json();
-                setCustomer(customerPayload);
-                setProfileForm({ email: customerPayload.email ?? '', address: customerPayload.address ?? '' });
-                setBalance(await balanceResponse.json());
-                setBilling(await billingResponse.json());
-                setNotices((await noticesResponse.json()).data ?? []);
-                setTickets((await ticketsResponse.json()).data ?? []);
-            })
-            .catch(() => setError(t('portal.dashboard.load_error')));
-    }, [t, tenant.slug, tokenKey]);
+        let active = true;
+        const loadInitialData = async () => {
+            await Promise.resolve();
+            if (!active) return;
+            if (!sessionStorage.getItem(tokenKey)) {
+                redirectToSignIn();
+                return;
+            }
+
+            await Promise.all([
+                loadCustomer(),
+                loadBalance(),
+                loadBilling(),
+                loadNotices(),
+                loadTickets(),
+                loadInvoicePage(),
+                loadPaymentPage(),
+            ]);
+        };
+
+        void loadInitialData();
+        return () => {
+            active = false;
+        };
+    }, [
+        loadBalance,
+        loadBilling,
+        loadCustomer,
+        loadInvoicePage,
+        loadNotices,
+        loadPaymentPage,
+        loadTickets,
+        redirectToSignIn,
+        tokenKey,
+    ]);
+
+    const payableInvoices = invoices.filter((invoice) => invoice.status === 'issued' && invoice.outstanding_amount > 0);
+    const selectedPayableInvoice =
+        payableInvoices.find((invoice) => invoice.id === selectedInvoiceId) ?? payableInvoices[0];
 
     const signOut = async () => {
         const token = sessionStorage.getItem(tokenKey);
@@ -89,128 +347,195 @@ export default function PortalDashboard({ tenant }: Props) {
     const saveProfile = async (event: React.FormEvent) => {
         event.preventDefault();
         const token = sessionStorage.getItem(tokenKey);
-        if (!token) return;
+        if (!token) {
+            redirectToSignIn();
+            return;
+        }
         setProfileBusy(true);
         setProfileSaved(false);
         setError(null);
-        const response = await fetch(`/api/v1/portal/${tenant.slug}/me/profile`, {
-            method: 'PATCH',
-            headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-            body: JSON.stringify(profileForm),
-        });
-        if (response.ok) {
-            const payload = await response.json();
+        try {
+            const payload = await fetchPortalJson<{ data: Partial<Customer> }>(
+                '/api/v1/portal/' + tenant.slug + '/me/profile',
+                token,
+                {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(profileForm),
+                },
+            );
             setCustomer((current) => (current ? { ...current, ...payload.data } : current));
             setProfileSaved(true);
-        } else {
-            const payload = await response.json();
-            setError(payload.detail || payload.message ? t(payload.detail ?? payload.message) : t('portal.dashboard.profile_error'));
+        } catch (requestError) {
+            if (!handleUnauthorized(requestError)) {
+                setError(portalErrorMessage(requestError, t, 'portal.dashboard.profile_error'));
+            }
+        } finally {
+            setProfileBusy(false);
         }
-        setProfileBusy(false);
     };
 
     const restartService = async (serviceId: string) => {
         const token = sessionStorage.getItem(tokenKey);
-        if (!token) return;
-        setRestartBusy(serviceId);
-        setError(null);
-        const response = await fetch(`/api/v1/portal/${tenant.slug}/me/services/${serviceId}/restart-session`, {
-            method: 'POST',
-            headers: {
-                Authorization: `Bearer ${token}`,
-                'X-Idempotency-Key': createIdempotencyKey('portal-restart'),
-            },
-        });
-        if (!response.ok) {
-            const payload = await response.json();
-            setError(payload.detail || payload.message ? t(payload.detail ?? payload.message) : t('portal.dashboard.restart_error'));
+        if (!token) {
+            redirectToSignIn();
+            return;
         }
-        setRestartBusy(null);
+        setRestartBusy(serviceId);
+        setRestartRequestedId(null);
+        setError(null);
+        let idempotencyKey = restartKeys.current.get(serviceId);
+        if (!idempotencyKey) {
+            idempotencyKey = createIdempotencyKey('portal-restart');
+            restartKeys.current.set(serviceId, idempotencyKey);
+        }
+        try {
+            await fetchPortalResponse(
+                '/api/v1/portal/' + tenant.slug + '/me/services/' + encodeURIComponent(serviceId) + '/restart-session',
+                token,
+                {
+                    method: 'POST',
+                    headers: { 'X-Idempotency-Key': idempotencyKey },
+                },
+            );
+            restartKeys.current.delete(serviceId);
+            setRestartRequestedId(serviceId);
+        } catch (requestError) {
+            if (isDefinitivePortalFailure(requestError)) {
+                restartKeys.current.delete(serviceId);
+            }
+            if (!handleUnauthorized(requestError)) {
+                setError(portalErrorMessage(requestError, t, 'portal.dashboard.restart_error'));
+            }
+        } finally {
+            setRestartBusy(null);
+        }
     };
 
     const startOnlinePayment = async () => {
         const token = sessionStorage.getItem(tokenKey);
-        const payableInvoices =
-            billing?.invoices.filter((invoice) => invoice.status === 'issued' && invoice.outstanding_amount > 0) ?? [];
-        const invoice = payableInvoices.find((item) => item.id === selectedInvoiceId) ?? payableInvoices[0];
-        if (!token || !invoice) return;
+        const invoice = selectedPayableInvoice;
+        if (!token) {
+            redirectToSignIn();
+            return;
+        }
+        if (!invoice) return;
+
+        const requestKey = invoice.id + ':' + invoice.outstanding_amount;
+        let idempotencyKey = paymentKeys.current.get(requestKey);
+        if (!idempotencyKey) {
+            idempotencyKey = createIdempotencyKey('portal-payment');
+            paymentKeys.current.set(requestKey, idempotencyKey);
+        }
         setPaymentBusy(true);
         setPaymentMessage(null);
-        const response = await fetch(`/api/v1/portal/${tenant.slug}/payments/intent`, {
-            method: 'POST',
-            headers: {
-                Authorization: `Bearer ${token}`,
-                'Content-Type': 'application/json',
-                'X-Idempotency-Key': createIdempotencyKey('portal-payment'),
-            },
-            body: JSON.stringify({ invoice_id: invoice.id, amount: invoice.outstanding_amount }),
-        });
-        const payload = await response.json();
-        if (!response.ok) {
-            setPaymentMessage(payload.detail || payload.message ? t(payload.detail ?? payload.message) : t('portal.dashboard.payment_start_error'));
+        setPaymentMessageError(true);
+        try {
+            const payload = await fetchPortalJson<{
+                payload?: { client_secret?: unknown; publishable_key?: unknown };
+            }>('/api/v1/portal/' + tenant.slug + '/payments/intent', token, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Idempotency-Key': idempotencyKey,
+                },
+                body: JSON.stringify({ invoice_id: invoice.id, amount: invoice.outstanding_amount }),
+            });
+            const clientSecret = payload.payload?.client_secret;
+            const publishableKey = payload.payload?.publishable_key;
+            if (typeof clientSecret !== 'string' || typeof publishableKey !== 'string') {
+                setPaymentMessage(t('portal.dashboard.incomplete_checkout'));
+                return;
+            }
+
+            setPaymentIntent({ clientSecret, publishableKey, invoiceId: invoice.id, requestKey });
+        } catch (requestError) {
+            if (isDefinitivePortalFailure(requestError)) {
+                paymentKeys.current.delete(requestKey);
+            }
+            if (!handleUnauthorized(requestError)) {
+                setPaymentMessage(portalErrorMessage(requestError, t, 'portal.dashboard.payment_start_error'));
+            }
+        } finally {
             setPaymentBusy(false);
-            return;
         }
-        const clientSecret = payload.payload?.client_secret;
-        const publishableKey = payload.payload?.publishable_key;
-        if (typeof clientSecret !== 'string' || typeof publishableKey !== 'string') {
-            setPaymentMessage(t('portal.dashboard.incomplete_checkout'));
-            setPaymentBusy(false);
-            return;
+    };
+
+    const refreshInvoiceHistory = async () => {
+        const cursors = [...invoicePageCursors.current];
+        if (!(await loadInvoicePage())) return;
+        for (const cursor of cursors) {
+            if (!(await loadInvoicePage(cursor, true))) return;
         }
-        setPaymentIntent({ clientSecret, publishableKey, invoiceId: invoice.id });
-        setPaymentBusy(false);
+    };
+
+    const refreshPaymentHistory = async () => {
+        const cursors = [...paymentPageCursors.current];
+        if (!(await loadPaymentPage())) return;
+        for (const cursor of cursors) {
+            if (!(await loadPaymentPage(cursor, true))) return;
+        }
     };
 
     const paymentSubmitted = async () => {
+        if (paymentIntent) {
+            paymentKeys.current.delete(paymentIntent.requestKey);
+        }
         setPaymentMessage(t('portal.dashboard.payment_submitted'));
+        setPaymentMessageError(false);
         setPaymentIntent(null);
-        const token = sessionStorage.getItem(tokenKey);
-        if (!token) return;
-        const response = await fetch(`/api/v1/portal/${tenant.slug}/billing`, {
-            headers: { Authorization: `Bearer ${token}` },
-        });
-        if (response.ok) setBilling(await response.json());
+        await Promise.all([loadCustomer(), loadBalance(), refreshInvoiceHistory(), refreshPaymentHistory()]);
     };
 
     const submitTicket = async (event: React.FormEvent) => {
         event.preventDefault();
         const token = sessionStorage.getItem(tokenKey);
-        if (!token || !ticketForm.subject.trim() || !ticketForm.description.trim()) return;
+        if (!token) {
+            redirectToSignIn();
+            return;
+        }
+        if (!ticketForm.subject.trim() || !ticketForm.description.trim()) return;
         setTicketBusy(true);
         setError(null);
         setSupportMessage(null);
-        const response = await fetch(`/api/v1/portal/${tenant.slug}/me/tickets`, {
-            method: 'POST',
-            headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-            body: JSON.stringify(ticketForm),
-        });
-        if (response.ok) {
-            const refreshed = await fetch(`/api/v1/portal/${tenant.slug}/me/tickets`, {
-                headers: { Authorization: `Bearer ${token}` },
+        try {
+            await fetchPortalResponse('/api/v1/portal/' + tenant.slug + '/me/tickets', token, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(ticketForm),
             });
-            setTickets((await refreshed.json()).data ?? []);
             setTicketForm({ category: 'other', subject: '', description: '' });
-        } else {
-            const payload = await response.json();
-            setError(payload.detail ? t(payload.detail) : t('portal.dashboard.ticket_error'));
+            setSupportMessage(t('portal.dashboard.ticket_sent'));
+            await loadTickets();
+        } catch (requestError) {
+            if (!handleUnauthorized(requestError)) {
+                setError(portalErrorMessage(requestError, t, 'portal.dashboard.ticket_error'));
+            }
+        } finally {
+            setTicketBusy(false);
         }
-        setTicketBusy(false);
     };
 
     const rateTicket = async (ticketId: string, rating: number) => {
         const token = sessionStorage.getItem(tokenKey);
-        if (!token || rating < 1 || rating > 5) return;
+        if (!token) {
+            redirectToSignIn();
+            return;
+        }
+        if (rating < 1 || rating > 5) return;
         setRatingBusy(ticketId);
         setError(null);
         setSupportMessage(null);
-        const response = await fetch(`/api/v1/portal/${tenant.slug}/me/tickets/${ticketId}/rating`, {
-            method: 'POST',
-            headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ rating }),
-        });
-        const payload = await response.json();
-        if (response.ok) {
+        try {
+            const payload = await fetchPortalJson<{ data: { satisfaction_rating: number } }>(
+                '/api/v1/portal/' + tenant.slug + '/me/tickets/' + encodeURIComponent(ticketId) + '/rating',
+                token,
+                {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ rating }),
+                },
+            );
             setTickets((current) =>
                 current.map((ticket) =>
                     ticket.uuid === ticketId
@@ -219,10 +544,85 @@ export default function PortalDashboard({ tenant }: Props) {
                 ),
             );
             setSupportMessage(t('portal.dashboard.rating_thanks'));
-        } else {
-            setError(payload.detail || payload.message ? t(payload.detail ?? payload.message) : t('portal.dashboard.rating_error'));
+        } catch (requestError) {
+            if (!handleUnauthorized(requestError)) {
+                setError(portalErrorMessage(requestError, t, 'portal.dashboard.rating_error'));
+            }
+        } finally {
+            setRatingBusy(null);
         }
-        setRatingBusy(null);
+    };
+
+    const loadInvoiceDetail = async (invoiceId: string) => {
+        setInvoiceDetailError(null);
+        const token = sessionStorage.getItem(tokenKey);
+        if (!token) {
+            redirectToSignIn();
+            return;
+        }
+
+        setInvoiceDetailBusy(invoiceId);
+        try {
+            const detail = await fetchPortalJson<PortalInvoiceDetail>(
+                '/api/v1/portal/' + tenant.slug + '/me/invoices/' + encodeURIComponent(invoiceId),
+                token,
+            );
+            setInvoiceDetails((current) => ({ ...current, [invoiceId]: detail }));
+        } catch (requestError) {
+            if (!handleUnauthorized(requestError)) {
+                setInvoiceDetailError(portalErrorMessage(requestError, t, 'portal.dashboard.invoice_detail_error'));
+            }
+        } finally {
+            setInvoiceDetailBusy(null);
+        }
+    };
+
+    const toggleInvoiceDetails = (invoiceId: string) => {
+        if (openInvoiceId === invoiceId) {
+            setOpenInvoiceId(null);
+            return;
+        }
+
+        setOpenInvoiceId(invoiceId);
+        setInvoiceDetailError(null);
+        if (!invoiceDetails[invoiceId]) {
+            void loadInvoiceDetail(invoiceId);
+        }
+    };
+
+    const downloadInvoice = async (invoice: PortalInvoice) => {
+        const token = sessionStorage.getItem(tokenKey);
+        if (!token) {
+            redirectToSignIn();
+            return;
+        }
+
+        setDownloadBusyId(invoice.id);
+        setError(null);
+        try {
+            const response = await fetchPortalResponse(
+                '/api/v1/portal/' + tenant.slug + '/me/invoices/' + encodeURIComponent(invoice.id) + '/pdf',
+                token,
+            );
+            if (!response.headers.get('content-type')?.toLowerCase().includes('application/pdf')) {
+                throw new PortalRequestError();
+            }
+
+            const url = URL.createObjectURL(await response.blob());
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = invoice.number + '.pdf';
+            document.body.append(link);
+            link.click();
+            link.remove();
+            window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+        } catch (requestError) {
+            if (!handleUnauthorized(requestError)) {
+                setError(portalErrorMessage(requestError, t, 'portal.dashboard.invoice_download_error'));
+            }
+        } finally {
+            setDownloadBusyId(null);
+        }
     };
 
     return (
@@ -240,7 +640,7 @@ export default function PortalDashboard({ tenant }: Props) {
                         </div>
                         <div>
                             <p className="font-display font-bold">{tenant.name}</p>
-                        <p className="text-sm text-muted">{t('portal.dashboard.customer_portal')}</p>
+                            <p className="text-sm text-muted">{t('portal.dashboard.customer_portal')}</p>
                         </div>
                     </div>
                     <button type="button" onClick={signOut} className="button-secondary">
@@ -248,7 +648,30 @@ export default function PortalDashboard({ tenant }: Props) {
                         {t('portal.dashboard.sign_out')}
                     </button>
                 </header>
-                {error && <p className="mt-8 field-error" role="alert">{error}</p>}
+                {error && (
+                    <p className="mt-8 field-error" role="alert">
+                        {error}
+                    </p>
+                )}
+                {!customer && (
+                    <section className="card mt-8 space-y-3 p-6">
+                        <p role={loadState.customer.loading ? 'status' : 'alert'}>
+                            {loadState.customer.loading
+                                ? t('portal.dashboard.loading')
+                                : t('portal.dashboard.load_error')}
+                        </p>
+                        {loadState.customer.error && (
+                            <button
+                                type="button"
+                                disabled={loadState.customer.loading}
+                                onClick={() => void loadCustomer()}
+                                className="button-secondary"
+                            >
+                                {t('portal.dashboard.retry')}
+                            </button>
+                        )}
+                    </section>
+                )}
                 {customer && (
                     <>
                         <div className="mt-12">
@@ -258,7 +681,10 @@ export default function PortalDashboard({ tenant }: Props) {
                             </h1>
                             <p className="page-subtitle">{t('portal.dashboard.subtitle')}</p>
                         </div>
-                        <section className="mt-8 grid gap-4 sm:grid-cols-2" aria-label={t('portal.dashboard.account_summary')}>
+                        <section
+                            className="mt-8 grid gap-4 sm:grid-cols-2"
+                            aria-label={t('portal.dashboard.account_summary')}
+                        >
                             <div className="card p-6">
                                 <p className="eyebrow">{t('portal.dashboard.current_balance')}</p>
                                 <p
@@ -267,10 +693,23 @@ export default function PortalDashboard({ tenant }: Props) {
                                     {formatMoney(customer.balance_amount, customer.balance_currency)}
                                 </p>
                                 <p className="mt-2 text-sm text-muted">
-                                    {balance?.next_due
-                                        ? `${t('portal.dashboard.next_due')} ${formatDate(balance.next_due.due_at)}`
-                                        : t('portal.dashboard.no_outstanding_balance')}
+                                    {loadState.balance.loading && !balance
+                                        ? t('portal.dashboard.loading')
+                                        : balance?.next_due
+                                          ? `${t('portal.dashboard.next_due')} ${formatDate(balance.next_due.due_at)}`
+                                          : loadState.balance.error
+                                            ? t('portal.dashboard.load_error')
+                                            : t('portal.dashboard.no_outstanding_balance')}
                                 </p>
+                                {loadState.balance.error && (
+                                    <button
+                                        type="button"
+                                        onClick={() => void loadBalance()}
+                                        className="button-secondary mt-3"
+                                    >
+                                        {t('portal.dashboard.retry')}
+                                    </button>
+                                )}
                             </div>
                             <div className="card p-6">
                                 <p className="eyebrow">{t('portal.dashboard.account')}</p>
@@ -282,7 +721,7 @@ export default function PortalDashboard({ tenant }: Props) {
                                 </p>
                             </div>
                         </section>
-                        {notices.length > 0 && (
+                        {(notices.length > 0 || loadState.notices.loading || loadState.notices.error) && (
                             <section className="mt-8 space-y-3" aria-labelledby="notices-heading">
                                 <div className="flex items-center gap-2">
                                     <AlertTriangle size={17} className="text-amber-600" />
@@ -290,13 +729,30 @@ export default function PortalDashboard({ tenant }: Props) {
                                         {t('portal.dashboard.service_notices')}
                                     </h2>
                                 </div>
+                                {loadState.notices.loading && (
+                                    <p className="text-sm text-muted" role="status">
+                                        {t('portal.dashboard.loading')}
+                                    </p>
+                                )}
+                                {loadState.notices.error && (
+                                    <div className="flex flex-wrap items-center gap-3" role="alert">
+                                        <p className="text-sm text-muted">{t('portal.dashboard.load_error')}</p>
+                                        <button
+                                            type="button"
+                                            onClick={() => void loadNotices()}
+                                            className="button-secondary"
+                                        >
+                                            {t('portal.dashboard.retry')}
+                                        </button>
+                                    </div>
+                                )}
                                 {notices.map((notice) => (
                                     <article
                                         key={notice.uuid}
                                         className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-amber-950"
                                     >
                                         <p className="text-xs font-bold uppercase tracking-[0.16em]">
-                            {enumLabel(notice.severity, t)}
+                                            {enumLabel(notice.severity, t)}
                                         </p>
                                         <h3 className="mt-1 font-semibold">{notice.title}</h3>
                                         {notice.description && (
@@ -327,7 +783,9 @@ export default function PortalDashboard({ tenant }: Props) {
                                     <div className="mt-5 grid gap-4 border-t border-line pt-4 sm:grid-cols-[1fr_auto] sm:items-center">
                                         <div>
                                             <div className="flex items-center justify-between text-sm">
-                                                <span className="text-muted">{t('portal.dashboard.usage_this_period')}</span>
+                                                <span className="text-muted">
+                                                    {t('portal.dashboard.usage_this_period')}
+                                                </span>
                                                 <span className="font-semibold">
                                                     {Math.round((service.usage.used_bytes / 1_000_000_000) * 10) / 10} /{' '}
                                                     {service.usage.quota_bytes > 0
@@ -346,7 +804,7 @@ export default function PortalDashboard({ tenant }: Props) {
                                                 />
                                             </div>
                                             <p className="mt-2 text-sm text-muted">
-                                                    {t('portal.dashboard.expires')} {formatDate(service.expires_at)}
+                                                {t('portal.dashboard.expires')} {formatDate(service.expires_at)}
                                             </p>
                                         </div>
                                         <div className="flex flex-wrap items-center gap-3 sm:justify-end">
@@ -355,17 +813,24 @@ export default function PortalDashboard({ tenant }: Props) {
                                                 {enumLabel(service.network_state, t)}
                                             </span>
                                             {service.status === 'active' && (
-                                                <button
-                                                    type="button"
-                                                    disabled={restartBusy === service.public_id}
-                                                    onClick={() => restartService(service.public_id)}
-                                                    className="button-secondary"
-                                                >
-                                                    <RefreshCw size={15} />
-                                                    {restartBusy === service.public_id
-                                                        ? t('portal.dashboard.restarting')
-                                                        : t('portal.dashboard.restart_connection')}
-                                                </button>
+                                                <div className="flex flex-col items-start gap-2">
+                                                    <button
+                                                        type="button"
+                                                        disabled={restartBusy === service.public_id}
+                                                        onClick={() => void restartService(service.public_id)}
+                                                        className="button-secondary"
+                                                    >
+                                                        <RefreshCw size={15} />
+                                                        {restartBusy === service.public_id
+                                                            ? t('portal.dashboard.restarting')
+                                                            : t('portal.dashboard.restart_connection')}
+                                                    </button>
+                                                    {restartRequestedId === service.public_id && (
+                                                        <p className="text-sm text-muted" role="status">
+                                                            {t('portal.dashboard.restart_requested')}
+                                                        </p>
+                                                    )}
+                                                </div>
                                             )}
                                         </div>
                                     </div>
@@ -374,62 +839,294 @@ export default function PortalDashboard({ tenant }: Props) {
                             {customer.services.length === 0 && (
                                 <div className="card p-10 text-center">
                                     <p className="font-semibold">{t('portal.dashboard.no_services')}</p>
-                                    <p className="mt-1 text-sm text-muted">
-                                        {t('portal.dashboard.contact_provider')}
-                                    </p>
+                                    <p className="mt-1 text-sm text-muted">{t('portal.dashboard.contact_provider')}</p>
                                 </div>
                             )}
                         </section>
-                        {billing && (
-                            <section className="mt-8 grid gap-6 md:grid-cols-2">
-                                <div className="card p-6">
-                                    <h2 className="section-title">{t('portal.dashboard.invoices')}</h2>
-                                    <div className="mt-4 divide-y divide-line">
-                                        {billing.invoices.map((invoice) => (
-                                            <div
-                                                key={invoice.id}
-                                                className="flex items-center justify-between gap-4 py-3 text-sm"
-                                            >
-                                                <span>
-                                                    <b>{invoice.number}</b>
-                                                    <small className="mt-1 block text-muted">{enumLabel(invoice.status, t)}</small>
-                                                </span>
-                                                <span className="font-semibold">
-                                                    {formatMoney(invoice.total_amount, invoice.currency)}
-                                                </span>
-                                            </div>
-                                        ))}
-                                        {billing.invoices.length === 0 && (
-                                            <p className="py-3 text-sm text-muted">{t('portal.dashboard.no_invoices')}</p>
-                                        )}
+                        <section className="mt-8 grid gap-6 md:grid-cols-2">
+                            <div className="card p-6">
+                                <h2 className="section-title">{t('portal.dashboard.invoices')}</h2>
+                                {loadState.invoices.loading && invoices.length === 0 && (
+                                    <p className="mt-4 text-sm text-muted" role="status">
+                                        {t('portal.dashboard.loading')}
+                                    </p>
+                                )}
+                                {loadState.invoices.error && (
+                                    <div className="mt-4 flex flex-wrap items-center gap-3" role="alert">
+                                        <p className="text-sm text-muted">{t('portal.dashboard.load_error')}</p>
+                                        <button
+                                            type="button"
+                                            onClick={() =>
+                                                void loadInvoicePage(invoiceCursor ?? undefined, invoiceCursor !== null)
+                                            }
+                                            className="button-secondary"
+                                        >
+                                            {t('portal.dashboard.retry')}
+                                        </button>
                                     </div>
-                                </div>
-                                <div className="card p-6">
-                                    <h2 className="section-title">{t('portal.dashboard.payment_history')}</h2>
-                                    <div className="mt-4 divide-y divide-line">
-                                        {billing.payments.map((payment) => (
-                                            <div
-                                                key={payment.id}
-                                                className="flex items-center justify-between gap-4 py-3 text-sm"
-                                            >
-                                                <span>
-                                                    <b>{payment.number}</b>
-                                                    <small className="mt-1 block text-muted">{enumLabel(payment.status, t)}</small>
-                                                </span>
-                                                <span className="font-semibold">
-                                                    {formatMoney(payment.amount, payment.currency)}
-                                                </span>
+                                )}
+                                <div className="mt-4 divide-y divide-line">
+                                    {invoices.map((invoice) => {
+                                        const isOpen = openInvoiceId === invoice.id;
+                                        const detail = invoiceDetails[invoice.id];
+                                        const invoiceStatus =
+                                            invoice.status === 'issued'
+                                                ? invoice.outstanding_amount > 0
+                                                    ? t('portal.dashboard.outstanding')
+                                                    : t('portal.dashboard.paid')
+                                                : enumLabel(invoice.status, t);
+
+                                        return (
+                                            <div key={invoice.id} className="py-4">
+                                                <div className="grid gap-3 text-sm sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+                                                    <span>
+                                                        <b>{invoice.number}</b>
+                                                        <small className="mt-1 block text-muted">{invoiceStatus}</small>
+                                                        <small className="mt-1 block text-muted">
+                                                            {invoice.due_at
+                                                                ? t('public.billing.due') +
+                                                                  ' ' +
+                                                                  formatDate(invoice.due_at)
+                                                                : t('portal.dashboard.no_due_date')}
+                                                        </small>
+                                                    </span>
+                                                    <span className="font-semibold sm:text-end">
+                                                        {formatMoney(invoice.total_amount, invoice.currency)}
+                                                        <small className="mt-1 block font-normal text-muted">
+                                                            {t('public.billing.outstanding')}:{' '}
+                                                            {formatMoney(invoice.outstanding_amount, invoice.currency)}
+                                                        </small>
+                                                    </span>
+                                                    <div className="flex flex-wrap gap-2 sm:col-span-2 sm:justify-end">
+                                                        <button
+                                                            type="button"
+                                                            aria-expanded={isOpen}
+                                                            aria-controls={'invoice-detail-' + invoice.id}
+                                                            onClick={() => toggleInvoiceDetails(invoice.id)}
+                                                            className="button-secondary"
+                                                        >
+                                                            {isOpen ? (
+                                                                <ChevronUp size={15} />
+                                                            ) : (
+                                                                <ChevronDown size={15} />
+                                                            )}
+                                                            {isOpen
+                                                                ? t('portal.dashboard.hide_details')
+                                                                : t('portal.dashboard.view_details')}
+                                                        </button>
+                                                        <button
+                                                            type="button"
+                                                            disabled={downloadBusyId === invoice.id}
+                                                            onClick={() => void downloadInvoice(invoice)}
+                                                            className="button-secondary"
+                                                        >
+                                                            <Download size={15} />
+                                                            {downloadBusyId === invoice.id
+                                                                ? t('portal.dashboard.downloading')
+                                                                : t('portal.dashboard.download_invoice')}
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                                {isOpen && (
+                                                    <div
+                                                        id={'invoice-detail-' + invoice.id}
+                                                        className="mt-4 rounded-xl bg-sand p-4 text-sm"
+                                                    >
+                                                        {invoiceDetailBusy === invoice.id && (
+                                                            <p role="status">{t('portal.dashboard.loading')}</p>
+                                                        )}
+                                                        {invoiceDetailError && (
+                                                            <div
+                                                                className="flex flex-wrap items-center gap-3"
+                                                                role="alert"
+                                                            >
+                                                                <p>{invoiceDetailError}</p>
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => void loadInvoiceDetail(invoice.id)}
+                                                                    className="button-secondary"
+                                                                >
+                                                                    {t('portal.dashboard.retry')}
+                                                                </button>
+                                                            </div>
+                                                        )}
+                                                        {detail && (
+                                                            <>
+                                                                <ul className="divide-y divide-line">
+                                                                    {detail.lines.map((line, index) => (
+                                                                        <li
+                                                                            key={invoice.id + '-line-' + index}
+                                                                            className="flex items-start justify-between gap-4 py-2"
+                                                                        >
+                                                                            <span>{line.description}</span>
+                                                                            <span className="font-medium">
+                                                                                {formatMoney(
+                                                                                    line.amount,
+                                                                                    line.currency,
+                                                                                )}
+                                                                            </span>
+                                                                        </li>
+                                                                    ))}
+                                                                </ul>
+                                                                <dl className="mt-3 grid gap-2 border-t border-line pt-3 sm:max-w-sm sm:ms-auto">
+                                                                    <div className="flex justify-between gap-4">
+                                                                        <dt>{t('public.billing.subtotal')}</dt>
+                                                                        <dd>
+                                                                            {formatMoney(
+                                                                                detail.subtotal_amount,
+                                                                                detail.currency,
+                                                                            )}
+                                                                        </dd>
+                                                                    </div>
+                                                                    <div className="flex justify-between gap-4">
+                                                                        <dt>{t('public.billing.tax')}</dt>
+                                                                        <dd>
+                                                                            {formatMoney(
+                                                                                detail.tax_amount,
+                                                                                detail.currency,
+                                                                            )}
+                                                                        </dd>
+                                                                    </div>
+                                                                    <div className="flex justify-between gap-4 font-semibold">
+                                                                        <dt>{t('public.billing.total')}</dt>
+                                                                        <dd>
+                                                                            {formatMoney(
+                                                                                detail.total_amount,
+                                                                                detail.currency,
+                                                                            )}
+                                                                        </dd>
+                                                                    </div>
+                                                                </dl>
+                                                                {detail.payments.length > 0 && (
+                                                                    <div className="mt-4 border-t border-line pt-3">
+                                                                        <h3 className="font-semibold">
+                                                                            {t('portal.dashboard.payment_history')}
+                                                                        </h3>
+                                                                        {detail.payments.map((payment) => (
+                                                                            <p
+                                                                                key={payment.id}
+                                                                                className="mt-2 flex justify-between gap-4"
+                                                                            >
+                                                                                <span>
+                                                                                    {payment.number} ·{' '}
+                                                                                    {enumLabel(payment.status, t)}
+                                                                                </span>
+                                                                                <span>
+                                                                                    {formatMoney(
+                                                                                        payment.amount,
+                                                                                        payment.currency,
+                                                                                    )}
+                                                                                </span>
+                                                                            </p>
+                                                                        ))}
+                                                                    </div>
+                                                                )}
+                                                            </>
+                                                        )}
+                                                    </div>
+                                                )}
                                             </div>
-                                        ))}
-                                        {billing.payments.length === 0 && (
-                                            <p className="py-3 text-sm text-muted">{t('portal.dashboard.no_payments')}</p>
+                                        );
+                                    })}
+                                    {!loadState.invoices.loading &&
+                                        !loadState.invoices.error &&
+                                        invoices.length === 0 && (
+                                            <p className="py-3 text-sm text-muted">
+                                                {t('portal.dashboard.no_invoices')}
+                                            </p>
                                         )}
-                                    </div>
                                 </div>
-                            </section>
+                                {invoiceCursor && (
+                                    <button
+                                        type="button"
+                                        disabled={loadState.invoices.loading}
+                                        onClick={() => void loadInvoicePage(invoiceCursor, true)}
+                                        className="button-secondary mt-4"
+                                    >
+                                        {loadState.invoices.loading
+                                            ? t('portal.dashboard.loading_older')
+                                            : t('portal.dashboard.load_older')}
+                                    </button>
+                                )}
+                            </div>
+                            <div className="card p-6">
+                                <h2 className="section-title">{t('portal.dashboard.payment_history')}</h2>
+                                {loadState.payments.loading && payments.length === 0 && (
+                                    <p className="mt-4 text-sm text-muted" role="status">
+                                        {t('portal.dashboard.loading')}
+                                    </p>
+                                )}
+                                {loadState.payments.error && (
+                                    <div className="mt-4 flex flex-wrap items-center gap-3" role="alert">
+                                        <p className="text-sm text-muted">{t('portal.dashboard.load_error')}</p>
+                                        <button
+                                            type="button"
+                                            onClick={() =>
+                                                void loadPaymentPage(paymentCursor ?? undefined, paymentCursor !== null)
+                                            }
+                                            className="button-secondary"
+                                        >
+                                            {t('portal.dashboard.retry')}
+                                        </button>
+                                    </div>
+                                )}
+                                <div className="mt-4 divide-y divide-line">
+                                    {payments.map((payment) => (
+                                        <div
+                                            key={payment.id}
+                                            className="flex items-center justify-between gap-4 py-3 text-sm"
+                                        >
+                                            <span>
+                                                <b>{payment.number}</b>
+                                                <small className="mt-1 block text-muted">
+                                                    {enumLabel(payment.status, t)}
+                                                </small>
+                                                <small className="mt-1 block text-muted">
+                                                    {payment.received_at ? formatDate(payment.received_at) : '—'}
+                                                </small>
+                                            </span>
+                                            <span className="font-semibold">
+                                                {formatMoney(payment.amount, payment.currency)}
+                                            </span>
+                                        </div>
+                                    ))}
+                                    {!loadState.payments.loading &&
+                                        !loadState.payments.error &&
+                                        payments.length === 0 && (
+                                            <p className="py-3 text-sm text-muted">
+                                                {t('portal.dashboard.no_payments')}
+                                            </p>
+                                        )}
+                                </div>
+                                {paymentCursor && (
+                                    <button
+                                        type="button"
+                                        disabled={loadState.payments.loading}
+                                        onClick={() => void loadPaymentPage(paymentCursor, true)}
+                                        className="button-secondary mt-4"
+                                    >
+                                        {loadState.payments.loading
+                                            ? t('portal.dashboard.loading_older')
+                                            : t('portal.dashboard.load_older')}
+                                    </button>
+                                )}
+                            </div>
+                        </section>
+                        {loadState.billing.loading && !billing && (
+                            <p className="mt-4 text-sm text-muted" role="status">
+                                {t('portal.dashboard.loading')}
+                            </p>
+                        )}
+                        {loadState.billing.error && (
+                            <div className="mt-4 flex flex-wrap items-center gap-3" role="alert">
+                                <p className="text-sm text-muted">{t('portal.dashboard.load_error')}</p>
+                                <button type="button" onClick={() => void loadBilling()} className="button-secondary">
+                                    {t('portal.dashboard.retry')}
+                                </button>
+                            </div>
                         )}
                         {billing?.online_payments.enabled &&
-                            billing.invoices.some(
+                            invoices.some(
                                 (invoice) => invoice.status === 'issued' && invoice.outstanding_amount > 0,
                             ) && (
                                 <section className="card mt-8 p-6" aria-labelledby="online-payment-heading">
@@ -448,21 +1145,14 @@ export default function PortalDashboard({ tenant }: Props) {
                                                 <span className="field-label">{t('portal.dashboard.invoice')}</span>
                                                 <ResponsiveSelect
                                                     className="field"
-                                                    value={
-                                                        selectedInvoiceId ||
-                                                        billing.invoices.find(
-                                                            (invoice) =>
-                                                                invoice.status === 'issued' &&
-                                                                invoice.outstanding_amount > 0,
-                                                        )?.id ||
-                                                        ''
-                                                    }
+                                                    value={selectedPayableInvoice?.id ?? ''}
                                                     onChange={(event) => {
                                                         setSelectedInvoiceId(event.target.value);
                                                         setPaymentMessage(null);
+                                                        setPaymentMessageError(false);
                                                     }}
                                                 >
-                                                    {billing.invoices
+                                                    {invoices
                                                         .filter(
                                                             (invoice) =>
                                                                 invoice.status === 'issued' &&
@@ -486,19 +1176,31 @@ export default function PortalDashboard({ tenant }: Props) {
                                                 className="button-primary"
                                             >
                                                 <CreditCard size={16} />
-                                                {paymentBusy ? t('portal.dashboard.opening_checkout') : t('portal.dashboard.continue_payment')}
+                                                {paymentBusy
+                                                    ? t('portal.dashboard.opening_checkout')
+                                                    : t('portal.dashboard.continue_payment')}
                                             </button>
                                         </div>
                                     ) : (
                                         <StripeCheckout
                                             clientSecret={paymentIntent.clientSecret}
-                                           publishableKey={paymentIntent.publishableKey}
+                                            publishableKey={paymentIntent.publishableKey}
                                             t={t}
-                                           onSubmitted={paymentSubmitted}
-                                            onError={setPaymentMessage}
+                                            onSubmitted={paymentSubmitted}
+                                            onError={(message) => {
+                                                setPaymentMessage(message);
+                                                setPaymentMessageError(true);
+                                            }}
                                         />
                                     )}
-                                    {paymentMessage && <p className="mt-4 text-sm text-muted">{paymentMessage}</p>}
+                                    {paymentMessage && (
+                                        <p
+                                            className="mt-4 text-sm text-muted"
+                                            role={paymentMessageError ? 'alert' : 'status'}
+                                        >
+                                            {paymentMessage}
+                                        </p>
+                                    )}
                                 </section>
                             )}
                         <form
@@ -536,10 +1238,16 @@ export default function PortalDashboard({ tenant }: Props) {
                                 </label>
                             </div>
                             <div className="flex items-center justify-between gap-4">
-                                <p className="text-sm text-muted">{t('Phone')}: {customer.phone}</p>
+                                <p className="text-sm text-muted">
+                                    {t('Phone')}: {customer.phone}
+                                </p>
                                 <button type="submit" disabled={profileBusy} className="button-primary">
                                     {profileSaved ? <Check size={16} /> : null}
-                                    {profileBusy ? t('portal.dashboard.saving') : profileSaved ? t('portal.dashboard.saved') : t('portal.dashboard.save_details')}
+                                    {profileBusy
+                                        ? t('portal.dashboard.saving')
+                                        : profileSaved
+                                          ? t('portal.dashboard.saved')
+                                          : t('portal.dashboard.save_details')}
                                 </button>
                             </div>
                         </form>
@@ -548,6 +1256,23 @@ export default function PortalDashboard({ tenant }: Props) {
                                 <h2 id="support-heading" className="section-title">
                                     {t('portal.dashboard.support_tickets')}
                                 </h2>
+                                {loadState.tickets.loading && tickets.length === 0 && (
+                                    <p className="mt-4 text-sm text-muted" role="status">
+                                        {t('portal.dashboard.loading')}
+                                    </p>
+                                )}
+                                {loadState.tickets.error && (
+                                    <div className="mt-4 flex flex-wrap items-center gap-3" role="alert">
+                                        <p className="text-sm text-muted">{t('portal.dashboard.load_error')}</p>
+                                        <button
+                                            type="button"
+                                            onClick={() => void loadTickets()}
+                                            className="button-secondary"
+                                        >
+                                            {t('portal.dashboard.retry')}
+                                        </button>
+                                    </div>
+                                )}
                                 <div className="mt-4 divide-y divide-line">
                                     {tickets.map((ticket) => (
                                         <div key={ticket.uuid} className="space-y-3 py-3 text-sm">
@@ -558,13 +1283,15 @@ export default function PortalDashboard({ tenant }: Props) {
                                                         {ticket.number} · {enumLabel(ticket.status, t)}
                                                     </small>
                                                 </span>
-                                                    <span className="text-xs text-muted">
-                                                        {ticket.message_count} {t('portal.dashboard.messages')}
+                                                <span className="text-xs text-muted">
+                                                    {ticket.message_count} {t('portal.dashboard.messages')}
                                                 </span>
                                             </div>
                                             {(ticket.status === 'resolved' || ticket.status === 'closed') && (
                                                 <label className="block max-w-xs">
-                                                    <span className="field-label">{t('portal.dashboard.rate_support')}</span>
+                                                    <span className="field-label">
+                                                        {t('portal.dashboard.rate_support')}
+                                                    </span>
                                                     <ResponsiveSelect
                                                         className="field"
                                                         value={ticket.satisfaction_rating?.toString() ?? ''}
@@ -584,7 +1311,7 @@ export default function PortalDashboard({ tenant }: Props) {
                                             )}
                                         </div>
                                     ))}
-                                    {tickets.length === 0 && (
+                                    {!loadState.tickets.loading && !loadState.tickets.error && tickets.length === 0 && (
                                         <p className="py-3 text-sm text-muted">{t('portal.dashboard.no_tickets')}</p>
                                     )}
                                 </div>
@@ -631,7 +1358,11 @@ export default function PortalDashboard({ tenant }: Props) {
                                         }
                                     />
                                 </label>
-                                <button type="submit" disabled={ticketBusy} className="button-primary w-full justify-center">
+                                <button
+                                    type="submit"
+                                    disabled={ticketBusy}
+                                    className="button-primary w-full justify-center"
+                                >
                                     <Send size={16} />
                                     {ticketBusy ? t('portal.dashboard.sending') : t('portal.dashboard.send_ticket')}
                                 </button>
@@ -649,37 +1380,54 @@ export default function PortalDashboard({ tenant }: Props) {
 
 function StripeCheckout({
     clientSecret,
-   publishableKey,
+    publishableKey,
     t,
-   onSubmitted,
+    onSubmitted,
     onError,
 }: {
     clientSecret: string;
-   publishableKey: string;
+    publishableKey: string;
     t: (key: string) => string;
-    onSubmitted: () => void;
+    onSubmitted: () => Promise<void>;
     onError: (message: string) => void;
 }) {
     const [stripeUi, setStripeUi] = useState<typeof import('@stripe/react-stripe-js') | null>(null);
-    const [stripePromise, setStripePromise] = useState<ReturnType<typeof import('@stripe/stripe-js').loadStripe> | null>(
-        null,
-    );
+    const [stripePromise, setStripePromise] = useState<ReturnType<
+        typeof import('@stripe/stripe-js').loadStripe
+    > | null>(null);
+    const [stripeLoadError, setStripeLoadError] = useState(false);
 
     useEffect(() => {
         let active = true;
-        Promise.all([import('@stripe/react-stripe-js'), import('@stripe/stripe-js')]).then(([ui, stripe]) => {
-            if (!active) return;
-            setStripeUi(ui);
-            setStripePromise(stripe.loadStripe(publishableKey));
-        });
+        Promise.all([import('@stripe/react-stripe-js'), import('@stripe/stripe-js')])
+            .then(([ui, stripe]) => {
+                if (!active) return;
+                setStripeUi(ui);
+                setStripePromise(stripe.loadStripe(publishableKey));
+            })
+            .catch(() => {
+                if (active) setStripeLoadError(true);
+            });
 
         return () => {
             active = false;
         };
     }, [publishableKey]);
 
+    if (stripeLoadError) {
+        return (
+            <p className="mt-5 text-sm text-muted" role="alert">
+                {t('portal.dashboard.payment_confirm_error')}
+            </p>
+        );
+    }
+
     if (!stripeUi || !stripePromise) {
-        return <p className="mt-5 text-sm text-muted" role="status">{t('portal.dashboard.opening_checkout')}</p>;
+        return (
+            <p className="mt-5 text-sm text-muted" role="status">
+                {t('portal.dashboard.opening_checkout')}
+            </p>
+        );
     }
 
     const { Elements } = stripeUi;
@@ -701,7 +1449,7 @@ function StripePaymentForm({
 }: {
     stripeUi: typeof import('@stripe/react-stripe-js');
     t: (key: string) => string;
-    onSubmitted: () => void;
+    onSubmitted: () => Promise<void>;
     onError: (message: string) => void;
 }) {
     const stripe = stripeUi.useStripe();
@@ -712,17 +1460,22 @@ function StripePaymentForm({
         event.preventDefault();
         if (!stripe || !elements) return;
         setBusy(true);
-        const result = await stripe.confirmPayment({
-            elements,
-            confirmParams: { return_url: window.location.href },
-            redirect: 'if_required',
-        });
-        if (result.error) {
-            onError(result.error.message ? t(result.error.message) : t('portal.dashboard.payment_confirm_error'));
-        } else {
-            onSubmitted();
+        try {
+            const result = await stripe.confirmPayment({
+                elements,
+                confirmParams: { return_url: window.location.href },
+                redirect: 'if_required',
+            });
+            if (result.error) {
+                onError(result.error.message ? t(result.error.message) : t('portal.dashboard.payment_confirm_error'));
+            } else {
+                await onSubmitted();
+            }
+        } catch {
+            onError(t('portal.dashboard.payment_confirm_error'));
+        } finally {
+            setBusy(false);
         }
-        setBusy(false);
     };
 
     const { PaymentElement } = stripeUi;

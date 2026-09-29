@@ -135,12 +135,12 @@ export default function PublicBilling({
         return () => window.clearInterval(timer);
     }, [t, token, whishSession]);
 
-   const title =
-       type === 'statement'
+    const title =
+        type === 'statement'
             ? t('public.billing.account_statement')
-           : type === 'receipt'
+            : type === 'receipt'
               ? t('public.billing.payment_receipt')
-             : type === 'payment'
+              : type === 'payment'
                 ? t('public.billing.pay_invoice')
                 : t('public.billing.invoice');
 
@@ -171,7 +171,7 @@ export default function PublicBilling({
                         )}
                         <button type="button" className="button-secondary" onClick={() => window.print()}>
                             <Printer size={15} />
-                                <span className="hidden sm:inline">{t('public.billing.print')}</span>
+                            <span className="hidden sm:inline">{t('public.billing.print')}</span>
                         </button>
                     </div>
                 </header>
@@ -205,13 +205,16 @@ export default function PublicBilling({
                                     <CheckCircle2 className="mt-0.5 shrink-0" size={20} />
                                     <div>
                                         <p className="font-semibold">{t('public.billing.invoice_paid')}</p>
-                                        <p className="mt-1 text-pretty text-sm">{t('public.billing.no_invoice_balance')}</p>
+                                        <p className="mt-1 text-pretty text-sm">
+                                            {t('public.billing.no_invoice_balance')}
+                                        </p>
                                     </div>
                                 </div>
                             ) : (
                                 <div>
                                     <h2 className="section-title text-balance">
-                                        {t('public.billing.pay')} {formatMoney(invoice.outstanding_amount, invoice.currency)}
+                                        {t('public.billing.pay')}{' '}
+                                        {formatMoney(invoice.outstanding_amount, invoice.currency)}
                                     </h2>
                                     <p className="mt-1 text-pretty text-sm text-muted">
                                         {t('public.billing.payment_method_note')}
@@ -225,7 +228,9 @@ export default function PublicBilling({
                                                 onClick={startStripe}
                                             >
                                                 <CreditCard size={16} />
-                                                {busy === 'stripe' ? t('public.billing.starting') : t('public.billing.pay_by_card')}
+                                                {busy === 'stripe'
+                                                    ? t('public.billing.starting')
+                                                    : t('public.billing.pay_by_card')}
                                             </button>
                                         )}
                                         {gateways?.whish.ready && (
@@ -236,13 +241,16 @@ export default function PublicBilling({
                                                 onClick={startWhish}
                                             >
                                                 <ExternalLink size={16} />
-                                                {busy === 'whish' ? t('public.billing.starting') : t('public.billing.pay_with_whish')}
+                                                {busy === 'whish'
+                                                    ? t('public.billing.starting')
+                                                    : t('public.billing.pay_with_whish')}
                                             </button>
                                         )}
                                     </div>
                                     {!gateways?.stripe.ready && !gateways?.whish.ready && (
                                         <p className="mt-4 rounded-xl border border-line bg-white p-4 text-pretty text-sm text-muted">
-                                            {t('public.billing.online_not_configured')} {tenant.name} {t('public.billing.arrange_payment')}
+                                            {t('public.billing.online_not_configured')} {tenant.name}{' '}
+                                            {t('public.billing.arrange_payment')}
                                         </p>
                                     )}
                                     {message && (
@@ -301,7 +309,8 @@ export default function PublicBilling({
                     </div>
                 )}
                 <p className="mt-6 text-center text-pretty text-xs text-muted print:hidden">
-                    {t('public.billing.private_link_expires')} {formatDate(expires_at)}. {t('public.billing.do_not_forward')}
+                    {t('public.billing.private_link_expires')} {formatDate(expires_at)}.{' '}
+                    {t('public.billing.do_not_forward')}
                 </p>
             </main>
         </div>
@@ -332,7 +341,9 @@ function InvoiceDetails({ invoice, t }: { invoice: Invoice; t: (key: string) => 
                     <div key={`${line.description}-${index}`} className="flex justify-between gap-4 py-3">
                         <div>
                             <p className="text-sm font-semibold">{line.description}</p>
-                            <p className="mt-0.5 text-xs text-muted tabular-nums">{t('public.billing.quantity')} {line.quantity}</p>
+                            <p className="mt-0.5 text-xs text-muted tabular-nums">
+                                {t('public.billing.quantity')} {line.quantity}
+                            </p>
                         </div>
                         <p className="text-sm font-semibold tabular-nums">{formatMoney(line.amount, line.currency)}</p>
                     </div>
@@ -399,7 +410,15 @@ function PaymentDetails({ payment, token, t }: { payment: Payment; token: string
     );
 }
 
-function StatementDetails({ customer, statement, t }: { customer: Customer; statement: NonNullable<Props['statement']>; t: (key: string) => string }) {
+function StatementDetails({
+    customer,
+    statement,
+    t,
+}: {
+    customer: Customer;
+    statement: NonNullable<Props['statement']>;
+    t: (key: string) => string;
+}) {
     return (
         <div className="px-5 py-6 sm:px-8">
             <div className="rounded-xl bg-brand-soft p-4">
@@ -476,7 +495,15 @@ function StripeCheckout({
     );
 }
 
-function StripeForm({ t, onComplete, onError }: { t: (key: string) => string; onComplete: () => void; onError: (message: string) => void }) {
+function StripeForm({
+    t,
+    onComplete,
+    onError,
+}: {
+    t: (key: string) => string;
+    onComplete: () => void;
+    onError: (message: string) => void;
+}) {
     const stripe = useStripe();
     const elements = useElements();
     const [busy, setBusy] = useState(false);
@@ -492,13 +519,18 @@ function StripeForm({ t, onComplete, onError }: { t: (key: string) => string; on
                     confirmParams: { return_url: window.location.href },
                     redirect: 'if_required',
                 });
-                if (result.error) onError(result.error.message ? t(result.error.message) : t('public.billing.card_confirm_error'));
+                if (result.error)
+                    onError(result.error.message ? t(result.error.message) : t('public.billing.card_confirm_error'));
                 else onComplete();
                 setBusy(false);
             }}
         >
             <PaymentElement />
-            <button type="submit" className="button-primary w-full justify-center" disabled={busy || !stripe || !elements}>
+            <button
+                type="submit"
+                className="button-primary w-full justify-center"
+                disabled={busy || !stripe || !elements}
+            >
                 <CreditCard size={16} />
                 {busy ? t('public.billing.confirming') : t('public.billing.confirm_card')}
             </button>

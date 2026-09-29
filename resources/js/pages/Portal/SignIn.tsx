@@ -9,7 +9,7 @@ type Props = { tenant: PublicTenant };
 
 export default function PortalSignIn({ tenant }: Props) {
     const { props } = usePage<PageProps>();
-   const t = createTranslator(tenant.locale || props.app.locale);
+    const t = createTranslator(tenant.locale || props.app.locale);
     useEffect(() => {
         document.documentElement.lang = tenant.locale;
         document.documentElement.dir = tenant.locale === 'ar' ? 'rtl' : 'ltr';
@@ -24,18 +24,40 @@ export default function PortalSignIn({ tenant }: Props) {
         event.preventDefault();
         setBusy(true);
         setError(null);
-        const response = await fetch(`/api/v1/portal/${tenant.slug}/otp/request`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ phone }),
-        });
-        const payload = await response.json();
-        setBusy(false);
-        if (!response.ok) {
-            setError(payload.detail ? t(payload.detail) : t('portal.sign_in_error'));
-            return;
+        try {
+            const response = await fetch(`/api/v1/portal/${tenant.slug}/otp/request`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ phone }),
+            });
+            const payload: unknown = await response.json().catch(() => null);
+            if (!response.ok) {
+                const detail =
+                    typeof payload === 'object' &&
+                    payload !== null &&
+                    'detail' in payload &&
+                    typeof payload.detail === 'string'
+                        ? t(payload.detail)
+                        : t('portal.sign_in_error');
+                setError(detail);
+                return;
+            }
+            if (
+                typeof payload !== 'object' ||
+                payload === null ||
+                !('challenge_id' in payload) ||
+                typeof payload.challenge_id !== 'number' ||
+                !Number.isInteger(payload.challenge_id)
+            ) {
+                setError(t('portal.sign_in_error'));
+                return;
+            }
+            setChallengeId(payload.challenge_id);
+        } catch {
+            setError(t('portal.sign_in_error'));
+        } finally {
+            setBusy(false);
         }
-        setChallengeId(payload.challenge_id);
     };
 
     const verifyOtp = async (event: React.FormEvent) => {
@@ -43,19 +65,41 @@ export default function PortalSignIn({ tenant }: Props) {
         if (challengeId === null) return;
         setBusy(true);
         setError(null);
-        const response = await fetch(`/api/v1/portal/${tenant.slug}/otp/verify`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ challenge_id: challengeId, code }),
-        });
-        const payload = await response.json();
-        setBusy(false);
-        if (!response.ok) {
-            setError(payload.detail ? t(payload.detail) : t('portal.invalid_code'));
-            return;
+        try {
+            const response = await fetch(`/api/v1/portal/${tenant.slug}/otp/verify`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ challenge_id: challengeId, code }),
+            });
+            const payload: unknown = await response.json().catch(() => null);
+            if (!response.ok) {
+                const detail =
+                    typeof payload === 'object' &&
+                    payload !== null &&
+                    'detail' in payload &&
+                    typeof payload.detail === 'string'
+                        ? t(payload.detail)
+                        : t('portal.invalid_code');
+                setError(detail);
+                return;
+            }
+            if (
+                typeof payload !== 'object' ||
+                payload === null ||
+                !('token' in payload) ||
+                typeof payload.token !== 'string' ||
+                payload.token.length === 0
+            ) {
+                setError(t('portal.invalid_code'));
+                return;
+            }
+            sessionStorage.setItem(`portal_token:${tenant.slug}`, payload.token);
+            window.location.assign(`/portal/${tenant.slug}/dashboard`);
+        } catch {
+            setError(t('portal.invalid_code'));
+        } finally {
+            setBusy(false);
         }
-        sessionStorage.setItem(`portal_token:${tenant.slug}`, payload.token);
-        window.location.assign(`/portal/${tenant.slug}/dashboard`);
     };
 
     return (

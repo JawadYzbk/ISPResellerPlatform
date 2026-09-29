@@ -501,8 +501,7 @@ export default function FieldIndex({
                     }),
                 });
                 const body = (await response.json()) as { results?: SyncResult[] };
-                if (!response.ok || !Array.isArray(body.results))
-                    throw new Error(t('field.error.sync'));
+                if (!response.ok || !Array.isArray(body.results)) throw new Error(t('field.error.sync'));
 
                 const results = body.results;
                 const remaining = queue.flatMap((item, index) => {
@@ -512,11 +511,7 @@ export default function FieldIndex({
                         : [{ ...item, last_error: result?.error ?? t('Payment was not accepted yet.') }];
                 });
                 await persist(remaining);
-                setMessage(
-                    remaining.length === 0
-                        ? t('field.message.synced')
-                        : t('field.message.some_queued'),
-                );
+                setMessage(remaining.length === 0 ? t('field.message.synced') : t('field.message.some_queued'));
             } catch (caught) {
                 setError(caught instanceof Error ? t(caught.message) : t('field.error.sync'));
             } finally {
@@ -618,11 +613,7 @@ export default function FieldIndex({
         };
         await persist([...pending, item]);
         setAmount('');
-        setMessage(
-            online
-                ? t('field.message.queued_online')
-                : t('field.message.queued_offline'),
-        );
+        setMessage(online ? t('field.message.queued_online') : t('field.message.queued_offline'));
         setError(null);
         if (online) void pushQueue([...pending, item]);
     };
@@ -679,7 +670,13 @@ export default function FieldIndex({
 
             setFieldDay(action === 'check-out' ? null : body.data);
             if (action === 'check-out') setCheckoutNote('');
-            setMessage(body.message ? t(body.message) : (action === 'check-in' ? t('field.message.day_started') : t('field.message.day_ended')));
+            setMessage(
+                body.message
+                    ? t(body.message)
+                    : action === 'check-in'
+                      ? t('field.message.day_started')
+                      : t('field.message.day_ended'),
+            );
         } catch (caught) {
             if (typeof caught === 'object' && caught !== null && 'code' in caught) {
                 const locationError = caught as GeolocationPositionError;
@@ -890,7 +887,7 @@ export default function FieldIndex({
             setCustodyAmount('');
             setCustodyDescription('');
             setCustodyReference('');
-                setMessage(body.message ? t(body.message) : t('Custody request submitted.'));
+            setMessage(body.message ? t(body.message) : t('Custody request submitted.'));
         } catch (caught) {
             setError(caught instanceof Error ? t(caught.message) : t('The custody request could not be submitted.'));
         } finally {
@@ -923,18 +920,14 @@ export default function FieldIndex({
                             {fieldDay ? t('field.checked_in') : t('field.not_started')}
                         </p>
                         <p className="mt-1 text-xs text-muted">
-                            {fieldDay
-                                ? t('field.location_recorded')
-                                : t('field.start_route')}
+                            {fieldDay ? t('field.location_recorded') : t('field.start_route')}
                         </p>
                     </div>
                     <div className="card p-4">
                         <p className="eyebrow">{t('field.shift')}</p>
                         <p className="mt-2 text-lg font-semibold">{shift ? t('field.open') : t('field.not_open')}</p>
                         <p className="mt-1 text-xs text-muted">
-                            {shift
-                                ? `${shift.payment_count} posted payment(s)`
-                                : t('field.open_shift_before')}
+                            {shift ? `${shift.payment_count} posted payment(s)` : t('field.open_shift_before')}
                         </p>
                     </div>
                     <div className="card p-4">
@@ -960,14 +953,13 @@ export default function FieldIndex({
                                 disabled={!online || busy || pending.length === 0}
                                 onClick={() => void pushQueue()}
                             >
-                                <RefreshCw size={13} className={busy ? 'animate-spin' : ''} /> {t('field.synchronize_now')}
+                                <RefreshCw size={13} className={busy ? 'animate-spin' : ''} />{' '}
+                                {t('field.synchronize_now')}
                             </button>
                             <ConfirmDialog
                                 title={t('field.clear_data_title')}
                                 description={
-                                    pending.length > 0
-                                        ? t('field.clear_data_pending')
-                                        : t('field.clear_data_empty')
+                                    pending.length > 0 ? t('field.clear_data_pending') : t('field.clear_data_empty')
                                 }
                                 confirmLabel={t('field.clear_device_data')}
                                 destructive={pending.length > 0}
@@ -999,14 +991,16 @@ export default function FieldIndex({
                         <div className="mt-4 flex flex-wrap gap-3">
                             {entriesOrEmpty(custody.position.balances).map(([currencyCode, amount]) => (
                                 <div key={currencyCode} className="rounded-xl border border-line px-4 py-3">
-                                    <p className="eyebrow">{currencyCode} {t('balance')}</p>
+                                    <p className="eyebrow">
+                                        {currencyCode} {t('balance')}
+                                    </p>
                                     <p className={`mt-1 font-semibold tabular-nums ${amount < 0 ? 'text-coral' : ''}`}>
                                         {formatMoney(amount, currencyCode)}
                                     </p>
                                 </div>
                             ))}
                             <div className="rounded-xl border border-line px-4 py-3">
-                                    <p className="eyebrow">{t('field.pending_review')}</p>
+                                <p className="eyebrow">{t('field.pending_review')}</p>
                                 <p className="mt-1 font-semibold tabular-nums">{custody.position.pending_count}</p>
                             </div>
                         </div>
@@ -1061,9 +1055,7 @@ export default function FieldIndex({
                                 value={custodyDescription}
                                 maxLength={2000}
                                 placeholder={
-                                    custodyType === 'expense'
-                                        ? t('field.expense_prompt')
-                                        : t('field.handover_prompt')
+                                    custodyType === 'expense' ? t('field.expense_prompt') : t('field.handover_prompt')
                                 }
                                 onChange={(event) => setCustodyDescription(event.target.value)}
                             />
@@ -1076,7 +1068,7 @@ export default function FieldIndex({
                             >
                                 {custodyBusy
                                     ? t('Submitting…')
-                                      : custodyType === 'expense'
+                                    : custodyType === 'expense'
                                       ? t('Submit expense')
                                       : t('Submit handover')}
                             </button>
@@ -1092,7 +1084,9 @@ export default function FieldIndex({
                                     <div key={entry.id} className="flex items-start justify-between gap-4 px-5 py-4">
                                         <div className="min-w-0">
                                             <div className="flex flex-wrap items-center gap-2">
-                                                <p className="text-sm font-semibold capitalize">{fieldValue(entry.type)}</p>
+                                                <p className="text-sm font-semibold capitalize">
+                                                    {fieldValue(entry.type)}
+                                                </p>
                                                 <span
                                                     className={`rounded-full px-2 py-0.5 text-xs font-semibold capitalize ${entry.status === 'posted' ? 'bg-emerald-50 text-emerald-700' : entry.status === 'rejected' ? 'bg-rose-50 text-rose-700' : 'bg-amber-50 text-amber-700'}`}
                                                 >
@@ -1122,9 +1116,7 @@ export default function FieldIndex({
                 <section className="card mt-6 overflow-hidden">
                     <div className="border-b border-line p-5">
                         <h2 className="text-balance text-xl font-semibold">{t('field.field_stock')}</h2>
-                        <p className="mt-1 text-pretty text-sm text-muted">
-                            {t('field.field_stock_description')}
-                        </p>
+                        <p className="mt-1 text-pretty text-sm text-muted">{t('field.field_stock_description')}</p>
                         <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                             {stock.locations.flatMap((location) =>
                                 location.balances.map((balance) => (
@@ -1252,9 +1244,7 @@ export default function FieldIndex({
                     {stock.locations.some((location) => location.balances.length > 0) && (
                         <div className="border-t border-line p-5">
                             <h3 className="text-balance font-semibold">{t('field.sell_stock')}</h3>
-                            <p className="mt-1 text-pretty text-xs text-muted">
-                                {t('field.sell_stock_description')}
-                            </p>
+                            <p className="mt-1 text-pretty text-xs text-muted">{t('field.sell_stock_description')}</p>
                             <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                                 <label className="field-label">
                                     {t('field.customer')}
@@ -1311,7 +1301,7 @@ export default function FieldIndex({
                                             .find((location) => String(location.id) === saleForm.data.warehouse_id)
                                             ?.balances.map((balance) => (
                                                 <option key={balance.item_id} value={balance.item_id}>
-                                                     {balance.sku} · {balance.name} · {balance.quantity} {t('available')}
+                                                    {balance.sku} · {balance.name} · {balance.quantity} {t('available')}
                                                 </option>
                                             ))}
                                     </ResponsiveSelect>
@@ -1323,7 +1313,11 @@ export default function FieldIndex({
                                         id="field-sale-quantity"
                                         className="field mt-1 tabular-nums"
                                         inputMode="decimal"
-                                        {...fieldA11y('field-sale-quantity', saleErrors.lines, 'field-sale-lines-error')}
+                                        {...fieldA11y(
+                                            'field-sale-quantity',
+                                            saleErrors.lines,
+                                            'field-sale-lines-error',
+                                        )}
                                         value={saleQuantity}
                                         onChange={(event) => setSaleQuantity(event.target.value)}
                                         placeholder="0.000"
@@ -1335,7 +1329,11 @@ export default function FieldIndex({
                                         id="field-sale-unit-price"
                                         className="field mt-1 tabular-nums"
                                         inputMode="decimal"
-                                        {...fieldA11y('field-sale-unit-price', saleErrors.lines, 'field-sale-lines-error')}
+                                        {...fieldA11y(
+                                            'field-sale-unit-price',
+                                            saleErrors.lines,
+                                            'field-sale-lines-error',
+                                        )}
                                         value={saleUnitPrice}
                                         onChange={(event) => setSaleUnitPrice(event.target.value)}
                                         placeholder="0.00"
@@ -1500,7 +1498,8 @@ export default function FieldIndex({
                                             >
                                                 <span className="block truncate">{balance.name}</span>
                                                 <span className="mt-1 block text-xs font-normal text-muted">
-                                                    {t('field.system')}: <span className="tabular-nums">{balance.quantity}</span>
+                                                    {t('field.system')}:{' '}
+                                                    <span className="tabular-nums">{balance.quantity}</span>
                                                 </span>
                                                 <input
                                                     id={`field-stock-count-${balance.item_id}`}
@@ -1571,9 +1570,7 @@ export default function FieldIndex({
                         <MapPin className="mt-0.5 shrink-0 text-brand" size={19} />
                         <div>
                             <h2 className="text-sm font-semibold">{t('field.field_attendance')}</h2>
-                            <p className="mt-1 text-pretty text-xs text-muted">
-                                {t('field.attendance_description')}
-                            </p>
+                            <p className="mt-1 text-pretty text-xs text-muted">{t('field.attendance_description')}</p>
                         </div>
                     </div>
                     {fieldDay && (
@@ -1595,7 +1592,11 @@ export default function FieldIndex({
                         onClick={() => void updateFieldDay(fieldDay ? 'check-out' : 'check-in')}
                     >
                         {fieldDay ? <LogOut size={16} /> : <LogIn size={16} />}
-                        {locationBusy ? t('Capturing location…') : fieldDay ? t('Finish field day') : t('Start field day')}
+                        {locationBusy
+                            ? t('Capturing location…')
+                            : fieldDay
+                              ? t('Finish field day')
+                              : t('Start field day')}
                     </button>
                 </section>
 
@@ -1645,7 +1646,9 @@ export default function FieldIndex({
                                 <div className="min-w-0 p-5">
                                     <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-start">
                                         <div>
-                                            <p className="eyebrow">{fieldValue(selectedTask.priority)} {t('priority')}</p>
+                                            <p className="eyebrow">
+                                                {fieldValue(selectedTask.priority)} {t('priority')}
+                                            </p>
                                             <h3 className="mt-1 text-balance text-lg font-semibold">
                                                 {selectedTask.title}
                                             </h3>
@@ -1769,9 +1772,7 @@ export default function FieldIndex({
                         <div className="p-10 text-center">
                             <CheckCircle2 className="mx-auto text-emerald-600" size={28} />
                             <p className="mt-3 font-semibold">{t('field.no_open_tasks')}</p>
-                            <p className="mt-1 text-pretty text-sm text-muted">
-                                {t('field.new_assignments')}
-                            </p>
+                            <p className="mt-1 text-pretty text-sm text-muted">{t('field.new_assignments')}</p>
                         </div>
                     )}
                 </section>
@@ -1785,9 +1786,7 @@ export default function FieldIndex({
                                     ? `${collectorRoute.completed_count}/${collectorRoute.stop_count} stops completed`
                                     : t('field.no_route')}
                             </h2>
-                            <p className="mt-1 text-pretty text-sm text-muted">
-                                {t('field.route_description')}
-                            </p>
+                            <p className="mt-1 text-pretty text-sm text-muted">{t('field.route_description')}</p>
                         </div>
                         {collectorRoute && (
                             <div className="flex flex-wrap gap-2">
@@ -1831,7 +1830,9 @@ export default function FieldIndex({
                                                     )}
                                                 </div>
                                                 <p className="mt-1 text-pretty text-sm text-muted">
-                                    {stop.customer.address ?? stop.customer.zone ?? t('No address saved')}
+                                                    {stop.customer.address ??
+                                                        stop.customer.zone ??
+                                                        t('No address saved')}
                                                 </p>
                                                 <p className="mt-2 text-xs font-semibold tabular-nums text-muted">
                                                     {formatMoney(
@@ -1886,7 +1887,9 @@ export default function FieldIndex({
                                                         <option value="no_answer">{t('field.no_answer')}</option>
                                                         <option value="refused">{t('field.refused')}</option>
                                                         <option value="reschedule">{t('field.reschedule')}</option>
-                                                        <option value="address_issue">{t('field.address_issue')}</option>
+                                                        <option value="address_issue">
+                                                            {t('field.address_issue')}
+                                                        </option>
                                                     </ResponsiveSelect>
                                                 </label>
                                                 <label>
@@ -2052,9 +2055,7 @@ export default function FieldIndex({
                     >
                         <CheckCircle2 size={17} /> {t('field.save_payment')}
                     </button>
-                    <p className="text-xs text-muted">
-                        {t('field.encryption_note')}
-                    </p>
+                    <p className="text-xs text-muted">{t('field.encryption_note')}</p>
                 </form>
 
                 {pending.length > 0 && (

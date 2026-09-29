@@ -7,6 +7,7 @@ use App\Domain\Payments\PaymentGateway;
 use App\Domain\Payments\PaymentIntentResult;
 use App\Models\Customer;
 use App\Models\Invoice;
+use App\Models\Payment;
 use App\Models\Plan;
 use App\Models\PortalSession;
 use App\Models\Tenant;
@@ -52,4 +53,39 @@ it('fails closed when a tenant has no online payment gateway', function (): void
 
     expect(fn (): PaymentIntentResult => app(CreatePortalPaymentIntent::class)->handle($customer, $invoice, 3500, 'portal-intent-002'))
         ->toThrow(DomainException::class, 'No online payment gateway is configured for this tenant.');
+});
+
+it('allows an online intent for an invoice whose full payment was reversed', function (): void {
+    $tenant = Tenant::create(['name' => 'Reversed Intent', 'slug' => 'reversed-intent', 'base_currency' => 'USD', 'collection_currency' => 'USD']);
+    app(Tenancy::class)->set($tenant);
+    $customer = Customer::factory()->create();
+    $plan = Plan::factory()->create(['currency' => 'USD']);
+    $plan->prices()->create(['currency' => 'USD', 'amount_minor' => 3500, 'effective_from' => now()->subDay()]);
+    $invoice = app(IssueInvoice::class)->handle(app(CreateInvoice::class)->handle($customer, $plan));
+    $payment = Payment::create([
+        'number' => 'PAY-REVERSED-INTENT',
+        'customer_id' => $customer->id,
+        'invoice_id' => $invoice->id,
+        'status' => 'reversed',
+        'amount' => 3500,
+        'currency' => 'USD',
+        'method' => 'card',
+        'idempotency_key' => 'reversed-intent-payment-001',
+        'received_at' => now()->subMinute(),
+        'reversed_at' => now(),
+    ]);
+    $payment->allocations()->create(['invoice_id' => $invoice->id, 'amount' => 3500, 'currency' => 'USD']);
+    app()->instance(PaymentGateway::class, new class implements PaymentGateway
+    {
+        public function createIntent(Customer $customer, Invoice $invoice, int $amount, string $currency, string $idempotencyKey): PaymentIntentResult
+        {
+            return new PaymentIntentResult('pi_replacement_001', 'requires_action', $amount, $currency, ['checkout_url' => 'https://pay.example.test/pi_replacement_001']);
+        }
+    });
+
+    $intent = app(CreatePortalPaymentIntent::class)->handle($customer, $invoice, 3500, 'reversed-intent-replacement-001');
+
+    expect($invoice->outstandingAmount())->toBe(3500)
+        ->and($intent->id)->toBe('pi_replacement_001')
+        ->and($intent->amount)->toBe(3500);
 });

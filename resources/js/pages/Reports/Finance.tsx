@@ -65,7 +65,7 @@ export default function FinanceReportPage({ report }: Props) {
                         {t('Issued invoices and posted payments for')} {report.from} {t('through')} {report.to}.
                     </p>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
                     <Link href="/reports/operations" className="button-quiet">
                         {t('Operations report')}
                     </Link>
@@ -88,13 +88,22 @@ export default function FinanceReportPage({ report }: Props) {
                     <input
                         className="field"
                         type="date"
+                        required
+                        max={to}
                         value={from}
                         onChange={(event) => setFrom(event.target.value)}
                     />
                 </label>
                 <label className="block sm:min-w-48">
                     <span className="field-label">{t('To')}</span>
-                    <input className="field" type="date" value={to} onChange={(event) => setTo(event.target.value)} />
+                    <input
+                        className="field"
+                        type="date"
+                        required
+                        min={from}
+                        value={to}
+                        onChange={(event) => setTo(event.target.value)}
+                    />
                 </label>
                 <button type="submit" className="button-primary">
                     {t('Apply period')}
@@ -105,7 +114,15 @@ export default function FinanceReportPage({ report }: Props) {
                     <Receipt className="text-brand" size={20} />
                     <p className="mt-4 text-sm text-muted">{t('Issued invoices')}</p>
                     <p className="mt-1 font-display text-2xl font-semibold">{report.invoice_count}</p>
-                    <p className="mt-1 text-sm text-muted">{formatAmounts(report.invoiced_by_currency)}</p>
+                    <p className="mt-1 text-sm text-muted">
+                        {t('Gross invoiced')}: {formatAmounts(report.gross_invoiced_by_currency)}
+                    </p>
+                    <p className="mt-1 text-sm text-muted">
+                        {t('Credit notes')}: {formatAmounts(report.credited_by_currency)}
+                    </p>
+                    <p className="mt-1 text-sm font-semibold">
+                        {t('Net invoiced')}: {formatAmounts(report.net_invoiced_by_currency)}
+                    </p>
                 </div>
                 <div className="card p-5">
                     <Wallet className="text-brand" size={20} />
@@ -119,7 +136,7 @@ export default function FinanceReportPage({ report }: Props) {
                     <p className="mt-1 font-display text-2xl font-semibold">
                         {formatRates(report.collection_rate_by_currency)}
                     </p>
-                    <p className="mt-1 text-sm text-muted">{t('Collected against invoiced')}</p>
+                    <p className="mt-1 text-sm text-muted">{t('Cash collected divided by positive net invoiced')}</p>
                 </div>
                 <div className="card p-5">
                     <BarChart3 className="text-brand" size={20} />
@@ -127,21 +144,25 @@ export default function FinanceReportPage({ report }: Props) {
                     <p className="mt-1 font-display text-2xl font-semibold">
                         {formatAmounts(report.outstanding_by_currency)}
                     </p>
-                    <p className="mt-1 text-sm text-muted">{t('Issued invoices less allocations')}</p>
+                    <p className="mt-1 text-sm text-muted">
+                        {t('Invoices less effective allocations and credits at period end')}
+                    </p>
                 </div>
             </div>
             <div className="mt-6 grid gap-6 lg:grid-cols-[1.25fr_0.75fr]">
                 <div className="card p-6">
                     <h2 className="section-title">{t('Collection trend')}</h2>
                     <p className="mt-1 text-sm text-muted">
-                        {t('Daily issued and collected amounts for the selected period')}
+                        {t('Daily gross invoices, credits, net invoices and collections')}
                     </p>
                     <div className="mt-4 overflow-x-auto">
-                        <table className="w-full min-w-[520px] text-left text-sm">
+                        <table className="w-full min-w-[720px] text-start text-sm">
                             <thead className="text-xs uppercase tracking-[0.14em] text-muted">
                                 <tr>
                                     <th className="pb-3">{t('Date')}</th>
-                                    <th className="pb-3">{t('Invoiced')}</th>
+                                    <th className="pb-3">{t('Gross invoiced')}</th>
+                                    <th className="pb-3">{t('Credit notes')}</th>
+                                    <th className="pb-3">{t('Net invoiced')}</th>
                                     <th className="pb-3">{t('Collected')}</th>
                                 </tr>
                             </thead>
@@ -149,7 +170,9 @@ export default function FinanceReportPage({ report }: Props) {
                                 {report.collection_trend.map((day) => (
                                     <tr key={day.date}>
                                         <td className="py-3 font-semibold">{day.date}</td>
-                                        <td className="py-3">{formatAmounts(day.invoiced_by_currency)}</td>
+                                        <td className="py-3">{formatAmounts(day.gross_invoiced_by_currency)}</td>
+                                        <td className="py-3">{formatAmounts(day.credited_by_currency)}</td>
+                                        <td className="py-3">{formatAmounts(day.net_invoiced_by_currency)}</td>
                                         <td className="py-3">{formatAmounts(day.collected_by_currency)}</td>
                                     </tr>
                                 ))}
@@ -197,13 +220,18 @@ export default function FinanceReportPage({ report }: Props) {
             <div className="mt-6 card p-6">
                 <h2 className="section-title">{t('Currency detail')}</h2>
                 <div className="mt-4 divide-y divide-line text-sm">
-                    {keysOrEmpty({ ...report.invoiced_by_currency, ...report.collected_by_currency }).map(
+                    {keysOrEmpty({ ...report.net_invoiced_by_currency, ...report.collected_by_currency }).map(
                         (currency) => (
-                            <div key={currency} className="flex items-center justify-between py-3">
+                            <div key={currency} className="flex flex-wrap items-center justify-between gap-2 py-3">
                                 <span className="font-semibold">{currency}</span>
                                 <span className="text-muted">
-                                    {t('Invoiced')} {formatMoney(report.invoiced_by_currency[currency] ?? 0, currency)}{' '}
-                                    ·{t('Collected')}{' '}
+                                    {t('Gross invoiced')}{' '}
+                                    {formatMoney(report.gross_invoiced_by_currency[currency] ?? 0, currency)} ·{' '}
+                                    {t('Credit notes')}{' '}
+                                    {formatMoney(report.credited_by_currency[currency] ?? 0, currency)} ·{' '}
+                                    {t('Net invoiced')}{' '}
+                                    {formatMoney(report.net_invoiced_by_currency[currency] ?? 0, currency)} ·{' '}
+                                    {t('Collected')}{' '}
                                     {formatMoney(report.collected_by_currency[currency] ?? 0, currency)}
                                 </span>
                             </div>
@@ -214,7 +242,7 @@ export default function FinanceReportPage({ report }: Props) {
             <div className="mt-6 card p-6">
                 <h2 className="section-title">{t('Accounts receivable aging')}</h2>
                 <div className="mt-4 overflow-x-auto">
-                    <table className="w-full min-w-[720px] text-left text-sm">
+                    <table className="w-full min-w-[720px] text-start text-sm">
                         <thead className="text-xs uppercase tracking-[0.14em] text-muted">
                             <tr>
                                 <th className="pb-3">{t('Currency')}</th>
@@ -245,7 +273,8 @@ export default function FinanceReportPage({ report }: Props) {
                     <div>
                         <h2 className="section-title">{t('Supplier payables')}</h2>
                         <p className="mt-1 text-sm text-muted">
-                            {t('Open supplier bills and payments through')} {report.to}; {t('aging uses each bill period end.')}
+                            {t('Open supplier bills and payments through')} {report.to};{' '}
+                            {t('aging uses each bill period end.')}
                         </p>
                     </div>
                     <p className="text-sm text-muted">
@@ -274,7 +303,7 @@ export default function FinanceReportPage({ report }: Props) {
                     </div>
                 </div>
                 <div className="mt-5 overflow-x-auto">
-                    <table className="w-full min-w-[720px] text-left text-sm">
+                    <table className="w-full min-w-[720px] text-start text-sm">
                         <thead className="text-xs uppercase tracking-[0.14em] text-muted">
                             <tr>
                                 <th className="pb-3">{t('Currency')}</th>
@@ -305,9 +334,12 @@ export default function FinanceReportPage({ report }: Props) {
             </div>
             <div className="mt-6 grid gap-6 lg:grid-cols-2">
                 <div className="card p-6">
-                    <h2 className="section-title">{t('Revenue by plan')}</h2>
+                    <h2 className="section-title">{t('Gross billed by plan')}</h2>
+                    <p className="mt-1 text-sm text-muted">
+                        {t('Before invoice tax and credit notes; credits are recorded against invoices')}
+                    </p>
                     <div className="mt-4 divide-y divide-line text-sm">
-                        {entriesOrEmpty(report.revenue_by_plan).map(([plan, amounts]) => (
+                        {entriesOrEmpty(report.gross_revenue_by_plan).map(([plan, amounts]) => (
                             <div key={plan} className="flex items-center justify-between py-3">
                                 <span className="font-semibold">{plan}</span>
                                 <span className="text-muted">
@@ -336,21 +368,24 @@ export default function FinanceReportPage({ report }: Props) {
             </div>
             <div className="mt-6 grid gap-6 lg:grid-cols-2">
                 <div className="card p-6">
-                    <h2 className="section-title">{t('Margin by POP')}</h2>
+                    <h2 className="section-title">{t('Gross billed margin by POP')}</h2>
+                    <p className="mt-1 text-sm text-muted">
+                        {t('Gross billed less upstream cost, before invoice tax and credit notes')}
+                    </p>
                     <div className="mt-4 divide-y divide-line text-sm">
                         {entriesOrEmpty(report.margin_by_pop).map(([pop, amounts]) => (
                             <div key={pop} className="py-3">
                                 <div className="flex items-center justify-between">
                                     <span className="font-semibold">{pop}</span>
                                     <span className="font-semibold">
-                                        {entriesOrEmpty(amounts.margin_by_currency)
+                                        {entriesOrEmpty(amounts.gross_margin_by_currency)
                                             .map(([currency, amount]) => formatMoney(amount, currency))
                                             .join(' · ')}
                                     </span>
                                 </div>
                                 <p className="mt-1 text-xs text-muted">
-                                    {t('Revenue')}{' '}
-                                    {entriesOrEmpty(amounts.revenue_by_currency)
+                                    {t('Gross invoiced')}{' '}
+                                    {entriesOrEmpty(amounts.gross_revenue_by_currency)
                                         .map(([currency, amount]) => formatMoney(amount, currency))
                                         .join(' · ')}{' '}
                                     · {t('Upstream cost')}{' '}
@@ -386,33 +421,34 @@ export default function FinanceReportPage({ report }: Props) {
             <div className="mt-6 card p-6">
                 <div className="grid gap-6 sm:grid-cols-3">
                     <div>
-                        <p className="text-xs font-semibold uppercase tracking-wider text-muted">{t('Retention')}</p>
-                        <p className="mt-2 font-display text-2xl font-semibold">
-                            {report.retention_by_period.retention_rate_percent === null
-                                ? '—'
-                                : `${report.retention_by_period.retention_rate_percent.toFixed(2)}%`}
+                        <p className="text-xs font-semibold uppercase tracking-wider text-muted">
+                            {t('Termination events')}
                         </p>
-                        <p className="mt-1 text-xs text-muted">{t('Based on period-start services')}</p>
+                        <p className="mt-2 font-display text-2xl font-semibold">
+                            {report.service_termination_events_by_period}
+                        </p>
+                        <p className="mt-1 text-xs text-muted">{t('Termination events in the selected period')}</p>
                     </div>
                     <div>
                         <p className="text-xs font-semibold uppercase tracking-wider text-muted">{t('Tax recorded')}</p>
                         <p className="mt-2 font-display text-2xl font-semibold">
                             {formatAmounts(report.tax_by_currency)}
                         </p>
-                        <p className="mt-1 text-xs text-muted">{t('Issued invoices in the selected period')}</p>
+                        <p className="mt-1 text-xs text-muted">{t('Tax on issued invoices, before credit notes')}</p>
                     </div>
                     <div>
-                        <p className="text-xs font-semibold uppercase tracking-wider text-muted">{t('ARPU')}</p>
-                        <p className="mt-2 font-display text-2xl font-semibold">
-                            {formatAmounts(report.arpu_by_currency)}
+                        <p className="text-xs font-semibold uppercase tracking-wider text-muted">
+                            {t('Cash per current active customer')}
                         </p>
-                        <p className="mt-1 text-xs text-muted">{t('Posted collections per active customer')}</p>
+                        <p className="mt-2 font-display text-2xl font-semibold">
+                            {formatAmounts(report.cash_collected_per_current_active_customer_by_currency)}
+                        </p>
+                        <p className="mt-1 text-xs text-muted">{t('Collections per customer active now')}</p>
                     </div>
                 </div>
             </div>
             <div className="mt-6 text-sm text-muted">
-                {report.active_customer_count} {t('active customers')} · {report.churned_services}{' '}
-                {t('churned services in the selected period')}
+                {report.current_active_customer_count} {t('currently active customers')}
             </div>
         </AppLayout>
     );

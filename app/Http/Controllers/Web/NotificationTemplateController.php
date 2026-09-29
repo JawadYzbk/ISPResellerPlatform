@@ -64,7 +64,7 @@ final class NotificationTemplateController extends Controller
         $definition = collect($provisioner->catalog())->firstWhere('key', $template->key) ?? [];
         $variables = is_array($definition['variables'] ?? null) ? $definition['variables'] : [];
         preg_match_all('/\{\{\s*([a-zA-Z0-9_.-]+)\s*\}\}/', (string) $validated['body'], $matches);
-        $unknown = array_values(array_diff(array_unique($matches[1] ?? []), $variables));
+        $unknown = array_values(array_diff(array_unique($matches[1]), $variables));
         if ($unknown !== []) {
             throw ValidationException::withMessages(['body' => 'Unknown variable(s): '.implode(', ', $unknown).'. Use one of the listed variables.']);
         }

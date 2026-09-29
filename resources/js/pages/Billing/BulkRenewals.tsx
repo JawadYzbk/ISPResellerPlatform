@@ -120,7 +120,9 @@ export default function BulkRenewalsPage({ asOf, timezone, filters, rows, summar
                     <p className="eyebrow">{t('Billing operations')}</p>
                     <h1 className="page-title text-balance">{t('Bulk renewals')}</h1>
                     <p className="page-subtitle text-pretty">
-                        {t('Preview due services, issue renewal invoices in one controlled batch, and retry the same batch safely when a row needs attention.')}
+                        {t(
+                            'Preview due services, issue renewal invoices in one controlled batch, and retry the same batch safely when a row needs attention.',
+                        )}
                     </p>
                 </div>
                 <WalletCards className="text-brand" size={24} />
@@ -186,7 +188,8 @@ export default function BulkRenewalsPage({ asOf, timezone, filters, rows, summar
                         </div>
                         {lastRun.failed_count > 0 && (
                             <button type="button" className="button-secondary" onClick={selectRetryBatch}>
-                                <RefreshCw size={15} /> {retrySelected ? t('Failed rows selected') : t('Retry failed batch')}
+                                <RefreshCw size={15} />{' '}
+                                {retrySelected ? t('Failed rows selected') : t('Retry failed batch')}
                             </button>
                         )}
                     </div>
@@ -226,7 +229,11 @@ export default function BulkRenewalsPage({ asOf, timezone, filters, rows, summar
                         {allSelected ? t('Clear selection') : t('Select all ready rows')}
                     </button>
                 </div>
-                {form.errors.service_ids && <p className="field-error px-5 pt-4" role="alert">{t(form.errors.service_ids)}</p>}
+                {form.errors.service_ids && (
+                    <p className="field-error px-5 pt-4" role="alert">
+                        {t(form.errors.service_ids)}
+                    </p>
+                )}
                 <div className="overflow-x-auto">
                     <table className="w-full min-w-[1040px] text-start">
                         <thead>

@@ -13,6 +13,7 @@ use App\Enums\PaymentStatus;
 use App\Models\CashShift;
 use App\Models\Customer;
 use App\Models\Invoice;
+use App\Models\InvoiceLine;
 use App\Models\LedgerAccount;
 use App\Models\Payment;
 use App\Models\Tenant;
@@ -84,17 +85,20 @@ final readonly class RecordPayment implements Action
                 $lockedInvoice = null;
                 $invoiceAmount = null;
                 $outstanding = null;
+                $renewalAlreadyApplied = false;
+                $previouslySettled = false;
                 if ($invoice !== null && $invoiceSnapshot !== null) {
-                    $lockedInvoice = Invoice::query()->with(['payments.allocations', 'creditNotes', 'lines.service'])->lockForUpdate()->findOrFail($invoice->id);
-                    $allocated = $lockedInvoice->payments->sum(fn ($payment): int => $payment->allocations
-                        ->where('invoice_id', $lockedInvoice->id)
-                        ->sum('amount'));
-                    $credited = $lockedInvoice->creditNotes->sum('amount');
-                    $outstanding = max(0, $lockedInvoice->total_amount - $allocated - $credited);
+                    $lockedInvoice = Invoice::query()->with(['paymentAllocations.payment', 'creditNotes', 'lines.service'])->lockForUpdate()->findOrFail($invoice->id);
+                    $outstanding = $lockedInvoice->outstandingAmount();
                     if ($outstanding < 1) {
                         throw new DomainException('The selected invoice has no outstanding balance.');
                     }
                     $invoiceAmount = $invoiceSnapshot->convert($amount);
+                    $renewalAlreadyApplied = filled(($lockedInvoice->metadata ?? [])['renewal_applied_at'] ?? null);
+                    $hasRenewalServices = $lockedInvoice->lines->contains(fn (InvoiceLine $line): bool => $line->service !== null);
+                    if ($invoiceAmount >= $outstanding && ! $renewalAlreadyApplied && $hasRenewalServices) {
+                        $previouslySettled = $lockedInvoice->wasPreviouslySettledByPayment();
+                    }
                 }
                 $ledgerAmount = $ledgerSnapshot->convert($amount);
                 $baseAmount = $baseSnapshot->convert($amount);
@@ -143,12 +147,20 @@ final readonly class RecordPayment implements Action
                     sourceId: (string) $payment->id,
                 );
 
-                if ($lockedInvoice !== null && $invoiceAmount !== null && $outstanding !== null && $invoiceAmount >= $outstanding) {
+                if ($lockedInvoice !== null && $invoiceAmount !== null && $outstanding !== null && $invoiceAmount >= $outstanding && ! $renewalAlreadyApplied && ! $previouslySettled) {
                     $renewalPeriods = max(1, (int) (($lockedInvoice->metadata ?? [])['renewal_periods'] ?? 1));
-                    foreach ($lockedInvoice->lines as $line) {
-                        if ($line->service !== null) {
-                            $this->renewService->handle($line->service, $actor, $renewalPeriods);
-                        }
+                    $serviceLines = $lockedInvoice->lines
+                        ->filter(fn (InvoiceLine $line): bool => $line->service !== null)
+                        ->unique('service_id');
+                    foreach ($serviceLines as $line) {
+                        $this->renewService->handle($line->service, $actor, $renewalPeriods);
+                    }
+
+                    if ($serviceLines->isNotEmpty()) {
+                        $metadata = $lockedInvoice->metadata ?? [];
+                        $metadata['renewal_applied_at'] = now()->toIso8601String();
+                        $metadata['renewal_applied_service_ids'] = $serviceLines->pluck('service_id')->map(fn ($serviceId): int => (int) $serviceId)->values()->all();
+                        $lockedInvoice->forceFill(['metadata' => $metadata])->save();
                     }
                 }
 

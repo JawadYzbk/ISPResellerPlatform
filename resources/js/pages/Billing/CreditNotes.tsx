@@ -95,7 +95,9 @@ export default function CreditNotesPage({ creditNotes, filters }: Props) {
                                 <tr key={note.public_id} className="hover:bg-sand/30">
                                     <td className="px-5 py-4">
                                         <p className="text-sm font-semibold">{note.number}</p>
-                                        <p className="mt-1 text-xs capitalize text-muted">{enumLabel(note.status, t)}</p>
+                                        <p className="mt-1 text-xs capitalize text-muted">
+                                            {enumLabel(note.status, t)}
+                                        </p>
                                     </td>
                                     <td className="px-5 py-4">
                                         <Link

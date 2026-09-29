@@ -385,7 +385,9 @@ export default function CustomerShow({
                                         <div>
                                             <p className="text-xs text-muted">{t('Provisioning')}</p>
                                             <p className="mt-1 text-sm font-semibold capitalize">
-                                                {t(`customer.provisioning.${service.provisioning_mode ?? 'manual'}.label`)}
+                                                {t(
+                                                    `customer.provisioning.${service.provisioning_mode ?? 'manual'}.label`,
+                                                )}
                                             </p>
                                             <p className="mt-1 text-xs text-muted">
                                                 {service.router?.name ?? t('No router assigned')}
@@ -452,8 +454,14 @@ export default function CustomerShow({
                                                             </span>
                                                             {canManageEquipment && (
                                                                 <ConfirmDialog
-                                                                    title={t('Mark this equipment as returned?') + ' ' + unit.serial_number}
-                                                                    description={t('The equipment will be removed from this service and made available for recovery.')}
+                                                                    title={
+                                                                        t('Mark this equipment as returned?') +
+                                                                        ' ' +
+                                                                        unit.serial_number
+                                                                    }
+                                                                    description={t(
+                                                                        'The equipment will be removed from this service and made available for recovery.',
+                                                                    )}
                                                                     confirmLabel={t('Mark returned')}
                                                                     destructive
                                                                     onConfirm={() =>
@@ -481,7 +489,9 @@ export default function CustomerShow({
                                             {service.status === 'pending' && canActivateServices && (
                                                 <ConfirmDialog
                                                     title={t('Activate this service?')}
-                                                    description={t('The service will be activated and its network provisioning will resume.')}
+                                                    description={t(
+                                                        'The service will be activated and its network provisioning will resume.',
+                                                    )}
                                                     confirmLabel={t('Activate service')}
                                                     onConfirm={() =>
                                                         router.post(`/services/${service.public_id}/activate`)
@@ -498,7 +508,9 @@ export default function CustomerShow({
                                             {service.status === 'active' && canSuspendServices && (
                                                 <ConfirmDialog
                                                     title={t('Suspend this service?')}
-                                                    description={t('The service will be suspended and its network access will be restricted.')}
+                                                    description={t(
+                                                        'The service will be suspended and its network access will be restricted.',
+                                                    )}
                                                     confirmLabel={t('Suspend service')}
                                                     destructive
                                                     onConfirm={() =>
@@ -518,7 +530,9 @@ export default function CustomerShow({
                                             {service.status === 'active' && canPauseServices && (
                                                 <ConfirmDialog
                                                     title={t('Pause this service?')}
-                                                    description={t('The service will pause without closing the account or removing its plan.')}
+                                                    description={t(
+                                                        'The service will pause without closing the account or removing its plan.',
+                                                    )}
                                                     confirmLabel={t('Pause service')}
                                                     onConfirm={() =>
                                                         router.post(`/services/${service.public_id}/pause`, {
@@ -541,7 +555,9 @@ export default function CustomerShow({
                                                 (service.status === 'paused' && canActivateServices)) && (
                                                 <ConfirmDialog
                                                     title={t('Reactivate this service?')}
-                                                    description={t('The service will be active again and network provisioning will resume.')}
+                                                    description={t(
+                                                        'The service will be active again and network provisioning will resume.',
+                                                    )}
                                                     confirmLabel={t('Reactivate service')}
                                                     onConfirm={() =>
                                                         router.post(`/services/${service.public_id}/resume`)
@@ -558,7 +574,9 @@ export default function CustomerShow({
                                             {canTerminateServices && service.status !== 'terminated' && (
                                                 <ConfirmDialog
                                                     title={t('Terminate this service?')}
-                                                    description={t('Equipment will be marked for recovery and this service cannot be reactivated.')}
+                                                    description={t(
+                                                        'Equipment will be marked for recovery and this service cannot be reactivated.',
+                                                    )}
                                                     confirmLabel={t('Terminate service')}
                                                     destructive
                                                     onConfirm={() =>
@@ -587,7 +605,9 @@ export default function CustomerShow({
                                             {canDisconnectSessions && service.session && (
                                                 <ConfirmDialog
                                                     title={t('Disconnect the current network session?')}
-                                                    description={t('The active network session will be disconnected immediately.')}
+                                                    description={t(
+                                                        'The active network session will be disconnected immediately.',
+                                                    )}
                                                     confirmLabel={t('Disconnect session')}
                                                     destructive
                                                     onConfirm={() =>
@@ -800,7 +820,7 @@ export default function CustomerShow({
                                         <div className="min-w-0">
                                             <p className="text-sm font-semibold">{ticket.subject}</p>
                                             <p className="mt-1 text-xs text-muted">
-                                            {ticket.number} · {enumLabel(ticket.priority, t)} {t('priority')}
+                                                {ticket.number} · {enumLabel(ticket.priority, t)} {t('priority')}
                                             </p>
                                         </div>
                                         <StatusBadge status={ticket.status} />

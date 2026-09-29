@@ -4,9 +4,14 @@ namespace App\Models;
 
 use App\Models\Concerns\Auditable;
 use App\Models\Concerns\BelongsToTenant;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @property Carbon|null $started_at
+ * @property Carbon|null $completed_at
+ */
 class BillingRun extends Model
 {
     use Auditable, BelongsToTenant;

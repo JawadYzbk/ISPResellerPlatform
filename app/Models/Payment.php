@@ -6,6 +6,8 @@ use App\Enums\PaymentStatus;
 use App\Models\Concerns\Auditable;
 use App\Models\Concerns\BelongsToTenant;
 use Carbon\Carbon;
+use Carbon\CarbonInterface;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -74,5 +76,43 @@ class Payment extends Model
     public function reversalOf(): BelongsTo
     {
         return $this->belongsTo(self::class, 'reversal_of_id');
+    }
+
+    /** @param Builder<Payment> $query */
+    public function scopeEffectiveAt(Builder $query, ?CarbonInterface $asOf = null): Builder
+    {
+        if ($asOf === null) {
+            return $query->where('status', PaymentStatus::Posted)->whereNull('reversed_at');
+        }
+
+        return $query
+            ->where(function (Builder $query) use ($asOf): void {
+                $query->where('received_at', '<=', $asOf)
+                    ->orWhere(fn (Builder $query): Builder => $query->whereNull('received_at')->where('created_at', '<=', $asOf));
+            })
+            ->where(function (Builder $query) use ($asOf): void {
+                $query->where(function (Builder $query) use ($asOf): void {
+                    $query->where('status', PaymentStatus::Posted)
+                        ->where(fn (Builder $query): Builder => $query->whereNull('reversed_at')->orWhere('reversed_at', '>', $asOf));
+                })->orWhere(function (Builder $query) use ($asOf): void {
+                    $query->where('status', PaymentStatus::Reversed)->where('reversed_at', '>', $asOf);
+                });
+            });
+    }
+
+    public function isEffectiveAt(?CarbonInterface $asOf = null): bool
+    {
+        if ($asOf === null) {
+            return $this->status === PaymentStatus::Posted && $this->reversed_at === null;
+        }
+
+        $receivedAt = $this->received_at ?? $this->created_at;
+        if ($receivedAt === null || $receivedAt->greaterThan($asOf)) {
+            return false;
+        }
+
+        return $this->reversed_at === null
+            ? $this->status === PaymentStatus::Posted
+            : $this->reversed_at->greaterThan($asOf) && in_array($this->status, [PaymentStatus::Posted, PaymentStatus::Reversed], true);
     }
 }

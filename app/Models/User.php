@@ -50,6 +50,7 @@ class User extends Authenticatable
         return in_array($this->role, ['admin', 'super_admin', 'platform_operator', 'tenant_owner', 'operations_manager', 'billing_manager', 'network_administrator', 'reseller_owner'], true);
     }
 
+    /** @return BelongsTo<Tenant, $this> */
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);

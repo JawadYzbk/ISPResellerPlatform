@@ -136,7 +136,8 @@ export default function InventoryPage({
     const { props } = usePage<PageProps>();
     const t = createTranslator(props.app.locale);
     const inventoryLabel = (value: string) => {
-        const key = value === 'transfer_out' ? 'bulk_transfer_out' : value === 'transfer_in' ? 'bulk_transfer_in' : value;
+        const key =
+            value === 'transfer_out' ? 'bulk_transfer_out' : value === 'transfer_in' ? 'bulk_transfer_in' : value;
 
         return t('inventory.' + key);
     };
@@ -344,10 +345,8 @@ export default function InventoryPage({
                 <section className="card mt-6 p-5">
                     <div className="flex items-center justify-between gap-4">
                         <div>
-                        <p className="section-title">{t('inventory.setup')}</p>
-                            <p className="mt-1 text-sm text-muted">
-                                {t('inventory.setup_description')}
-                            </p>
+                            <p className="section-title">{t('inventory.setup')}</p>
+                            <p className="mt-1 text-sm text-muted">{t('inventory.setup_description')}</p>
                         </div>
                         <Package size={18} className="text-brand" />
                     </div>
@@ -422,7 +421,11 @@ export default function InventoryPage({
                                 />
                                 {fieldError('item-reorder-level', itemForm.errors.reorder_level)}
                             </label>
-                            <button type="submit" className="button-secondary sm:col-span-2" disabled={itemForm.processing}>
+                            <button
+                                type="submit"
+                                className="button-secondary sm:col-span-2"
+                                disabled={itemForm.processing}
+                            >
                                 <Package size={15} /> {t('inventory.create_item')}
                             </button>
                         </form>
@@ -494,7 +497,8 @@ export default function InventoryPage({
                                         <option value="">{t('inventory.select_field_user')}</option>
                                         {fieldUsers.map((user) => (
                                             <option key={user.id} value={user.id}>
-                                                {user.name} · {user.role === 'collector' ? t('Collector') : t('Technician')}
+                                                {user.name} ·{' '}
+                                                {user.role === 'collector' ? t('Collector') : t('Technician')}
                                             </option>
                                         ))}
                                     </ResponsiveSelect>
@@ -502,7 +506,11 @@ export default function InventoryPage({
                                 </label>
                             )}
                             <div className="flex items-end sm:col-span-2">
-                                <button type="submit" className="button-secondary w-full" disabled={warehouseForm.processing}>
+                                <button
+                                    type="submit"
+                                    className="button-secondary w-full"
+                                    disabled={warehouseForm.processing}
+                                >
                                     <Package size={15} /> {t('inventory.create_location')}
                                 </button>
                             </div>
@@ -561,7 +569,11 @@ export default function InventoryPage({
                                 />
                                 {fieldError('inventory-unit-serial', unitForm.errors.serial_number)}
                             </label>
-                            <button type="submit" className="button-secondary sm:col-span-3" disabled={unitForm.processing}>
+                            <button
+                                type="submit"
+                                className="button-secondary sm:col-span-3"
+                                disabled={unitForm.processing}
+                            >
                                 <Package size={15} /> {t('inventory.receive_serialized')}
                             </button>
                         </form>
@@ -573,9 +585,7 @@ export default function InventoryPage({
                 <section className="card mt-6 p-5">
                     <div>
                         <p className="section-title">{t('inventory.catalog')}</p>
-                        <p className="mt-1 text-sm text-muted">
-                            {t('inventory.catalog_description')}
-                        </p>
+                        <p className="mt-1 text-sm text-muted">{t('inventory.catalog_description')}</p>
                     </div>
                     <div className="mt-5 grid gap-6 xl:grid-cols-2">
                         <div className="rounded-xl border border-line">
@@ -592,7 +602,10 @@ export default function InventoryPage({
                                                     <input
                                                         id="inventory-item-edit-sku"
                                                         className="field"
-                                                        {...fieldA11y('inventory-item-edit-sku', itemEditForm.errors.sku)}
+                                                        {...fieldA11y(
+                                                            'inventory-item-edit-sku',
+                                                            itemEditForm.errors.sku,
+                                                        )}
                                                         value={itemEditForm.data.sku}
                                                         onChange={(event) =>
                                                             itemEditForm.setData('sku', event.target.value)
@@ -605,7 +618,10 @@ export default function InventoryPage({
                                                     <input
                                                         id="inventory-item-edit-name"
                                                         className="field"
-                                                        {...fieldA11y('inventory-item-edit-name', itemEditForm.errors.name)}
+                                                        {...fieldA11y(
+                                                            'inventory-item-edit-name',
+                                                            itemEditForm.errors.name,
+                                                        )}
                                                         value={itemEditForm.data.name}
                                                         onChange={(event) =>
                                                             itemEditForm.setData('name', event.target.value)
@@ -618,20 +634,29 @@ export default function InventoryPage({
                                                     <input
                                                         id="inventory-item-edit-category"
                                                         className="field"
-                                                        {...fieldA11y('inventory-item-edit-category', itemEditForm.errors.category)}
+                                                        {...fieldA11y(
+                                                            'inventory-item-edit-category',
+                                                            itemEditForm.errors.category,
+                                                        )}
                                                         value={itemEditForm.data.category}
                                                         onChange={(event) =>
                                                             itemEditForm.setData('category', event.target.value)
                                                         }
                                                     />
-                                                    {fieldError('inventory-item-edit-category', itemEditForm.errors.category)}
+                                                    {fieldError(
+                                                        'inventory-item-edit-category',
+                                                        itemEditForm.errors.category,
+                                                    )}
                                                 </label>
                                                 <label>
                                                     <span className="field-label">{t('Type')}</span>
                                                     <ResponsiveSelect
                                                         id="inventory-item-edit-type"
                                                         className="field"
-                                                        {...fieldA11y('inventory-item-edit-type', itemEditForm.errors.is_serialized)}
+                                                        {...fieldA11y(
+                                                            'inventory-item-edit-type',
+                                                            itemEditForm.errors.is_serialized,
+                                                        )}
                                                         value={itemEditForm.data.is_serialized ? 'serialized' : 'bulk'}
                                                         onChange={(event) =>
                                                             itemEditForm.setData(
@@ -641,9 +666,14 @@ export default function InventoryPage({
                                                         }
                                                     >
                                                         <option value="bulk">{t('inventory.bulk_quantity')}</option>
-                                                        <option value="serialized">{t('inventory.serialized_units')}</option>
+                                                        <option value="serialized">
+                                                            {t('inventory.serialized_units')}
+                                                        </option>
                                                     </ResponsiveSelect>
-                                                    {fieldError('inventory-item-edit-type', itemEditForm.errors.is_serialized)}
+                                                    {fieldError(
+                                                        'inventory-item-edit-type',
+                                                        itemEditForm.errors.is_serialized,
+                                                    )}
                                                 </label>
                                                 <label>
                                                     <span className="field-label">{t('inventory.reorder_level')}</span>
@@ -652,20 +682,29 @@ export default function InventoryPage({
                                                         className="field"
                                                         type="number"
                                                         min="0"
-                                                        {...fieldA11y('inventory-item-edit-reorder-level', itemEditForm.errors.reorder_level)}
+                                                        {...fieldA11y(
+                                                            'inventory-item-edit-reorder-level',
+                                                            itemEditForm.errors.reorder_level,
+                                                        )}
                                                         value={itemEditForm.data.reorder_level}
                                                         onChange={(event) =>
                                                             itemEditForm.setData('reorder_level', event.target.value)
                                                         }
                                                     />
-                                                    {fieldError('inventory-item-edit-reorder-level', itemEditForm.errors.reorder_level)}
+                                                    {fieldError(
+                                                        'inventory-item-edit-reorder-level',
+                                                        itemEditForm.errors.reorder_level,
+                                                    )}
                                                 </label>
                                                 <label>
                                                     <span className="field-label">{t('Status')}</span>
                                                     <ResponsiveSelect
                                                         id="inventory-item-edit-status"
                                                         className="field"
-                                                        {...fieldA11y('inventory-item-edit-status', itemEditForm.errors.is_active)}
+                                                        {...fieldA11y(
+                                                            'inventory-item-edit-status',
+                                                            itemEditForm.errors.is_active,
+                                                        )}
                                                         value={itemEditForm.data.is_active ? 'active' : 'inactive'}
                                                         onChange={(event) =>
                                                             itemEditForm.setData(
@@ -677,7 +716,10 @@ export default function InventoryPage({
                                                         <option value="active">{t('Active')}</option>
                                                         <option value="inactive">{t('Inactive')}</option>
                                                     </ResponsiveSelect>
-                                                    {fieldError('inventory-item-edit-status', itemEditForm.errors.is_active)}
+                                                    {fieldError(
+                                                        'inventory-item-edit-status',
+                                                        itemEditForm.errors.is_active,
+                                                    )}
                                                 </label>
                                                 <div className="flex gap-2 sm:col-span-2">
                                                     <button
@@ -748,33 +790,48 @@ export default function InventoryPage({
                                                     <input
                                                         id="inventory-warehouse-edit-name"
                                                         className="field"
-                                                        {...fieldA11y('inventory-warehouse-edit-name', warehouseEditForm.errors.name)}
+                                                        {...fieldA11y(
+                                                            'inventory-warehouse-edit-name',
+                                                            warehouseEditForm.errors.name,
+                                                        )}
                                                         value={warehouseEditForm.data.name}
                                                         onChange={(event) =>
                                                             warehouseEditForm.setData('name', event.target.value)
                                                         }
                                                     />
-                                                    {fieldError('inventory-warehouse-edit-name', warehouseEditForm.errors.name)}
+                                                    {fieldError(
+                                                        'inventory-warehouse-edit-name',
+                                                        warehouseEditForm.errors.name,
+                                                    )}
                                                 </label>
                                                 <label>
                                                     <span className="field-label">{t('Code')}</span>
                                                     <input
                                                         id="inventory-warehouse-edit-code"
                                                         className="field uppercase"
-                                                        {...fieldA11y('inventory-warehouse-edit-code', warehouseEditForm.errors.code)}
+                                                        {...fieldA11y(
+                                                            'inventory-warehouse-edit-code',
+                                                            warehouseEditForm.errors.code,
+                                                        )}
                                                         value={warehouseEditForm.data.code}
                                                         onChange={(event) =>
                                                             warehouseEditForm.setData('code', event.target.value)
                                                         }
                                                     />
-                                                    {fieldError('inventory-warehouse-edit-code', warehouseEditForm.errors.code)}
+                                                    {fieldError(
+                                                        'inventory-warehouse-edit-code',
+                                                        warehouseEditForm.errors.code,
+                                                    )}
                                                 </label>
                                                 <label>
                                                     <span className="field-label">{t('Type')}</span>
                                                     <ResponsiveSelect
                                                         id="inventory-warehouse-edit-type"
                                                         className="field"
-                                                        {...fieldA11y('inventory-warehouse-edit-type', warehouseEditForm.errors.type)}
+                                                        {...fieldA11y(
+                                                            'inventory-warehouse-edit-type',
+                                                            warehouseEditForm.errors.type,
+                                                        )}
                                                         value={warehouseEditForm.data.type}
                                                         onChange={(event) =>
                                                             warehouseEditForm.setData({
@@ -789,9 +846,14 @@ export default function InventoryPage({
                                                     >
                                                         <option value="warehouse">{t('inventory.warehouse')}</option>
                                                         <option value="van">{t('inventory.technician_van')}</option>
-                                                        <option value="collector">{t('inventory.collector_stock')}</option>
+                                                        <option value="collector">
+                                                            {t('inventory.collector_stock')}
+                                                        </option>
                                                     </ResponsiveSelect>
-                                                    {fieldError('inventory-warehouse-edit-type', warehouseEditForm.errors.type)}
+                                                    {fieldError(
+                                                        'inventory-warehouse-edit-type',
+                                                        warehouseEditForm.errors.type,
+                                                    )}
                                                 </label>
                                                 {warehouseEditForm.data.type !== 'warehouse' && (
                                                     <label>
@@ -799,7 +861,10 @@ export default function InventoryPage({
                                                         <ResponsiveSelect
                                                             id="inventory-warehouse-edit-assigned-user"
                                                             className="field"
-                                                            {...fieldA11y('inventory-warehouse-edit-assigned-user', warehouseEditForm.errors.assigned_user_id)}
+                                                            {...fieldA11y(
+                                                                'inventory-warehouse-edit-assigned-user',
+                                                                warehouseEditForm.errors.assigned_user_id,
+                                                            )}
                                                             value={warehouseEditForm.data.assigned_user_id}
                                                             onChange={(event) =>
                                                                 warehouseEditForm.setData(
@@ -818,7 +883,10 @@ export default function InventoryPage({
                                                                 </option>
                                                             ))}
                                                         </ResponsiveSelect>
-                                                        {fieldError('inventory-warehouse-edit-assigned-user', warehouseEditForm.errors.assigned_user_id)}
+                                                        {fieldError(
+                                                            'inventory-warehouse-edit-assigned-user',
+                                                            warehouseEditForm.errors.assigned_user_id,
+                                                        )}
                                                     </label>
                                                 )}
                                                 <label>
@@ -826,7 +894,10 @@ export default function InventoryPage({
                                                     <ResponsiveSelect
                                                         id="inventory-warehouse-edit-status"
                                                         className="field"
-                                                        {...fieldA11y('inventory-warehouse-edit-status', warehouseEditForm.errors.is_active)}
+                                                        {...fieldA11y(
+                                                            'inventory-warehouse-edit-status',
+                                                            warehouseEditForm.errors.is_active,
+                                                        )}
                                                         value={warehouseEditForm.data.is_active ? 'active' : 'inactive'}
                                                         onChange={(event) =>
                                                             warehouseEditForm.setData(
@@ -838,7 +909,10 @@ export default function InventoryPage({
                                                         <option value="active">{t('Active')}</option>
                                                         <option value="inactive">{t('Inactive')}</option>
                                                     </ResponsiveSelect>
-                                                    {fieldError('inventory-warehouse-edit-status', warehouseEditForm.errors.is_active)}
+                                                    {fieldError(
+                                                        'inventory-warehouse-edit-status',
+                                                        warehouseEditForm.errors.is_active,
+                                                    )}
                                                 </label>
                                                 <div className="flex gap-2 sm:col-span-2">
                                                     <button
@@ -916,7 +990,9 @@ export default function InventoryPage({
                                 <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                                     <div className="min-w-0 flex-1">
                                         <div className="flex flex-wrap items-center gap-2">
-                                            <p className="font-semibold">{count.counter?.name ?? t('inventory.field_user')}</p>
+                                            <p className="font-semibold">
+                                                {count.counter?.name ?? t('inventory.field_user')}
+                                            </p>
                                             <span className="text-xs text-muted">{count.warehouse?.code}</span>
                                             <span
                                                 className={`rounded-full px-2 py-1 text-xs font-semibold capitalize ${count.status === 'posted' ? 'bg-emerald-50 text-emerald-700' : count.status === 'rejected' ? 'bg-rose-50 text-rose-700' : 'bg-amber-50 text-amber-700'}`}
@@ -957,9 +1033,15 @@ export default function InventoryPage({
                                                 </tbody>
                                             </table>
                                         </div>
-                                        {count.note && <p className="mt-2 text-xs text-muted">{t('inventory.counter')}: {count.note}</p>}
+                                        {count.note && (
+                                            <p className="mt-2 text-xs text-muted">
+                                                {t('inventory.counter')}: {count.note}
+                                            </p>
+                                        )}
                                         {count.review_note && (
-                                            <p className="mt-1 text-xs text-muted">{t('inventory.review')}: {count.review_note}</p>
+                                            <p className="mt-1 text-xs text-muted">
+                                                {t('inventory.review')}: {count.review_note}
+                                            </p>
                                         )}
                                     </div>
                                     {count.status === 'pending' && (
@@ -1005,7 +1087,9 @@ export default function InventoryPage({
                                                 </ConfirmDialog>
                                             </div>
                                             {countReviewForm.errors.decision && (
-                                                <p className="field-error" role="alert">{t(countReviewForm.errors.decision)}</p>
+                                                <p className="field-error" role="alert">
+                                                    {t(countReviewForm.errors.decision)}
+                                                </p>
                                             )}
                                         </div>
                                     )}
@@ -1030,7 +1114,9 @@ export default function InventoryPage({
                                 <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                                     <div className="min-w-0">
                                         <div className="flex flex-wrap items-center gap-2">
-                                            <p className="font-semibold">{request.requester?.name ?? t('inventory.field_user')}</p>
+                                            <p className="font-semibold">
+                                                {request.requester?.name ?? t('inventory.field_user')}
+                                            </p>
                                             <span className="rounded-full bg-sand px-2 py-1 text-xs font-semibold capitalize text-muted">
                                                 {enumLabel(request.type, t)}
                                             </span>
@@ -1101,7 +1187,9 @@ export default function InventoryPage({
                                     )}
                                 </div>
                                 {reviewForm.errors.decision && request.status === 'pending' && (
-                                    <p className="field-error mt-2" role="alert">{t(reviewForm.errors.decision)}</p>
+                                    <p className="field-error mt-2" role="alert">
+                                        {t(reviewForm.errors.decision)}
+                                    </p>
                                 )}
                             </div>
                         ))}
@@ -1113,9 +1201,7 @@ export default function InventoryPage({
                 <div className="flex items-center justify-between gap-4">
                     <div>
                         <p className="section-title">{t('inventory.bulk_stock')}</p>
-                        <p className="mt-1 text-sm text-muted">
-                            {t('inventory.bulk_stock_description')}
-                        </p>
+                        <p className="mt-1 text-sm text-muted">{t('inventory.bulk_stock_description')}</p>
                     </div>
                     <Package size={18} className="text-brand" />
                 </div>
@@ -1214,9 +1300,7 @@ export default function InventoryPage({
                     >
                         <div className="sm:col-span-2 lg:col-span-4">
                             <p className="text-sm font-semibold">{t('inventory.move_stock')}</p>
-                            <p className="mt-1 text-xs text-muted">
-                                {t('inventory.move_stock_description')}
-                            </p>
+                            <p className="mt-1 text-xs text-muted">{t('inventory.move_stock_description')}</p>
                         </div>
                         <label>
                             <span className="field-label">{t('inventory.material')}</span>
@@ -1259,7 +1343,10 @@ export default function InventoryPage({
                             <ResponsiveSelect
                                 id="inventory-transfer-destination"
                                 className="field"
-                                {...fieldA11y('inventory-transfer-destination', transferForm.errors.destination_warehouse_id)}
+                                {...fieldA11y(
+                                    'inventory-transfer-destination',
+                                    transferForm.errors.destination_warehouse_id,
+                                )}
                                 value={transferForm.data.destination_warehouse_id}
                                 onChange={(event) =>
                                     transferForm.setData('destination_warehouse_id', event.target.value)
@@ -1314,9 +1401,7 @@ export default function InventoryPage({
                 <div className="flex items-center justify-between gap-4 border-b border-line px-5 py-4">
                     <div>
                         <p className="section-title">{t('inventory.movement_audit')}</p>
-                        <p className="mt-1 text-sm text-muted">
-                            {t('inventory.movement_audit_description')}
-                        </p>
+                        <p className="mt-1 text-sm text-muted">{t('inventory.movement_audit_description')}</p>
                     </div>
                     <label className="min-w-40">
                         <span className="sr-only">{t('inventory.movement_type')}</span>
@@ -1427,7 +1512,9 @@ export default function InventoryPage({
                                         <p className="text-sm font-semibold">
                                             {unit.item?.name ?? t('inventory.unknown_equipment')}
                                         </p>
-                                        <p className="mt-1 text-xs text-muted">{unit.item?.sku ?? t('inventory.no_sku')}</p>
+                                        <p className="mt-1 text-xs text-muted">
+                                            {unit.item?.sku ?? t('inventory.no_sku')}
+                                        </p>
                                     </td>
                                     <td className="px-5 py-4 text-sm text-muted">
                                         {unit.warehouse
@@ -1475,7 +1562,8 @@ export default function InventoryPage({
                                                     <option value="">{t('inventory.select_service')}</option>
                                                     {assignableServices.map((service) => (
                                                         <option key={service.public_id} value={service.public_id}>
-                                                            {service.username} · {service.customer ?? t('inventory.no_customer')}
+                                                            {service.username} ·{' '}
+                                                            {service.customer ?? t('inventory.no_customer')}
                                                         </option>
                                                     ))}
                                                 </ResponsiveSelect>

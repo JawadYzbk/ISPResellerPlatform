@@ -47,7 +47,7 @@ final readonly class CreateRenewalInvoice implements Action
         }
 
         $openInvoice = Invoice::query()
-            ->with(['payments.allocations', 'creditNotes'])
+            ->with(['paymentAllocations.payment', 'creditNotes'])
             ->where('customer_id', $customer->id)
             ->where('status', InvoiceStatus::Issued)
             ->whereHas('lines', fn ($query) => $query->where('service_id', $service->id))
@@ -60,12 +60,8 @@ final readonly class CreateRenewalInvoice implements Action
                 if ($cycleEnd !== null && ($invoice->metadata['billing_cycle_quote']['ends_at'] ?? null) !== $cycleEnd) {
                     return false;
                 }
-                $allocated = $invoice->payments->sum(fn ($payment): int => $payment->allocations
-                    ->where('invoice_id', $invoice->id)
-                    ->sum('amount'));
-                $credited = $invoice->creditNotes->sum('amount');
 
-                return $invoice->total_amount > $allocated + $credited;
+                return $invoice->outstandingAmount() > 0;
             });
         if ($openInvoice instanceof Invoice) {
             return $openInvoice;
@@ -95,7 +91,7 @@ final readonly class CreateRenewalInvoice implements Action
     private function appendRecurringAddons(Invoice $invoice, Service $service, int $periods, ?BillingCycleQuote $cycleQuote): void
     {
         $service->loadMissing('serviceAddons.addon');
-        $periodDays = max(1, (int) ($cycleQuote?->cycleDays ?? (($service->plan?->duration_days ?? 30) * $periods)));
+        $periodDays = max(1, (int) ($cycleQuote->cycleDays ?? (($service->plan->duration_days ?? 30) * $periods)));
         $periodStart = CarbonImmutable::today();
         $periodEnd = $periodStart->addDays($periodDays - 1);
         $total = 0;
@@ -130,7 +126,7 @@ final readonly class CreateRenewalInvoice implements Action
                     'kind' => 'recurring_addon',
                     'addon_id' => $addon->id,
                     'addon_public_id' => $addon->public_id,
-                    'billing_period_days' => $billingPeriodDays ?: null,
+                    'billing_period_days' => $billingPeriodDays,
                     'service_period_days' => $periodDays,
                     'quantity' => $quantity,
                 ],
@@ -167,7 +163,7 @@ final readonly class CreateRenewalInvoice implements Action
         $now = CarbonImmutable::now($timezone);
         $expiresAt = $service->expires_at?->setTimezone($timezone);
         $periodEnd = $expiresAt !== null && $expiresAt->lessThan($now) ? $expiresAt : $now;
-        $periodDays = max(1, (int) ($cycleQuote?->cycleDays ?? (($service->plan?->duration_days ?? 30) * $periods)));
+        $periodDays = max(1, (int) ($cycleQuote->cycleDays ?? (($service->plan->duration_days ?? 30) * $periods)));
         $periodStart = $periodEnd->subDays($periodDays - 1)->startOfDay();
         $rate = PlanUsageRate::query()
             ->where('plan_id', $service->plan_id)

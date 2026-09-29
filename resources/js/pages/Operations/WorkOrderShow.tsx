@@ -367,7 +367,9 @@ export default function WorkOrderShowPage({
                                 <h2 className="section-title text-balance">{t('Installation survey and topology')}</h2>
                             </div>
                             <p className="mt-1 max-w-2xl text-sm text-muted text-pretty">
-                                {t('Record the customer-site survey and reserve the exact building, distribution box, and port used by this installation.')}
+                                {t(
+                                    'Record the customer-site survey and reserve the exact building, distribution box, and port used by this installation.',
+                                )}
                             </p>
 
                             <form onSubmit={submitInstallation} className="mt-5 space-y-5">
@@ -377,7 +379,10 @@ export default function WorkOrderShowPage({
                                         <ResponsiveSelect
                                             id="work-order-building"
                                             className="field"
-                                            {...fieldA11y('work-order-building', installationForm.errors.network_building_id)}
+                                            {...fieldA11y(
+                                                'work-order-building',
+                                                installationForm.errors.network_building_id,
+                                            )}
                                             value={installationForm.data.network_building_id}
                                             onChange={(event) => {
                                                 installationForm.setData('network_building_id', event.target.value);
@@ -399,7 +404,10 @@ export default function WorkOrderShowPage({
                                         <ResponsiveSelect
                                             id="work-order-distribution-box"
                                             className="field"
-                                            {...fieldA11y('work-order-distribution-box', installationForm.errors.distribution_box_id)}
+                                            {...fieldA11y(
+                                                'work-order-distribution-box',
+                                                installationForm.errors.distribution_box_id,
+                                            )}
                                             value={installationForm.data.distribution_box_id}
                                             disabled={!selectedBuilding}
                                             onChange={(event) => {
@@ -414,7 +422,10 @@ export default function WorkOrderShowPage({
                                                 </option>
                                             ))}
                                         </ResponsiveSelect>
-                                        {fieldError('work-order-distribution-box', installationForm.errors.distribution_box_id)}
+                                        {fieldError(
+                                            'work-order-distribution-box',
+                                            installationForm.errors.distribution_box_id,
+                                        )}
                                     </label>
                                     <label>
                                         <span className="field-label">{t('Network port')}</span>
@@ -424,13 +435,18 @@ export default function WorkOrderShowPage({
                                             type="number"
                                             min={1}
                                             max={selectedBox?.capacity_ports}
-                                            {...fieldA11y('work-order-network-port', installationForm.errors.network_port)}
+                                            {...fieldA11y(
+                                                'work-order-network-port',
+                                                installationForm.errors.network_port,
+                                            )}
                                             value={installationForm.data.network_port}
                                             onChange={(event) =>
                                                 installationForm.setData('network_port', event.target.value)
                                             }
                                             placeholder={
-                                                selectedBox ? `1–${selectedBox.capacity_ports}` : t('Select a box first')
+                                                selectedBox
+                                                    ? `1–${selectedBox.capacity_ports}`
+                                                    : t('Select a box first')
                                             }
                                             disabled={!selectedBox}
                                         />
@@ -466,7 +482,10 @@ export default function WorkOrderShowPage({
                                             <input
                                                 id="work-order-unit-label"
                                                 className="field"
-                                                {...fieldA11y('work-order-unit-label', installationErrors['survey.unit_label'])}
+                                                {...fieldA11y(
+                                                    'work-order-unit-label',
+                                                    installationErrors['survey.unit_label'],
+                                                )}
                                                 value={installationForm.data.survey.unit_label}
                                                 onChange={(event) =>
                                                     installationForm.setData('survey', {
@@ -476,14 +495,20 @@ export default function WorkOrderShowPage({
                                                 }
                                                 placeholder={t('Building 2 · Apt 301')}
                                             />
-                                            {fieldError('work-order-unit-label', installationErrors['survey.unit_label'])}
+                                            {fieldError(
+                                                'work-order-unit-label',
+                                                installationErrors['survey.unit_label'],
+                                            )}
                                         </label>
                                         <label>
                                             <span className="field-label">{t('Power available')}</span>
                                             <ResponsiveSelect
                                                 id="work-order-power-available"
                                                 className="field"
-                                                {...fieldA11y('work-order-power-available', installationErrors['survey.power_available'])}
+                                                {...fieldA11y(
+                                                    'work-order-power-available',
+                                                    installationErrors['survey.power_available'],
+                                                )}
                                                 value={installationForm.data.survey.power_available}
                                                 onChange={(event) =>
                                                     installationForm.setData('survey', {
@@ -496,14 +521,20 @@ export default function WorkOrderShowPage({
                                                 <option value="yes">{t('Yes')}</option>
                                                 <option value="no">{t('No')}</option>
                                             </ResponsiveSelect>
-                                            {fieldError('work-order-power-available', installationErrors['survey.power_available'])}
+                                            {fieldError(
+                                                'work-order-power-available',
+                                                installationErrors['survey.power_available'],
+                                            )}
                                         </label>
                                         <label>
                                             <span className="field-label">{t('Cable route')}</span>
                                             <input
                                                 id="work-order-cable-route"
                                                 className="field"
-                                                {...fieldA11y('work-order-cable-route', installationErrors['survey.cable_route'])}
+                                                {...fieldA11y(
+                                                    'work-order-cable-route',
+                                                    installationErrors['survey.cable_route'],
+                                                )}
                                                 value={installationForm.data.survey.cable_route}
                                                 onChange={(event) =>
                                                     installationForm.setData('survey', {
@@ -513,14 +544,20 @@ export default function WorkOrderShowPage({
                                                 }
                                                 placeholder={t('Riser · east facade · 35 m')}
                                             />
-                                            {fieldError('work-order-cable-route', installationErrors['survey.cable_route'])}
+                                            {fieldError(
+                                                'work-order-cable-route',
+                                                installationErrors['survey.cable_route'],
+                                            )}
                                         </label>
                                         <label>
                                             <span className="field-label">{t('Access notes')}</span>
                                             <input
                                                 id="work-order-access-notes"
                                                 className="field"
-                                                {...fieldA11y('work-order-access-notes', installationErrors['survey.access_notes'])}
+                                                {...fieldA11y(
+                                                    'work-order-access-notes',
+                                                    installationErrors['survey.access_notes'],
+                                                )}
                                                 value={installationForm.data.survey.access_notes}
                                                 onChange={(event) =>
                                                     installationForm.setData('survey', {
@@ -530,16 +567,23 @@ export default function WorkOrderShowPage({
                                                 }
                                                 placeholder={t('Caretaker contact or access instructions')}
                                             />
-                                            {fieldError('work-order-access-notes', installationErrors['survey.access_notes'])}
+                                            {fieldError(
+                                                'work-order-access-notes',
+                                                installationErrors['survey.access_notes'],
+                                            )}
                                         </label>
                                     </div>
                                 </div>
 
                                 {installationErrors.installation && (
-                                    <p className="field-error" role="alert">{installationErrors.installation}</p>
+                                    <p className="field-error" role="alert">
+                                        {installationErrors.installation}
+                                    </p>
                                 )}
                                 {installationForm.errors.survey && (
-                                    <p className="field-error" role="alert">{t(installationForm.errors.survey)}</p>
+                                    <p className="field-error" role="alert">
+                                        {t(installationForm.errors.survey)}
+                                    </p>
                                 )}
                                 <button
                                     type="submit"
@@ -560,7 +604,9 @@ export default function WorkOrderShowPage({
                                             </h3>
                                         </div>
                                         <p className="mt-1 text-sm text-muted text-pretty">
-                                            {t('Confirm the topology and site handover before this installation activates its service.')}
+                                            {t(
+                                                'Confirm the topology and site handover before this installation activates its service.',
+                                            )}
                                         </p>
                                     </div>
                                     {workOrder.installation.activation_accepted_at ? (
@@ -577,7 +623,8 @@ export default function WorkOrderShowPage({
                                 {workOrder.installation.activation_accepted_at ? (
                                     <div className="mt-4 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900">
                                         <p className="font-semibold">
-                                            {t('Accepted by')} {workOrder.installation.activation_accepted_by ?? t('operator')}
+                                            {t('Accepted by')}{' '}
+                                            {workOrder.installation.activation_accepted_by ?? t('operator')}
                                         </p>
                                         <p className="mt-1 text-xs tabular-nums text-emerald-800">
                                             {formatDate(workOrder.installation.activation_accepted_at)}
@@ -604,7 +651,10 @@ export default function WorkOrderShowPage({
                                                 placeholder={t('Customer confirmed service handover')}
                                             />
                                         </label>
-                                        {fieldError('work-order-acceptance-note', acceptanceErrors.note ?? acceptanceErrors.activation)}
+                                        {fieldError(
+                                            'work-order-acceptance-note',
+                                            acceptanceErrors.note ?? acceptanceErrors.activation,
+                                        )}
                                         <button
                                             type="submit"
                                             className="button-primary"
@@ -661,9 +711,12 @@ export default function WorkOrderShowPage({
                                     className="flex items-center justify-between gap-4 rounded-lg border border-line px-4 py-3 text-sm"
                                 >
                                     <div>
-                                        <p className="font-semibold">{material.name ?? material.sku ?? t('Material')}</p>
+                                        <p className="font-semibold">
+                                            {material.name ?? material.sku ?? t('Material')}
+                                        </p>
                                         <p className="mt-1 text-xs text-muted">
-                                            {material.sku ?? t('No SKU')} · {material.warehouse ?? t('Unknown warehouse')} ·{' '}
+                                            {material.sku ?? t('No SKU')} ·{' '}
+                                            {material.warehouse ?? t('Unknown warehouse')} ·{' '}
                                             {formatDate(material.consumed_at)}
                                         </p>
                                     </div>
@@ -683,7 +736,10 @@ export default function WorkOrderShowPage({
                                         <ResponsiveSelect
                                             id="work-order-material-item"
                                             className="field"
-                                            {...fieldA11y('work-order-material-item', materialForm.errors.inventory_item_id)}
+                                            {...fieldA11y(
+                                                'work-order-material-item',
+                                                materialForm.errors.inventory_item_id,
+                                            )}
                                             value={materialForm.data.inventory_item_id}
                                             onChange={(event) =>
                                                 materialForm.setData('inventory_item_id', event.target.value)
@@ -695,7 +751,8 @@ export default function WorkOrderShowPage({
                                                     key={`${material.inventory_item_id}-${material.warehouse_id}`}
                                                     value={material.inventory_item_id}
                                                 >
-                                                    {material.sku} · {material.name} · {material.quantity} {t('available')}
+                                                    {material.sku} · {material.name} · {material.quantity}{' '}
+                                                    {t('available')}
                                                 </option>
                                             ))}
                                         </ResponsiveSelect>
@@ -706,7 +763,10 @@ export default function WorkOrderShowPage({
                                         <ResponsiveSelect
                                             id="work-order-material-warehouse"
                                             className="field"
-                                            {...fieldA11y('work-order-material-warehouse', materialForm.errors.warehouse_id)}
+                                            {...fieldA11y(
+                                                'work-order-material-warehouse',
+                                                materialForm.errors.warehouse_id,
+                                            )}
                                             value={materialForm.data.warehouse_id}
                                             onChange={(event) =>
                                                 materialForm.setData('warehouse_id', event.target.value)
@@ -774,7 +834,10 @@ export default function WorkOrderShowPage({
                                         <input
                                             id={`work-order-reading-${key}`}
                                             className="field"
-                                            {...fieldA11y(`work-order-reading-${key}`, readingsForm.errors[`readings.${key}`])}
+                                            {...fieldA11y(
+                                                `work-order-reading-${key}`,
+                                                readingsForm.errors[`readings.${key}`],
+                                            )}
                                             value={readingsForm.data.readings[key]}
                                             onChange={(event) =>
                                                 readingsForm.setData('readings', {
@@ -796,7 +859,9 @@ export default function WorkOrderShowPage({
                         <h2 className="section-title">{t('Customer signature')}</h2>
                         {workOrder.signature ? (
                             <div className="mt-5 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm">
-                                <p className="font-semibold">{t('Signed by')} {workOrder.signature.signer_name}</p>
+                                <p className="font-semibold">
+                                    {t('Signed by')} {workOrder.signature.signer_name}
+                                </p>
                                 <p className="mt-1 text-xs text-muted">{formatDate(workOrder.signature.signed_at)}</p>
                                 {workOrder.signature.download_url && (
                                     <a
@@ -813,7 +878,7 @@ export default function WorkOrderShowPage({
                                 <SignaturePad onChange={(file) => signatureForm.setData('file', file)} />
                                 <form onSubmit={submitSignature} className="space-y-3 border-t border-line pt-5">
                                     <label>
-                                    <span className="field-label">{t('Signer name')}</span>
+                                        <span className="field-label">{t('Signer name')}</span>
                                         <input
                                             id="work-order-signer-name"
                                             className="field"
@@ -883,8 +948,7 @@ export default function WorkOrderShowPage({
                                         </p>
                                         {event.from_status && (
                                             <p className="mt-1 text-xs text-muted">
-                                                {enumLabel(event.from_status, t)} →{' '}
-                                                {enumLabel(event.to_status, t)}
+                                                {enumLabel(event.from_status, t)} → {enumLabel(event.to_status, t)}
                                             </p>
                                         )}
                                     </div>

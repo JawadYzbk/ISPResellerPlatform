@@ -92,7 +92,11 @@ export default function PublicLinkCreator({
                     {t('Create link')}
                 </button>
             </form>
-            {form.errors.type && <p className="field-error mt-2" role="alert">{t(form.errors.type)}</p>}
+            {form.errors.type && (
+                <p className="field-error mt-2" role="alert">
+                    {t(form.errors.type)}
+                </p>
+            )}
             {flash.publicLink && (
                 <div className="mt-4 rounded-xl border border-line bg-sand/30 p-3">
                     <label className="field-label" htmlFor={`${fieldId}-url`}>
@@ -111,7 +115,8 @@ export default function PublicLinkCreator({
                         </button>
                     </div>
                     <p className="mt-2 text-xs text-muted">
-                        {t('Expires')} {formatDate(flash.publicLink.expires_at)}. {t('The token is not stored in readable form.')}
+                        {t('Expires')} {formatDate(flash.publicLink.expires_at)}.{' '}
+                        {t('The token is not stored in readable form.')}
                     </p>
                 </div>
             )}
@@ -122,17 +127,20 @@ export default function PublicLinkCreator({
                             <div key={link.public_id} className="flex items-center justify-between gap-3 py-3">
                                 <div>
                                     <p className="text-xs font-semibold capitalize">
-                                {enumLabel(link.type, t)} {t('link')} ·{' '}
+                                        {enumLabel(link.type, t)} {t('link')} ·{' '}
                                         {link.is_active ? t('Active') : link.revoked_at ? t('Revoked') : t('Expired')}
                                     </p>
                                     <p className="mt-1 text-xs text-muted tabular-nums">
-                                        {link.access_count} {t('view(s)')} · {t('expires')} {formatDate(link.expires_at)}
+                                        {link.access_count} {t('view(s)')} · {t('expires')}{' '}
+                                        {formatDate(link.expires_at)}
                                     </p>
                                 </div>
                                 {link.is_active && (
                                     <ConfirmDialog
                                         title={t('Revoke this public link?')}
-                                        description={t('Anyone using the existing URL will immediately lose access. A new link can be created later.')}
+                                        description={t(
+                                            'Anyone using the existing URL will immediately lose access. A new link can be created later.',
+                                        )}
                                         confirmLabel={t('Revoke link')}
                                         destructive
                                         onConfirm={() =>

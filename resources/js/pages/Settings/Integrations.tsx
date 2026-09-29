@@ -187,7 +187,9 @@ export default function Integrations({ settings, configured, sources }: Props) {
                                 id="integration-payment-driver"
                                 className="field"
                                 aria-invalid={Boolean(form.errors.payment_driver)}
-                                aria-describedby={form.errors.payment_driver ? 'integration-payment-driver-error' : undefined}
+                                aria-describedby={
+                                    form.errors.payment_driver ? 'integration-payment-driver-error' : undefined
+                                }
                                 value={form.data.payment_driver}
                                 onChange={(event) => update('payment_driver', event.target.value)}
                             >
@@ -228,11 +230,18 @@ export default function Integrations({ settings, configured, sources }: Props) {
                                     id="integration-frankfurter-endpoint"
                                     className="field"
                                     aria-invalid={Boolean(form.errors.frankfurter_endpoint)}
-                                    aria-describedby={form.errors.frankfurter_endpoint ? 'integration-frankfurter-endpoint-error' : undefined}
+                                    aria-describedby={
+                                        form.errors.frankfurter_endpoint
+                                            ? 'integration-frankfurter-endpoint-error'
+                                            : undefined
+                                    }
                                     value={form.data.frankfurter_endpoint}
                                     onChange={(event) => update('frankfurter_endpoint', event.target.value)}
                                 />
-                                <FieldError id="integration-frankfurter-endpoint-error" message={form.errors.frankfurter_endpoint} />
+                                <FieldError
+                                    id="integration-frankfurter-endpoint-error"
+                                    message={form.errors.frankfurter_endpoint}
+                                />
                             </label>
                             <label>
                                 <span className="field-label">{t('integrations.quote_currencies')}</span>
@@ -240,13 +249,20 @@ export default function Integrations({ settings, configured, sources }: Props) {
                                     id="integration-frankfurter-quotes"
                                     className="field"
                                     aria-invalid={Boolean(form.errors.frankfurter_quotes)}
-                                    aria-describedby={form.errors.frankfurter_quotes ? 'integration-frankfurter-quotes-error' : undefined}
+                                    aria-describedby={
+                                        form.errors.frankfurter_quotes
+                                            ? 'integration-frankfurter-quotes-error'
+                                            : undefined
+                                    }
                                     value={form.data.frankfurter_quotes}
                                     onChange={(event) => update('frankfurter_quotes', event.target.value)}
                                     placeholder="LBP,USD,EUR"
                                 />
                                 <p className="mt-1 text-xs text-muted">{t('integrations.currency_codes_note')}</p>
-                                <FieldError id="integration-frankfurter-quotes-error" message={form.errors.frankfurter_quotes} />
+                                <FieldError
+                                    id="integration-frankfurter-quotes-error"
+                                    message={form.errors.frankfurter_quotes}
+                                />
                             </label>
                             <label>
                                 <span className="field-label">{t('integrations.connect_timeout')}</span>

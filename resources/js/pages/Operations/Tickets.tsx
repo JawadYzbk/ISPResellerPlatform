@@ -152,7 +152,9 @@ export default function TicketsPage({ tickets, filters }: Props) {
                                         )}
                                         <p className="mt-1 text-xs text-muted">{ticket.customer?.code ?? '—'}</p>
                                     </td>
-                                    <td className="px-5 py-4 text-sm font-semibold capitalize">{enumLabel(ticket.priority, t)}</td>
+                                    <td className="px-5 py-4 text-sm font-semibold capitalize">
+                                        {enumLabel(ticket.priority, t)}
+                                    </td>
                                     <td className="px-5 py-4">
                                         <StatusBadge status={ticket.status} />
                                     </td>

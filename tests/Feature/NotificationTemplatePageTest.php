@@ -3,6 +3,7 @@
 use App\Models\MessageTemplate;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Support\MessageTemplateProvisioner;
 use App\Support\Tenancy;
 use Database\Seeders\CapabilitySeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -50,6 +51,16 @@ it('shows and updates WhatsApp templates for every supported locale', function (
     $this->actingAs($user)
         ->patch(route('settings.notification-templates.update', $template->id), [
             'subject' => '',
+            'body' => 'Welcome to your service.',
+        ])
+        ->assertRedirect(route('settings.notification-templates'));
+
+    app(Tenancy::class)->set($tenant);
+    expect($template->refresh()->body)->toBe('Welcome to your service.');
+
+    $this->actingAs($user)
+        ->patch(route('settings.notification-templates.update', $template->id), [
+            'subject' => '',
             'body' => 'Hello {{ unknown_value }}',
         ])
         ->assertSessionHasErrors('body');
@@ -69,7 +80,7 @@ it('upgrades a legacy disabled locale placeholder after UTF-8 storage is availab
         ]);
     });
 
-    app(\App\Support\MessageTemplateProvisioner::class)->provision($tenant, templateKey: 'customer.welcome', channel: 'whatsapp', locale: 'ar');
+    app(MessageTemplateProvisioner::class)->provision($tenant, templateKey: 'customer.welcome', channel: 'whatsapp', locale: 'ar');
 
     $template = app(Tenancy::class)->run($tenant, fn (): MessageTemplate => MessageTemplate::query()->where('key', 'customer.welcome')->where('channel', 'whatsapp')->where('locale', 'ar')->firstOrFail());
     expect($template->is_active)->toBeTrue()

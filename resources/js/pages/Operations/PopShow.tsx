@@ -339,7 +339,10 @@ export default function PopShowPage({ pop, canManage, statuses, currencies }: Pr
                                             <input
                                                 id="upstream-edit-provider"
                                                 className="field"
-                                                {...fieldA11y('upstream-edit-provider', linkEditForm.errors.provider_name)}
+                                                {...fieldA11y(
+                                                    'upstream-edit-provider',
+                                                    linkEditForm.errors.provider_name,
+                                                )}
                                                 value={linkEditForm.data.provider_name}
                                                 onChange={(event) =>
                                                     linkEditForm.setData('provider_name', event.target.value)
@@ -355,7 +358,10 @@ export default function PopShowPage({ pop, canManage, statuses, currencies }: Pr
                                                 type="number"
                                                 min="0"
                                                 className="field"
-                                                {...fieldA11y('upstream-edit-capacity', linkEditForm.errors.capacity_mbps)}
+                                                {...fieldA11y(
+                                                    'upstream-edit-capacity',
+                                                    linkEditForm.errors.capacity_mbps,
+                                                )}
                                                 value={linkEditForm.data.capacity_mbps}
                                                 onChange={(event) =>
                                                     linkEditForm.setData('capacity_mbps', event.target.value)
@@ -370,14 +376,20 @@ export default function PopShowPage({ pop, canManage, statuses, currencies }: Pr
                                                 type="number"
                                                 min="0"
                                                 className="field"
-                                                {...fieldA11y('upstream-edit-monthly-cost', linkEditForm.errors.monthly_cost_amount)}
+                                                {...fieldA11y(
+                                                    'upstream-edit-monthly-cost',
+                                                    linkEditForm.errors.monthly_cost_amount,
+                                                )}
                                                 value={linkEditForm.data.monthly_cost_amount}
                                                 onChange={(event) =>
                                                     linkEditForm.setData('monthly_cost_amount', event.target.value)
                                                 }
                                                 required
                                             />
-                                            {fieldError('upstream-edit-monthly-cost', linkEditForm.errors.monthly_cost_amount)}
+                                            {fieldError(
+                                                'upstream-edit-monthly-cost',
+                                                linkEditForm.errors.monthly_cost_amount,
+                                            )}
                                         </label>
                                         <label>
                                             <span className="field-label">{t('Currency')}</span>
@@ -397,14 +409,20 @@ export default function PopShowPage({ pop, canManage, statuses, currencies }: Pr
                                                 id="upstream-edit-contract-start"
                                                 type="date"
                                                 className="field"
-                                                {...fieldA11y('upstream-edit-contract-start', linkEditForm.errors.contract_start)}
+                                                {...fieldA11y(
+                                                    'upstream-edit-contract-start',
+                                                    linkEditForm.errors.contract_start,
+                                                )}
                                                 value={linkEditForm.data.contract_start}
                                                 onChange={(event) =>
                                                     linkEditForm.setData('contract_start', event.target.value)
                                                 }
                                                 required
                                             />
-                                            {fieldError('upstream-edit-contract-start', linkEditForm.errors.contract_start)}
+                                            {fieldError(
+                                                'upstream-edit-contract-start',
+                                                linkEditForm.errors.contract_start,
+                                            )}
                                         </label>
                                         <label>
                                             <span className="field-label">{t('Contract ends')}</span>
@@ -412,7 +430,10 @@ export default function PopShowPage({ pop, canManage, statuses, currencies }: Pr
                                                 id="upstream-edit-contract-end"
                                                 type="date"
                                                 className="field"
-                                                {...fieldA11y('upstream-edit-contract-end', linkEditForm.errors.contract_end)}
+                                                {...fieldA11y(
+                                                    'upstream-edit-contract-end',
+                                                    linkEditForm.errors.contract_end,
+                                                )}
                                                 value={linkEditForm.data.contract_end}
                                                 onChange={(event) =>
                                                     linkEditForm.setData('contract_end', event.target.value)
@@ -466,7 +487,9 @@ export default function PopShowPage({ pop, canManage, statuses, currencies }: Pr
                                                 <p className="text-sm font-semibold">
                                                     {formatMoney(link.monthly_cost_amount, link.currency)}
                                                 </p>
-                                                <span className="block text-xs font-normal text-muted">{t('monthly')}</span>
+                                                <span className="block text-xs font-normal text-muted">
+                                                    {t('monthly')}
+                                                </span>
                                                 {canManage && (
                                                     <button
                                                         type="button"
@@ -489,14 +512,17 @@ export default function PopShowPage({ pop, canManage, statuses, currencies }: Pr
                             </div>
                         ))}
                         {pop.upstream_links.length === 0 && (
-                            <p className="px-5 py-10 text-center text-sm text-muted">{t('No upstream links recorded.')}</p>
+                            <p className="px-5 py-10 text-center text-sm text-muted">
+                                {t('No upstream links recorded.')}
+                            </p>
                         )}
                     </div>
                 </section>
             </div>
 
             <div className="mt-6 flex items-center gap-2 text-xs text-muted">
-                <ExternalLink size={14} /> {t('Provider contracts are inventory records; billing settlement remains in the finance workflow.')}
+                <ExternalLink size={14} />{' '}
+                {t('Provider contracts are inventory records; billing settlement remains in the finance workflow.')}
             </div>
         </AppLayout>
     );

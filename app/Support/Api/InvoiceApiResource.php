@@ -18,11 +18,10 @@ final readonly class InvoiceApiResource
             'lines.service',
             'payments.actor',
             'payments.allocations',
+            'paymentAllocations.payment',
             'creditNotes.creator',
         ]);
-        $allocated = $invoice->payments->sum(fn (Payment $payment): int => $payment->allocations
-            ->where('invoice_id', $invoice->id)
-            ->sum('amount'));
+        $allocated = $invoice->effectiveAllocatedAmount();
         $credited = $invoice->creditNotes->where('status', 'issued')->sum('amount');
 
         return [
@@ -35,7 +34,7 @@ final readonly class InvoiceApiResource
             'total_amount' => $invoice->total_amount,
             'allocated_amount' => $allocated,
             'credited_amount' => $credited,
-            'outstanding_amount' => max(0, $invoice->total_amount - $allocated - $credited),
+            'outstanding_amount' => $invoice->outstandingAmount(),
             'due_at' => $invoice->due_at?->toIso8601String(),
             'issued_at' => $invoice->issued_at?->toIso8601String(),
             'voided_at' => $invoice->voided_at?->toIso8601String(),

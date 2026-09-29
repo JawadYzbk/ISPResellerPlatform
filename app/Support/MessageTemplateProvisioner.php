@@ -201,7 +201,7 @@ final class MessageTemplateProvisioner
             $channels = $channel === null ? self::CHANNELS : [$channel];
             $unicodeStorageAvailable = $this->storageWarning() === null;
 
-            if ($definitions === [] || array_diff($channels, self::CHANNELS) !== [] || $locales === []) {
+            if ($definitions === [] || array_diff($channels, self::CHANNELS) !== []) {
                 return;
             }
 
@@ -235,30 +235,28 @@ final class MessageTemplateProvisioner
                 }
             }
 
-            if ($templates !== []) {
-                DB::table('message_templates')->insertOrIgnore($templates);
+            DB::table('message_templates')->insertOrIgnore($templates);
 
-                if ($unicodeStorageAvailable) {
-                    foreach ($templates as $template) {
-                        if ($template['locale'] === 'en' || $template['is_active'] !== true) {
-                            continue;
-                        }
-
-                        $definition = self::DEFAULT_TEMPLATES[$template['key']];
-                        DB::table('message_templates')
-                            ->where('tenant_id', $tenantId)
-                            ->where('key', $template['key'])
-                            ->where('channel', $template['channel'])
-                            ->where('locale', $template['locale'])
-                            ->where('is_active', false)
-                            ->where('body', $definition['bodies']['en'])
-                            ->update([
-                                'subject' => $template['subject'],
-                                'body' => $template['body'],
-                                'is_active' => true,
-                                'updated_at' => $timestamp,
-                            ]);
+            if ($unicodeStorageAvailable) {
+                foreach ($templates as $template) {
+                    if ($template['locale'] === 'en' || $template['is_active'] !== true) {
+                        continue;
                     }
+
+                    $definition = self::DEFAULT_TEMPLATES[$template['key']];
+                    DB::table('message_templates')
+                        ->where('tenant_id', $tenantId)
+                        ->where('key', $template['key'])
+                        ->where('channel', $template['channel'])
+                        ->where('locale', $template['locale'])
+                        ->where('is_active', false)
+                        ->where('body', $definition['bodies']['en'])
+                        ->update([
+                            'subject' => $template['subject'],
+                            'body' => $template['body'],
+                            'is_active' => true,
+                            'updated_at' => $timestamp,
+                        ]);
                 }
             }
         });

@@ -92,7 +92,10 @@ it('replaces a same-day seeded demo rate with the provider quote', function (): 
 });
 
 it('fails closed when Frankfurter omits a requested quote', function (): void {
-    config(['services.frankfurter.enabled' => true]);
+    config([
+        'services.frankfurter.enabled' => true,
+        'services.frankfurter.quotes' => ['LBP'],
+    ]);
     Http::fake([
         'https://api.frankfurter.dev/*' => Http::response([
             ['date' => '2026-08-10', 'base' => 'USD', 'quote' => 'EUR', 'rate' => 0.9234],

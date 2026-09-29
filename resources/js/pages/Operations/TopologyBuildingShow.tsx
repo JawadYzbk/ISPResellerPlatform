@@ -76,7 +76,11 @@ function ErrorText({ message }: { message?: string }) {
     const page = usePage<PageProps>();
     const t = createTranslator(page.props.app.locale);
 
-    return message ? <p className="field-error" role="alert">{t(message)}</p> : null;
+    return message ? (
+        <p className="field-error" role="alert">
+            {t(message)}
+        </p>
+    ) : null;
 }
 
 function BoxCard({
@@ -322,7 +326,9 @@ function BoxCard({
                             className="flex flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
                         >
                             <div>
-                                <p className="text-sm font-semibold">{service.customer?.name ?? t('Unknown customer')}</p>
+                                <p className="text-sm font-semibold">
+                                    {service.customer?.name ?? t('Unknown customer')}
+                                </p>
                                 <p className="mt-1 text-xs text-muted">
                                     {service.customer?.code ?? '—'} · {service.plan?.name ?? t('No plan')} · {t('port')}{' '}
                                     <span className="font-semibold tabular-nums">{service.network_port ?? '—'}</span>

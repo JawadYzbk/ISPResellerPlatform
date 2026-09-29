@@ -238,7 +238,8 @@ export default function TicketResponses({ responses }: Props) {
                     <AlertDialogHeader>
                         <AlertDialogTitle>{t('ticket_responses.archive_title')}</AlertDialogTitle>
                         <AlertDialogDescription>
-                            “{responseToArchive?.title}” {t('ticket_responses.archive_disappear')} {t('ticket_responses.archive_restore')}
+                            “{responseToArchive?.title}” {t('ticket_responses.archive_disappear')}{' '}
+                            {t('ticket_responses.archive_restore')}
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>

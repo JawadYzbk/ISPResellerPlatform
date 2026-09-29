@@ -10,6 +10,7 @@ use Illuminate\Support\Str;
 
 /**
  * @property string $public_id
+ * @property-read int $active_services_count
  * @property array<string, mixed>|null $metadata
  */
 class NetworkBuilding extends Model
@@ -32,6 +33,7 @@ class NetworkBuilding extends Model
         });
     }
 
+    /** @return BelongsTo<Tenant, $this> */
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);

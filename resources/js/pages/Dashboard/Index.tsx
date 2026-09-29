@@ -276,13 +276,17 @@ export default function Dashboard({ metrics, attentionQueue }: Props) {
 function DashboardMetricsFallback() {
     const { app } = usePage<PageProps>().props;
     const t = createTranslator(app.locale);
-    return <div className="mt-8 h-80 animate-pulse rounded-2xl bg-sand/60" aria-label={t('Loading dashboard metrics')} />;
+    return (
+        <div className="mt-8 h-80 animate-pulse rounded-2xl bg-sand/60" aria-label={t('Loading dashboard metrics')} />
+    );
 }
 
 function DashboardAttentionFallback() {
     const { app } = usePage<PageProps>().props;
     const t = createTranslator(app.locale);
-    return <div className="card mt-6 h-32 animate-pulse bg-sand/60" aria-label={t('Loading manager attention queue')} />;
+    return (
+        <div className="card mt-6 h-32 animate-pulse bg-sand/60" aria-label={t('Loading manager attention queue')} />
+    );
 }
 
 function OwnerFinancePanel({ owner }: { owner: NonNullable<DashboardMetrics['owner']> }) {

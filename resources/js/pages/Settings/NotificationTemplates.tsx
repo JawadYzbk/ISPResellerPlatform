@@ -109,23 +109,23 @@ function TemplateCard({
                     aria-labelledby={`${templateId}-tab-${locale}`}
                     tabIndex={0}
                 >
-                <label>
-                    <span className="field-label">{t('Message body')}</span>
-                    <textarea
-                        id={`${templateId}-body`}
-                        dir="auto"
-                        className="field min-h-36 resize-y font-mono text-sm leading-6"
-                        aria-invalid={Boolean(bodyError)}
-                        aria-describedby={bodyError ? `${templateId}-body-error` : undefined}
-                        value={form.data.body}
-                        onChange={(event) => form.setData('body', event.target.value)}
-                    />
-                    {bodyError && (
-                        <p id={`${templateId}-body-error`} className="field-error" role="alert">
-                            {t(bodyError)}
-                        </p>
-                    )}
-                </label>
+                    <label>
+                        <span className="field-label">{t('Message body')}</span>
+                        <textarea
+                            id={`${templateId}-body`}
+                            dir="auto"
+                            className="field min-h-36 resize-y font-mono text-sm leading-6"
+                            aria-invalid={Boolean(bodyError)}
+                            aria-describedby={bodyError ? `${templateId}-body-error` : undefined}
+                            value={form.data.body}
+                            onChange={(event) => form.setData('body', event.target.value)}
+                        />
+                        {bodyError && (
+                            <p id={`${templateId}-body-error`} className="field-error" role="alert">
+                                {t(bodyError)}
+                            </p>
+                        )}
+                    </label>
                 </div>
                 <div className="rounded-xl border border-line bg-sand/40 p-4">
                     <div className="flex items-center justify-between gap-3">

@@ -82,7 +82,9 @@ export default function TenantIndex({ tenants, currencies }: Props) {
                 <p className="eyebrow">{t('Platform administration')}</p>
                 <h1 className="page-title">{t('Tenant workspaces')}</h1>
                 <p className="page-subtitle">
-                    {t('Provision isolated ISP workspaces, create their first owner, and control lifecycle status from one audited control plane.')}
+                    {t(
+                        'Provision isolated ISP workspaces, create their first owner, and control lifecycle status from one audited control plane.',
+                    )}
                 </p>
             </div>
 
@@ -115,7 +117,11 @@ export default function TenantIndex({ tenants, currencies }: Props) {
                                     onChange={(event) => createForm.setData('name', event.target.value)}
                                     placeholder="Northline Broadband"
                                 />
-                                {createForm.errors.name && <p className="field-error" role="alert">{t(createForm.errors.name)}</p>}
+                                {createForm.errors.name && (
+                                    <p className="field-error" role="alert">
+                                        {t(createForm.errors.name)}
+                                    </p>
+                                )}
                             </label>
                             <label>
                                 <span className="field-label">{t('Tenant slug')}</span>
@@ -125,7 +131,11 @@ export default function TenantIndex({ tenants, currencies }: Props) {
                                     onChange={(event) => createForm.setData('slug', event.target.value)}
                                     placeholder="northline"
                                 />
-                                {createForm.errors.slug && <p className="field-error" role="alert">{t(createForm.errors.slug)}</p>}
+                                {createForm.errors.slug && (
+                                    <p className="field-error" role="alert">
+                                        {t(createForm.errors.slug)}
+                                    </p>
+                                )}
                             </label>
                             <label>
                                 <span className="field-label">{t('Locale')}</span>
@@ -138,7 +148,11 @@ export default function TenantIndex({ tenants, currencies }: Props) {
                                     <option value="ar">{t('Arabic')}</option>
                                     <option value="fr">{t('French')}</option>
                                 </ResponsiveSelect>
-                                {createForm.errors.locale && <p className="field-error" role="alert">{t(createForm.errors.locale)}</p>}
+                                {createForm.errors.locale && (
+                                    <p className="field-error" role="alert">
+                                        {t(createForm.errors.locale)}
+                                    </p>
+                                )}
                             </label>
                             <label className="sm:col-span-2">
                                 <span className="field-label">{t('Timezone')}</span>
@@ -149,7 +163,9 @@ export default function TenantIndex({ tenants, currencies }: Props) {
                                     placeholder="Asia/Beirut"
                                 />
                                 {createForm.errors.timezone && (
-                                    <p className="field-error" role="alert">{t(createForm.errors.timezone)}</p>
+                                    <p className="field-error" role="alert">
+                                        {t(createForm.errors.timezone)}
+                                    </p>
                                 )}
                             </label>
                             <label>
@@ -162,7 +178,9 @@ export default function TenantIndex({ tenants, currencies }: Props) {
                                     onChange={(value) => createForm.setData('base_currency', value)}
                                 />
                                 {createForm.errors.base_currency && (
-                                    <p className="field-error" role="alert">{t(createForm.errors.base_currency)}</p>
+                                    <p className="field-error" role="alert">
+                                        {t(createForm.errors.base_currency)}
+                                    </p>
                                 )}
                             </label>
                             <label>
@@ -175,7 +193,9 @@ export default function TenantIndex({ tenants, currencies }: Props) {
                                     onChange={(value) => createForm.setData('collection_currency', value)}
                                 />
                                 {createForm.errors.collection_currency && (
-                                    <p className="field-error" role="alert">{t(createForm.errors.collection_currency)}</p>
+                                    <p className="field-error" role="alert">
+                                        {t(createForm.errors.collection_currency)}
+                                    </p>
                                 )}
                             </label>
                         </div>
@@ -192,7 +212,9 @@ export default function TenantIndex({ tenants, currencies }: Props) {
                                         placeholder="Maya Haddad"
                                     />
                                     {createForm.errors.owner_name && (
-                                        <p className="field-error" role="alert">{t(createForm.errors.owner_name)}</p>
+                                        <p className="field-error" role="alert">
+                                            {t(createForm.errors.owner_name)}
+                                        </p>
                                     )}
                                 </label>
                                 <label>
@@ -205,7 +227,9 @@ export default function TenantIndex({ tenants, currencies }: Props) {
                                         placeholder="owner@example.com"
                                     />
                                     {createForm.errors.owner_email && (
-                                        <p className="field-error" role="alert">{t(createForm.errors.owner_email)}</p>
+                                        <p className="field-error" role="alert">
+                                            {t(createForm.errors.owner_email)}
+                                        </p>
                                     )}
                                 </label>
                                 <label>
@@ -217,7 +241,9 @@ export default function TenantIndex({ tenants, currencies }: Props) {
                                         onChange={(event) => createForm.setData('owner_password', event.target.value)}
                                     />
                                     {createForm.errors.owner_password && (
-                                        <p className="field-error" role="alert">{t(createForm.errors.owner_password)}</p>
+                                        <p className="field-error" role="alert">
+                                            {t(createForm.errors.owner_password)}
+                                        </p>
                                     )}
                                 </label>
                                 <label>
@@ -303,7 +329,9 @@ export default function TenantIndex({ tenants, currencies }: Props) {
                                     {tenant.base_currency} {t('base')} · {tenant.collection_currency} {t('collection')}
                                 </span>
                                 <span>{tenant.timezone}</span>
-                                <span>{t('Created')} {formatDate(tenant.created_at)}</span>
+                                <span>
+                                    {t('Created')} {formatDate(tenant.created_at)}
+                                </span>
                             </div>
 
                             {editingId === tenant.id && (
@@ -320,7 +348,11 @@ export default function TenantIndex({ tenants, currencies }: Props) {
                                             </option>
                                         ))}
                                     </ResponsiveSelect>
-                                    {editForm.errors.status && <p className="field-error" role="alert">{t(editForm.errors.status)}</p>}
+                                    {editForm.errors.status && (
+                                        <p className="field-error" role="alert">
+                                            {t(editForm.errors.status)}
+                                        </p>
+                                    )}
                                 </div>
                             )}
 

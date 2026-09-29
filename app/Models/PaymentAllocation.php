@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $amount
  * @property string $currency
  * @property Invoice $invoice
+ * @property Payment $payment
  */
 class PaymentAllocation extends Model
 {
@@ -28,6 +29,7 @@ class PaymentAllocation extends Model
         return $this->belongsTo(Tenant::class);
     }
 
+    /** @return BelongsTo<Payment, $this> */
     public function payment(): BelongsTo
     {
         return $this->belongsTo(Payment::class);

@@ -291,7 +291,7 @@ function DeviceFields({
                     {...fieldA11y(fieldId('notes'), form.errors.notes)}
                     value={form.data.notes}
                     onChange={(event) => form.setData('notes', event.target.value)}
-                                placeholder={t('Rack, cabinet, vendor access notes')}
+                    placeholder={t('Rack, cabinet, vendor access notes')}
                 />
                 <ErrorText id={fieldId('notes')} message={form.errors.notes} />
             </label>

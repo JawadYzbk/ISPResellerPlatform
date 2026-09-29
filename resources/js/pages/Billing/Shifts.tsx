@@ -49,7 +49,13 @@ function Pager({ shifts, t }: { shifts: Paginator<Shift>; t: (key: string) => st
                     if (!link.url) {
                         return (
                             <span key={index} className="grid size-8 place-items-center text-muted/40">
-                                {previous ? <ChevronLeft size={16} /> : next ? <ChevronRight size={16} /> : t(link.label)}
+                                {previous ? (
+                                    <ChevronLeft size={16} />
+                                ) : next ? (
+                                    <ChevronRight size={16} />
+                                ) : (
+                                    t(link.label)
+                                )}
                             </span>
                         );
                     }
@@ -59,7 +65,7 @@ function Pager({ shifts, t }: { shifts: Paginator<Shift>; t: (key: string) => st
                             href={link.url}
                             className={`grid size-8 place-items-center rounded-lg text-xs ${link.active ? 'bg-brand text-white' : 'text-muted hover:bg-sand'}`}
                         >
-                                {previous ? <ChevronLeft size={16} /> : next ? <ChevronRight size={16} /> : t(link.label)}
+                            {previous ? <ChevronLeft size={16} /> : next ? <ChevronRight size={16} /> : t(link.label)}
                         </Link>
                     );
                 })}
@@ -179,9 +185,7 @@ export default function ShiftsPage({ shifts, currentShift, currencies, canViewRe
                                         step={currency === 'JPY' ? '1' : '0.01'}
                                         aria-invalid={Boolean(form.errors.declared_totals)}
                                         aria-describedby={
-                                            form.errors.declared_totals
-                                                ? 'cash-shift-declared-totals-error'
-                                                : undefined
+                                            form.errors.declared_totals ? 'cash-shift-declared-totals-error' : undefined
                                         }
                                         value={declaredTotals[currency] ?? ''}
                                         onChange={(event) =>
@@ -226,10 +230,12 @@ export default function ShiftsPage({ shifts, currentShift, currencies, canViewRe
                     <div className="flex flex-col justify-between gap-4 border-b border-line px-5 py-4 sm:flex-row sm:items-end">
                         <div>
                             <p className="eyebrow">{t('shifts.manager_report')}</p>
-                            <h2 className="section-title mt-1">{t('Collector totals')} · {dailyReport.date}</h2>
+                            <h2 className="section-title mt-1">
+                                {t('Collector totals')} · {dailyReport.date}
+                            </h2>
                             <p className="mt-1 text-xs text-muted">
-                                {dailyReport.payment_count} {t('posted payment(s)')} · {dailyReport.variance_shift_count}{' '}
-                                {t('variance shift(s)')}
+                                {dailyReport.payment_count} {t('posted payment(s)')} ·{' '}
+                                {dailyReport.variance_shift_count} {t('variance shift(s)')}
                             </p>
                         </div>
                         <form onSubmit={applyReportDate}>

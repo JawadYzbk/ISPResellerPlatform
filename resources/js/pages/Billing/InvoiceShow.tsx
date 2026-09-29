@@ -62,18 +62,18 @@ export default function InvoiceShowPage({
     canCredit: boolean;
     publicLinks: PublicLinkSummary[];
 }) {
-   const { props } = usePage<PageProps>();
-   const t = createTranslator(props.app.locale);
-   const fieldA11y = (id: string, error?: string) => ({
-       'aria-invalid': Boolean(error),
-       'aria-describedby': error ? `${id}-error` : undefined,
-   });
-   const fieldError = (id: string, error?: string) =>
-       error ? (
-           <p id={`${id}-error`} className="field-error" role="alert">
-               {t(error)}
-           </p>
-       ) : null;
+    const { props } = usePage<PageProps>();
+    const t = createTranslator(props.app.locale);
+    const fieldA11y = (id: string, error?: string) => ({
+        'aria-invalid': Boolean(error),
+        'aria-describedby': error ? `${id}-error` : undefined,
+    });
+    const fieldError = (id: string, error?: string) =>
+        error ? (
+            <p id={`${id}-error`} className="field-error" role="alert">
+                {t(error)}
+            </p>
+        ) : null;
     const methodLabel = (method: string) =>
         t(
             method === 'bank_transfer'
@@ -84,7 +84,7 @@ export default function InvoiceShowPage({
                     ? 'Cash'
                     : 'Card',
         );
-   const creditForm = useForm({ amount: '', reason: '' });
+    const creditForm = useForm({ amount: '', reason: '' });
 
     const submitCreditNote = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();

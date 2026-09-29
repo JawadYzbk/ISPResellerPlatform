@@ -21,7 +21,6 @@ use App\Actions\UpdateCustomer;
 use App\Domain\Money\FxConverter;
 use App\Enums\InvoiceStatus;
 use App\Enums\PaymentAttemptStatus;
-use App\Enums\PaymentStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\CollectPaymentRequest;
 use App\Http\Requests\CreateWhishPaymentRequest;
@@ -125,23 +124,19 @@ final class CustomerController extends Controller
         $invoices = Invoice::query()
             ->where('customer_id', $customer->id)
             ->where('status', InvoiceStatus::Issued)
-            ->with(['payments.allocations', 'creditNotes'])
+            ->with(['paymentAllocations.payment', 'creditNotes'])
             ->latest('issued_at')
             ->get(['id', 'public_id', 'number', 'currency', 'total_amount', 'due_at'])
             ->map(function (Invoice $invoice): array {
-                $allocated = $invoice->payments
-                    ->where('status', PaymentStatus::Posted)
-                    ->sum(fn ($payment): int => $payment->allocations
-                        ->where('invoice_id', $invoice->id)
-                        ->sum('amount'));
-                $credited = $invoice->creditNotes->sum('amount');
+                $allocated = $invoice->effectiveAllocatedAmount();
+                $credited = $invoice->creditNotes->where('status', 'issued')->sum('amount');
 
                 return [
                     'public_id' => $invoice->public_id,
                     'number' => $invoice->number,
                     'currency' => $invoice->currency,
                     'total_amount' => $invoice->total_amount,
-                    'outstanding_amount' => max(0, $invoice->total_amount - $allocated - $credited),
+                    'outstanding_amount' => $invoice->outstandingAmount(),
                     'due_at' => $invoice->due_at?->toIso8601String(),
                 ];
             })

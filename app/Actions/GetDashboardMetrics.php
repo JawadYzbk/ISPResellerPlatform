@@ -13,7 +13,6 @@ use App\Models\CurrentSession;
 use App\Models\Customer;
 use App\Models\Incident;
 use App\Models\Invoice;
-use App\Models\InvoiceLine;
 use App\Models\NetworkCommand;
 use App\Models\Payment;
 use App\Models\Router;
@@ -129,11 +128,11 @@ final readonly class GetDashboardMetrics implements Action
         $invoicedByCurrency = [];
 
         foreach (array_unique([...array_keys($invoiced), ...array_keys($credits)]) as $currency) {
-            $invoicedByCurrency[$currency] = max(0, ($invoiced[$currency] ?? 0) - ($credits[$currency] ?? 0));
+            $invoicedByCurrency[$currency] = ($invoiced[$currency] ?? 0) - ($credits[$currency] ?? 0);
         }
 
         $collectedByCurrency = Payment::query()
-            ->where('status', PaymentStatus::Posted)
+            ->effectiveAt($to->endOfDay())
             ->whereBetween('received_at', [$from->startOfDay(), $to->endOfDay()])
             ->selectRaw('currency, SUM(amount) as total')
             ->groupBy('currency')
@@ -145,18 +144,10 @@ final readonly class GetDashboardMetrics implements Action
         foreach (array_unique([...array_keys($invoicedByCurrency), ...array_keys($collectedByCurrency)]) as $currency) {
             $revenue = $invoicedByCurrency[$currency] ?? 0;
             $collected = $collectedByCurrency[$currency] ?? 0;
-            $collectionRates[$currency] = $revenue === 0 ? null : round(($collected / $revenue) * 100, 2);
+            $collectionRates[$currency] = $revenue <= 0 ? null : round(($collected / $revenue) * 100, 2);
         }
 
-        $marginByCurrency = InvoiceLine::query()
-            ->whereHas('invoice', fn ($query) => $query
-                ->where('status', InvoiceStatus::Issued)
-                ->whereBetween('issued_at', [$from->startOfDay(), $to->endOfDay()]))
-            ->selectRaw('invoice_lines.currency, SUM(invoice_lines.total_amount) as total')
-            ->groupBy('invoice_lines.currency')
-            ->pluck('total', 'currency')
-            ->map(fn (mixed $value): int => (int) $value)
-            ->all();
+        $marginByCurrency = $invoicedByCurrency;
 
         foreach ($this->upstreamCosts($from, $to) as $currency => $amount) {
             $marginByCurrency[$currency] = ($marginByCurrency[$currency] ?? 0) - $amount;

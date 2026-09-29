@@ -71,15 +71,17 @@ export default function CustomerRenew({ customer, services }: Props) {
                                 </option>
                             ))}
                         </ResponsiveSelect>
-                        {form.errors.service_id && <p className="field-error" role="alert">{t(form.errors.service_id)}</p>}
+                        {form.errors.service_id && (
+                            <p className="field-error" role="alert">
+                                {t(form.errors.service_id)}
+                            </p>
+                        )}
                     </div>
                     {selectedService && (
                         <div className="grid gap-4 rounded-xl bg-sand/50 p-4 sm:grid-cols-3">
                             <div>
                                 <p className="text-xs text-muted">{t('Status')}</p>
-                                <p className="mt-1 font-semibold capitalize">
-                                    {enumLabel(selectedService.status, t)}
-                                </p>
+                                <p className="mt-1 font-semibold capitalize">{enumLabel(selectedService.status, t)}</p>
                             </div>
                             <div>
                                 <p className="text-xs text-muted">{t('Expires')}</p>

@@ -55,7 +55,7 @@ final readonly class PreviewBulkRenewals implements Action
                 'open_invoice' => $openInvoice === null ? null : [
                     'public_id' => $openInvoice->public_id,
                     'number' => $openInvoice->number,
-                    'outstanding_amount' => $this->outstanding($openInvoice),
+                    'outstanding_amount' => $openInvoice->outstandingAmount(),
                 ],
             ];
         })->values()->all();
@@ -74,22 +74,12 @@ final readonly class PreviewBulkRenewals implements Action
     private function openInvoice(Service $service): ?Invoice
     {
         return Invoice::query()
-            ->with(['payments.allocations', 'creditNotes'])
+            ->with(['paymentAllocations.payment', 'creditNotes'])
             ->where('customer_id', $service->customer_id)
             ->where('status', InvoiceStatus::Issued)
             ->whereHas('lines', fn (Builder $query): Builder => $query->where('service_id', $service->id))
             ->latest('id')
             ->get()
-            ->first(fn (Invoice $invoice): bool => $this->outstanding($invoice) > 0);
-    }
-
-    private function outstanding(Invoice $invoice): int
-    {
-        $allocated = $invoice->payments->sum(fn ($payment): int => $payment->allocations
-            ->where('invoice_id', $invoice->id)
-            ->sum('amount'));
-        $credited = $invoice->creditNotes->sum('amount');
-
-        return max(0, $invoice->total_amount - $allocated - $credited);
+            ->first(fn (Invoice $invoice): bool => $invoice->outstandingAmount() > 0);
     }
 }

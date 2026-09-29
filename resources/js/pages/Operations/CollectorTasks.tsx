@@ -272,7 +272,9 @@ export default function CollectorTasks({ filters, collectors, customers, tasks, 
                                 </div>
                                 <div className="mt-3 flex flex-wrap items-center gap-2">
                                     <StatusBadge status={task.status} />
-                                    <span className="text-xs font-semibold capitalize text-muted">{enumLabel(task.priority, t)}</span>
+                                    <span className="text-xs font-semibold capitalize text-muted">
+                                        {enumLabel(task.priority, t)}
+                                    </span>
                                 </div>
                                 <p className="mt-3 truncate text-xs text-muted">
                                     {task.collector.name}

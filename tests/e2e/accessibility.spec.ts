@@ -57,10 +57,12 @@ async function auditPage(page: Page, path: string): Promise<void> {
 async function findDetailPath(page: Page, indexPath: string, pattern: RegExp): Promise<string | null> {
     await page.goto(indexPath);
     await expect(page.locator('main h1:visible'), `${indexPath} should render its page heading`).toHaveCount(1);
-    const href = await page.locator('a[href]').evaluateAll(
-        (links, source) => links.map((link) => link.getAttribute('href') ?? '').find((href) => source.test(href)),
-        pattern,
-    );
+    const href = await page
+        .locator('a[href]')
+        .evaluateAll(
+            (links, source) => links.map((link) => link.getAttribute('href') ?? '').find((href) => source.test(href)),
+            pattern,
+        );
 
     return href ?? null;
 }
@@ -157,7 +159,11 @@ test('keeps guest authentication pages accessible', async ({ page }) => {
 test('connects password recovery errors to their controls', async ({ page }) => {
     await page.goto('/forgot-password');
     await page.locator('#email').fill('');
-    await page.locator('#credential-file').locator('xpath=ancestor::form').getByRole('button', { name: /import/i }).click();
+    await page
+        .locator('#credential-file')
+        .locator('xpath=ancestor::form')
+        .getByRole('button', { name: /import/i })
+        .click();
 
     const emailField = page.locator('#email');
     await expect(emailField).toHaveAttribute('aria-invalid', 'true');
@@ -438,7 +444,11 @@ test('connects exchange-rate errors to their controls', async ({ page }) => {
 
     await page.goto('/billing/exchange-rates');
     await page.locator('#source').fill('');
-    await page.locator('form').filter({ has: page.locator('#source') }).locator('button[type="submit"]').click();
+    await page
+        .locator('form')
+        .filter({ has: page.locator('#source') })
+        .locator('button[type="submit"]')
+        .click();
 
     const source = page.locator('#source');
     await expect(source).toHaveAttribute('aria-invalid', 'true');
@@ -459,7 +469,11 @@ test('connects POP creation errors to their controls', async ({ page }) => {
 
     await page.goto('/operations/pops');
     await page.locator('#pop-code').fill('ACCESSIBILITY-POP');
-    await page.locator('form').filter({ has: page.locator('#pop-name') }).locator('button[type="submit"]').click();
+    await page
+        .locator('form')
+        .filter({ has: page.locator('#pop-name') })
+        .locator('button[type="submit"]')
+        .click();
 
     const name = page.locator('#pop-name');
     await expect(name).toHaveAttribute('aria-invalid', 'true');
@@ -487,7 +501,11 @@ test('connects workspace location errors to their controls', async ({ page }) =>
 
     await page.goto('/settings/locations');
     await page.locator('#branch-code').fill('ACCESSIBILITY-BRANCH');
-    await page.locator('form').filter({ has: page.locator('#branch-name') }).locator('button[type="submit"]').click();
+    await page
+        .locator('form')
+        .filter({ has: page.locator('#branch-name') })
+        .locator('button[type="submit"]')
+        .click();
 
     const name = page.locator('#branch-name');
     await expect(name).toHaveAttribute('aria-invalid', 'true');
@@ -535,7 +553,11 @@ test('connects IP pool creation errors to their controls', async ({ page }) => {
 
     await page.goto('/operations/ip-pools');
     await page.locator('#pool-cidr').fill('10.20.10.0/24');
-    await page.locator('form').filter({ has: page.locator('#pool-name') }).locator('button[type="submit"]').click();
+    await page
+        .locator('form')
+        .filter({ has: page.locator('#pool-name') })
+        .locator('button[type="submit"]')
+        .click();
 
     const name = page.locator('#pool-name');
     await expect(name).toHaveAttribute('aria-invalid', 'true');
@@ -563,7 +585,11 @@ test('connects integration validation errors to their controls', async ({ page }
 
     await page.goto('/settings/integrations');
     await page.locator('#integration-frankfurter-quotes').fill('invalid');
-    await page.locator('form').filter({ has: page.locator('#integration-frankfurter-quotes') }).locator('button[type="submit"]').click();
+    await page
+        .locator('form')
+        .filter({ has: page.locator('#integration-frankfurter-quotes') })
+        .locator('button[type="submit"]')
+        .click();
 
     const quotes = page.locator('#integration-frankfurter-quotes');
     await expect(quotes).toHaveAttribute('aria-invalid', 'true');
@@ -650,7 +676,13 @@ test('keeps core text colors and landmarks accessible', async ({ page }) => {
     const audit = await page.evaluate(() => {
         const parseColor = (value: string): [number, number, number] => {
             const hex = value.trim().replace('#', '');
-            const normalized = hex.length === 3 ? hex.split('').map((part) => part + part).join('') : hex;
+            const normalized =
+                hex.length === 3
+                    ? hex
+                          .split('')
+                          .map((part) => part + part)
+                          .join('')
+                    : hex;
 
             return [0, 2, 4].map((offset) => Number.parseInt(normalized.slice(offset, offset + 2), 16)) as [
                 number,
@@ -662,17 +694,17 @@ test('keeps core text colors and landmarks accessible', async ({ page }) => {
             color
                 .map((channel) => {
                     const normalized = channel / 255;
-                    return normalized <= 0.03928
-                        ? normalized / 12.92
-                        : ((normalized + 0.055) / 1.055) ** 2.4;
+                    return normalized <= 0.03928 ? normalized / 12.92 : ((normalized + 0.055) / 1.055) ** 2.4;
                 })
                 .reduce((total, channel, index) => total + channel * [0.2126, 0.7152, 0.0722][index], 0);
         const contrast = (foreground: string, background: string): number => {
             const foregroundLuminance = luminance(parseColor(foreground));
             const backgroundLuminance = luminance(parseColor(background));
 
-            return (Math.max(foregroundLuminance, backgroundLuminance) + 0.05) /
-                (Math.min(foregroundLuminance, backgroundLuminance) + 0.05);
+            return (
+                (Math.max(foregroundLuminance, backgroundLuminance) + 0.05) /
+                (Math.min(foregroundLuminance, backgroundLuminance) + 0.05)
+            );
         };
         const styles = getComputedStyle(document.documentElement);
         const colors = {
@@ -773,9 +805,7 @@ test('keeps shared keyboard focus paths usable', async ({ page }) => {
     const mobileClose = mobileNavigation.getByRole('button', { name: 'Close navigation' });
     await expect(mobileClose).toBeFocused();
     await page.keyboard.press('Shift+Tab');
-    await expect(
-        mobileNavigation.locator('a[href], button:not([disabled])').last(),
-    ).toBeFocused();
+    await expect(mobileNavigation.locator('a[href], button:not([disabled])').last()).toBeFocused();
     await page.keyboard.press('Escape');
     await expect(mobileNavTrigger).toBeFocused();
 });
@@ -792,7 +822,16 @@ test('keeps high-use workspace pages within a phone viewport', async ({ page }) 
         page.getByRole('button', { name: 'Enter workspace' }).click(),
     ]);
 
-    for (const path of ['/dashboard', '/customers', '/services', '/billing/invoices', '/billing/payments', '/operations/work-orders', '/operations/inventory', '/settings/general']) {
+    for (const path of [
+        '/dashboard',
+        '/customers',
+        '/services',
+        '/billing/invoices',
+        '/billing/payments',
+        '/operations/work-orders',
+        '/operations/inventory',
+        '/settings/general',
+    ]) {
         await page.goto(path);
         await expect(page.locator('main#main-content:visible'), `${path} should fit a phone viewport`).toBeVisible();
 
@@ -802,7 +841,9 @@ test('keeps high-use workspace pages within a phone viewport', async ({ page }) 
             viewport: window.innerWidth,
         }));
 
-        expect(dimensions.body, `${path} creates horizontal page overflow`).toBeLessThanOrEqual(dimensions.viewport + 1);
+        expect(dimensions.body, `${path} creates horizontal page overflow`).toBeLessThanOrEqual(
+            dimensions.viewport + 1,
+        );
         expect(dimensions.document, `${path} creates horizontal document overflow`).toBeLessThanOrEqual(
             dimensions.viewport + 1,
         );

@@ -14,9 +14,12 @@ final readonly class ListInvoices implements Action
     public function handle(?string $status, ?string $search, int $perPage = 25): LengthAwarePaginator
     {
         return Invoice::query()
-            ->with(['customer', 'payments' => fn ($query) => $query
-                ->where('status', PaymentStatus::Posted)
-                ->with('allocations'), 'creditNotes' => fn ($query) => $query->where('status', 'issued')])
+            ->with([
+                'customer',
+                'payments' => fn ($query) => $query->where('status', PaymentStatus::Posted)->with('allocations'),
+                'paymentAllocations.payment',
+                'creditNotes' => fn ($query) => $query->where('status', 'issued'),
+            ])
             ->when($status, fn (Builder $query) => $query->where('status', $status))
             ->when($search, function (Builder $query) use ($search): void {
                 $term = trim($search);

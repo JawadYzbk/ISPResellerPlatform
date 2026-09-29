@@ -193,7 +193,7 @@ export default function TopologyBuildingsPage({ buildings, canManage, statuses }
                             {...fieldA11y('building-notes', form.errors.notes)}
                             value={form.data.notes}
                             onChange={(event) => form.setData('notes', event.target.value)}
-                                placeholder={t('Access notes, caretaker, or riser details')}
+                            placeholder={t('Access notes, caretaker, or riser details')}
                         />
                         {fieldError('building-notes', form.errors.notes)}
                     </label>

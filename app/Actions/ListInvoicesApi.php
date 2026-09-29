@@ -43,6 +43,7 @@ final readonly class ListInvoicesApi implements Action
                 'lines.service',
                 'payments.actor',
                 'payments.allocations',
+                'paymentAllocations.payment',
                 'creditNotes.creator',
             ])
             ->cursorPaginate(min(max($perPage, 10), 100))

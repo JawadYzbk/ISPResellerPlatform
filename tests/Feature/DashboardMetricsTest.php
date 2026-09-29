@@ -5,11 +5,15 @@ use App\Actions\GetDashboardMetrics;
 use App\Actions\IssueInvoice;
 use App\Actions\RecordPayment;
 use App\Enums\IncidentStatus;
+use App\Enums\InvoiceStatus;
 use App\Enums\NetworkState;
+use App\Enums\PaymentStatus;
 use App\Enums\ServiceStatus;
+use App\Models\CreditNote;
 use App\Models\CurrentSession;
 use App\Models\Customer;
 use App\Models\Incident;
+use App\Models\Invoice;
 use App\Models\NetworkCommand;
 use App\Models\Payment;
 use App\Models\Plan;
@@ -75,4 +79,62 @@ it('keeps today dashboard collections separated by currency', function (): void 
 
     expect(app(GetDashboardMetrics::class)->handle())
         ->toMatchArray(['collectionsTodayByCurrency' => ['LBP' => 250000, 'USD' => 1000]]);
+});
+
+it('keeps credit notes signed in owner metrics and collections effective at period end', function (): void {
+    $tenant = Tenant::create(['name' => 'Northline', 'slug' => 'northline', 'base_currency' => 'USD', 'collection_currency' => 'USD']);
+    app(Tenancy::class)->set($tenant);
+    $user = User::create(['tenant_id' => $tenant->id, 'name' => 'Owner', 'email' => 'owner-credit-dashboard@example.test', 'password' => Hash::make('password'), 'role' => 'tenant_owner']);
+    app(CapabilitySeeder::class)->run();
+    $user->givePermissionTo('reports.finance');
+    $service = Service::factory()->create();
+    $invoice = Invoice::create([
+        'number' => 'INV-DASH-PRIOR',
+        'customer_id' => $service->customer_id,
+        'status' => InvoiceStatus::Issued,
+        'currency' => 'USD',
+        'subtotal_amount' => 3500,
+        'total_amount' => 3500,
+        'issued_at' => now()->subMonth()->startOfMonth(),
+    ]);
+    CreditNote::create([
+        'invoice_id' => $invoice->id,
+        'customer_id' => $invoice->customer_id,
+        'number' => 'CN-DASH-PRIOR',
+        'amount' => 3500,
+        'currency' => 'USD',
+        'status' => 'issued',
+        'reason' => 'Service interruption',
+        'issued_at' => now(),
+        'created_by_id' => $user->id,
+    ]);
+    Payment::create([
+        'customer_id' => $service->customer_id,
+        'number' => 'RCT-DASH-FUTURE-REVERSAL',
+        'currency' => 'USD',
+        'amount' => 800,
+        'status' => PaymentStatus::Reversed,
+        'method' => 'cash',
+        'idempotency_key' => 'dashboard-future-reversal',
+        'received_at' => now()->startOfMonth(),
+        'reversed_at' => now()->addDay(),
+    ]);
+    Payment::create([
+        'customer_id' => $service->customer_id,
+        'number' => 'RCT-DASH-PAST-REVERSAL',
+        'currency' => 'USD',
+        'amount' => 300,
+        'status' => PaymentStatus::Reversed,
+        'method' => 'cash',
+        'idempotency_key' => 'dashboard-past-reversal',
+        'received_at' => now()->startOfMonth(),
+        'reversed_at' => now()->startOfDay(),
+    ]);
+
+    $metrics = app(GetDashboardMetrics::class)->handle($user)['owner'];
+
+    expect($metrics['revenue'])->toBe(-3500)
+        ->and($metrics['margin'])->toBe(-3500)
+        ->and($metrics['collectionRate'])->toBeNull()
+        ->and($metrics['collected'])->toBe(800);
 });

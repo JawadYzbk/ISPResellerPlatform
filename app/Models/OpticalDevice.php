@@ -27,21 +27,25 @@ class OpticalDevice extends Model
         });
     }
 
+    /** @return BelongsTo<Tenant, $this> */
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);
     }
 
+    /** @return BelongsTo<Pop, $this> */
     public function pop(): BelongsTo
     {
         return $this->belongsTo(Pop::class);
     }
 
+    /** @return HasMany<OpticalReading, $this> */
     public function readings(): HasMany
     {
         return $this->hasMany(OpticalReading::class);
     }
 
+    /** @return HasOne<OpticalReading, $this> */
     public function latestReading(): HasOne
     {
         return $this->hasOne(OpticalReading::class)->latestOfMany('recorded_at');

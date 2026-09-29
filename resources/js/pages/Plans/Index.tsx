@@ -561,10 +561,7 @@ export default function PlansIndex({
                             </ResponsiveSelect>
                             {fieldError('promotion-status', promotionForm.errors.is_active)}
                         </label>
-                        <fieldset
-                            className="sm:col-span-2"
-                            {...fieldA11y('promotion-plans', promotionAppliesToError)}
-                        >
+                        <fieldset className="sm:col-span-2" {...fieldA11y('promotion-plans', promotionAppliesToError)}>
                             <legend className="field-label">{t('plan.apply_to_plans')}</legend>
                             <div className="mt-2 flex flex-wrap gap-3">
                                 {availablePlans.map((plan) => (

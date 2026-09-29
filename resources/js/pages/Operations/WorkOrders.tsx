@@ -134,9 +134,7 @@ export default function WorkOrdersPage({ workOrders, filters }: Props) {
                                         >
                                             {order.number}
                                         </Link>
-                                        <p className="mt-1 text-xs capitalize text-muted">
-                                            {enumLabel(order.type, t)}
-                                        </p>
+                                        <p className="mt-1 text-xs capitalize text-muted">{enumLabel(order.type, t)}</p>
                                         <p className="mt-1 text-xs text-muted">
                                             {order.service?.username ?? t('work_orders.no_service')}
                                         </p>

@@ -95,7 +95,9 @@ export type FinanceReport = {
     to: string;
     invoice_count: number;
     payment_count: number;
-    invoiced_by_currency: Record<string, number>;
+    gross_invoiced_by_currency: Record<string, number>;
+    credited_by_currency: Record<string, number>;
+    net_invoiced_by_currency: Record<string, number>;
     collected_by_currency: Record<string, number>;
     collection_rate_by_currency: Record<string, number | null>;
     cash_reconciliation: {
@@ -105,31 +107,28 @@ export type FinanceReport = {
     };
     collection_trend: {
         date: string;
-        invoiced_by_currency: Record<string, number>;
+        gross_invoiced_by_currency: Record<string, number>;
+        credited_by_currency: Record<string, number>;
+        net_invoiced_by_currency: Record<string, number>;
         collected_by_currency: Record<string, number>;
     }[];
     aging_by_currency: Record<string, Record<'current' | '1_30' | '31_60' | '61_90' | '90_plus', number>>;
     outstanding_by_currency: Record<string, number>;
-    customer_balances_by_currency: Record<string, number>;
-    revenue_by_plan: Record<string, Record<string, number>>;
-    revenue_by_zone: Record<string, Record<string, number>>;
+    current_customer_balances_by_currency: Record<string, number>;
+    gross_revenue_by_plan: Record<string, Record<string, number>>;
+    gross_revenue_by_zone: Record<string, Record<string, number>>;
     margin_by_pop: Record<
         string,
         {
-            revenue_by_currency: Record<string, number>;
+            gross_revenue_by_currency: Record<string, number>;
             upstream_cost_by_currency: Record<string, number>;
-            margin_by_currency: Record<string, number>;
+            gross_margin_by_currency: Record<string, number>;
         }
     >;
     tax_by_currency: Record<string, number>;
-    churned_services: number;
-    retention_by_period: {
-        active_at_period_start: number;
-        terminated_services: number;
-        retention_rate_percent: number | null;
-    };
-    active_customer_count: number;
-    arpu_by_currency: Record<string, number | null>;
+    service_termination_events_by_period: number;
+    current_active_customer_count: number;
+    cash_collected_per_current_active_customer_by_currency: Record<string, number | null>;
     top_usage: { service_id: string | null; username: string | null; total_octets: number }[];
     collector_performance: {
         collector: string;
@@ -246,6 +245,41 @@ export type PortalBilling = {
         received_at: string | null;
     }[];
     online_payments: { enabled: boolean; provider: string };
+};
+
+export type PortalInvoice = {
+    id: string;
+    number: string;
+    status: string;
+    currency: string;
+    total_amount: number;
+    allocated_amount: number;
+    credited_amount: number;
+    outstanding_amount: number;
+    due_at: string | null;
+    issued_at: string | null;
+    lines: { description: string; amount: number; currency: string }[];
+};
+
+export type PortalPayment = {
+    id: string;
+    number: string;
+    status: string;
+    currency: string;
+    amount: number;
+    invoice_id: string | null;
+    received_at: string | null;
+};
+
+export type PortalInvoiceDetail = PortalInvoice & {
+    subtotal_amount: number;
+    tax_amount: number;
+    payments: PortalPayment[];
+};
+
+export type PortalCursorPage<T> = {
+    data: T[];
+    meta: { next_cursor: string | null; prev_cursor: string | null; per_page: number };
 };
 
 export type PortalBalance = {

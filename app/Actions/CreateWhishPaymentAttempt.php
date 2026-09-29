@@ -6,11 +6,9 @@ use App\Contracts\Action;
 use App\Domain\Payments\WhishPaymentGateway;
 use App\Enums\InvoiceStatus;
 use App\Enums\PaymentAttemptStatus;
-use App\Models\CreditNote;
 use App\Models\Currency;
 use App\Models\Customer;
 use App\Models\Invoice;
-use App\Models\PaymentAllocation;
 use App\Models\PaymentAttempt;
 use App\Models\User;
 use DomainException;
@@ -35,7 +33,7 @@ final readonly class CreateWhishPaymentAttempt implements Action
             if ($invoice->tenant_id !== $customer->tenant_id || $invoice->customer_id !== $customer->id || $invoice->status !== InvoiceStatus::Issued) {
                 throw new DomainException('The invoice is not payable by this customer.');
             }
-            if ($currency !== $invoice->currency || $amount > $this->remaining($invoice)) {
+            if ($currency !== $invoice->currency || $amount > $invoice->outstandingAmount()) {
                 throw new DomainException('The payment amount exceeds the invoice balance.');
             }
         }
@@ -99,13 +97,5 @@ final readonly class CreateWhishPaymentAttempt implements Action
         } while (PaymentAttempt::withoutGlobalScopes()->where('gateway', 'whish')->where('external_id', $externalId)->exists());
 
         return $externalId;
-    }
-
-    private function remaining(Invoice $invoice): int
-    {
-        $allocated = (int) PaymentAllocation::query()->where('invoice_id', $invoice->id)->sum('amount');
-        $credited = (int) CreditNote::query()->where('invoice_id', $invoice->id)->where('status', 'issued')->sum('amount');
-
-        return max(0, $invoice->total_amount - $allocated - $credited);
     }
 }

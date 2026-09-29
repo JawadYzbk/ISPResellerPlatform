@@ -17,10 +17,8 @@ final readonly class GenerateInvoicePdf implements Action
     {
         $invoice = $this->getDetails->handle($invoice);
         $tenant = Tenant::query()->findOrFail($invoice->tenant_id);
-        $allocated = $invoice->payments->sum(fn ($payment): int => $payment->allocations
-            ->where('invoice_id', $invoice->id)
-            ->sum('amount'));
-        $credited = $invoice->creditNotes->sum('amount');
+        $allocated = $invoice->effectiveAllocatedAmount();
+        $credited = $invoice->creditNotes->where('status', 'issued')->sum('amount');
 
         return Pdf::loadView('pdf.invoice', [
             'tenant' => $tenant,
@@ -28,7 +26,7 @@ final readonly class GenerateInvoicePdf implements Action
             'invoice' => $invoice,
             'allocated' => $allocated,
             'credited' => $credited,
-            'outstanding' => max(0, $invoice->total_amount - $allocated - $credited),
+            'outstanding' => $invoice->outstandingAmount(),
             'formatter' => BillingPdfFormatter::class,
         ])->setPaper('a4')->download($invoice->number.'.pdf');
     }

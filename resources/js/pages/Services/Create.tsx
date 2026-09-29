@@ -191,7 +191,9 @@ export default function ServicesCreate({ customer, plans, routers }: Props) {
                         </ResponsiveSelect>
                         {fieldError('billing_anchor_day')}
                         <p className="mt-1 text-xs text-pretty text-muted">
-                            {t('The first renewal invoice is prorated from its issue date to this day. Days 29–31 clamp to shorter months.')}
+                            {t(
+                                'The first renewal invoice is prorated from its issue date to this day. Days 29–31 clamp to shorter months.',
+                            )}
                         </p>
                     </div>
                     <div>
@@ -263,7 +265,11 @@ export default function ServicesCreate({ customer, plans, routers }: Props) {
                         <Link href={`/customers/${customer.public_id}`} className="button-secondary">
                             {t('Cancel')}
                         </Link>
-                        <button type="submit" className="button-primary" disabled={form.processing || plans.length === 0}>
+                        <button
+                            type="submit"
+                            className="button-primary"
+                            disabled={form.processing || plans.length === 0}
+                        >
                             <Save size={16} /> {t('service.create_pending')}
                         </button>
                     </div>
